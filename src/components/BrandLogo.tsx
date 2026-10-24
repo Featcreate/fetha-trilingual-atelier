@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * ORIGINAL LOGO SLOT
@@ -8,23 +8,25 @@ import { useState } from "react";
 export const LOGO_SRC = "/brand/fethacreate-logo.png";
 
 export function BrandLogo({ slotLabel, className = "" }: { slotLabel: string; className?: string }) {
-  const [missing, setMissing] = useState(false);
-  if (missing) {
-    return (
-      <div
-        className={`flex items-center justify-center rounded-md border-2 border-dashed border-gold px-3 text-xs font-semibold text-muted-foreground ${className}`}
-        data-logo-slot="public/brand/fethacreate-logo.png"
-      >
-        {slotLabel}
-      </div>
-    );
+  const [available, setAvailable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setAvailable(true);
+    img.onerror = () => setAvailable(false);
+    img.src = LOGO_SRC;
+  }, []);
+
+  if (available) {
+    return <img src={LOGO_SRC} alt="FethaCreate" className={`object-contain ${className}`} />;
   }
   return (
-    <img
-      src={LOGO_SRC}
-      alt="FethaCreate"
-      className={`object-contain ${className}`}
-      onError={() => setMissing(true)}
-    />
+    <div
+      className={`flex items-center justify-center rounded-md border-2 border-dashed border-gold px-2 text-center text-[10px] font-semibold leading-tight text-muted-foreground ${className}`}
+      data-logo-slot="public/brand/fethacreate-logo.png"
+      aria-label="FethaCreate"
+    >
+      {available === false ? slotLabel : ""}
+    </div>
   );
 }

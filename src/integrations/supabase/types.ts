@@ -62,6 +62,7 @@ export type Database = {
           email_error: string | null
           email_sent_at: string | null
           id: string
+          konnect_pay_url: string | null
           konnect_payment_ref: string | null
           paid_at: string | null
           status: Database["public"]["Enums"]["order_status"]
@@ -77,6 +78,7 @@ export type Database = {
           email_error?: string | null
           email_sent_at?: string | null
           id?: string
+          konnect_pay_url?: string | null
           konnect_payment_ref?: string | null
           paid_at?: string | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -92,6 +94,7 @@ export type Database = {
           email_error?: string | null
           email_sent_at?: string | null
           id?: string
+          konnect_pay_url?: string | null
           konnect_payment_ref?: string | null
           paid_at?: string | null
           status?: Database["public"]["Enums"]["order_status"]

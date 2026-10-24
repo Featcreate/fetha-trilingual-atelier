@@ -1,0 +1,1 @@
+alter table public.orders add column konnect_pay_url text;

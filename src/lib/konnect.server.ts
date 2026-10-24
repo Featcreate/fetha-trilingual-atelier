@@ -21,10 +21,10 @@ export async function konnectInitPayment(input: {
   webhook: string;
   successUrl: string;
   failUrl: string;
-  firstName?: string;
-  lastName?: string;
-  phoneNumber?: string;
-  email?: string;
+  firstName?: string | undefined;
+  lastName?: string | undefined;
+  phoneNumber?: string | undefined;
+  email?: string | undefined;
 }): Promise<{ payUrl: string; paymentRef: string }> {
   const cfg = konnectConfig();
   if (!cfg) throw new Error("payments_not_configured");

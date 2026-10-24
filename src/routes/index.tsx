@@ -3,8 +3,8 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, useLang } from "@/lib/i18n";
-import product1 from "@/assets/product-1.jpg.asset.json";
-import product2 from "@/assets/product-2.jpg.asset.json";
+import product1 from "@/assets/botanical-planner.jpg.asset.json";
+import product2 from "@/assets/spring-wellness.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,8 +21,8 @@ export const Route = createFileRoute("/")({
 });
 
 const products = [
-  { src: product1.url, ratio: "aspect-square" },
-  { src: product2.url, ratio: "aspect-[1376/768]" },
+  { src: product1.url, ratio: "aspect-[1376/768]" },
+  { src: product2.url, ratio: "aspect-[1584/672]" },
 ];
 
 function Index() {

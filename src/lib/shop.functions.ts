@@ -54,7 +54,7 @@ export const startCheckout = createServerFn({ method: "POST" })
       const { payUrl, paymentRef } = await konnectInitPayment({
         amount: order.total_millimes,
         orderId: order.id,
-        description: `FethaCreate #${order.id.slice(0, 8)}`,
+        description: `Algorea Bazaar #${order.id.slice(0, 8)}`,
         webhook: `${origin}/api/public/konnect/webhook`,
         successUrl: `${origin}/checkout/return?order=${order.id}`,
         failUrl: `${origin}/checkout/return?order=${order.id}`,

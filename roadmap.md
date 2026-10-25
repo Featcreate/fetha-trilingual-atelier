@@ -1,4 +1,4 @@
-# FethaCreate roadmap
+# Algorea Bazaar roadmap
 
 - [x] Step 1: homepage shell, brand, 3 languages
 - [ ] Phase 2: database, storage, roles

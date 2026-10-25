@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 export type Lang = "fr" | "ar" | "en";
 export const LANGS: Lang[] = ["fr", "ar", "en"];
 export const DEFAULT_LANG: Lang = "fr";
-export const STORAGE_KEY = "fethacreate.lang";
+export const STORAGE_KEY = "algoreabazaar.lang";
 
 export const dirFor = (lang: Lang) => (lang === "ar" ? "rtl" : "ltr");
 
@@ -14,7 +14,7 @@ export const dict = {
     menu: "Menu",
     heroKicker: "Apprendre · Créer · S'épanouir",
     heroTitle: "Des ressources numériques créatives et multilingues",
-    heroText: "FethaCreate prépare une boutique de produits numériques éducatifs et créatifs.",
+    heroText: "Algorea Bazaar prépare une boutique de produits numériques éducatifs et créatifs.",
     heroCta: "Voir l'aperçu",
     showcaseTitle: "Aperçu des futurs produits",
     showcaseNote: "Aperçu visuel uniquement — les produits ne sont pas encore disponibles.",
@@ -29,7 +29,7 @@ export const dict = {
     menu: "القائمة",
     heroKicker: "تعلّم · أبدع · ازدهر",
     heroTitle: "موارد رقمية إبداعية ومتعددة اللغات",
-    heroText: "تُحضّر FethaCreate متجراً لمنتجات رقمية تعليمية وإبداعية.",
+    heroText: "تُحضّر Algorea Bazaar متجراً لمنتجات رقمية تعليمية وإبداعية.",
     heroCta: "شاهد المعاينة",
     showcaseTitle: "معاينة المنتجات القادمة",
     showcaseNote: "معاينة بصرية فقط — المنتجات غير متاحة بعد.",
@@ -44,7 +44,7 @@ export const dict = {
     menu: "Menu",
     heroKicker: "Learn · Create · Flourish",
     heroTitle: "Creative, multilingual digital resources",
-    heroText: "FethaCreate is preparing a store for educational and creative digital products.",
+    heroText: "Algorea Bazaar is preparing a store for educational and creative digital products.",
     heroCta: "See the preview",
     showcaseTitle: "Preview of upcoming products",
     showcaseNote: "Visual preview only — products are not available yet.",

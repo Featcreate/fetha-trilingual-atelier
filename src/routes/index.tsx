@@ -9,9 +9,9 @@ import product2 from "@/assets/spring-wellness.jpg.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "FethaCreate — Ressources numériques créatives" },
-      { name: "description", content: "FethaCreate : boutique de produits numériques éducatifs et créatifs, en français, arabe et anglais." },
-      { property: "og:title", content: "FethaCreate — Ressources numériques créatives" },
+      { title: "Algorea Bazaar — Ressources numériques créatives" },
+      { name: "description", content: "Algorea Bazaar : boutique de produits numériques éducatifs et créatifs, en français, arabe et anglais." },
+      { property: "og:title", content: "Algorea Bazaar — Ressources numériques créatives" },
       { property: "og:description", content: "Produits numériques éducatifs et créatifs multilingues." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -127,7 +127,7 @@ function Index() {
 
       <footer id="contact" className="bg-petrol text-cream">
         <div id="about" className="mx-auto max-w-6xl px-4 py-8 text-center text-sm">
-          © {new Date().getFullYear()} FethaCreate. {t.footer}
+          © {new Date().getFullYear()} Algorea Bazaar. {t.footer}
         </div>
       </footer>
     </div>

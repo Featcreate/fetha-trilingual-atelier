@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import type { InputHTMLAttributes, ReactNode } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, type Lang } from "@/lib/i18n";
 
@@ -67,7 +67,7 @@ export function Field({
   label,
   error,
   ...props
-}: { id: string; label: string; error?: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+}: { id: string; label: string; error?: string } & InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
       <label htmlFor={id} className="mb-1 block text-sm font-medium">{label}</label>

@@ -21,13 +21,15 @@ export const Route = createFileRoute("/_authenticated/account")({
   component: AccountPage,
 });
 
+type Errs = Partial<Record<"email" | "password" | "full_name" | "phone", string>>;
+
 function AccountPage() {
   const { lang, setLang, t } = useLang();
   const a = t.auth;
   const { user } = Route.useRouteContext();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Errs>({});
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -68,7 +70,7 @@ function AccountPage() {
     const f = new FormData(e.currentTarget);
     const full_name = String(f.get("full_name") ?? "").trim();
     const phone = String(f.get("phone") ?? "").trim();
-    const errs: Record<string, string> = {};
+    const errs: Errs = {};
     if (!fullNameSchema.safeParse(full_name).success) errs.full_name = a.errName;
     if (!phoneSchema.safeParse(phone).success) errs.phone = a.errPhone;
     setErrors(errs);

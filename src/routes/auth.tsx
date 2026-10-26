@@ -28,6 +28,8 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+type Errs = Partial<Record<"email" | "password" | "full_name" | "phone", string>>;
+
 function AuthPage() {
   const { lang, setLang, t } = useLang();
   const a = t.auth;
@@ -36,7 +38,7 @@ function AuthPage() {
   const mode: Mode = search.mode ?? "signin";
   const target = safeRedirect(search.redirect);
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Errs>({});
   const [formError, setFormError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -57,7 +59,7 @@ function AuthPage() {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     const v = (k: string) => String(f.get(k) ?? "");
-    const errs: Record<string, string> = {};
+    const errs: Errs = {};
     if (!emailSchema.safeParse(v("email")).success) errs.email = a.errEmail;
     if (mode !== "forgot" && !passwordSchema.safeParse(v("password")).success) errs.password = a.errPassword;
     if (mode === "signup") {

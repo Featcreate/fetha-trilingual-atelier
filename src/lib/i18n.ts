@@ -109,7 +109,7 @@ export const dict = {
   },
 } as const;
 
-export type AuthDict = (typeof dict)["fr"]["auth"];
+export type AuthDict = Record<keyof (typeof dict)["fr"]["auth"], string>;
 
 /** Map auth provider errors to a translated, user-safe message. */
 export function authErrorMessage(t: AuthDict, err: { message?: string; code?: string; status?: number } | null) {

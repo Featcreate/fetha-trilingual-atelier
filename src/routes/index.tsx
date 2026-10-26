@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { User } from "lucide-react";
+import { useSession } from "@/hooks/use-session";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -28,6 +30,8 @@ const products = [
 function Index() {
   const { lang, setLang, t } = useLang();
   const [open, setOpen] = useState(false);
+  const { session } = useSession();
+  const accountLabel = session ? t.auth.account : t.auth.signIn;
   const links = [
     ["#home", t.nav.home],
     ["#products", t.nav.products],
@@ -67,6 +71,14 @@ function Index() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            <Link
+              to={session ? "/account" : "/auth"}
+              aria-label={accountLabel}
+              className="inline-flex items-center gap-1.5 rounded-full p-2 text-sm font-semibold hover:text-coral md:px-3"
+            >
+              <User className="h-5 w-5" />
+              <span className="hidden lg:inline">{accountLabel}</span>
+            </Link>
             {switcher}
             <button
               className="rounded-md p-2 md:hidden"

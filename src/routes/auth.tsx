@@ -11,8 +11,8 @@ type Mode = "signin" | "signup" | "forgot";
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) =>
     z.object({ mode: z.enum(["signin", "signup", "forgot"]).optional(), redirect: z.string().optional() }).parse({
-      mode: s.mode,
-      redirect: typeof s.redirect === "string" ? s.redirect : undefined,
+      mode: s["mode"],
+      redirect: typeof s["redirect"] === "string" ? s["redirect"] : undefined,
     }),
   head: () => ({
     meta: [

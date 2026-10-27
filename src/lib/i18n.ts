@@ -112,7 +112,7 @@ export const dict = {
 export type AuthDict = Record<keyof (typeof dict)["fr"]["auth"], string>;
 
 /** Map auth provider errors to a translated, user-safe message. */
-export function authErrorMessage(t: AuthDict, err: { message?: string; code?: string; status?: number } | null) {
+export function authErrorMessage(t: AuthDict, err: { message?: string | undefined; code?: string | undefined; status?: number | undefined } | null) {
   const m = `${err?.code ?? ""} ${err?.message ?? ""}`.toLowerCase();
   if (m.includes("invalid_credentials") || m.includes("invalid login")) return t.errCredentials;
   if (m.includes("not_confirmed") || m.includes("not confirmed")) return t.errUnconfirmed;

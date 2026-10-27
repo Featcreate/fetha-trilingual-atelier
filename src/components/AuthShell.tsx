@@ -67,7 +67,7 @@ export function Field({
   label,
   error,
   ...props
-}: { id: string; label: string; error?: string } & InputHTMLAttributes<HTMLInputElement>) {
+}: { id: string; label: string; error?: string | undefined } & InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
       <label htmlFor={id} className="mb-1 block text-sm font-medium">{label}</label>

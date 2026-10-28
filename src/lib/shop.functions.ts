@@ -102,35 +102,58 @@ export const checkOrderPayment = createServerFn({ method: "POST" })
     return { status: (fresh?.status ?? order.status) as "pending" | "paid" | "failed" | "cancelled" };
   });
 
-/** Short-lived download link, only for the signed-in owner of a paid order. */
+/**
+ * Short-lived (300s) download link for the signed-in buyer of a paid order.
+ * Reserve -> sign -> finalize; signing failure releases the reservation (no quota used).
+ * Repeats within 5 minutes of a counted download re-sign without consuming an attempt.
+ */
 export const getDownloadLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ orderId: z.string().uuid(), productId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ entitlementId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    // RLS limits this read to the caller's own orders.
-    const { data: order } = await context.supabase
-      .from("orders")
-      .select("id, status, user_id, order_items!inner(product_id)")
-      .eq("id", data.orderId)
-      .eq("order_items.product_id", data.productId)
-      .maybeSingle();
-    if (!order || order.user_id !== context.userId || order.status !== "paid") {
-      return { ok: false as const, error: "forbidden" };
-    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: file } = await supabaseAdmin
-      .from("product_files")
-      .select("file_path, file_name")
-      .eq("product_id", data.productId)
-      .maybeSingle();
-    if (!file) return { ok: false as const, error: "file_missing" };
-    const { data: signed, error } = await supabaseAdmin.storage
+    const { data: rows, error } = await supabaseAdmin.rpc("reserve_download", {
+      _user_id: context.userId,
+      _entitlement_id: data.entitlementId,
+    });
+    const r = rows?.[0];
+    if (error || !r) return { ok: false as const, error: "download_failed" };
+    if (r.outcome !== "new" && r.outcome !== "dedupe") return { ok: false as const, error: r.outcome };
+    const { data: signed, error: signErr } = await supabaseAdmin.storage
       .from("product-files")
-      .createSignedUrl(file.file_path, 300, { download: file.file_name });
-    if (error || !signed) return { ok: false as const, error: "file_missing" };
-    return { ok: true as const, url: signed.signedUrl };
+      .createSignedUrl(r.storage_path!, 300, { download: r.file_name! });
+    if (r.outcome === "dedupe") {
+      if (signErr || !signed) return { ok: false as const, error: "file_missing" };
+      return { ok: true as const, url: signed.signedUrl, counted: false };
+    }
+    if (signErr || !signed) {
+      await supabaseAdmin.rpc("release_download", { _reservation_id: r.reservation_id! });
+      return { ok: false as const, error: "file_missing" };
+    }
+    const { data: finalized } = await supabaseAdmin.rpc("finalize_download", { _reservation_id: r.reservation_id! });
+    if (!finalized) return { ok: false as const, error: "download_failed" };
+    return { ok: true as const, url: signed.signedUrl, counted: true };
+  });
+
+/** Admin test simulation: never produces seller ledger entries; blocked unless explicitly enabled and not live. */
+export const adminSimulatePayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    if (process.env["PAYMENT_SIMULATION_ENABLED"] !== "true" || process.env["KONNECT_ENV"] === "live") {
+      return { ok: false as const, error: "simulation_disabled" };
+    }
+    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    if (!isAdmin) return { ok: false as const, error: "forbidden" };
+    const { data: order } = await context.supabase.from("orders").select("total_millimes").eq("id", data.orderId).maybeSingle();
+    if (!order) return { ok: false as const, error: "not_found" };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: outcome, error } = await supabaseAdmin.rpc("settle_order_payment", {
+      _order_id: data.orderId, _mode: "simulation", _payment_ref: `sim-${data.orderId}`,
+      _amount_millimes: order.total_millimes, _source: "admin_simulation",
+    });
+    if (error) return { ok: false as const, error: "settlement_failed" };
+    return { ok: true as const, outcome };
   });
 
 /** Admin: re-verify a pending order with Konnect. */

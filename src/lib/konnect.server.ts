@@ -87,31 +87,21 @@ export async function applyPaymentRef(paymentRef: string, source: "webhook" | "r
     return { outcome: "unknown_order" as const };
   }
 
+  // Provider verification (server-to-server with our secret key). Webhook/return params are never trusted.
   const payment = await konnectGetPayment(paymentRef);
-  let outcome: PaymentOutcome | "race_lost" = decidePaymentOutcome(order, payment);
-
-  if (outcome === "paid") {
-    const { data: updated } = await supabaseAdmin
-      .from("orders")
-      .update({ status: "paid", paid_at: new Date().toISOString() })
-      .eq("id", order.id)
-      .eq("status", "pending")
-      .select("id");
-    if (!updated?.length) outcome = "race_lost";
-    else await recordFulfilmentEmail(order.id);
+  const outcome: PaymentOutcome = decidePaymentOutcome(order, payment);
+  if (outcome !== "paid") {
+    await supabaseAdmin.from("payment_events").insert({
+      order_id: order.id, payment_ref: paymentRef, source, konnect_status: payment.status ?? null, outcome,
+    });
+    return { outcome };
   }
-
-  await supabaseAdmin.from("payment_events").insert({
-    order_id: order.id,
-    payment_ref: paymentRef,
-    source,
-    konnect_status: payment.status ?? null,
-    outcome,
+  // Single trusted, transactional, idempotent settlement (service role only).
+  const { data, error } = await supabaseAdmin.rpc("settle_order_payment", {
+    _order_id: order.id, _mode: "verified", _payment_ref: paymentRef,
+    _amount_millimes: payment.amount ?? -1, _source: source,
   });
-  return { outcome };
-}
-
-/** Order emails are not sendable until an email domain is set up; the order stays paid either way. */
-async function recordFulfilmentEmail(orderId: string) {
-  await supabaseAdmin.from("orders").update({ email_error: "email_not_configured" }).eq("id", orderId);
+  if (error) throw new Error("settlement_failed");
+  if (data === "paid") await supabaseAdmin.from("orders").update({ email_error: "email_not_configured" }).eq("id", order.id);
+  return { outcome: data as string };
 }

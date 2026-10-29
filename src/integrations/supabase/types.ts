@@ -70,6 +70,7 @@ export type Database = {
           closed_at: string | null
           created_at: string
           entitlement_id: string
+          expires_at: string
           finalized_at: string | null
           id: string
           status: string
@@ -79,6 +80,7 @@ export type Database = {
           closed_at?: string | null
           created_at?: string
           entitlement_id: string
+          expires_at?: string
           finalized_at?: string | null
           id?: string
           status?: string
@@ -88,6 +90,7 @@ export type Database = {
           closed_at?: string | null
           created_at?: string
           entitlement_id?: string
+          expires_at?: string
           finalized_at?: string | null
           id?: string
           status?: string

@@ -1,7 +1,7 @@
 # Algorea Bazaar roadmap
 
 - [x] Step 1: homepage shell, brand, 3 languages
-- [ ] Phase 2: database, storage, roles
+- [x] Sub-Batch 1A: marketplace schema, secure downloads, trusted settlement (DB behaviour tests not yet run)
 - [ ] Customer accounts (sign up / in / out) + saved profile (name, phone) per user
 - [ ] Cart + server-priced checkout, no duplicate orders
 - [ ] Konnect payment (sandbox only) + verified webhook, idempotent

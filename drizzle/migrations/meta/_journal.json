@@ -36,6 +36,13 @@
       "when": 1793232326124,
       "tag": "0004_download_reservation_states_45s",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793232369365,
+      "tag": "0005_revoke_client_writes_trusted_tables",
+      "breakpoints": true
     }
   ]
 }

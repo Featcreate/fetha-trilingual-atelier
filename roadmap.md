@@ -9,3 +9,4 @@
 - [ ] Admin: products (image + file upload), orders, payment status
 - [ ] Order emails + admin resend — blocked: email domain not set up yet
 - [ ] Konnect credentials — blocked: user has no Konnect sandbox account yet
+- [ ] Sub-Batch 1A follow-up: reservation states reserved/finalized/released/expired, 45s expiry, tests

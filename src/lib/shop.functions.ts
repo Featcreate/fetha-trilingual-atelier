@@ -112,27 +112,29 @@ export const getDownloadLink = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ entitlementId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: rows, error } = await supabaseAdmin.rpc("reserve_download", {
-      _user_id: context.userId,
-      _entitlement_id: data.entitlementId,
+    const { issueDownload } = await import("./download-flow");
+    return issueDownload({
+      reserve: async () => {
+        const { data: rows, error } = await supabaseAdmin.rpc("reserve_download", {
+          _user_id: context.userId,
+          _entitlement_id: data.entitlementId,
+        });
+        return error ? null : (rows?.[0] ?? null);
+      },
+      sign: async (path, seconds, fileName) => {
+        const { data: signed, error } = await supabaseAdmin.storage
+          .from("product-files")
+          .createSignedUrl(path, seconds, { download: fileName });
+        return error || !signed ? null : signed.signedUrl;
+      },
+      finalize: async (id) => {
+        const { data: ok, error } = await supabaseAdmin.rpc("finalize_download", { _reservation_id: id });
+        return !error && ok === true;
+      },
+      release: async (id) => {
+        await supabaseAdmin.rpc("release_download", { _reservation_id: id });
+      },
     });
-    const r = rows?.[0];
-    if (error || !r) return { ok: false as const, error: "download_failed" };
-    if (r.outcome !== "new" && r.outcome !== "dedupe") return { ok: false as const, error: r.outcome };
-    const { data: signed, error: signErr } = await supabaseAdmin.storage
-      .from("product-files")
-      .createSignedUrl(r.storage_path!, 300, { download: r.file_name! });
-    if (r.outcome === "dedupe") {
-      if (signErr || !signed) return { ok: false as const, error: "file_missing" };
-      return { ok: true as const, url: signed.signedUrl, counted: false };
-    }
-    if (signErr || !signed) {
-      await supabaseAdmin.rpc("release_download", { _reservation_id: r.reservation_id! });
-      return { ok: false as const, error: "file_missing" };
-    }
-    const { data: finalized } = await supabaseAdmin.rpc("finalize_download", { _reservation_id: r.reservation_id! });
-    if (!finalized) return { ok: false as const, error: "download_failed" };
-    return { ok: true as const, url: signed.signedUrl, counted: true };
   });
 
 /** Admin test simulation: never produces seller ledger entries; blocked unless explicitly enabled and not live. */

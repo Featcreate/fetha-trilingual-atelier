@@ -140,7 +140,7 @@ function AuthPage() {
         )}
         {mode === "signup" && (
           <label htmlFor="accept_terms" className="flex items-start gap-2 text-sm leading-6 text-muted-foreground">
-            <input id="accept_terms" name="accept_terms" type="checkbox" required className="mt-1 size-4 shrink-0 accent-coral" />
+            <input id="accept_terms" name="accept_terms" type="checkbox" aria-required="true" className="mt-1 size-4 shrink-0 accent-coral" />
             <span>{a.acceptTermsPrefix} <Link to="/terms" className="font-semibold text-coral underline underline-offset-2">{a.termsLink}</Link>.</span>
           </label>
         )}

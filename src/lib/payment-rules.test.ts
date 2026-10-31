@@ -30,6 +30,19 @@ describe("Konnect payment decisions", () => {
       decidePaymentOutcome(order, { status: "completed", amount: 25000, orderId: "other" }),
     ).toBe("mismatch");
   });
+  it("rejects a completed payment when the currency is missing or not TND", () => {
+    expect(
+      decidePaymentOutcome(order, { status: "completed", amount: 25000, orderId: "order-1" }),
+    ).toBe("mismatch");
+    expect(
+      decidePaymentOutcome(order, {
+        status: "completed",
+        amount: 25000,
+        orderId: "order-1",
+        token: "USD",
+      }),
+    ).toBe("mismatch");
+  });
   it("treats a repeated notification on a paid order as already paid (no double fulfilment)", () => {
     expect(
       decidePaymentOutcome(

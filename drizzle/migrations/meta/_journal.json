@@ -50,6 +50,13 @@
       "when": 1793404800000,
       "tag": "0006_require_verified_email_for_stores",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793404801000,
+      "tag": "0007_seller_legal_acceptance",
+      "breakpoints": true
     }
   ]
 }

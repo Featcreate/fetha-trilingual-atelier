@@ -37,6 +37,12 @@ export const startCheckout = createServerFn({ method: "POST" })
       .single();
     if (!order) return { ok: false as const, error: "order_failed" };
     if (order.status !== "pending") return { ok: false as const, error: "order_closed", orderId };
+
+    // Fail closed: the legacy Konnect path charges one platform wallet and cannot
+    // guarantee direct-to-seller settlement. Do not create a payment until the
+    // seller's verified provider account and provider-specific adapter are wired.
+    return { ok: false as const, error: "seller_payment_routing_not_ready", orderId };
+
     if (order.konnect_pay_url) return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
 
     const { konnectConfig, konnectInitPayment } = await import("./konnect.server");

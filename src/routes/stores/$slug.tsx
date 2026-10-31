@@ -66,8 +66,17 @@ function StorefrontPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {storeQuery.data.products.map((p) => (
                 <article key={p.id} className="rounded-xl border border-border bg-card p-4">
-                  <div className="mb-3 flex aspect-[4/3] items-center justify-center rounded-lg bg-cream-light text-3xl font-bold text-petrol/50">
-                    AB
+                  <div className="mb-3 flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg bg-cream-light text-3xl font-bold text-petrol/50">
+                    {p.image_path ? (
+                      <img
+                        src={supabase.storage.from("product-images").getPublicUrl(p.image_path).data.publicUrl}
+                        alt={p.name}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      "AB"
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {m[p.product_type as keyof typeof m] ?? p.product_type}

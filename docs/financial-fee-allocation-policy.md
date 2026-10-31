@@ -6,9 +6,9 @@
 
 ## 1. Platform commission
 
-Algorea Bazaar charges a platform commission of **a configurable amount set by the platform's current commission policy**. This commission is calculated and accounted for separately from all third-party fees.
+Algorea Bazaar charges a platform commission of **5% by default, configurable by an authorized platform administrator**. This commission is calculated and accounted for separately from all third-party fees.
 
-The applicable commission must be disclosed clearly to sellers before a sale and reflected in the transaction breakdown. Any future change must be announced before it applies to new transactions.
+The applicable commission must be disclosed clearly to sellers before a sale and reflected in the transaction breakdown. Any future change must be announced before it applies to new transactions. The rate is stored as a transaction snapshot, so a later change never recalculates completed or existing orders.
 
 External provider fees must never be absorbed by the platform or deducted from the platform commission.
 
@@ -32,7 +32,7 @@ The seller is responsible for external fees associated with:
 - transferring seller proceeds to the seller;
 - withdrawing funds from the seller's account.
 
-Seller payouts are planned as **manual weekly transfers**. The seller's sale entitlement is calculated after the platform commission and before the seller's own external transfer/withdrawal fees. Those fees are borne by the seller and must not become a platform expense.
+Seller payouts are planned as **manual weekly transfers**. For Tunisian sellers, the intended payout rail is the platform's iPay referral route, subject to receiving and configuring the platform's actual referral code and confirming iPay's current seller onboarding and payout terms. The seller's sale entitlement is calculated after the platform commission and before the seller's own external transfer/withdrawal fees. Those fees are borne by the seller and must not become a platform expense.
 
 Where a provider deducts a fee from the transfer amount, the seller must be informed of the fee and the expected amount received before the payout is initiated, to the extent the provider exposes that information. Any fee recovery or deduction must comply with provider terms and applicable law.
 

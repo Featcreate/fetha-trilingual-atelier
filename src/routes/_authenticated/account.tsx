@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -117,6 +117,13 @@ function AccountPage() {
           <dd className="font-medium">{new Date(since).toLocaleDateString(locale)}</dd>
         </div>
       </dl>
+
+      <Link
+        to="/seller"
+        className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground hover:bg-primary/90"
+      >
+        {lang === "ar" ? "مساحة البائع" : lang === "en" ? "Seller dashboard" : "Espace vendeur"}
+      </Link>
 
       <h2 className="mt-8 text-lg font-bold">{a.profileTitle}</h2>
       {profile.isPending ? (

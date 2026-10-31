@@ -6,21 +6,26 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   format:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.head_ref }}
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
       - run: bunx prettier --write src/lib/i18n.ts src/routes/_authenticated/admin.tsx src/routes/_authenticated/seller.tsx
-      - run: mkdir -p formatted && cp src/lib/i18n.ts src/routes/_authenticated/admin.tsx src/routes/_authenticated/seller.tsx formatted/
-      - uses: actions/upload-artifact@v4
-        with:
-          name: payout-formatted-files
-          path: formatted/
-          retention-days: 1
+      - name: Commit formatted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/lib/i18n.ts src/routes/_authenticated/admin.tsx src/routes/_authenticated/seller.tsx
+          if ! git diff --cached --quiet; then
+            git commit -m "Format seller payout UI changes"
+            git push origin HEAD:${{ github.head_ref }}
+          fi

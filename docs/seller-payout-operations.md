@@ -29,6 +29,7 @@ Konnect credentials alone do not enable checkout. Server-side activation is fail
 - Live: set `KONNECT_ENV=live` and `KONNECT_LIVE_PAYMENTS_ENABLED=true`.
 - Unknown environment values are rejected. Keep the live switch unset until provider, legal, fee-disclosure, sandbox, and explicit live-launch checks are complete.
 - When activation is off, checkout returns `payments_not_configured` before creating an order, preventing orphaned pending orders.
+- Status verification for already-created Konnect payment references remains available when credentials are present, even if new checkout initiation is paused; this prevents a temporary kill switch from blocking reconciliation of payments already in flight.
 
 ## Weekly operating procedure
 

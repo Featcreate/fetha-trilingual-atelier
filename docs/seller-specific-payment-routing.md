@@ -28,5 +28,5 @@
 
 - This branch does not enable live payments.
 - No API keys, wallet IDs, referral secrets, or seller account identifiers are embedded in source.
-- The existing Konnect checkout path has not been silently redirected to the platform or to a guessed seller wallet.
+- Checkout now fails closed with `seller_payment_routing_not_ready` instead of charging the legacy single platform Konnect wallet. This prevents accidental collection into the wrong account until seller-specific adapters are implemented.
 - Do not apply the migration to Supabase until the migration sequence and the provider onboarding contract have been reviewed.

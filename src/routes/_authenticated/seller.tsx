@@ -36,6 +36,14 @@ const productTypes: ProductType[] = [
   "other",
 ];
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+]);
 
 function slugify(value: string) {
   return value
@@ -247,10 +255,19 @@ function SellerPage() {
     const files = values
       .getAll("digital_files")
       .filter((value): value is File => value instanceof File && value.size > 0);
+    const imageValue = values.get("product_image");
+    const imageFile =
+      imageValue instanceof File && imageValue.size > 0 ? imageValue : null;
     if (!name || !description) return setNotice(m.productRequired);
     if (!price) return setNotice(m.invalidPrice);
-    if (!files.length || files.some((file) => file.size > MAX_FILE_BYTES))
+    if (!files.length || files.some((file) => file.size < 1 || file.size > MAX_FILE_BYTES))
       return setNotice(m.invalidFile);
+    if (
+      imageFile &&
+      (imageFile.size > MAX_IMAGE_BYTES || !ALLOWED_IMAGE_TYPES.has(imageFile.type))
+    ) {
+      return setNotice(m.invalidFile);
+    }
     if (!productTypes.includes(productType)) return setNotice(m.error);
     setBusy(true);
     setNotice("");
@@ -269,6 +286,29 @@ function SellerPage() {
     if (productError || !product) {
       setBusy(false);
       return setNotice(m.error);
+    }
+
+    if (imageFile) {
+      const imagePath = `${store.id}/${product.id}/${crypto.randomUUID()}-${safeFileName(imageFile.name)}`;
+      const { error: imageUploadError } = await supabase.storage
+        .from("product-images")
+        .upload(imagePath, imageFile, {
+          contentType: imageFile.type,
+          upsert: false,
+        });
+      if (imageUploadError) {
+        setBusy(false);
+        return setNotice(m.fileUploadFailed);
+      }
+      const { error: imageSaveError } = await supabase
+        .from("products")
+        .update({ image_path: imagePath })
+        .eq("id", product.id)
+        .eq("store_id", store.id);
+      if (imageSaveError) {
+        setBusy(false);
+        return setNotice(m.fileUploadFailed);
+      }
     }
 
     for (const file of files) {
@@ -538,6 +578,19 @@ function SellerPage() {
                     ))}
                   </select>
                 </div>
+              </div>
+              <div>
+                <label htmlFor="product_image" className="mb-1 block text-sm font-medium">
+                  {m.productImage}
+                </label>
+                <input
+                  id="product_image"
+                  name="product_image"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">{m.imageLimit}</p>
               </div>
               <div>
                 <label htmlFor="digital_files" className="mb-1 block text-sm font-medium">

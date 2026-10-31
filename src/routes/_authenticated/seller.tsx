@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/seller")({
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
 type ProductType = Product["product_type"];
-const productTypes: ProductType[] = ["ebook", "template", "printable", "planner", "course", "software", "audio", "video", "graphics", "other"];
+const productTypes: ProductType[] = ["ebook", "pdf", "template", "educational", "bundle", "software", "app", "printable", "planner", "course", "worksheets", "flashcards", "audio", "video", "graphics", "other"];
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 
 function slugify(value: string) {
@@ -44,6 +44,14 @@ function SellerPage() {
     },
   });
   const store = storeQuery.data;
+  const settingsQuery = useQuery({
+    queryKey: ["platform-commission"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("platform_settings").select("commission_bps").eq("id", true).single();
+      if (error) throw error;
+      return data.commission_bps;
+    },
+  });
 
   const productsQuery = useQuery({
     queryKey: ["seller-products", store?.id],
@@ -85,6 +93,22 @@ function SellerPage() {
     await qc.invalidateQueries({ queryKey: ["seller-store", user.id] });
   }
 
+  async function uploadFile(productId: string, file: File) {
+    const fileName = safeFileName(file.name);
+    const { data: versionRows, error: registerError } = await supabase.rpc("register_file_version", {
+      _product_id: productId, _file_name: fileName, _size_bytes: file.size,
+      _mime_type: file.type || "application/octet-stream", _sha256: "",
+    });
+    const version = Array.isArray(versionRows) ? versionRows[0] : versionRows;
+    if (registerError || !version?.upload_path || !version?.version_id) return false;
+    const { error: uploadError } = await supabase.storage.from("product-files").upload(version.upload_path, file, {
+      contentType: file.type || "application/octet-stream", upsert: false,
+    });
+    if (uploadError) return false;
+    const { error: activateError } = await supabase.rpc("activate_file_version", { _version_id: version.version_id });
+    return !activateError;
+  }
+
   async function addProduct(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!store) return;
@@ -94,10 +118,10 @@ function SellerPage() {
     const description = String(values.get("description") ?? "").trim();
     const price = parseTNDToMillimes(String(values.get("price") ?? ""));
     const productType = String(values.get("product_type") ?? "other") as ProductType;
-    const file = values.get("digital_file");
+    const files = values.getAll("digital_files").filter((value): value is File => value instanceof File && value.size > 0);
     if (!name || !description) return setNotice(m.productRequired);
     if (!price) return setNotice(m.invalidPrice);
-    if (!(file instanceof File) || file.size < 1 || file.size > MAX_FILE_BYTES) return setNotice(m.invalidFile);
+    if (!files.length || files.some(file => file.size > MAX_FILE_BYTES)) return setNotice(m.invalidFile);
     if (!productTypes.includes(productType)) return setNotice(m.error);
     setBusy(true); setNotice("");
     const { data: product, error: productError } = await supabase.from("products").insert({
@@ -105,21 +129,10 @@ function SellerPage() {
     }).select("id").single();
     if (productError || !product) { setBusy(false); return setNotice(m.error); }
 
-    const fileName = safeFileName(file.name);
-    const { data: versionRows, error: registerError } = await supabase.rpc("register_file_version", {
-      _product_id: product.id, _file_name: fileName, _size_bytes: file.size,
-      _mime_type: file.type || "application/octet-stream", _sha256: "",
-    });
-    const version = Array.isArray(versionRows) ? versionRows[0] : versionRows;
-    if (registerError || !version?.upload_path || !version?.version_id) {
-      setBusy(false); return setNotice(m.fileUploadFailed);
+    for (const file of files) {
+      const uploaded = await uploadFile(product.id, file);
+      if (!uploaded) { setBusy(false); return setNotice(m.fileUploadFailed); }
     }
-    const { error: uploadError } = await supabase.storage.from("product-files").upload(version.upload_path, file, {
-      contentType: file.type || "application/octet-stream", upsert: false,
-    });
-    if (uploadError) { setBusy(false); return setNotice(m.fileUploadFailed); }
-    const { error: activateError } = await supabase.rpc("activate_file_version", { _version_id: version.version_id });
-    if (activateError) { setBusy(false); return setNotice(m.fileUploadFailed); }
     const { error: publishError } = await supabase.from("products").update({ is_active: true }).eq("id", product.id).eq("store_id", store.id);
     setBusy(false);
     if (publishError) return setNotice(m.fileUploadFailed);
@@ -142,8 +155,23 @@ function SellerPage() {
     await qc.invalidateQueries({ queryKey: ["seller-store", user.id] });
   }
 
+  async function addFilesToProduct(product: Product, files: File[]) {
+    if (!store || !files.length) return;
+    if (files.some(file => file.size < 1 || file.size > MAX_FILE_BYTES)) return setNotice(m.invalidFile);
+    setBusy(true); setNotice("");
+    for (const file of files) {
+      const uploaded = await uploadFile(product.id, file);
+      if (!uploaded) { setBusy(false); return setNotice(m.fileUploadFailed); }
+    }
+    setBusy(false); setNotice(m.productUpdated);
+  }
+
   async function toggleProduct(product: Product) {
     if (!store) return;
+    if (!product.is_active) {
+      const { data: versions, error: versionsError } = await supabase.from("product_file_versions").select("id").eq("product_id", product.id).eq("status", "active").limit(1);
+      if (versionsError || !versions?.length) return setNotice(m.fileUploadFailed);
+    }
     const { error } = await supabase.from("products").update({ is_active: !product.is_active }).eq("id", product.id).eq("store_id", store.id);
     if (error) return setNotice(m.error);
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
@@ -201,6 +229,10 @@ function SellerPage() {
             {editingStore && <form onSubmit={saveStore} className="mt-4 flex flex-wrap items-end gap-3"><div className="min-w-[220px] flex-1"><Field id="store_name_edit" name="store_name" label={m.storeName} defaultValue={store.name} required maxLength={120} /></div><button disabled={busy} className="rounded-full bg-accent px-4 py-2.5 text-sm font-semibold disabled:opacity-60">{m.save}</button><button type="button" onClick={() => setEditingStore(false)} className="rounded-full border border-border px-4 py-2.5 text-sm">{m.cancel}</button></form>}
           </section>
 
+          <section className="rounded-xl border border-border bg-secondary/40 p-4 text-sm leading-7">
+            {settingsQuery.isPending ? m.loading : settingsQuery.isError ? m.error : settingsQuery.data === null ? m.commissionUnset : m.commissionDisclosure.replace("{value}", `${(settingsQuery.data / 100).toFixed(2)}%`)}
+          </section>
+
           <section className="space-y-4">
             <h2 className="text-xl font-bold">{m.addProduct}</h2>
             <form onSubmit={addProduct} className="grid gap-4 rounded-xl border border-border p-5">
@@ -210,7 +242,7 @@ function SellerPage() {
                 <Field id="price" label={m.price} required inputMode="decimal" placeholder="12.500" />
                 <div><label htmlFor="product_type" className="mb-1 block text-sm font-medium">{m.productType}</label><select id="product_type" name="product_type" className="w-full rounded-lg border border-input bg-background px-3 py-2">{productTypes.map(type => <option key={type} value={type}>{m[type]}</option>)}</select></div>
               </div>
-              <div><label htmlFor="digital_file" className="mb-1 block text-sm font-medium">{m.digitalFile}</label><input id="digital_file" name="digital_file" type="file" required className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /><p className="mt-1 text-xs text-muted-foreground">{m.fileLimit}</p></div>
+              <div><label htmlFor="digital_file" className="mb-1 block text-sm font-medium">{m.digitalFile}</label><input id="digital_files" name="digital_files" type="file" multiple required className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /><p className="mt-1 text-xs text-muted-foreground">{m.fileLimit}</p></div>
               <SubmitButton busy={busy} label={m.upload} busyLabel={m.publishing} />
             </form>
           </section>
@@ -231,7 +263,7 @@ function SellerPage() {
                     ) : (
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold">{product.name}</h3><span className="rounded-full bg-secondary px-2 py-1 text-xs">{product.is_active ? m.active : m.draft}</span></div><p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{product.description}</p><p className="mt-2 text-sm font-bold">{formatTND(product.price_millimes)}</p></div>
-                        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setEditing(product.id)} className="rounded-full border border-border px-3 py-2 text-xs font-semibold">{m.save}</button><button type="button" onClick={() => toggleProduct(product)} className="rounded-full bg-secondary px-3 py-2 text-xs font-semibold">{product.is_active ? m.pause : m.publish}</button></div>
+                        <div className="flex flex-wrap gap-2"><label className="cursor-pointer rounded-full border border-border px-3 py-2 text-xs font-semibold">{m.addFiles}<input type="file" multiple className="sr-only" disabled={busy} onChange={e => { const files = Array.from(e.currentTarget.files ?? []); e.currentTarget.value = ""; void addFilesToProduct(product, files); }} /></label><button type="button" onClick={() => setEditing(product.id)} className="rounded-full border border-border px-3 py-2 text-xs font-semibold">{m.save}</button><button type="button" onClick={() => toggleProduct(product)} className="rounded-full bg-secondary px-3 py-2 text-xs font-semibold">{product.is_active ? m.pause : m.publish}</button></div>
                       </div>
                     )}
                   </article>

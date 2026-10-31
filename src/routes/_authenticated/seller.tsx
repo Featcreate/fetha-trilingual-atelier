@@ -144,7 +144,7 @@ function SellerDashboard() {
         .select("id, amount_millimes, created_at, entry_type")
         .eq("seller_id", user.id)
         .order("created_at", { ascending: false })
-        .limit(10);
+        ;
       if (error) throw error;
       return data ?? [];
     },
@@ -246,7 +246,7 @@ function SellerDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {ledgerQuery.data.map((entry) => (
+                    {ledgerQuery.data.slice(0, 10).map((entry) => (
                       <tr key={entry.id} className="border-t border-border">
                         <td className="p-3">{date(entry.created_at)}</td>
                         <td className="p-3">{entry.entry_type}</td>

@@ -149,7 +149,7 @@ function SellerPage() {
     await qc.invalidateQueries({ queryKey: ["seller-store", user.id] });
   }
 
-  async function uploadFile(productId: string, file: File) {
+  async function uploadFile(productId: string, file: File): Promise<"ok" | "quota" | "email" | "error"> {
     const fileName = safeFileName(file.name);
     const { data: versionRows, error: registerError } = await supabase.rpc(
       "register_file_version",
@@ -162,18 +162,23 @@ function SellerPage() {
       },
     );
     const version = Array.isArray(versionRows) ? versionRows[0] : versionRows;
-    if (registerError || !version?.upload_path || !version?.version_id) return false;
+    if (registerError) {
+      if (registerError.message.includes("storage_quota_exceeded")) return "quota";
+      if (registerError.message.includes("email_verification_required")) return "email";
+      return "error";
+    }
+    if (!version?.upload_path || !version?.version_id) return "error";
     const { error: uploadError } = await supabase.storage
       .from("product-files")
       .upload(version.upload_path, file, {
         contentType: file.type || "application/octet-stream",
         upsert: false,
       });
-    if (uploadError) return false;
+    if (uploadError) return "error";
     const { error: activateError } = await supabase.rpc("activate_file_version", {
       _version_id: version.version_id,
     });
-    return !activateError;
+    return activateError ? "error" : "ok";
   }
 
   async function addProduct(e: FormEvent<HTMLFormElement>) {
@@ -214,9 +219,15 @@ function SellerPage() {
 
     for (const file of files) {
       const uploaded = await uploadFile(product.id, file);
-      if (!uploaded) {
+      if (uploaded !== "ok") {
         setBusy(false);
-        return setNotice(m.fileUploadFailed);
+        return setNotice(
+          uploaded === "quota"
+            ? m.storageQuotaExceeded
+            : uploaded === "email"
+              ? m.emailVerificationRequired
+              : m.fileUploadFailed,
+        );
       }
     }
     const { error: publishError } = await supabase
@@ -258,9 +269,15 @@ function SellerPage() {
     setNotice("");
     for (const file of files) {
       const uploaded = await uploadFile(product.id, file);
-      if (!uploaded) {
+      if (uploaded !== "ok") {
         setBusy(false);
-        return setNotice(m.fileUploadFailed);
+        return setNotice(
+          uploaded === "quota"
+            ? m.storageQuotaExceeded
+            : uploaded === "email"
+              ? m.emailVerificationRequired
+              : m.fileUploadFailed,
+        );
       }
     }
     setBusy(false);

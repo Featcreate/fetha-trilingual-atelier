@@ -22,6 +22,7 @@ const text = {
     payout:"Réception des revenus", weekly:"Virement manuel hebdomadaire", payoutNote:"Algorea retient sa commission de 5 %. Le montant restant vous est versé manuellement chaque semaine. Les frais externes éventuels sont distincts.",
     netSales:"Ventes nettes enregistrées", salesNote:"Montants du registre vendeur, pas un solde immédiatement disponible.", recentSales:"Dernières ventes",
     noProducts:"Aucun produit pour le moment.", noSales:"Aucune vente enregistrée.", product:"Produit", status:"Statut", date:"Date",
+    payoutHistory:"Historique des versements", payoutPending:"En attente", payoutProcessing:"En cours", payoutPaid:"Payé", payoutFailed:"Échec", payoutCancelled:"Annulé", transferReference:"Référence de transfert", payoutDate:"Date du versement",
     currency:"TND", fileTooLarge:"Le fichier dépasse 50 Mo.", chooseFile:"Choisissez un fichier.", onlyManual:"Le versement automatique n'est pas activé.",
   },
   ar: {
@@ -35,6 +36,7 @@ const text = {
     payout:"استلام المستحقات", weekly:"تحويل يدوي أسبوعي", payoutNote:"تقتطع Algorea عمولتها 5%، ثم تحوّل إليك المنصة المبلغ المتبقي يدوياً كل أسبوع. أي رسوم خارجية منفصلة.",
     netSales:"صافي المبيعات المسجّل", salesNote:"المبالغ المسجلة في دفتر البائع، وليست رصيداً متاحاً فوراً.", recentSales:"آخر المبيعات",
     noProducts:"لا توجد منتجات حالياً.", noSales:"لا توجد مبيعات مسجلة.", product:"المنتج", status:"الحالة", date:"التاريخ",
+    payoutHistory:"سجل المستحقات", payoutPending:"قيد الانتظار", payoutProcessing:"قيد المعالجة", payoutPaid:"تم الدفع", payoutFailed:"تعذّر الدفع", payoutCancelled:"ملغى", transferReference:"مرجع التحويل", payoutDate:"تاريخ التحويل",
     currency:"د.ت", fileTooLarge:"حجم الملف يتجاوز 50 ميغابايت.", chooseFile:"اختر ملفاً.", onlyManual:"التحويل الآلي غير مفعّل.",
   },
   en: {
@@ -48,6 +50,7 @@ const text = {
     payout:"Receive earnings", weekly:"Weekly manual transfer", payoutNote:"Algorea retains its 5% commission. The remaining amount is transferred manually each week. Any external fees are separate.",
     netSales:"Recorded net sales", salesNote:"Seller ledger amounts, not an immediately withdrawable balance.", recentSales:"Recent sales",
     noProducts:"No products yet.", noSales:"No sales recorded.", product:"Product", status:"Status", date:"Date",
+    payoutHistory:"Payout history", payoutPending:"Pending", payoutProcessing:"Processing", payoutPaid:"Paid", payoutFailed:"Failed", payoutCancelled:"Cancelled", transferReference:"Transfer reference", payoutDate:"Payout date",
     currency:"TND", fileTooLarge:"File exceeds 50 MB.", chooseFile:"Choose a file.", onlyManual:"Automatic payouts are not enabled.",
   },
 } as const;
@@ -108,6 +111,15 @@ function SellerDashboard() {
       const {data,error}=await (supabase as any).from("seller_payout_preferences").select("id,method,konnect_wallet_id")
         .eq("store_id",store!.id).maybeSingle();
       if(error) throw error; return data;
+    },
+  });
+  const payoutHistoryQuery = useQuery({
+    queryKey:["seller-payout-history",store?.id],enabled:Boolean(store?.id),
+    queryFn:async()=>{
+      const {data,error}=await (supabase as any).from("seller_payouts")
+        .select("id,status,seller_amount_millimes,currency,created_at,paid_at,provider_transfer_ref,scheduled_for")
+        .eq("store_id",store!.id).order("created_at",{ascending:false}).limit(20);
+      if(error) throw error; return data??[];
     },
   });
 
@@ -216,6 +228,21 @@ function SellerDashboard() {
           <h2 className="text-lg font-bold">{t.payout}</h2><p className="mt-2 font-semibold">{t.weekly}</p><p className="mt-2 text-sm text-muted-foreground">{t.payoutNote}</p>
           <p className="mt-2 text-xs text-muted-foreground">{t.onlyManual}</p><button type="button" onClick={savePayoutPreference} disabled={busy} className="mt-4 rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">{t.save}</button>
           {preferenceQuery.data&&<p className="mt-2 text-xs text-muted-foreground">Preference: {preferenceQuery.data.method}</p>}
+        </section>
+        <section className="mt-6 rounded-2xl border border-border bg-card p-5">
+          <h2 className="mb-3 text-lg font-bold">{t.payoutHistory}</h2>
+          {payoutHistoryQuery.isPending?<p className="text-sm text-muted-foreground">{t.loading}</p>
+            :payoutHistoryQuery.isError?<p role="alert" className="text-sm text-destructive">{t.error}</p>
+            :!payoutHistoryQuery.data?.length?<p className="rounded-xl bg-secondary p-4 text-sm">{t.noSales}</p>
+            :<div className="overflow-x-auto rounded-xl border border-border"><table className="w-full min-w-[560px] text-sm">
+              <thead className="bg-secondary"><tr><th className="p-3 text-start">{t.date}</th><th className="p-3 text-start">{t.status}</th><th className="p-3 text-end">{t.payout}</th><th className="p-3 text-start">{t.transferReference}</th></tr></thead>
+              <tbody>{payoutHistoryQuery.data.map((p:any)=><tr key={p.id} className="border-t border-border">
+                <td className="p-3">{date(p.paid_at??p.created_at)}</td>
+                <td className="p-3">{p.status==="paid"?t.payoutPaid:p.status==="processing"?t.payoutProcessing:p.status==="failed"?t.payoutFailed:p.status==="cancelled"?t.payoutCancelled:t.payoutPending}</td>
+                <td className="p-3 text-end">{money(p.seller_amount_millimes)}</td>
+                <td className="p-3" dir="ltr">{p.provider_transfer_ref??"—"}</td>
+              </tr>)}</tbody>
+            </table></div>}
         </section>
         <section className="mt-6"><h2 className="mb-3 text-lg font-bold">{t.recent}</h2>
           {productsQuery.isPending?<p>{t.loading}</p>:!productsQuery.data?.length?<p className="rounded-xl bg-secondary p-4 text-sm">{t.noProducts}</p>:<div className="overflow-x-auto rounded-xl border border-border"><table className="w-full min-w-[480px] text-sm"><thead className="bg-secondary"><tr><th className="p-3 text-start">{t.product}</th><th className="p-3 text-start">{t.type}</th><th className="p-3 text-start">{t.price}</th><th className="p-3 text-start">{t.status}</th></tr></thead><tbody>{productsQuery.data.slice(0,10).map(p=><tr key={p.id} className="border-t border-border"><td className="p-3">{p.name}</td><td className="p-3">{p.product_type}</td><td className="p-3">{money(p.price_millimes)}</td><td className="p-3">{p.is_active?t.listed:t.draft}</td></tr>)}</tbody></table></div>}

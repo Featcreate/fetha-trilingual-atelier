@@ -21,6 +21,15 @@ Store creation and product listings remain free for sellers. No seller registrat
 - The seller's amount is the full amount remaining after the platform commission. External provider/bank transfer fees are separate and must be disclosed to the party charged; they are not silently deducted from the platform commission.
 - Live checkout, live payment collection, automatic payouts, and production deployment remain separate activation steps.
 
+## Payment activation safety
+
+Konnect credentials alone do not enable checkout. Server-side activation is fail-closed and requires one explicit environment switch for the selected mode:
+
+- Sandbox: set `KONNECT_ENV=sandbox` (or leave it unset) and `KONNECT_SANDBOX_PAYMENTS_ENABLED=true`.
+- Live: set `KONNECT_ENV=live` and `KONNECT_LIVE_PAYMENTS_ENABLED=true`.
+- Unknown environment values are rejected. Keep the live switch unset until provider, legal, fee-disclosure, sandbox, and explicit live-launch checks are complete.
+- When activation is off, checkout returns `payments_not_configured` before creating an order, preventing orphaned pending orders.
+
 ## Weekly operating procedure
 
 1. In the administrator dashboard, select the seller's store and prepare a payout batch.

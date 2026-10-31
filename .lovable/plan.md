@@ -66,3 +66,17 @@
 - Signup acceptance is validated by a database trigger and recorded with a server-generated timestamp. The database migration has not been run, so this behavior is not active in the deployed Supabase project.
 - Commission is unset by the migration until an administrator configures it; this intentionally blocks new orders. The admin settings UI is not yet built.
 - No live payment provider, deployment, or production database was changed. Automated tests/build have not yet been run against this branch.
+
+
+## 10. Marketplace interface implementation — 2026-10-31
+The following UI work is now present on `configurable-commission-and-terms-consent`:
+- Public searchable catalogue at `/catalog`, product detail pages at `/products/:id`, and public store pages at `/stores/:slug`.
+- Seller workspace at `/seller`: free store creation, store-name editing, product creation/editing, publish/pause controls, multiple private product-file uploads, and seller order/earnings views.
+- Buyer order history at `/orders` with the existing secure download orchestration and entitlement limits.
+- Homepage navigation now points to the catalogue and seller workspace. Removed the previous static product preview images; the homepage uses product-type categories instead.
+- Expanded product types (PDF, educational resources, bundles, apps, worksheets, flashcards, and the existing types) through additive migration `0008`.
+- Added seller-scoped read access to the seller's own order lines and order status through additive migration `0007`; no buyer contact data is exposed in the seller UI.
+- Current product-file upload cap remains 50 MB per file, with multiple files supported. Files remain private. No physical products or shipping workflows are introduced.
+- Storefront prices currently display TND because the existing order schema and money helpers are TND-based. Multi-currency pricing and international payout support remain future work.
+- The product-detail page intentionally does not offer checkout while live payments are disabled and commission remains unconfigured.
+- Migrations `0007` and `0008` are committed but not applied to Supabase. The full branch has not yet been built or tested; run `bun run lint`, `bun run test`, and `bun run build` before merge. Apply migrations only to a disposable clone first.

@@ -99,6 +99,13 @@
       "when": 1793468400000,
       "tag": "0013_storage_bucket_size_limits",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793469000000,
+      "tag": "0014_public_product_images",
+      "breakpoints": true
     }
   ]
 }

@@ -131,6 +131,35 @@ function SellerPage() {
     },
   });
 
+  const payoutPreferenceQuery = useQuery({
+    queryKey: ["seller-payout-preference", store?.id],
+    enabled: !!store?.id,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("seller_payout_preferences")
+        .select("id,method,konnect_wallet_id")
+        .eq("store_id", store!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const payoutHistoryQuery = useQuery({
+    queryKey: ["seller-payout-history", store?.id],
+    enabled: !!store?.id,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("seller_payouts")
+        .select("id,status,seller_amount_millimes,currency,created_at,paid_at,provider_transfer_ref")
+        .eq("store_id", store!.id)
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   async function createStore(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -154,6 +183,19 @@ function SellerPage() {
       );
     setNotice(m.storeCreated);
     await qc.invalidateQueries({ queryKey: ["seller-store", user.id] });
+  }
+
+  async function savePayoutPreference() {
+    if (!store) return;
+    setBusy(true);
+    setNotice("");
+    const { error } = await (supabase as any)
+      .from("seller_payout_preferences")
+      .upsert({ store_id: store.id, method: "weekly_manual" }, { onConflict: "store_id" });
+    setBusy(false);
+    if (error) return setNotice(m.error);
+    setNotice(m.productUpdated);
+    await qc.invalidateQueries({ queryKey: ["seller-payout-preference", store.id] });
   }
 
   async function uploadFile(
@@ -621,6 +663,52 @@ function SellerPage() {
                 ))}
               </div>
             )}
+          </section>
+
+          <section className="space-y-4 rounded-xl border border-border p-5">
+            <div>
+              <h2 className="text-xl font-bold">{m.payoutMethod}</h2>
+              <p className="mt-2 font-semibold">{m.weeklyManual}</p>
+              <p className="mt-2 text-sm leading-7 text-muted-foreground">{m.payoutHelp}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void savePayoutPreference()}
+              disabled={busy}
+              className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50"
+            >
+              {m.save}
+            </button>
+            <p className="text-xs text-muted-foreground">
+              {payoutPreferenceQuery.data?.method ?? "weekly_manual"}
+            </p>
+            <div className="border-t border-border pt-4">
+              <h3 className="font-semibold">{m.payoutHistory}</h3>
+              {payoutHistoryQuery.isPending ? (
+                <p className="mt-2 text-sm">{m.loading}</p>
+              ) : payoutHistoryQuery.isError ? (
+                <p role="alert" className="mt-2 text-sm text-destructive">{m.error}</p>
+              ) : !payoutHistoryQuery.data?.length ? (
+                <p className="mt-2 rounded-lg bg-secondary p-3 text-sm">{m.noPayouts}</p>
+              ) : (
+                <div className="mt-3 space-y-2">
+                  {payoutHistoryQuery.data.map((p: any) => (
+                    <article key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-secondary/60 p-3 text-sm">
+                      <div>
+                        <p className="font-medium">
+                          {p.status === "paid" ? m.payoutPaid : p.status === "processing" ? m.payoutProcessing : p.status === "failed" ? m.payoutFailed : p.status === "cancelled" ? m.payoutCancelled : m.payoutPending}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(p.paid_at ?? p.created_at).toLocaleDateString(locale)}
+                        </p>
+                        {p.provider_transfer_ref && <p className="text-xs text-muted-foreground" dir="ltr">{m.transferReference}: {p.provider_transfer_ref}</p>}
+                      </div>
+                      <strong>{formatTND(p.seller_amount_millimes)}</strong>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
 
           <section className="space-y-4">

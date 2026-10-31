@@ -18,9 +18,17 @@ This document records implementation boundaries for the current GitHub work bran
 5. Product publication must remain disabled until the server-side rules require at least one active downloadable file and verify all other publication requirements. Do not set `products.is_active = true` from the browser without those guarantees.
 6. Current database product-type constraint does not yet include every planned marketplace type (for example `pdf`, `educational`, `bundle`, and `app`). Do not offer values rejected by the database. Expand the constraint only through a separately reviewed migration after database reconciliation.
 
+## Confirmed seller experience requirements
+
+- Registration asks for first and last name, email, and password only; no phone, commercial registration, identity document, or other administrative document is required to open a store.
+- Sellers must confirm their email and separately accept the Privacy Policy and Seller Terms.
+- Payout onboarding is country-specific: Tunisia → platform Konnect referral link; all other countries → platform iPay registration link. Exact URLs are not yet available, so do not show placeholders or fabricated links.
+- At payout time, sellers choose from methods they previously configured and that are actually eligible. Weekly manual transfer remains the default until providers confirm direct transfers.
+- Seller dashboard scope: products, orders, earnings, payout history/settings, storefront preview, store settings, and support.
+
 ## Database reconciliation — blocking
 
-- Repository migration journal contains six migration entries.
+- Repository migration journal contains eight migration entries (0000–0007).
 - The previously inspected live migration table returned seven rows; the seventh row has not yet been identified.
 - Repository `supabase/config.toml` points to project ref `vjqeuvvnavsdjzdqfyrs`; a separately inspected Supabase project used ref `iblfizhtvzfnfuntnazk`.
 - Confirm the intended Supabase project and reconcile the exact migration history before applying any migration.
@@ -30,5 +38,12 @@ This document records implementation boundaries for the current GitHub work bran
 
 - Live payments remain disabled.
 - No payment provider integration or payout automation is authorized by this readiness work.
+- Seller registration asks only for first and last name, email, and password. Phone number and identity/business documents are not prerequisites to opening a store.
+- Email confirmation and separate acceptance of the Privacy Policy and Seller Terms remain required.
+- Payout onboarding routes are specified but not implemented: sellers in Tunisia see the platform's Konnect referral-registration link; sellers elsewhere see the platform's iPay account-registration link. The exact URLs must be supplied and verified before configuration. Do not label the UI "Code parrainage".
+- At withdrawal, sellers choose only among payout methods they previously configured and that are actually eligible. Record the selected method for each payout.
+- Weekly manual seller transfers remain the default until providers confirm direct seller-wallet transfers. The 5% platform commission is separate from external provider fees.
+- Do not block store creation or product listing while payout onboarding is incomplete. Do not enable real payouts until provider support, country coverage, and transfer mechanics are verified.
+- Seller dashboard scope: products, orders, earnings, payout history/settings, storefront preview, store settings, and support. Mark payment-dependent features unavailable until live payments are approved.
 - The platform's planned commission remains 5%; seller registration, store creation, and product listing must remain free.
 - Do not merge this branch or deploy production changes without a separate review.

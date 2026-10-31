@@ -39,6 +39,8 @@ export const dict = {
       errCredentials: "E-mail ou mot de passe incorrect.", errUnconfirmed: "Confirmez d'abord votre e-mail.",
       errExists: "Un compte existe déjà avec cet e-mail.", errWeak: "Mot de passe trop faible ou compromis, choisissez-en un autre.",
       errRate: "Trop de tentatives. Réessayez plus tard.", errGeneric: "Une erreur est survenue. Réessayez.",
+      acceptTermsPrefix: "J’ai lu et j’accepte les", termsLink: "conditions d’utilisation",
+      errTerms: "Veuillez accepter les conditions d’utilisation pour créer un compte.",
     },
   },
   ar: {
@@ -72,6 +74,8 @@ export const dict = {
       errCredentials: "البريد الإلكتروني أو كلمة المرور غير صحيحة.", errUnconfirmed: "يرجى تأكيد بريدك الإلكتروني أولاً.",
       errExists: "يوجد حساب بهذا البريد الإلكتروني.", errWeak: "كلمة المرور ضعيفة أو مسرّبة، اختر كلمة أخرى.",
       errRate: "محاولات كثيرة. حاول لاحقاً.", errGeneric: "حدث خطأ. حاول مرة أخرى.",
+      acceptTermsPrefix: "قرأت وأوافق على", termsLink: "شروط الاستخدام",
+      errTerms: "يرجى الموافقة على شروط الاستخدام لإنشاء الحساب.",
     },
   },
   en: {
@@ -105,6 +109,8 @@ export const dict = {
       errCredentials: "Incorrect email or password.", errUnconfirmed: "Please confirm your email first.",
       errExists: "An account already exists with this email.", errWeak: "Password is too weak or leaked, choose another.",
       errRate: "Too many attempts. Try again later.", errGeneric: "Something went wrong. Please try again.",
+      acceptTermsPrefix: "I have read and accept the", termsLink: "Terms of Use",
+      errTerms: "Please accept the Terms of Use to create an account.",
     },
   },
 } as const;

@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION public.admin_set_commission_bps(_bps integer) RETURNS
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
   IF NOT public.has_role(auth.uid(), 'admin') THEN RAISE EXCEPTION 'forbidden'; END IF;
-  IF _bps IS NOT NULL AND (_bps < 0 OR _bps > 10000) THEN
+  IF _bps IS NULL OR _bps < 0 OR _bps > 10000 THEN
     RAISE EXCEPTION 'invalid_commission';
   END IF;
   UPDATE public.platform_settings

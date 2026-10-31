@@ -121,6 +121,9 @@ export const dict = {
       weeklyManual: "Virement manuel hebdomadaire",
       payoutHelp:
         "La commission de la plateforme est déduite avant le calcul de votre montant. Le solde vous est transféré manuellement chaque semaine. Les frais externes éventuels restent distincts.",
+      konnectRegister: "S’inscrire sur Konnect via le lien de la plateforme",
+      konnectEligibility:
+        "Ce lien est proposé à tous les vendeurs, quel que soit leur pays ou leur lieu de résidence. Konnect vérifie directement l’identité, le téléphone et le moyen de réception du vendeur, puis décide de son éligibilité. Le lien ne garantit pas l’acceptation et n’active pas les virements automatiques.",
       payoutHistory: "Historique des versements",
       payoutStatus: "Statut du versement",
       transferReference: "Référence du virement",
@@ -342,6 +345,9 @@ export const dict = {
       weeklyManual: "تحويل يدوي أسبوعي",
       payoutHelp:
         "تُخصم عمولة المنصة قبل احتساب مستحقاتك. ثم يُحوّل إليك المبلغ المتبقي يدوياً كل أسبوع. الرسوم الخارجية المحتملة منفصلة.",
+      konnectRegister: "التسجيل في Konnect عبر رابط المنصة",
+      konnectEligibility:
+        "الرابط متاح لجميع البائعين مهما كانت بلدانهم أو أماكن إقامتهم. تتولى Konnect مباشرة التحقق من هوية البائع ورقم هاتفه ووسيلة استلام أمواله وتحديد أهليته. لا يضمن الرابط قبول الحساب ولا يفعّل التحويلات التلقائية.",
       payoutHistory: "سجل التحويلات",
       payoutStatus: "حالة التحويل",
       transferReference: "مرجع التحويل",
@@ -562,6 +568,9 @@ export const dict = {
       weeklyManual: "Weekly manual transfer",
       payoutHelp:
         "The platform commission is deducted before your amount is calculated. The remaining amount is transferred manually each week. Any external fees are separate.",
+      konnectRegister: "Register with Konnect using the platform link",
+      konnectEligibility:
+        "This link is available to all sellers, regardless of country or residence. Konnect independently verifies each seller’s identity, phone number and receiving method, and decides eligibility. The link does not guarantee acceptance or enable automatic payouts.",
       payoutHistory: "Payout history",
       payoutStatus: "Payout status",
       transferReference: "Transfer reference",

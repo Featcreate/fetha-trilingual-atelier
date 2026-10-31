@@ -90,6 +90,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/products'
     | '/auth'
     | '/reset-password'
     | '/account'
@@ -97,6 +98,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/products'
     | '/_authenticated'
     | '/auth'
     | '/reset-password'

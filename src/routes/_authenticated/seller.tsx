@@ -16,7 +16,7 @@ const text = {
     store:"Ma boutique", createStore:"Créer ma boutique", storeName:"Nom de la boutique", slug:"Adresse de la boutique",
     create:"Créer gratuitement", noStore:"Vous n'avez pas encore de boutique.", emailRequired:"Confirmez votre adresse e-mail avant de créer votre boutique.",
     products:"Produits", addProduct:"Ajouter un produit", name:"Nom du produit", description:"Description", type:"Type",
-    price:"Prix (TND)", file:"Fichier numérique (50 Mo maximum)", save:"Enregistrer le produit", upload:"Téléverser",
+    price:"Prix (TND)", file:"Fichier numérique (50 Mo maximum)", fileHint:"Formats numériques courants (PDF, ZIP, images, etc.). 50 Mo maximum par fichier.", save:"Enregistrer le produit", upload:"Téléverser",
     loading:"Chargement…", error:"Une erreur est survenue. Vérifiez les champs et réessayez.", success:"Enregistré avec succès.",
     active:"Active", suspended:"Suspendue", listed:"Publié", draft:"Brouillon", recent:"Produits récents",
     payout:"Réception des revenus", weekly:"Virement manuel hebdomadaire", payoutNote:"Algorea retient sa commission de 5 %. Le montant restant vous est versé manuellement chaque semaine. Les frais externes éventuels sont distincts.",
@@ -29,7 +29,7 @@ const text = {
     store:"متجري", createStore:"إنشاء متجري", storeName:"اسم المتجر", slug:"رابط المتجر",
     create:"إنشاء مجاني", noStore:"ليس لديك متجر بعد.", emailRequired:"يرجى تأكيد بريدك الإلكتروني قبل إنشاء المتجر.",
     products:"المنتجات", addProduct:"إضافة منتج", name:"اسم المنتج", description:"الوصف", type:"النوع",
-    price:"السعر (د.ت)", file:"الملف الرقمي (50 ميغابايت كحد أقصى)", save:"حفظ المنتج", upload:"رفع",
+    price:"السعر (د.ت)", file:"الملف الرقمي (50 ميغابايت كحد أقصى)", fileHint:"صيغ رقمية شائعة مثل PDF وZIP والصور. الحد الأقصى 50 ميغابايت لكل ملف.", save:"حفظ المنتج", upload:"رفع",
     loading:"جارٍ التحميل…", error:"حدث خطأ. تحقق من البيانات وحاول مجدداً.", success:"تم الحفظ بنجاح.",
     active:"نشط", suspended:"معلّق", listed:"منشور", draft:"مسودة", recent:"أحدث المنتجات",
     payout:"استلام المستحقات", weekly:"تحويل يدوي أسبوعي", payoutNote:"تقتطع Algorea عمولتها 5%، ثم تحوّل إليك المنصة المبلغ المتبقي يدوياً كل أسبوع. أي رسوم خارجية منفصلة.",
@@ -42,7 +42,7 @@ const text = {
     store:"My store", createStore:"Create my store", storeName:"Store name", slug:"Store address",
     create:"Create for free", noStore:"You do not have a store yet.", emailRequired:"Confirm your email address before creating a store.",
     products:"Products", addProduct:"Add a product", name:"Product name", description:"Description", type:"Type",
-    price:"Price (TND)", file:"Digital file (50 MB maximum)", save:"Save product", upload:"Upload",
+    price:"Price (TND)", file:"Digital file (50 MB maximum)", fileHint:"Common digital formats (PDF, ZIP, images, etc.). Maximum 50 MB per file.", save:"Save product", upload:"Upload",
     loading:"Loading…", error:"Something went wrong. Check the fields and try again.", success:"Saved successfully.",
     active:"Active", suspended:"Suspended", listed:"Published", draft:"Draft", recent:"Recent products",
     payout:"Receive earnings", weekly:"Weekly manual transfer", payoutNote:"Algorea retains its 5% commission. The remaining amount is transferred manually each week. Any external fees are separate.",
@@ -206,7 +206,7 @@ function SellerDashboard() {
               <label className="grid gap-1 text-sm font-medium">{t.price}<input type="number" min="0.001" step="0.001" value={price} onChange={e=>setPrice(e.target.value)} required className="rounded-xl border border-border bg-background px-3 py-3"/></label>
             </div>
             <label className="grid gap-1 text-sm font-medium">{t.file}<input ref={fileRef} type="file" multiple required className="rounded-xl border border-border bg-background px-3 py-3" /></label>
-            <p className="text-xs text-muted-foreground">ZIP, PDF, images and common digital formats. Maximum 50 MB per file.</p>
+            <p className="text-xs text-muted-foreground">{t.fileHint}</p>
             {formError&&<p role="alert" className="text-sm text-destructive">{formError}</p>}
             {notice&&<p role="status" className="text-sm text-green-700">{notice}</p>}
             <button disabled={busy} className="rounded-full bg-primary px-5 py-3 font-semibold text-primary-foreground disabled:opacity-50">{busy?t.loading:t.save}</button>

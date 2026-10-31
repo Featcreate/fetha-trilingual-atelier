@@ -1,172 +1,56 @@
-# Fetha Trilingual Atelier
+# Algorea Bazaar
 
-Implement Step 1 only for the FethaCreate digital products store.
+Algorea Bazaar is a multilingual marketplace for downloadable digital products, including ebooks, PDFs, templates, educational resources, bundles, apps, and software. It does not support physical-product shipping.
 
+## Product principles
 
+- French is the default language; Arabic uses RTL and Tajawal; English uses LTR.
+- Seller registration, store creation, and product listings remain free. A verified email is required before opening a store; storage is limited to 1 GiB per store and 50 MiB per file.
+- Platform commission starts at 5% and is configurable by an authorized administrator; every order item snapshots the rate.
+- Buyer payment fees and seller payout/withdrawal fees must be disclosed separately and allocated only where provider terms and applicable law permit.
+- Real payments remain disabled until provider terms, fees, sandbox behavior, and the user's explicit live-activation approval are confirmed.
+- Digital product files remain private and are delivered through short-lived, authorized download links.
+- Multiple files are supported per product, with a 50 MiB maximum per file and 1 GiB total per store.
+- Sellers can upload public product preview images (JPG, PNG, WebP, GIF, AVIF) up to 10 MiB; digital downloads remain private.
 
-1. Brand identity
+## Marketplace interfaces
 
+- `/catalog` — public searchable product catalogue.
+- `/products/:id` — digital product detail.
+- `/stores/:slug` — public seller storefront.
+- `/seller` — authenticated seller area for store settings, product management, file uploads, and seller order/earnings views.
+- `/admin` — admin-role-only dashboard for commission configuration (5% default), store/product moderation, and order monitoring.
+- `/orders` — authenticated buyer order history and secure downloads.
+- `/terms` — Arabic, French and English Terms of Use draft.
 
+Prices currently display in TND. Checkout is intentionally unavailable until the payment provider has been verified and explicitly approved. International currency and payout coverage are not yet implemented.
 
-- Use these exact brand colors:
+## Technical stack
 
-  - Dark petrol blue: "#0A2533"
+React, TypeScript, TanStack Start, Vite, Tailwind CSS, Supabase Auth/Postgres/Storage, and Drizzle SQL migrations.
 
-  - Peach/coral: "#FF7555"
+## Project documentation
 
-  - Warm cream: "#FBF9F5"
-
-  - Light cream: "#F4EFE6"
-
-  - Muted gold: "#C5A869"
-
-- Configure reusable design tokens in Tailwind/CSS.
-
-- Use Tajawal for Arabic and a clean, readable sans-serif font for French and English.
-
-- Keep the design professional, modern, elegant, and responsive.
-
-
-
-2. Original logo
-
-
-
-- Use the supplied original FethaCreate logo without redesigning, recoloring, cropping, or distorting it.
-
-- Preserve its aspect ratio using "object-contain".
-
-- If the logo file is not available yet, create a clearly marked asset slot and tell me where to place the original file. Do not invent a replacement logo.
-
-
-
-3. Languages and direction
-
-
-
-Support Arabic ("ar"), French ("fr"), and English ("en").
-
-
-
-- French is the default language on the first visit.
-
-- Arabic uses "dir="rtl"" and Tajawal.
-
-- French and English use "dir="ltr"".
-
-- Add a visible language switcher.
-
-- Remember the selected language using localStorage, with "fr" as the initial default.
-
-- Provide a small static UI translation dictionary for all three languages.
-
-
-
-4. Responsive frontend
-
-
-
-Build a simple, polished homepage shell containing:
-
-
-
-- A responsive sticky header with the original logo, navigation links, and language switcher.
-
-- A mobile-friendly collapsible navigation menu.
-
-- A clean hero section introducing FethaCreate.
-
-- A simple static placeholder showcase for future digital products.
-
-- A minimal footer.
-
-- Responsive layouts for mobile, tablet, and desktop.
-
-
-
-5. Strict scope limits
-
-
-
-This is a frontend-only first step. Do NOT implement:
-
-
-
-- Database tables or migrations.
-
-- Authentication or user accounts.
-
-- Lovable Cloud or backend provisioning.
-
-- Storage buckets or file-upload functionality.
-
-- Backend functions or APIs.
-
-- Admin dashboard or product-management forms.
-
-- Payment integration, checkout, or orders.
-
-
-
-Use static placeholder content only for this preview. Do not pretend that products or backend features are functional.
-
-
-
-6. Implementation and verification
-
-
-
-- Make the smallest set of changes necessary to implement this scope.
-
-- Preserve any existing project configuration and unrelated files.
-
-- Verify language switching, text direction, logo proportions, and responsive navigation.
-
-- Fix any obvious issues introduced by this step.
-
-- At the end, summarize the files changed, tests performed, and any remaining issues.
-
-- Clearly report whether Lovable Cloud or any backend infrastructure was enabled. Do not claim zero credit consumption unless it has been verified.
-
-
-
-Stop after completing Step 1. Do not proceed to Step 2 or add features outside this scope.
-
-Original Images and Visual References
-
-
-
-- Use the original FethaCreate logo and supplied product images as provided. Do not redraw, distort, crop, or alter their content.
-
-- Use the supplied product images only as a visual preview in the static homepage showcase.
-
-- Do not invent product details, prices, or claims.
-
-- Preserve image aspect ratios and use "object-contain" where appropriate.
-
-- If a reference website screenshot is supplied, use it only as visual inspiration. Keep the approved FethaCreate brand colors and identity.
-
-- Do not implement image uploads, storage, database functionality, or product management in this step.
-
-- Keep the implementation limited to Step 1 and stop for review afterward.
-
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/d7b2a794-779f-4eb1-aef2-eec65598eb2c).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+- `roadmap.md` — implementation milestones.
+- `.lovable/plan.md` — project scope, audit findings, and implementation constraints.
+- `docs/terms-of-use-ar.md` — approved concise Arabic Terms of Use draft; legal review and operator details are still required before publication.
+- `docs/financial-fee-allocation-policy.md` — external payment, transfer, and withdrawal fee allocation.
+- `docs/ipay-tunisian-seller-onboarding.md` — required referral route and iPay seller payout prerequisites.
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Requirements: Node.js and Bun (or a compatible package manager).
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+bun install
+bun run dev
+bun run test
+bun run lint
+bun run build
 ```
+
+Do not enable live payments, publish the application, apply database migrations, or use paid services without explicit approval.
+
+## Seller payouts
+
+The supported seller payout route is weekly manual transfer. Administrators can prepare idempotent payout batches from verified sales and record a completed transfer using its external reference. The dashboard does not initiate transfers. See [seller payout operations](docs/seller-payout-operations.md) for the operating procedure and rollout safeguards.

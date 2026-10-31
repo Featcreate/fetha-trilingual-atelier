@@ -1,16 +1,28 @@
 // Server-only. Import dynamically from inside server handlers.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { decidePaymentOutcome, type KonnectPayment, type PaymentOutcome } from "./payment-rules";
+import { isKonnectPaymentEnabled } from "./payment-activation";
 
 const SANDBOX = "https://api.preprod.konnect.network/api/v2";
 const LIVE = "https://api.konnect.network/api/v2";
 
-export function konnectConfig() {
+export function konnectConfig(requireActivation = false) {
   const apiKey = process.env["KONNECT_API_KEY"];
   const walletId = process.env["KONNECT_WALLET_ID"];
-  // Live is used ONLY when KONNECT_ENV is explicitly "live". Default is sandbox.
-  const live = process.env["KONNECT_ENV"] === "live";
+  const mode = process.env["KONNECT_ENV"];
+  if (mode !== undefined && mode !== "sandbox" && mode !== "live") return null;
+  if (
+    requireActivation &&
+    !isKonnectPaymentEnabled({
+      KONNECT_ENV: mode,
+      KONNECT_SANDBOX_PAYMENTS_ENABLED: process.env["KONNECT_SANDBOX_PAYMENTS_ENABLED"],
+      KONNECT_LIVE_PAYMENTS_ENABLED: process.env["KONNECT_LIVE_PAYMENTS_ENABLED"],
+    })
+  ) {
+    return null;
+  }
   if (!apiKey || !walletId) return null;
+  const live = mode === "live";
   return { apiKey, walletId, base: live ? LIVE : SANDBOX, live };
 }
 
@@ -26,7 +38,7 @@ export async function konnectInitPayment(input: {
   phoneNumber?: string | undefined;
   email?: string | undefined;
 }): Promise<{ payUrl: string; paymentRef: string }> {
-  const cfg = konnectConfig();
+  const cfg = konnectConfig(true);
   if (!cfg) throw new Error("payments_not_configured");
   const res = await fetch(`${cfg.base}/payments/init-payment`, {
     method: "POST",
@@ -75,7 +87,10 @@ async function konnectGetPayment(paymentRef: string): Promise<KonnectPayment> {
  * Verify a payment with Konnect (server-to-server) and apply it to its order.
  * Idempotent: the order flips pending -> paid at most once.
  */
-export async function applyPaymentRef(paymentRef: string, source: "webhook" | "return_check" | "admin_check") {
+export async function applyPaymentRef(
+  paymentRef: string,
+  source: "webhook" | "return_check" | "admin_check",
+) {
   const { data: order } = await supabaseAdmin
     .from("orders")
     .select("id, status, total_millimes")
@@ -83,7 +98,9 @@ export async function applyPaymentRef(paymentRef: string, source: "webhook" | "r
     .maybeSingle();
 
   if (!order) {
-    await supabaseAdmin.from("payment_events").insert({ payment_ref: paymentRef, source, outcome: "unknown_order" });
+    await supabaseAdmin
+      .from("payment_events")
+      .insert({ payment_ref: paymentRef, source, outcome: "unknown_order" });
     return { outcome: "unknown_order" as const };
   }
 
@@ -92,16 +109,27 @@ export async function applyPaymentRef(paymentRef: string, source: "webhook" | "r
   const outcome: PaymentOutcome = decidePaymentOutcome(order, payment);
   if (outcome !== "paid") {
     await supabaseAdmin.from("payment_events").insert({
-      order_id: order.id, payment_ref: paymentRef, source, konnect_status: payment.status ?? null, outcome,
+      order_id: order.id,
+      payment_ref: paymentRef,
+      source,
+      konnect_status: payment.status ?? null,
+      outcome,
     });
     return { outcome };
   }
   // Single trusted, transactional, idempotent settlement (service role only).
   const { data, error } = await supabaseAdmin.rpc("settle_order_payment", {
-    _order_id: order.id, _mode: "verified", _payment_ref: paymentRef,
-    _amount_millimes: payment.amount ?? -1, _source: source,
+    _order_id: order.id,
+    _mode: "verified",
+    _payment_ref: paymentRef,
+    _amount_millimes: payment.amount ?? -1,
+    _source: source,
   });
   if (error) throw new Error("settlement_failed");
-  if (data === "paid") await supabaseAdmin.from("orders").update({ email_error: "email_not_configured" }).eq("id", order.id);
+  if (data === "paid")
+    await supabaseAdmin
+      .from("orders")
+      .update({ email_error: "email_not_configured" })
+      .eq("id", order.id);
   return { outcome: data as string };
 }

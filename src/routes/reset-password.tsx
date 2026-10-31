@@ -9,7 +9,10 @@ export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
       { title: "Nouveau mot de passe — Algorea Bazaar" },
-      { name: "description", content: "Choisissez un nouveau mot de passe pour votre compte Algorea Bazaar." },
+      {
+        name: "description",
+        content: "Choisissez un nouveau mot de passe pour votre compte Algorea Bazaar.",
+      },
       { property: "og:title", content: "Nouveau mot de passe — Algorea Bazaar" },
       { property: "og:description", content: "Réinitialisation du mot de passe Algorea Bazaar." },
       { property: "og:type", content: "website" },
@@ -60,12 +63,26 @@ function ResetPasswordPage() {
       {ready === "invalid" && (
         <p className="text-sm">
           {a.resetInvalid}{" "}
-          <Link to="/auth" search={{ mode: "forgot" }} className="font-semibold text-coral hover:underline">{a.forgot}</Link>
+          <Link
+            to="/auth"
+            search={{ mode: "forgot" }}
+            className="font-semibold text-coral hover:underline"
+          >
+            {a.forgot}
+          </Link>
         </p>
       )}
       {ready === "ok" && (
         <form onSubmit={onSubmit} noValidate className="space-y-4">
-          <Field id="password" label={a.newPassword} type="password" dir="ltr" autoComplete="new-password" maxLength={72} error={error} />
+          <Field
+            id="password"
+            label={a.newPassword}
+            type="password"
+            dir="ltr"
+            autoComplete="new-password"
+            maxLength={72}
+            error={error}
+          />
           <SubmitButton busy={busy} label={a.resetSave} busyLabel={a.loading} />
         </form>
       )}

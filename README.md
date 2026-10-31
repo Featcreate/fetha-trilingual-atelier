@@ -35,7 +35,7 @@ React, TypeScript, TanStack Start, Vite, Tailwind CSS, Supabase Auth/Postgres/St
 - `.lovable/plan.md` — project scope, audit findings, and implementation constraints.
 - `docs/terms-of-use-ar.md` — approved concise Arabic Terms of Use draft; legal review and operator details are still required before publication.
 - `docs/financial-fee-allocation-policy.md` — external payment, transfer, and withdrawal fee allocation.
-- `docs/ipay-tunisian-seller-onboarding.md` — required referral route and iPay seller payout prerequisites.
+- `docs/konnect-seller-onboarding.md` — one Konnect referral route for all sellers; provider-controlled eligibility and payout safeguards.
 
 ## Development
 

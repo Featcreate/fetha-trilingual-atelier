@@ -22,7 +22,7 @@ export const startCheckout = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
-    if (!konnectConfig()) return { ok: false as const, error: "payments_not_configured" };
+    if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
 
     const { data: orderId, error } = await context.supabase.rpc("create_order", {
       _product_ids: data.productIds,

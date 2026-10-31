@@ -26,7 +26,11 @@ export const startCheckout = createServerFn({ method: "POST" })
       _checkout_key: data.checkoutKey,
     });
     if (error || !orderId) {
-      const code = error?.message?.includes("product_unavailable") ? "product_unavailable" : "order_failed";
+      const code = error?.message?.includes("product_unavailable")
+        ? "product_unavailable"
+        : error?.message?.includes("commission_not_configured")
+          ? "commission_not_configured"
+          : "order_failed";
       return { ok: false as const, error: code };
     }
 

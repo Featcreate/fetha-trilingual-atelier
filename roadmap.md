@@ -20,14 +20,14 @@
 - [x] Add French and English Terms of Use translations matching the Arabic version; obtain Tunisian legal review and complete operator identity/contact details before launch
 - [ ] Add multi-currency support and confirm seller eligibility/payout coverage by country; current catalog and order accounting remain TND-only
 - [ ] Add cart/checkout only after provider terms, fees and sandbox behavior are confirmed
-- [ ] Confirm iPay's official registration process for Tunisian sellers, the supported seller-account identification/linking mechanism, manual transfer capability, settlement currency, limits, fees, and terms. iPay has no referral code/program for this purpose; no referral code is required or should be invented.
+- [ ] Confirm iPay's official registration process for Tunisian sellers, the supported seller-account identification/linking mechanism, manual transfer capability, settlement currency, limits, fees, and terms. The planned referral code is from the platform owner's Konnect account, not from iPay itself. Obtain and verify the actual Konnect code/link before configuring the Tunisian seller registration route; do not invent it.
 - [ ] Configure transactional email and order notifications
 
 ## Safety constraints
 
 - Seller registration, store creation and listings remain free. Email verification is required before store creation. Each store has a 1 GiB total storage quota and a 50 MiB per-file cap.
 - Platform commission starts at 5% and remains administrator-configurable. Existing order commission snapshots are immutable.
-- Tunisian seller payouts are planned as manual weekly transfers after the platform's commission, subject to confirmation of iPay's official account-linking and transfer process; seller-side iPay/bank fees remain the seller's responsibility.
+- Tunisian seller payouts are planned as manual weekly transfers after the platform's commission, subject to confirmation of the Konnect referral registration route and iPay/Konnect account-linking and transfer process; seller-side iPay/bank fees remain the seller's responsibility.
 - Digital products only; no shipping or physical inventory.
 - Keep product files private; use short-lived signed downloads and preserve immutable order/file snapshots.
 - No live payments, publishing, production migrations, paid services, or provider connections without explicit approval.

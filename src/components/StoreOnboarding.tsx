@@ -5,6 +5,9 @@ import { useLang } from "@/lib/i18n";
 
 type Store = { id: string; name: string; slug: string; status: "active" | "suspended" };
 
+const PRIVACY_VERSION = "2026-10-31-v1";
+const TERMS_VERSION = "2026-10-31-v1";
+
 function slugify(value: string) {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50);
@@ -16,6 +19,8 @@ export function StoreOnboarding({ userId, emailConfirmed }: { userId: string; em
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -28,6 +33,14 @@ export function StoreOnboarding({ userId, emailConfirmed }: { userId: string; em
       invalid: "Le nom doit contenir entre 1 et 120 caractères. L’adresse doit comporter 3 à 50 caractères minuscules, chiffres ou tirets.",
       failed: "Impossible de créer la boutique. Vérifiez l’adresse choisie ou réessayez.",
       success: "Votre boutique a été créée.", free: "Création et gestion de la boutique gratuites.",
+      privacyCheck: "J’ai lu et j’accepte la politique de confidentialité.",
+      termsCheck: "J’ai lu et j’accepte les conditions générales et les règles applicables aux vendeurs.",
+      privacyTitle: "Politique de confidentialité — version 2026-10-31-v1",
+      termsTitle: "Conditions générales vendeurs — version 2026-10-31-v1",
+      privacyText: "Algorea Bazaar utilise les données nécessaires à la création et à la gestion du compte et de la boutique, à la sécurité, à l’assistance et au fonctionnement de la marketplace. Les données ne sont accessibles qu’aux personnes et prestataires autorisés pour ces finalités. Les données de commande, de paiement et de conformité peuvent être conservées pendant les durées imposées par les obligations légales ou la résolution des litiges. Vous pouvez demander l’accès, la rectification ou la suppression des données lorsque la loi le permet, via le canal de contact officiel de la plateforme. Les cookies ou traceurs non essentiels ne doivent être activés qu’avec le consentement requis. Cette politique sera complétée avec l’identité légale de l’exploitant, ses coordonnées, les prestataires effectivement utilisés et les délais de conservation avant l’ouverture publique.",
+      termsText: "Le vendeur doit fournir des informations exactes, détenir les droits nécessaires sur chaque produit numérique et respecter les lois applicables. Les contenus illicites, trompeurs, contrefaisants ou portant atteinte aux droits de tiers sont interdits. Le vendeur reste responsable de ses produits, de leur description, de leurs licences et de l’assistance due aux acheteurs. L’ouverture du compte, de la boutique et la mise en ligne des annonces sont gratuites. La commission de la plateforme est fixée à 5 % du montant de vente, sous réserve des modalités affichées avant toute activation des paiements. Les frais externes du prestataire de paiement sont distincts et doivent être communiqués avant confirmation. Aucun paiement réel n’est activé par la présente acceptation. La plateforme peut suspendre une boutique en cas de fraude, d’atteinte à la sécurité ou de violation des règles, avec un examen approprié. Les modalités de retrait, remboursements, fiscalité, droit applicable, juridiction et coordonnées de l’exploitant doivent être finalisées et publiées avant l’ouverture commerciale.",
+      legalNotice: "Ces textes sont une version de travail et doivent être complétés et validés juridiquement avant le lancement commercial.",
+      required: "Acceptez les deux documents pour continuer.",
     },
     ar: {
       title: "متجري", intro: "أنشئي متجرك مجاناً على Algorea Bazaar.",
@@ -37,6 +50,14 @@ export function StoreOnboarding({ userId, emailConfirmed }: { userId: string; em
       invalid: "يجب أن يتراوح اسم المتجر بين حرف و120 حرفاً، وأن يتكون الرابط من 3 إلى 50 حرفاً صغيراً أو رقماً أو شرطة.",
       failed: "تعذر إنشاء المتجر. جرّبي رابطاً آخر أو أعيدي المحاولة.",
       success: "تم إنشاء متجرك بنجاح.", free: "إنشاء المتجر وإدارته مجانيان.",
+      privacyCheck: "قرأت سياسة الخصوصية وأوافق عليها.",
+      termsCheck: "قرأت الشروط والأحكام والقواعد الخاصة بالبائعين وأوافق عليها.",
+      privacyTitle: "سياسة الخصوصية — الإصدار 2026-10-31-v1",
+      termsTitle: "الشروط القانونية للبائعين — الإصدار 2026-10-31-v1",
+      privacyText: "تستخدم Algorea Bazaar البيانات اللازمة لإنشاء الحساب والمتجر وإدارتهما، وللأمان والدعم وتشغيل السوق. لا يطّلع على البيانات إلا الأشخاص ومقدمو الخدمات المصرح لهم وللأغراض المحددة. قد نحتفظ ببيانات الطلبات والمدفوعات والامتثال للمدد التي تفرضها الالتزامات القانونية أو تسوية النزاعات. يمكنك طلب الوصول إلى بياناتك أو تصحيحها أو حذفها حيث يسمح القانون، عبر قناة الاتصال الرسمية للمنصة. لا تُفعّل ملفات الارتباط أو أدوات التتبع غير الضرورية إلا بعد الحصول على الموافقة المطلوبة. يجب استكمال هذه السياسة بهوية المشغّل القانونية وبيانات الاتصال ومقدمي الخدمات المستخدمين فعلياً ومدد الاحتفاظ قبل الإطلاق العام.",
+      termsText: "يلتزم البائع بتقديم معلومات صحيحة وامتلاك الحقوق اللازمة لكل منتج رقمي واحترام القوانين المعمول بها. يُمنع المحتوى غير القانوني أو المضلل أو المقلد أو المنتهك لحقوق الغير. يبقى البائع مسؤولاً عن منتجاته وأوصافها وتراخيصها ودعم المشترين. إنشاء الحساب والمتجر وإضافة المنتجات مجاني دائماً. عمولة المنصة 5% من مبلغ البيع، وفق التفاصيل التي ستُعرض قبل تفعيل المدفوعات. رسوم مزود الدفع الخارجية منفصلة ويجب توضيحها قبل التأكيد. لا يؤدي قبول هذه الشروط إلى تفعيل المدفوعات الحقيقية. يجوز تعليق المتجر عند الاحتيال أو تهديد الأمان أو مخالفة القواعد، مع إجراء مراجعة مناسبة. يجب استكمال ونشر أحكام السحب والاسترداد والضرائب والقانون الواجب التطبيق والاختصاص القضائي وبيانات مشغّل المنصة قبل بدء النشاط التجاري.",
+      legalNotice: "هذه النصوص مسودة عمل، ويجب استكمالها ومراجعتها قانونياً قبل الإطلاق التجاري.",
+      required: "يرجى الموافقة على الوثيقتين للمتابعة.",
     },
     en: {
       title: "My store", intro: "Open your store on Algorea Bazaar for free.",
@@ -46,6 +67,14 @@ export function StoreOnboarding({ userId, emailConfirmed }: { userId: string; em
       invalid: "Store name must be 1–120 characters. Address must be 3–50 lowercase letters, numbers, or hyphens.",
       failed: "Could not create the store. Try another address or try again.",
       success: "Your store was created.", free: "Store creation and management are free.",
+      privacyCheck: "I have read and agree to the Privacy Policy.",
+      termsCheck: "I have read and agree to the Terms and Conditions and seller rules.",
+      privacyTitle: "Privacy Policy — version 2026-10-31-v1",
+      termsTitle: "Seller Terms — version 2026-10-31-v1",
+      privacyText: "Algorea Bazaar uses the information needed to create and manage accounts and stores, provide security and support, and operate the marketplace. Data is accessible only to authorized people and providers for these purposes. Order, payment and compliance records may be retained for periods required by law or dispute resolution. You may request access, correction or deletion where permitted by law through the platform’s official contact channel. Non-essential cookies or trackers must only be enabled with any required consent. Before public launch, this policy must be completed with the operator’s legal identity, contact details, actual service providers and retention periods.",
+      termsText: "Sellers must provide accurate information, own or hold the necessary rights to each digital product, and comply with applicable laws. Illegal, misleading, counterfeit or rights-infringing content is prohibited. Sellers remain responsible for their products, descriptions, licenses and buyer support. Account creation, store opening and listings are free. The platform commission is 5% of the sale amount, subject to the details shown before payment activation. External payment-provider fees are separate and must be disclosed before confirmation. This acceptance does not activate live payments. The platform may suspend a store for fraud, security risks or rule violations, subject to appropriate review. Withdrawal, refund, tax, governing-law, jurisdiction and operator-contact terms must be finalized and published before commercial launch.",
+      legalNotice: "These are working drafts and must be completed and legally reviewed before commercial launch.",
+      required: "Accept both documents to continue.",
     },
   }[lang];
 
@@ -67,14 +96,20 @@ export function StoreOnboarding({ userId, emailConfirmed }: { userId: string; em
       setFeedback({ ok: false, text: copy.invalid });
       return;
     }
-    if (!emailConfirmed || (stores.data?.length ?? 0) > 0) return;
+    if (!emailConfirmed || !acceptPrivacy || !acceptTerms || (stores.data?.length ?? 0) > 0) {
+      if (!acceptPrivacy || !acceptTerms) setFeedback({ ok: false, text: copy.required });
+      return;
+    }
     setBusy(true);
     setFeedback(null);
-    const { error } = await supabase.from("stores").insert({
-      owner_id: userId, name: cleanName, slug: cleanSlug, status: "active",
+    const { data, error } = await supabase.rpc("create_seller_store", {
+      _name: cleanName,
+      _slug: cleanSlug,
+      _privacy_version: PRIVACY_VERSION,
+      _terms_version: TERMS_VERSION,
     });
     setBusy(false);
-    if (error) {
+    if (error || !data) {
       setFeedback({ ok: false, text: copy.failed });
       return;
     }
@@ -119,8 +154,29 @@ export function StoreOnboarding({ userId, emailConfirmed }: { userId: string; em
               value={slug} onChange={(event) => { setSlugEdited(true); setSlug(event.target.value); }}
               dir="ltr" className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base" />
           </label>
+          <div className="space-y-3 rounded-xl border border-border p-4">
+            <details id="privacy-policy" className="text-sm">
+              <summary className="cursor-pointer font-semibold underline">{copy.privacyTitle}</summary>
+              <p className="mt-3 leading-7 text-muted-foreground">{copy.privacyText}</p>
+            </details>
+            <label className="flex items-start gap-3 text-sm leading-6">
+              <input type="checkbox" checked={acceptPrivacy} onChange={(e) => setAcceptPrivacy(e.target.checked)}
+                className="mt-1 size-5 shrink-0 accent-primary" />
+              <span>{copy.privacyCheck}</span>
+            </label>
+            <details id="seller-terms" className="text-sm">
+              <summary className="cursor-pointer font-semibold underline">{copy.termsTitle}</summary>
+              <p className="mt-3 leading-7 text-muted-foreground">{copy.termsText}</p>
+            </details>
+            <label className="flex items-start gap-3 text-sm leading-6">
+              <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="mt-1 size-5 shrink-0 accent-primary" />
+              <span>{copy.termsCheck}</span>
+            </label>
+            <p className="text-xs text-muted-foreground">{copy.legalNotice}</p>
+          </div>
           {feedback && <p role={feedback.ok ? "status" : "alert"} className={feedback.ok ? "text-sm text-primary" : "text-sm text-destructive"}>{feedback.text}</p>}
-          <button type="submit" disabled={busy} className="w-full rounded-full bg-primary px-6 py-3 text-base font-semibold text-primary-foreground disabled:opacity-60">
+          <button type="submit" disabled={busy || !acceptPrivacy || !acceptTerms} className="w-full rounded-full bg-primary px-6 py-3 text-base font-semibold text-primary-foreground disabled:opacity-60">
             {busy ? copy.loading : copy.create}
           </button>
         </form>

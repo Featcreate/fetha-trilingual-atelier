@@ -34,7 +34,7 @@
 - Algorea Bazaar must not absorb, reimburse, or record any provider, bank, transfer, or withdrawal fee as a platform expense. Such fees must never reduce the platform commission.
 - External fees must be separately identified, accurately calculated from the selected provider/method, and disclosed to the responsible customer before the relevant transaction. No hidden fees and no guessed or hard-coded fee schedule.
 - If a provider charges the platform account and its fee cannot lawfully and transparently be assigned to the responsible buyer or seller, do not activate that payment/payout method until the commercial and technical arrangement is resolved.
-- Do not assume iPay's quoted rate or cap, any referral program, or any other provider's pricing without current written confirmation. We have checked and confirmed that iPay does not offer a referral code/program for this purpose. Do not request, invent, or make a referral code a merge prerequisite. Tunisian sellers must use iPay's official registration process; confirm the supported seller-account identification/linking and manual transfer procedure before enabling payouts.
+- Do not assume iPay's quoted rate or cap, any referral program, or any other provider's pricing without current written confirmation. We have confirmed that the referral code is not issued by iPay itself. The planned referral code is the platform owner's own Konnect account referral code, to be used for Tunisian seller registration through the Konnect service within the iPay arrangement. The actual Konnect code/link must be supplied and verified before configuring this onboarding route; do not invent it. Confirm the supported account-linking and manual transfer procedure before enabling payouts.
 - This policy is a product requirement, not permission to activate live payments. Provider selection, fee mechanics, sandbox verification, and explicit approval remain prerequisites.
 
 ## 5. Risks
@@ -76,7 +76,7 @@
 - Migration 0009 adds server-side verified-email enforcement for store creation and a 1 GiB per-store storage quota, in addition to the 50 MiB per-file database cap. It has not been applied to any database.
 - Terms of Use are available in Arabic, French and English under the same version identifier.
 - CI has read-only repository permissions and no longer commits or pushes formatting changes.
-- No live payment provider, deployment, or production database was changed. iPay has no referral code/program for this purpose; no code is required. Official seller registration, account identification/linking, manual transfer support, fees, and terms still require verification before payout enablement. Multi-currency and international payout support remain blocked on provider selection and verification.
+- No live payment provider, deployment, or production database was changed. The referral code will come from the platform owner's Konnect account, not from iPay. The actual Konnect code/link has not yet been supplied or configured. Verify that it correctly routes Tunisian seller registration and confirm account identification/linking, manual transfer support, fees, and terms before payout enablement. Multi-currency and international payout support remain blocked on provider selection and verification.
 
 ## 10. Marketplace interface implementation — 2026-10-31
 

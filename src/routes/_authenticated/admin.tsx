@@ -51,6 +51,17 @@ type OrderRow = {
   currency: string;
   created_at: string;
 };
+type PayoutRow = {
+  id: string;
+  store_id: string;
+  status: string;
+  seller_amount_millimes: number;
+  commission_bps: number;
+  created_at: string;
+  paid_at: string | null;
+  provider_transfer_ref: string | null;
+  failure_reason: string | null;
+};
 
 function AdminPage() {
   const { lang, setLang, t } = useLang();
@@ -59,6 +70,9 @@ function AdminPage() {
   const [commission, setCommission] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
+  const [payoutStoreId, setPayoutStoreId] = useState("");
+  const [payoutReference, setPayoutReference] = useState("");
+  const [payoutFailure, setPayoutFailure] = useState("");
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
 
   const settings = useQuery({
@@ -109,6 +123,18 @@ function AdminPage() {
       return (data ?? []) as OrderRow[];
     },
   });
+  const payouts = useQuery({
+    queryKey: ["admin-payouts"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("seller_payouts")
+        .select("id,store_id,status,seller_amount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data ?? []) as PayoutRow[];
+    },
+  });
 
   async function saveCommission(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -137,6 +163,71 @@ function AdminPage() {
     setCommission("");
     await qc.invalidateQueries({ queryKey: ["admin-settings"] });
     await qc.invalidateQueries({ queryKey: ["platform-commission"] });
+  }
+
+  async function createSellerPayout() {
+    if (!payoutStoreId) {
+      setNotice({ ok: false, text: a.saveError });
+      return;
+    }
+    setBusy("payout-create");
+    setNotice(null);
+    const { error } = await (supabase as any).rpc("admin_create_seller_payout", {
+      _store_id: payoutStoreId,
+      _idempotency_key: `weekly-${payoutStoreId}-${crypto.randomUUID()}`,
+      _scheduled_for: null,
+    });
+    setBusy(null);
+    if (error) {
+      setNotice({ ok: false, text: error.message.includes("no_unpaid_sales") ? a.noPayouts : a.saveError });
+      return;
+    }
+    setNotice({ ok: true, text: a.saved });
+    await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+    await qc.invalidateQueries({ queryKey: ["seller-payout-history"] });
+  }
+
+  async function confirmSellerPayout(payout: PayoutRow) {
+    if (payoutReference.trim().length < 3) {
+      setNotice({ ok: false, text: a.payoutReferenceRequired });
+      return;
+    }
+    setBusy(payout.id);
+    setNotice(null);
+    const { error } = await (supabase as any).rpc("admin_mark_seller_payout_paid", {
+      _payout_id: payout.id,
+      _transfer_reference: payoutReference.trim(),
+    });
+    setBusy(null);
+    if (error) {
+      setNotice({ ok: false, text: a.saveError });
+      return;
+    }
+    setPayoutReference("");
+    setNotice({ ok: true, text: a.saved });
+    await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+    await qc.invalidateQueries({ queryKey: ["seller-payout-history"] });
+  }
+
+  async function failSellerPayout(payout: PayoutRow) {
+    if (payoutFailure.trim().length < 3) {
+      setNotice({ ok: false, text: a.payoutFailureRequired });
+      return;
+    }
+    setBusy(payout.id);
+    setNotice(null);
+    const { error } = await (supabase as any).rpc("admin_mark_seller_payout_failed", {
+      _payout_id: payout.id,
+      _failure_reason: payoutFailure.trim(),
+    });
+    setBusy(null);
+    if (error) {
+      setNotice({ ok: false, text: a.saveError });
+      return;
+    }
+    setPayoutFailure("");
+    setNotice({ ok: true, text: a.payoutFailedNote });
+    await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
   }
 
   async function setStoreStatus(store: StoreRow) {
@@ -279,6 +370,90 @@ function AdminPage() {
           />
         </form>
         <p className="mt-3 text-xs text-muted-foreground">{a.commissionWarning}</p>
+      </section>
+
+      <section className="mb-8 rounded-xl border border-border p-5">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-bold">{a.payouts}</h2>
+          <span className="text-xs text-muted-foreground">{a.payoutConfirmNote}</span>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <select
+            value={payoutStoreId}
+            onChange={(e) => setPayoutStoreId(e.target.value)}
+            className="min-w-[220px] flex-1 rounded-lg border border-input bg-background px-3 py-2"
+          >
+            <option value="">{a.payoutStore}</option>
+            {(stores.data ?? []).map((store) => (
+              <option key={store.id} value={store.id}>{store.name} · {store.slug}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            disabled={busy === "payout-create" || !payoutStoreId}
+            onClick={() => void createSellerPayout()}
+            className="rounded-full bg-accent px-4 py-2 text-sm font-semibold disabled:opacity-50"
+          >
+            {busy === "payout-create" ? a.saving : a.createPayout}
+          </button>
+        </div>
+        {payouts.isPending ? (
+          <p className="mt-4 text-sm">{a.loading}</p>
+        ) : payouts.isError ? (
+          <p role="alert" className="mt-4 text-sm text-destructive">{a.loadError}</p>
+        ) : !payouts.data.length ? (
+          <p className="mt-4 rounded-lg bg-secondary p-4 text-sm">{a.noPayouts}</p>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {payouts.data.map((payout) => (
+              <article key={payout.id} className="rounded-lg border border-border p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold">{stores.data?.find((s) => s.id === payout.store_id)?.name ?? payout.store_id}</p>
+                    <p className="text-xs text-muted-foreground">{payout.status} · {new Date(payout.created_at).toLocaleDateString(locale)} · {(payout.commission_bps / 100).toFixed(2)}%</p>
+                    {payout.provider_transfer_ref && <p className="text-xs text-muted-foreground" dir="ltr">{payout.provider_transfer_ref}</p>}
+                    {payout.failure_reason && <p className="text-xs text-destructive">{payout.failure_reason}</p>}
+                  </div>
+                  <strong>{formatTND(payout.seller_amount_millimes)}</strong>
+                </div>
+                {payout.status !== "paid" && payout.status !== "cancelled" && (
+                  <div className="mt-3 grid gap-2">
+                    <input
+                      value={payoutReference}
+                      onChange={(e) => setPayoutReference(e.target.value)}
+                      placeholder={a.payoutReferenceRequired}
+                      maxLength={200}
+                      className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                    />
+                    <button
+                      type="button"
+                      disabled={busy === payout.id}
+                      onClick={() => void confirmSellerPayout(payout)}
+                      className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                    >
+                      {a.markPayoutPaid}
+                    </button>
+                    <input
+                      value={payoutFailure}
+                      onChange={(e) => setPayoutFailure(e.target.value)}
+                      placeholder={a.payoutFailureRequired}
+                      maxLength={500}
+                      className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                    />
+                    <button
+                      type="button"
+                      disabled={busy === payout.id}
+                      onClick={() => void failSellerPayout(payout)}
+                      className="rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive disabled:opacity-50"
+                    >
+                      {a.markPayoutFailed}
+                    </button>
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="mb-8">

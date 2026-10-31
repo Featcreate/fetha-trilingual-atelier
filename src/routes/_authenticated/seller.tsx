@@ -60,7 +60,7 @@ function makeSlug(value: string) {
     .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
 }
 function safeFileName(value: string) {
-  return value.normalize("NFKD").replace(/[^A-Za-z0-9._ -]/g, "_").slice(0, 200);
+  const clean = value.normalize("NFKD").replace(/[^A-Za-z0-9._ -]/g, "_").slice(0, 200);\n  return /^[A-Za-z0-9]/.test(clean) ? clean : `file_${clean.replace(/^[^A-Za-z0-9]+/, "")}`;
 }
 
 function SellerDashboard() {
@@ -121,10 +121,10 @@ function SellerDashboard() {
     const {error}=await supabase.from("stores").insert({owner_id:user.id,name,slug,status:"active"});
     setBusy(false);
     if(error){setFormError(error.code==="23505"?"Cette adresse de boutique est déjà utilisée.":t.error);return;}
-    await queryClient.invalidateQueries({queryKey:["seller-store",user.id]}); setNotice(t.success);
+    const {data:createdStore}=await supabase.from("stores").select("id").eq("owner_id",user.id).maybeSingle();\n    if(createdStore){ await (supabase as any).from("seller_payout_preferences").upsert({store_id:createdStore.id,method:"weekly_manual"},{onConflict:"store_id"}); }\n    await queryClient.invalidateQueries({queryKey:["seller-store",user.id]}); setNotice(t.success);
   }
 
-  async function saveProduct(event:FormEvent<HTMLFormElement>) {
+  async function savePayoutPreference() {\n    if(!store) return; setFormError(""); setNotice(""); setBusy(true);\n    const {error}=await (supabase as any).from("seller_payout_preferences").upsert({store_id:store.id,method:"weekly_manual"},{onConflict:"store_id"});\n    setBusy(false); if(error){setFormError(t.error);return;}\n    await queryClient.invalidateQueries({queryKey:["seller-payout-preference",store.id]}); setNotice(t.success);\n  }\n\n  async function saveProduct(event:FormEvent<HTMLFormElement>) {
     event.preventDefault(); setFormError(""); setNotice("");
     if(!store){return;}
     const numericPrice=Number(price.replace(",","."));
@@ -203,7 +203,7 @@ function SellerDashboard() {
         </section>
         <section className="mt-6 rounded-2xl border border-border bg-card p-5">
           <h2 className="text-lg font-bold">{t.payout}</h2><p className="mt-2 font-semibold">{t.weekly}</p><p className="mt-2 text-sm text-muted-foreground">{t.payoutNote}</p>
-          <p className="mt-2 text-xs text-muted-foreground">{t.onlyManual}</p>
+          <p className="mt-2 text-xs text-muted-foreground">{t.onlyManual}</p><button type="button" onClick={savePayoutPreference} disabled={busy} className="mt-4 rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">{t.save}</button>
           {preferenceQuery.data&&<p className="mt-2 text-xs text-muted-foreground">Preference: {preferenceQuery.data.method}</p>}
         </section>
         <section className="mt-6"><h2 className="mb-3 text-lg font-bold">{t.recent}</h2>

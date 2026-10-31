@@ -699,6 +699,15 @@ export type Database = {
         Args: { _checkout_key: string; _product_ids: string[] }
         Returns: string
       }
+      create_seller_store: {
+        Args: {
+          _name: string
+          _privacy_version: string
+          _slug: string
+          _terms_version: string
+        }
+        Returns: string
+      }
       finalize_download: { Args: { _reservation_id: string }; Returns: boolean }
       has_role: {
         Args: {

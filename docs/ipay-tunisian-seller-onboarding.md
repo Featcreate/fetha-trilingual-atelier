@@ -4,12 +4,12 @@
 
 The planned referral code is **the platform owner's own Konnect account referral code**, not an iPay-issued referral code. The intended arrangement is to use that Konnect referral route for Tunisian seller registration within the iPay/Konnect payment setup.
 
-The actual Konnect referral code or URL has not yet been supplied or configured. Therefore:
+The platform owner's Konnect referral details have now been supplied:
 
-- Obtain the referral code/link from the platform owner's Konnect account.
-- Verify with Konnect/iPay that the code routes Tunisian sellers through the intended registration flow and correctly attributes their registration.
-- Do not invent a code or substitute an unrelated referral URL.
-- Do not enable the referral-based onboarding flow until the real code/link and its behavior are verified.
+- Referral code: `31XyM7MR8wy71ga7a`
+- Registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a
+
+Use this exact Konnect link for Tunisian seller registration. It is a Konnect referral link, not an iPay-issued referral code. Before enabling it in the live seller onboarding flow, verify with Konnect/iPay that it correctly attributes registrations to the platform owner's account and confirm how each seller's resulting account is identified and linked to their Algorea Bazaar seller profile. Do not alter the code or construct a different referral URL.
 
 ## Items to verify before enabling seller payouts
 

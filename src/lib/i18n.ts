@@ -101,7 +101,7 @@ export const dict = {
       productUpdated: "Produit mis à jour.",
       fileUploadFailed: "Le fichier n'a pas pu être téléversé. Le produit reste en brouillon.",
       storageQuotaExceeded: "La boutique a atteint sa limite totale de stockage de 1 Go.",
-      emailVerificationRequired: "Confirmez votre adresse e-mail avant de créer une boutique ou d’ajouter des fichiers."
+      emailVerificationRequired: "Confirmez votre adresse e-mail avant de créer une boutique ou d’ajouter des fichiers.",
       nameRequired: "Saisissez le nom de la boutique.",
       productRequired: "Saisissez le nom et la description du produit.",
       noCommission:
@@ -293,7 +293,7 @@ export const dict = {
       productUpdated: "تم تحديث المنتج.",
       fileUploadFailed: "تعذر رفع الملف. بقي المنتج مسودة.",
       storageQuotaExceeded: "بلغ متجرك الحد الإجمالي للتخزين البالغ 1 غيغابايت.",
-      emailVerificationRequired: "أكد بريدك الإلكتروني قبل إنشاء المتجر أو إضافة الملفات."
+      emailVerificationRequired: "أكد بريدك الإلكتروني قبل إنشاء المتجر أو إضافة الملفات.",
       nameRequired: "أدخل اسم المتجر.",
       productRequired: "أدخل اسم المنتج ووصفه.",
       noCommission: "الطلبات متوقفة مؤقتاً إلى أن يتم ضبط عمولة المنصة.",
@@ -481,7 +481,7 @@ export const dict = {
       productUpdated: "Product updated.",
       fileUploadFailed: "The file could not be uploaded. The product remains a draft.",
       storageQuotaExceeded: "Your store has reached its 1 GB total storage limit.",
-      emailVerificationRequired: "Confirm your email address before creating a store or adding files."
+      emailVerificationRequired: "Confirm your email address before creating a store or adding files.",
       nameRequired: "Enter a store name.",
       productRequired: "Enter the product name and description.",
       noCommission:

@@ -6,11 +6,13 @@ import { isKonnectPaymentEnabled } from "./payment-activation";
 const SANDBOX = "https://api.preprod.konnect.network/api/v2";
 const LIVE = "https://api.konnect.network/api/v2";
 
-export function konnectConfig() {
+export function konnectConfig(requireActivation = false) {
   const apiKey = process.env["KONNECT_API_KEY"];
   const walletId = process.env["KONNECT_WALLET_ID"];
   const mode = process.env["KONNECT_ENV"];
+  if (mode !== undefined && mode !== "sandbox" && mode !== "live") return null;
   if (
+    requireActivation &&
     !isKonnectPaymentEnabled({
       KONNECT_ENV: mode,
       KONNECT_SANDBOX_PAYMENTS_ENABLED: process.env["KONNECT_SANDBOX_PAYMENTS_ENABLED"],
@@ -36,7 +38,7 @@ export async function konnectInitPayment(input: {
   phoneNumber?: string | undefined;
   email?: string | undefined;
 }): Promise<{ payUrl: string; paymentRef: string }> {
-  const cfg = konnectConfig();
+  const cfg = konnectConfig(true);
   if (!cfg) throw new Error("payments_not_configured");
   const res = await fetch(`${cfg.base}/payments/init-payment`, {
     method: "POST",

@@ -2,7 +2,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { decidePaymentOutcome, type KonnectPayment, type PaymentOutcome } from "./payment-rules";
 
-const SANDBOX = "https://api.preprod.konnect.network/api/v2";
+const SANDBOX = "https://api.sandbox.konnect.network/api/v2";
 const LIVE = "https://api.konnect.network/api/v2";
 
 export function konnectConfig() {

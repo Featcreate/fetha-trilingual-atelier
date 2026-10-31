@@ -50,6 +50,13 @@
       "when": 1793376000000,
       "tag": "0006_seller_payouts",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793462400000,
+      "tag": "0007_seller_onboarding_access",
+      "breakpoints": true
     }
   ]
 }

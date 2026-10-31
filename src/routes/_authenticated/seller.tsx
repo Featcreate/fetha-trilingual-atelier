@@ -154,9 +154,9 @@ function SellerPage() {
     e.preventDefault();
     if (!store) return;
     const f = new FormData(e.currentTarget);
-    const name = String(f.get("name") ?? "").trim();
-    const description = String(f.get("description") ?? "").trim();
-    const price = parseTNDToMillimes(String(f.get("price") ?? ""));
+    const name = String(f.get(`edit_name_${product.id}`) ?? "").trim();
+    const description = String(f.get(`edit_description_${product.id}`) ?? "").trim();
+    const price = parseTNDToMillimes(String(f.get(`edit_price_${product.id}`) ?? ""));
     if (!name || !description) return setNotice(m.productRequired);
     if (!price) return setNotice(m.invalidPrice);
     const { error } = await supabase.from("products").update({ name, description, price_millimes: price }).eq("id", product.id).eq("store_id", store.id);
@@ -222,9 +222,9 @@ function SellerPage() {
                   <article key={product.id} className="rounded-xl border border-border p-4">
                     {editing === product.id ? (
                       <form onSubmit={e => saveProduct(e, product)} className="space-y-3">
-                        <Field id="name" label={m.productName} defaultValue={product.name} required maxLength={180} />
-                        <div><label htmlFor="description" className="mb-1 block text-sm font-medium">{m.description}</label><textarea id="description" name="description" defaultValue={product.description} rows={3} required className="w-full rounded-lg border border-input bg-background px-3 py-2" /></div>
-                        <Field id="price" label={m.price} defaultValue={(product.price_millimes / 1000).toFixed(3)} required />
+                        <Field id={`edit_name_${product.id}`} label={m.productName} defaultValue={product.name} required maxLength={180} />
+                        <div><label htmlFor={`edit_description_${product.id}`} className="mb-1 block text-sm font-medium">{m.description}</label><textarea id={`edit_description_${product.id}`} name={`edit_description_${product.id}`} defaultValue={product.description} rows={3} required className="w-full rounded-lg border border-input bg-background px-3 py-2" /></div>
+                        <Field id={`edit_price_${product.id}`} label={m.price} defaultValue={(product.price_millimes / 1000).toFixed(3)} required />
                         <div className="flex gap-2"><button className="rounded-full bg-accent px-4 py-2 text-sm font-semibold">{m.save}</button><button type="button" onClick={() => setEditing(null)} className="rounded-full border border-border px-4 py-2 text-sm">{m.cancel ?? "×"}</button></div>
                       </form>
                     ) : (

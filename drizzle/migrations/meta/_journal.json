@@ -43,6 +43,13 @@
       "when": 1793232369365,
       "tag": "0005_revoke_client_writes_trusted_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793404800000,
+      "tag": "0006_configurable_commission_and_terms_acceptance",
+      "breakpoints": true
     }
   ]
 }

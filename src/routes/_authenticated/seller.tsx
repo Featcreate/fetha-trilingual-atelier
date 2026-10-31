@@ -35,6 +35,7 @@ const productTypes: ProductType[] = [
   "graphics",
   "other",
 ];
+const KONNECT_SELLER_REGISTRATION_URL = "https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a";
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set([
@@ -732,6 +733,15 @@ function SellerPage() {
               <h2 className="text-xl font-bold">{m.payoutMethod}</h2>
               <p className="mt-2 font-semibold">{m.weeklyManual}</p>
               <p className="mt-2 text-sm leading-7 text-muted-foreground">{m.payoutHelp}</p>
+              <a
+                href={KONNECT_SELLER_REGISTRATION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90"
+              >
+                {m.konnectRegister}
+              </a>
+              <p className="mt-2 text-xs leading-6 text-muted-foreground">{m.konnectEligibility}</p>
             </div>
             <button
               type="button"

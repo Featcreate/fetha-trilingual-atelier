@@ -149,7 +149,10 @@ function SellerPage() {
     await qc.invalidateQueries({ queryKey: ["seller-store", user.id] });
   }
 
-  async function uploadFile(productId: string, file: File): Promise<"ok" | "quota" | "email" | "error"> {
+  async function uploadFile(
+    productId: string,
+    file: File,
+  ): Promise<"ok" | "quota" | "email" | "error"> {
     const fileName = safeFileName(file.name);
     const { data: versionRows, error: registerError } = await supabase.rpc(
       "register_file_version",

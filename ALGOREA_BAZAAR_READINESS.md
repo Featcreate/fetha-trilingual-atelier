@@ -11,7 +11,7 @@ This document records implementation boundaries for the current GitHub work bran
 
 ## Verified implementation constraints
 
-1. Store insert RLS currently checks `owner_id = auth.uid()` and `status = 'active'`, but does not itself check `auth.jwt() ->> 'email_confirmed_at'`. The client checks `user.email_confirmed_at`; this is a UI gate, not a database-enforced email-verification guarantee. Before relying on this as a security boundary, enforce the verification requirement in a trusted server-side/database policy or function.
+1. On this work branch, migrations 0006–0007 add a database-side verified-email helper and require verified email plus current legal-acceptance versions for store creation through the `create_seller_store` RPC and INSERT policy. These migrations have NOT been applied to a live database; until the intended Supabase project and migration history are reconciled and the migrations are separately approved/applied, the live database must not be assumed to enforce these new guards.
 2. The migration defines a private `product-files` bucket workflow. Seller upload must first call `register_file_version`, upload only to the returned path, then call `activate_file_version`. Never expose a public bucket or allow arbitrary object paths.
 3. The migration limits each file to 50 MiB and checks the uploaded object's recorded size before activation. The application should also validate size before requesting registration and handle upload failure without activating the version.
 4. `product_file_versions` rows are immutable apart from controlled status transitions. Do not delete versions or overwrite existing storage objects.

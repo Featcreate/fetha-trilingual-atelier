@@ -144,7 +144,14 @@ function SellerPage() {
       .from("stores")
       .insert({ owner_id: user.id, name, slug, status: "active" });
     setBusy(false);
-    if (error) return setNotice(error.code === "23505" ? m.slugHint : m.error);
+    if (error)
+      return setNotice(
+        error.message.includes("email_verification_required")
+          ? m.emailVerificationRequired
+          : error.code === "23505"
+            ? m.slugHint
+            : m.error,
+      );
     setNotice(m.storeCreated);
     await qc.invalidateQueries({ queryKey: ["seller-store", user.id] });
   }

@@ -51,7 +51,12 @@ async function loadProducts(): Promise<ProductCard[]> {
     for (const store of stores ?? []) storeNames.set(store.id, store.name);
   }
 
-  return Promise.all(rows.map(async (row) => {
+  // The seller's own RLS policy can expose their products even when their
+  // store is suspended. The public catalog must independently require an
+  // active store so authenticated sellers cannot see suspended listings here.
+  const listedRows = rows.filter((row) => row.store_id && storeNames.has(row.store_id));
+
+  return Promise.all(listedRows.map(async (row) => {
     let imageUrl: string | null = null;
     if (row.image_path) {
       const { data } = await supabase.storage

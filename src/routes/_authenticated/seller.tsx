@@ -52,7 +52,7 @@ const text = {
   },
 } as const;
 
-const productTypes = ["ebook","pdf","template","educational","bundle","software","app"] as const;
+const productTypes = ["ebook","pdf","template","educational","bundle","software","app","printable","planner","course","audio","video","graphics","other"] as const;
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 
 function makeSlug(value: string) {
@@ -60,7 +60,8 @@ function makeSlug(value: string) {
     .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
 }
 function safeFileName(value: string) {
-  const clean = value.normalize("NFKD").replace(/[^A-Za-z0-9._ -]/g, "_").slice(0, 200);\n  return /^[A-Za-z0-9]/.test(clean) ? clean : `file_${clean.replace(/^[^A-Za-z0-9]+/, "")}`;
+  const clean = value.normalize("NFKD").replace(/[^A-Za-z0-9._ -]/g, "_").slice(0, 200);
+  return /^[A-Za-z0-9]/.test(clean) ? clean : `file_${clean.replace(/^[^A-Za-z0-9]+/, "")}`;
 }
 
 function SellerDashboard() {
@@ -121,14 +122,23 @@ function SellerDashboard() {
     const {error}=await supabase.from("stores").insert({owner_id:user.id,name,slug,status:"active"});
     setBusy(false);
     if(error){setFormError(error.code==="23505"?"Cette adresse de boutique est déjà utilisée.":t.error);return;}
-    const {data:createdStore}=await supabase.from("stores").select("id").eq("owner_id",user.id).maybeSingle();\n    if(createdStore){ await (supabase as any).from("seller_payout_preferences").upsert({store_id:createdStore.id,method:"weekly_manual"},{onConflict:"store_id"}); }\n    await queryClient.invalidateQueries({queryKey:["seller-store",user.id]}); setNotice(t.success);
+    const {data:createdStore}=await supabase.from("stores").select("id").eq("owner_id",user.id).maybeSingle();
+    if(createdStore){ await (supabase as any).from("seller_payout_preferences").upsert({store_id:createdStore.id,method:"weekly_manual"},{onConflict:"store_id"}); }
+    await queryClient.invalidateQueries({queryKey:["seller-store",user.id]}); setNotice(t.success);
   }
 
-  async function savePayoutPreference() {\n    if(!store) return; setFormError(""); setNotice(""); setBusy(true);\n    const {error}=await (supabase as any).from("seller_payout_preferences").upsert({store_id:store.id,method:"weekly_manual"},{onConflict:"store_id"});\n    setBusy(false); if(error){setFormError(t.error);return;}\n    await queryClient.invalidateQueries({queryKey:["seller-payout-preference",store.id]}); setNotice(t.success);\n  }\n\n  async function saveProduct(event:FormEvent<HTMLFormElement>) {
+  async function savePayoutPreference() {
+    if(!store) return; setFormError(""); setNotice(""); setBusy(true);
+    const {error}=await (supabase as any).from("seller_payout_preferences").upsert({store_id:store.id,method:"weekly_manual"},{onConflict:"store_id"});
+    setBusy(false); if(error){setFormError(t.error);return;}
+    await queryClient.invalidateQueries({queryKey:["seller-payout-preference",store.id]}); setNotice(t.success);
+  }
+
+  async function saveProduct(event:FormEvent<HTMLFormElement>) {
     event.preventDefault(); setFormError(""); setNotice("");
     if(!store){return;}
     const numericPrice=Number(price.replace(",","."));
-    if(!productName.trim()||productName.trim().length>160||!Number.isFinite(numericPrice)||numericPrice<0){setFormError(t.error);return;}
+    if(!productName.trim()||productName.trim().length>160||!Number.isFinite(numericPrice)||numericPrice<=0||!Number.isSafeInteger(Math.round(numericPrice*1000))||Math.round(numericPrice*1000)<=0){setFormError(t.error);return;}
     const files=Array.from(fileRef.current?.files??[]);
     if(files.length===0){setFormError(t.chooseFile);return;}
     if(files.some(file=>file.size>MAX_FILE_BYTES)){setFormError(t.fileTooLarge);return;}
@@ -193,7 +203,7 @@ function SellerDashboard() {
             <label className="grid gap-1 text-sm font-medium">{t.description}<textarea value={description} onChange={e=>setDescription(e.target.value)} maxLength={5000} rows={3} className="rounded-xl border border-border bg-background px-3 py-3"/></label>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-1 text-sm font-medium">{t.type}<select value={productType} onChange={e=>setProductType(e.target.value as (typeof productTypes)[number])} className="rounded-xl border border-border bg-background px-3 py-3">{productTypes.map(v=><option key={v} value={v}>{v}</option>)}</select></label>
-              <label className="grid gap-1 text-sm font-medium">{t.price}<input type="number" min="0" step="0.001" value={price} onChange={e=>setPrice(e.target.value)} required className="rounded-xl border border-border bg-background px-3 py-3"/></label>
+              <label className="grid gap-1 text-sm font-medium">{t.price}<input type="number" min="0.001" step="0.001" value={price} onChange={e=>setPrice(e.target.value)} required className="rounded-xl border border-border bg-background px-3 py-3"/></label>
             </div>
             <label className="grid gap-1 text-sm font-medium">{t.file}<input ref={fileRef} type="file" multiple required className="rounded-xl border border-border bg-background px-3 py-3" /></label>
             <p className="text-xs text-muted-foreground">ZIP, PDF, images and common digital formats. Maximum 50 MB per file.</p>

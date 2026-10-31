@@ -68,18 +68,25 @@ export const startCheckout = createServerFn({ method: "POST" })
         email: order.customer_email ?? undefined,
       });
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await supabaseAdmin
+      const { error: saveError } = await supabaseAdmin
         .from("orders")
         .update({ konnect_payment_ref: paymentRef, konnect_pay_url: payUrl })
         .eq("id", order.id)
         .eq("status", "pending")
         .is("konnect_payment_ref", null);
-      const { data: saved } = await supabaseAdmin
+      const { data: saved, error: readError } = await supabaseAdmin
         .from("orders")
-        .select("konnect_pay_url")
+        .select("konnect_payment_ref,konnect_pay_url")
         .eq("id", order.id)
         .single();
-      return { ok: true as const, orderId, payUrl: saved?.konnect_pay_url ?? payUrl };
+      if (readError || !saved?.konnect_payment_ref || !saved.konnect_pay_url) {
+        console.error(
+          "Konnect payment reference could not be persisted",
+          saveError?.message ?? readError?.message ?? "missing_payment_reference",
+        );
+        return { ok: false as const, error: "payment_reference_save_failed", orderId };
+      }
+      return { ok: true as const, orderId, payUrl: saved.konnect_pay_url };
     } catch {
       return { ok: false as const, error: "payment_provider_error", orderId };
     }

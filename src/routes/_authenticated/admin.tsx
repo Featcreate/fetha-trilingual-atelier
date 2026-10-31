@@ -453,21 +453,25 @@ function AdminPage() {
                     >
                       {a.markPayoutPaid}
                     </button>
-                    <input
-                      value={payoutFailure}
-                      onChange={(e) => setPayoutFailure(e.target.value)}
-                      placeholder={a.payoutFailureRequired}
-                      maxLength={500}
-                      className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                    />
-                    <button
-                      type="button"
-                      disabled={busy === payout.id}
-                      onClick={() => void failSellerPayout(payout)}
-                      className="rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive disabled:opacity-50"
-                    >
-                      {a.markPayoutFailed}
-                    </button>
+                    {payout.status !== "failed" && (
+                      <>
+                        <input
+                          value={payoutFailure}
+                          onChange={(e) => setPayoutFailure(e.target.value)}
+                          placeholder={a.payoutFailureRequired}
+                          maxLength={500}
+                          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                        />
+                        <button
+                          type="button"
+                          disabled={busy === payout.id}
+                          onClick={() => void failSellerPayout(payout)}
+                          className="rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive disabled:opacity-50"
+                        >
+                          {a.markPayoutFailed}
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </article>

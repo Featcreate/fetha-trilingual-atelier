@@ -65,6 +65,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/seller': typeof AuthenticatedSellerRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
 }
 export interface FileRoutesById {
@@ -92,6 +93,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/account'
+    | '/seller'
     | '/api/public/konnect/webhook'
   id:
     | '__root__'
@@ -100,6 +102,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/account'
+    | '/_authenticated/seller'
     | '/api/public/konnect/webhook'
   fileRoutesById: FileRoutesById
 }

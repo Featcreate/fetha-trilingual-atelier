@@ -9,6 +9,7 @@
 - [x] Buyer order history and secure downloads using the existing entitlement flow
 - [x] Terms of Use acceptance at signup and configurable platform commission (migration pending)
 - [x] Expanded digital product types and seller-scoped order visibility (migrations pending)
+- [x] Admin dashboard: configurable commission, store suspension/reactivation, product moderation, and order monitoring (no new migration)
 
 ## Remaining before a safe launch
 - [ ] Run lint, unit tests and production build; fix all reported issues

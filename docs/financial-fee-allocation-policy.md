@@ -32,7 +32,7 @@ The seller is responsible for external fees associated with:
 - transferring seller proceeds to the seller;
 - withdrawing funds from the seller's account.
 
-Seller payouts are planned as **manual weekly transfers**. For Tunisian sellers, the intended payout rail is the platform's iPay referral route, subject to receiving and configuring the platform's actual referral code and confirming iPay's current seller onboarding and payout terms. The seller's sale entitlement is calculated after the platform commission and before the seller's own external transfer/withdrawal fees. Those fees are borne by the seller and must not become a platform expense.
+Seller payouts are planned as **manual weekly transfers**. For Tunisian sellers, the intended payout rail is iPay, subject to confirming its official seller registration process, the account-identification/linking mechanism, manual transfer capability, and current payout terms. iPay has no referral code/program for this purpose; no referral code is required or should be configured. The seller's sale entitlement is calculated after the platform commission and before the seller's own external transfer/withdrawal fees. Those fees are borne by the seller and must not become a platform expense.
 
 Where a provider deducts a fee from the transfer amount, the seller must be informed of the fee and the expected amount received before the payout is initiated, to the extent the provider exposes that information. Any fee recovery or deduction must comply with provider terms and applicable law.
 

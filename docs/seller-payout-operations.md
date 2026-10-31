@@ -2,6 +2,8 @@
 
 ## Current supported route
 
+Store creation and product listings remain free for sellers. No seller registration, store-opening, listing, or mandatory seller subscription fee is charged.
+
 - Seller payout preference defaults to **weekly manual transfer**.
 - The platform commission is taken from each paid order item before the seller amount is recorded. The configured commission rate is snapshotted on each order item; the payout batch preserves those original amounts.
 - Seller payout batches are created by an administrator from verified, paid sales that have not already been assigned to a payout.

@@ -129,16 +129,17 @@ function SellerDashboard() {
     if(!store){return;}
     const numericPrice=Number(price.replace(",","."));
     if(!productName.trim()||productName.trim().length>160||!Number.isFinite(numericPrice)||numericPrice<0){setFormError(t.error);return;}
-    const file=fileRef.current?.files?.[0];
-    if(file&&file.size>MAX_FILE_BYTES){setFormError(t.fileTooLarge);return;}
-    if(file&&file.size===0){setFormError(t.error);return;}
+    const files=Array.from(fileRef.current?.files??[]);
+    if(files.length===0){setFormError(t.chooseFile);return;}
+    if(files.some(file=>file.size>MAX_FILE_BYTES)){setFormError(t.fileTooLarge);return;}
+    if(files.some(file=>file.size===0)){setFormError(t.error);return;}
     setBusy(true);
     const {data:product,error:productError}=await supabase.from("products").insert({
       store_id:store.id,name:productName.trim(),description:description.trim(),product_type:productType,
       price_millimes:Math.round(numericPrice*1000),is_active:false,
     }).select("id").single();
     if(productError||!product){setBusy(false);setFormError(t.error);return;}
-    if(file){
+    for(const file of files){
       const cleanName=safeFileName(file.name);
       const digest=await crypto.subtle.digest("SHA-256",await file.arrayBuffer());
       const sha=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");

@@ -53,7 +53,7 @@ CREATE POLICY "Admins read seller payment accounts"
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON public.seller_payment_accounts FROM anon, authenticated;
 
 CREATE OR REPLACE FUNCTION public.seller_payment_account_guard()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $function$
 DECLARE _owner uuid;
 BEGIN
   IF TG_OP = 'DELETE' THEN RAISE EXCEPTION 'seller_payment_account_immutable'; END IF;
@@ -71,7 +71,7 @@ BEGIN
     NEW.updated_at := now();
   END IF;
   RETURN NEW;
-END $;
+END $function$;
 CREATE TRIGGER seller_payment_account_guard
   BEFORE INSERT OR UPDATE OR DELETE ON public.seller_payment_accounts
   FOR EACH ROW EXECUTE FUNCTION public.seller_payment_account_guard();

@@ -122,7 +122,7 @@ DECLARE
   _meta jsonb := coalesce(NEW.raw_user_meta_data, '{}'::jsonb);
 BEGIN
   IF _meta->>'accepted_terms' IS DISTINCT FROM 'true'
-     OR _meta->>'terms_version' IS DISTINCT FROM '2026-10-31-ar-v1'
+     OR _meta->>'terms_version' IS DISTINCT FROM '2026-10-31-v2'
      OR coalesce(_meta->>'terms_language', '') NOT IN ('fr', 'ar', 'en') THEN
     RAISE EXCEPTION 'terms_acceptance_required';
   END IF;

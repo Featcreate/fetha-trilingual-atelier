@@ -6,6 +6,7 @@ import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { useLang } from "@/lib/i18n";
 import { fullNameSchema, phoneSchema } from "@/lib/account-rules";
 import { StoreOnboarding } from "@/components/StoreOnboarding";
+import { SellerProducts } from "@/components/SellerProducts";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -127,6 +128,7 @@ function AccountPage() {
       )}
 
       <StoreOnboarding userId={user.id} emailConfirmed={Boolean(user.email_confirmed_at)} />
+      <SellerProducts userId={user.id} />
 
       <button
         type="button"

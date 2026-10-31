@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
-import { formatTND, parseTNDToMillimes } from "@/lib/money";
+import { formatTND } from "@/lib/money";
 import { AuthShell, SubmitButton } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/_authenticated/admin")({

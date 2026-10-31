@@ -18,15 +18,11 @@ describe("Konnect payment decisions", () => {
   });
 
   it("does not pay a pending (failed or unattempted) payment", () => {
-    expect(
-      decidePaymentOutcome(order, { ...completedPayment, status: "pending" }),
-    ).toBe("pending");
+    expect(decidePaymentOutcome(order, { ...completedPayment, status: "pending" })).toBe("pending");
   });
 
   it("rejects a completed payment for a different amount", () => {
-    expect(
-      decidePaymentOutcome(order, { ...completedPayment, amount: 1000 }),
-    ).toBe("mismatch");
+    expect(decidePaymentOutcome(order, { ...completedPayment, amount: 1000 })).toBe("mismatch");
   });
 
   it("rejects partial payments even when a transaction amount is present", () => {
@@ -40,26 +36,19 @@ describe("Konnect payment decisions", () => {
   });
 
   it("rejects a completed payment for a different order", () => {
-    expect(
-      decidePaymentOutcome(order, { ...completedPayment, orderId: "other" }),
-    ).toBe("mismatch");
+    expect(decidePaymentOutcome(order, { ...completedPayment, orderId: "other" })).toBe("mismatch");
   });
 
   it("rejects a completed payment when currency is missing or not TND", () => {
     const withoutCurrency = { ...completedPayment, token: undefined };
     expect(decidePaymentOutcome(order, withoutCurrency)).toBe("mismatch");
-    expect(
-      decidePaymentOutcome(order, { ...completedPayment, token: "USD" }),
-    ).toBe("mismatch");
+    expect(decidePaymentOutcome(order, { ...completedPayment, token: "USD" })).toBe("mismatch");
   });
 
   it("treats a repeated notification on a paid order as already paid", () => {
-    expect(
-      decidePaymentOutcome(
-        { ...order, status: "paid" },
-        completedPayment,
-      ),
-    ).toBe("already_paid");
+    expect(decidePaymentOutcome({ ...order, status: "paid" }, completedPayment)).toBe(
+      "already_paid",
+    );
   });
 
   it("rejects malformed payment references", () => {

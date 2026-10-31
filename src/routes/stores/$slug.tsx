@@ -69,7 +69,10 @@ function StorefrontPage() {
                   <div className="mb-3 flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg bg-cream-light text-3xl font-bold text-petrol/50">
                     {p.image_path ? (
                       <img
-                        src={supabase.storage.from("product-images").getPublicUrl(p.image_path).data.publicUrl}
+                        src={
+                          supabase.storage.from("product-images").getPublicUrl(p.image_path).data
+                            .publicUrl
+                        }
                         alt={p.name}
                         loading="lazy"
                         className="h-full w-full object-cover"

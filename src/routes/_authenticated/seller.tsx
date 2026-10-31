@@ -35,7 +35,8 @@ const productTypes: ProductType[] = [
   "graphics",
   "other",
 ];
-const KONNECT_SELLER_REGISTRATION_URL = "https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a";
+const KONNECT_SELLER_REGISTRATION_URL =
+  "https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a";
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set([
@@ -257,8 +258,7 @@ function SellerPage() {
       .getAll("digital_files")
       .filter((value): value is File => value instanceof File && value.size > 0);
     const imageValue = values.get("product_image");
-    const imageFile =
-      imageValue instanceof File && imageValue.size > 0 ? imageValue : null;
+    const imageFile = imageValue instanceof File && imageValue.size > 0 ? imageValue : null;
     if (!name || !description) return setNotice(m.productRequired);
     if (!price) return setNotice(m.invalidPrice);
     if (!files.length || files.some((file) => file.size < 1 || file.size > MAX_FILE_BYTES))
@@ -672,7 +672,11 @@ function SellerPage() {
                         <div className="min-w-0 flex-1">
                           {product.image_path && (
                             <img
-                              src={supabase.storage.from("product-images").getPublicUrl(product.image_path).data.publicUrl}
+                              src={
+                                supabase.storage
+                                  .from("product-images")
+                                  .getPublicUrl(product.image_path).data.publicUrl
+                              }
                               alt={product.name}
                               className="mb-3 h-24 w-32 rounded-lg object-cover"
                             />

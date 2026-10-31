@@ -122,7 +122,10 @@ function CatalogPage() {
               <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-cream-light p-6 text-center">
                 {p.image_path ? (
                   <img
-                    src={supabase.storage.from("product-images").getPublicUrl(p.image_path).data.publicUrl}
+                    src={
+                      supabase.storage.from("product-images").getPublicUrl(p.image_path).data
+                        .publicUrl
+                    }
                     alt={p.name}
                     loading="lazy"
                     className="h-full w-full object-cover"

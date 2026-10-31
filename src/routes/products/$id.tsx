@@ -53,7 +53,11 @@ function ProductPage() {
           <div className="flex aspect-[16/7] items-center justify-center overflow-hidden rounded-2xl bg-cream-light text-4xl font-bold text-petrol/40">
             {query.data.product.image_path ? (
               <img
-                src={supabase.storage.from("product-images").getPublicUrl(query.data.product.image_path).data.publicUrl}
+                src={
+                  supabase.storage
+                    .from("product-images")
+                    .getPublicUrl(query.data.product.image_path).data.publicUrl
+                }
                 alt={query.data.product.name}
                 className="h-full w-full object-cover"
               />

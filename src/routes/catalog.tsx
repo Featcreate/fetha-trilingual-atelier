@@ -119,8 +119,17 @@ function CatalogPage() {
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((p) => (
             <article key={p.id} className="overflow-hidden rounded-xl border border-border bg-card">
-              <div className="flex aspect-[4/3] items-center justify-center bg-cream-light p-6 text-center">
-                <span className="text-3xl font-bold text-petrol/50">AB</span>
+              <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-cream-light p-6 text-center">
+                {p.image_path ? (
+                  <img
+                    src={supabase.storage.from("product-images").getPublicUrl(p.image_path).data.publicUrl}
+                    alt={p.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="text-3xl font-bold text-petrol/50">AB</span>
+                )}
               </div>
               <div className="space-y-3 p-4">
                 <div>

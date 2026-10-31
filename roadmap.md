@@ -25,7 +25,7 @@
 
 ## Safety constraints
 
-- Seller registration, store creation and listings remain free. Email verification is required before store creation. Each store has a 1 GiB total storage quota and a 50 MiB per-file cap.
+- Seller registration, store creation and listings remain free. Email verification is required before store creation. Each store has a 1 GiB total storage quota, a 50 MiB private-file cap, and a 10 MiB public product-image cap.
 - Platform commission starts at 5% and remains administrator-configurable. Existing order commission snapshots are immutable.
 - Tunisian seller payouts are planned as manual weekly transfers after the platform's commission, subject to confirmation of the Konnect referral registration route and iPay/Konnect account-linking and transfer process; seller-side iPay/bank fees remain the seller's responsibility.
 - Digital products only; no shipping or physical inventory.

@@ -27,8 +27,6 @@ type ProductCard = {
   store_name: string | null;
 };
 
-const PRODUCT_TYPES = ["ebook", "template", "printable", "planner", "course", "software", "audio", "video", "graphics", "other"];
-
 async function loadProducts(): Promise<ProductCard[]> {
   const { data: rows, error } = await supabase
     .from("products")

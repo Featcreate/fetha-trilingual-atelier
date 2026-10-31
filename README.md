@@ -1,6 +1,6 @@
 # Algorea Bazaar
 
-Algorea Bazaar is a multilingual marketplace for downloadable digital products, including ebooks, PDFs, templates, educational resources, apps, and software. It does not support physical-product shipping.
+Algorea Bazaar is a multilingual marketplace for downloadable digital products, including ebooks, PDFs, templates, educational resources, bundles, apps, and software. It does not support physical-product shipping.
 
 ## Product principles
 
@@ -10,10 +10,22 @@ Algorea Bazaar is a multilingual marketplace for downloadable digital products, 
 - Buyer payment fees and seller payout/withdrawal fees must be disclosed separately and allocated only where provider terms and applicable law permit.
 - Real payments remain disabled until provider terms, fees, sandbox behavior, and the user's explicit live-activation approval are confirmed.
 - Digital product files remain private and are delivered through short-lived, authorized download links.
+- Multiple files are supported per product, with a 50 MB maximum per file.
 
-## Current application
+## Marketplace interfaces
 
-The project uses React, TypeScript, TanStack Start, Vite, Tailwind CSS, Supabase, and Drizzle migrations. The current repository includes the multilingual homepage, authentication and account screens, marketplace data/security migrations, and payment/download server logic. Some marketplace storefront, seller, admin, and order-management screens remain on the roadmap.
+- `/catalog` — public searchable product catalogue.
+- `/products/:id` — digital product detail.
+- `/stores/:slug` — public seller storefront.
+- `/seller` — authenticated seller area for store settings, product management, file uploads, and seller order/earnings views.
+- `/orders` — authenticated buyer order history and secure downloads.
+- `/terms` — Arabic Terms of Use draft.
+
+Prices currently display in TND. Checkout is intentionally unavailable until the platform commission is configured and the payment provider has been verified and explicitly approved.
+
+## Technical stack
+
+React, TypeScript, TanStack Start, Vite, Tailwind CSS, Supabase Auth/Postgres/Storage, and Drizzle SQL migrations.
 
 ## Project documentation
 

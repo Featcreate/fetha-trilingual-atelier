@@ -194,7 +194,7 @@ function SellerDashboard() {
               <label className="grid gap-1 text-sm font-medium">{t.type}<select value={productType} onChange={e=>setProductType(e.target.value as (typeof productTypes)[number])} className="rounded-xl border border-border bg-background px-3 py-3">{productTypes.map(v=><option key={v} value={v}>{v}</option>)}</select></label>
               <label className="grid gap-1 text-sm font-medium">{t.price}<input type="number" min="0" step="0.001" value={price} onChange={e=>setPrice(e.target.value)} required className="rounded-xl border border-border bg-background px-3 py-3"/></label>
             </div>
-            <label className="grid gap-1 text-sm font-medium">{t.file}<input ref={fileRef} type="file" className="rounded-xl border border-border bg-background px-3 py-3" /></label>
+            <label className="grid gap-1 text-sm font-medium">{t.file}<input ref={fileRef} type="file" multiple required className="rounded-xl border border-border bg-background px-3 py-3" /></label>
             <p className="text-xs text-muted-foreground">ZIP, PDF, images and common digital formats. Maximum 50 MB per file.</p>
             {formError&&<p role="alert" className="text-sm text-destructive">{formError}</p>}
             {notice&&<p role="status" className="text-sm text-green-700">{notice}</p>}

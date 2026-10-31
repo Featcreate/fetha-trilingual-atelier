@@ -129,8 +129,7 @@ function SellerDashboard() {
         .from("products")
         .select("id, name, product_type, price_millimes, is_active, created_at")
         .eq("store_id", storeId!)
-        .order("created_at", { ascending: false })
-        .limit(5);
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
@@ -216,7 +215,7 @@ function SellerDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {productsQuery.data.map((product) => (
+                    {productsQuery.data.slice(0, 5).map((product) => (
                       <tr key={product.id} className="border-t border-border">
                         <td className="p-3 font-medium">{product.name}</td>
                         <td className="p-3">{product.product_type}</td>

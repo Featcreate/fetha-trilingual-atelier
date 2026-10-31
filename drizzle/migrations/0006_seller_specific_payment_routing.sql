@@ -27,6 +27,10 @@ CREATE TABLE public.seller_payment_accounts (
   ),
   CONSTRAINT referral_only_for_tunisia CHECK (
     referral_code_used IS NULL OR (seller_country_code = 'TN' AND provider = 'konnect')
+  ),
+  CONSTRAINT verified_konnect_requires_referral CHECK (
+    status <> 'verified' OR provider <> 'konnect'
+    OR (referral_code_used IS NOT NULL AND length(trim(referral_code_used)) > 0)
   )
 );
 
@@ -49,22 +53,27 @@ CREATE POLICY "Admins read seller payment accounts"
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON public.seller_payment_accounts FROM anon, authenticated;
 
 CREATE OR REPLACE FUNCTION public.seller_payment_account_guard()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $
+DECLARE _owner uuid;
 BEGIN
   IF TG_OP = 'DELETE' THEN RAISE EXCEPTION 'seller_payment_account_immutable'; END IF;
+  IF auth.uid() IS NOT NULL AND NOT public.has_role(auth.uid(), 'admin') THEN
+    RAISE EXCEPTION 'seller_payment_account_server_only';
+  END IF;
+  SELECT owner_id INTO _owner FROM public.stores WHERE id = NEW.store_id;
+  IF _owner IS NULL OR _owner <> NEW.seller_id THEN
+    RAISE EXCEPTION 'seller_payment_store_owner_mismatch';
+  END IF;
   IF TG_OP = 'UPDATE' THEN
     IF NEW.store_id <> OLD.store_id OR NEW.seller_id <> OLD.seller_id THEN
       RAISE EXCEPTION 'seller_payment_identity_immutable';
     END IF;
-    IF auth.uid() IS NOT NULL AND NOT public.has_role(auth.uid(), 'admin') THEN
-      RAISE EXCEPTION 'seller_payment_account_server_only';
-    END IF;
     NEW.updated_at := now();
   END IF;
   RETURN NEW;
-END $$;
+END $;
 CREATE TRIGGER seller_payment_account_guard
-  BEFORE UPDATE OR DELETE ON public.seller_payment_accounts
+  BEFORE INSERT OR UPDATE OR DELETE ON public.seller_payment_accounts
   FOR EACH ROW EXECUTE FUNCTION public.seller_payment_account_guard();
 
 -- Provider-neutral order snapshot. Legacy Konnect columns remain for compatibility.

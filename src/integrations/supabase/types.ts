@@ -261,6 +261,10 @@ export type Database = {
       }
       orders: {
         Row: {
+          payment_provider: Database["public"]["Enums"]["payment_provider"] | null
+          provider_payment_ref: string | null
+          provider_checkout_url: string | null
+          provider_account_ref: string | null
           checkout_key: string
           created_at: string
           currency: string
@@ -279,6 +283,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          payment_provider?: Database["public"]["Enums"]["payment_provider"] | null
+          provider_payment_ref?: string | null
+          provider_checkout_url?: string | null
+          provider_account_ref?: string | null
           checkout_key: string
           created_at?: string
           currency?: string
@@ -297,6 +305,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          payment_provider?: Database["public"]["Enums"]["payment_provider"] | null
+          provider_payment_ref?: string | null
+          provider_checkout_url?: string | null
+          provider_account_ref?: string | null
           checkout_key?: string
           created_at?: string
           currency?: string
@@ -318,6 +330,9 @@ export type Database = {
       }
       payment_events: {
         Row: {
+          payment_provider: Database["public"]["Enums"]["payment_provider"] | null
+          provider_event_id: string | null
+          provider_status: string | null
           created_at: string
           id: string
           konnect_status: string | null
@@ -624,6 +639,56 @@ export type Database = {
           },
         ]
       }
+      seller_payment_accounts: {
+        Row: {
+          id: string
+          store_id: string
+          seller_id: string
+          seller_country_code: string
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_account_ref: string | null
+          referral_code_used: string | null
+          status: Database["public"]["Enums"]["seller_payment_account_status"]
+          verified_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          store_id: string
+          seller_id: string
+          seller_country_code: string
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_account_ref?: string | null
+          referral_code_used?: string | null
+          status?: Database["public"]["Enums"]["seller_payment_account_status"]
+          verified_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          store_id?: string
+          seller_id?: string
+          seller_country_code?: string
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_account_ref?: string | null
+          referral_code_used?: string | null
+          status?: Database["public"]["Enums"]["seller_payment_account_status"]
+          verified_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_payment_accounts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       stores: {
         Row: {
           created_at: string
@@ -748,6 +813,8 @@ export type Database = {
       app_role: "admin" | "user"
       order_status: "pending" | "paid" | "failed" | "cancelled"
       store_status: "active" | "suspended"
+      payment_provider: "konnect" | "ipay"
+      seller_payment_account_status: "not_started" | "pending" | "verified" | "rejected" | "suspended"
     }
     CompositeTypes: {
       [_ in never]: never

@@ -355,18 +355,21 @@ export type Database = {
         Row: {
           commission_bps: number;
           id: boolean;
+          konnect_direct_payouts_enabled: boolean;
           updated_at: string;
           updated_by: string | null;
         };
         Insert: {
           commission_bps?: number;
           id?: boolean;
+          konnect_direct_payouts_enabled?: boolean;
           updated_at?: string;
           updated_by?: string | null;
         };
         Update: {
           commission_bps?: number;
           id?: boolean;
+          konnect_direct_payouts_enabled?: boolean;
           updated_at?: string;
           updated_by?: string | null;
         };
@@ -535,6 +538,173 @@ export type Database = {
         };
         Relationships: [];
       };
+      seller_payout_items: {
+        Row: {
+          commission_millimes: number;
+          created_at: string;
+          discount_millimes: number;
+          gross_millimes: number;
+          id: string;
+          ledger_entry_id: string;
+          order_item_id: string;
+          payout_id: string;
+          seller_amount_millimes: number;
+        };
+        Insert: {
+          commission_millimes: number;
+          created_at?: string;
+          discount_millimes?: number;
+          gross_millimes: number;
+          id?: string;
+          ledger_entry_id: string;
+          order_item_id: string;
+          payout_id: string;
+          seller_amount_millimes: number;
+        };
+        Update: {
+          commission_millimes?: number;
+          created_at?: string;
+          discount_millimes?: number;
+          gross_millimes?: number;
+          id?: string;
+          ledger_entry_id?: string;
+          order_item_id?: string;
+          payout_id?: string;
+          seller_amount_millimes?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "seller_payout_items_ledger_entry_id_fkey";
+            columns: ["ledger_entry_id"];
+            isOneToOne: true;
+            referencedRelation: "seller_ledger_entries";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "seller_payout_items_order_item_id_fkey";
+            columns: ["order_item_id"];
+            isOneToOne: true;
+            referencedRelation: "order_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "seller_payout_items_payout_id_fkey";
+            columns: ["payout_id"];
+            isOneToOne: false;
+            referencedRelation: "seller_payouts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      seller_payout_preferences: {
+        Row: {
+          created_at: string;
+          id: string;
+          konnect_wallet_id: string | null;
+          method: Database["public"]["Enums"]["seller_payout_method"];
+          store_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          konnect_wallet_id?: string | null;
+          method?: Database["public"]["Enums"]["seller_payout_method"];
+          store_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          konnect_wallet_id?: string | null;
+          method?: Database["public"]["Enums"]["seller_payout_method"];
+          store_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "seller_payout_preferences_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: true;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      seller_payouts: {
+        Row: {
+          commission_bps: number;
+          commission_millimes: number;
+          created_at: string;
+          currency: string;
+          discount_millimes: number;
+          failure_reason: string | null;
+          gross_millimes: number;
+          id: string;
+          idempotency_key: string;
+          initiated_at: string | null;
+          method: Database["public"]["Enums"]["seller_payout_method"];
+          paid_at: string | null;
+          provider: string;
+          provider_transfer_ref: string | null;
+          scheduled_for: string | null;
+          seller_amount_millimes: number;
+          status: Database["public"]["Enums"]["seller_payout_status"];
+          store_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          commission_bps: number;
+          commission_millimes: number;
+          created_at?: string;
+          currency?: string;
+          discount_millimes?: number;
+          failure_reason?: string | null;
+          gross_millimes: number;
+          id?: string;
+          idempotency_key: string;
+          initiated_at?: string | null;
+          method?: Database["public"]["Enums"]["seller_payout_method"];
+          paid_at?: string | null;
+          provider?: string;
+          provider_transfer_ref?: string | null;
+          scheduled_for?: string | null;
+          seller_amount_millimes: number;
+          status?: Database["public"]["Enums"]["seller_payout_status"];
+          store_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          commission_bps?: number;
+          commission_millimes?: number;
+          created_at?: string;
+          currency?: string;
+          discount_millimes?: number;
+          failure_reason?: string | null;
+          gross_millimes?: number;
+          id?: string;
+          idempotency_key?: string;
+          initiated_at?: string | null;
+          method?: Database["public"]["Enums"]["seller_payout_method"];
+          paid_at?: string | null;
+          provider?: string;
+          provider_transfer_ref?: string | null;
+          scheduled_for?: string | null;
+          seller_amount_millimes?: number;
+          status?: Database["public"]["Enums"]["seller_payout_status"];
+          store_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "seller_payouts_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       seller_ledger_entries: {
         Row: {
           amount_millimes: number;
@@ -685,6 +855,18 @@ export type Database = {
         Returns: undefined;
       };
       admin_set_commission_bps: { Args: { _bps: number }; Returns: undefined };
+      admin_create_seller_payout: {
+        Args: { _idempotency_key: string; _scheduled_for?: string | null; _store_id: string };
+        Returns: string;
+      };
+      admin_mark_seller_payout_failed: {
+        Args: { _failure_reason: string; _payout_id: string };
+        Returns: boolean;
+      };
+      admin_mark_seller_payout_paid: {
+        Args: { _payout_id: string; _transfer_reference: string };
+        Returns: boolean;
+      };
       archive_file_version: {
         Args: { _version_id: string };
         Returns: undefined;
@@ -742,6 +924,8 @@ export type Database = {
       app_role: "admin" | "user";
       order_status: "pending" | "paid" | "failed" | "cancelled";
       store_status: "active" | "suspended";
+      seller_payout_method: "weekly_manual" | "konnect_direct";
+      seller_payout_status: "pending" | "processing" | "paid" | "failed" | "cancelled";
     };
     CompositeTypes: {
       [_ in never]: never;

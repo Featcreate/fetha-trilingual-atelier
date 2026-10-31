@@ -1,9 +1,9 @@
 name: Format payout UI files
 
 on:
-  push:
+  pull_request:
     branches:
-      - configurable-commission-and-terms-consent
+      - main
 
 permissions:
   contents: read

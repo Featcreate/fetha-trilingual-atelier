@@ -75,7 +75,10 @@ async function konnectGetPayment(paymentRef: string): Promise<KonnectPayment> {
  * Verify a payment with Konnect (server-to-server) and apply it to its order.
  * Idempotent: the order flips pending -> paid at most once.
  */
-export async function applyPaymentRef(paymentRef: string, source: "webhook" | "return_check" | "admin_check") {
+export async function applyPaymentRef(
+  paymentRef: string,
+  source: "webhook" | "return_check" | "admin_check",
+) {
   const { data: order } = await supabaseAdmin
     .from("orders")
     .select("id, status, total_millimes")
@@ -83,7 +86,9 @@ export async function applyPaymentRef(paymentRef: string, source: "webhook" | "r
     .maybeSingle();
 
   if (!order) {
-    await supabaseAdmin.from("payment_events").insert({ payment_ref: paymentRef, source, outcome: "unknown_order" });
+    await supabaseAdmin
+      .from("payment_events")
+      .insert({ payment_ref: paymentRef, source, outcome: "unknown_order" });
     return { outcome: "unknown_order" as const };
   }
 
@@ -92,16 +97,27 @@ export async function applyPaymentRef(paymentRef: string, source: "webhook" | "r
   const outcome: PaymentOutcome = decidePaymentOutcome(order, payment);
   if (outcome !== "paid") {
     await supabaseAdmin.from("payment_events").insert({
-      order_id: order.id, payment_ref: paymentRef, source, konnect_status: payment.status ?? null, outcome,
+      order_id: order.id,
+      payment_ref: paymentRef,
+      source,
+      konnect_status: payment.status ?? null,
+      outcome,
     });
     return { outcome };
   }
   // Single trusted, transactional, idempotent settlement (service role only).
   const { data, error } = await supabaseAdmin.rpc("settle_order_payment", {
-    _order_id: order.id, _mode: "verified", _payment_ref: paymentRef,
-    _amount_millimes: payment.amount ?? -1, _source: source,
+    _order_id: order.id,
+    _mode: "verified",
+    _payment_ref: paymentRef,
+    _amount_millimes: payment.amount ?? -1,
+    _source: source,
   });
   if (error) throw new Error("settlement_failed");
-  if (data === "paid") await supabaseAdmin.from("orders").update({ email_error: "email_not_configured" }).eq("id", order.id);
+  if (data === "paid")
+    await supabaseAdmin
+      .from("orders")
+      .update({ email_error: "email_not_configured" })
+      .eq("id", order.id);
   return { outcome: data as string };
 }

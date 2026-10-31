@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { issueDownload, type DownloadDeps, type Reservation } from "./download-flow";
 
-function deps(res: Reservation | null, signed: string | null | Error = "https://signed", finalized = true) {
+function deps(
+  res: Reservation | null,
+  signed: string | null | Error = "https://signed",
+  finalized = true,
+) {
   return {
     reserve: vi.fn(async () => res),
     sign: vi.fn(async () => {
@@ -12,7 +16,12 @@ function deps(res: Reservation | null, signed: string | null | Error = "https://
     release: vi.fn(async () => {}),
   } satisfies DownloadDeps;
 }
-const fresh: Reservation = { outcome: "new", reservation_id: "r1", storage_path: "s/p/v/f.pdf", file_name: "f.pdf" };
+const fresh: Reservation = {
+  outcome: "new",
+  reservation_id: "r1",
+  storage_path: "s/p/v/f.pdf",
+  file_name: "f.pdf",
+};
 
 describe("secure download flow", () => {
   it("signs for 300 seconds and counts only after finalization", async () => {
@@ -36,9 +45,12 @@ describe("secure download flow", () => {
     expect(await issueDownload(d)).toEqual({ ok: true, url: "https://signed", counted: false });
     expect(d.finalize).not.toHaveBeenCalled();
   });
-  it.each(["forbidden", "not_paid", "expired", "busy", "quota_exhausted"])("refuses %s without signing", async (outcome) => {
-    const d = deps({ outcome, reservation_id: null, storage_path: null, file_name: null });
-    expect(await issueDownload(d)).toEqual({ ok: false, error: outcome });
-    expect(d.sign).not.toHaveBeenCalled();
-  });
+  it.each(["forbidden", "not_paid", "expired", "busy", "quota_exhausted"])(
+    "refuses %s without signing",
+    async (outcome) => {
+      const d = deps({ outcome, reservation_id: null, storage_path: null, file_name: null });
+      expect(await issueDownload(d)).toEqual({ ok: false, error: outcome });
+      expect(d.sign).not.toHaveBeenCalled();
+    },
+  );
 });

@@ -55,12 +55,18 @@ function AccountPage() {
     const p = profile.data;
     if (!p) return;
     const patch: { full_name?: string; phone?: string } = {};
-    if (!p.full_name && meta.full_name && fullNameSchema.safeParse(meta.full_name).success) patch.full_name = meta.full_name.trim();
-    if (!p.phone && meta.phone && phoneSchema.safeParse(meta.phone).success) patch.phone = meta.phone.trim();
+    if (!p.full_name && meta.full_name && fullNameSchema.safeParse(meta.full_name).success)
+      patch.full_name = meta.full_name.trim();
+    if (!p.phone && meta.phone && phoneSchema.safeParse(meta.phone).success)
+      patch.phone = meta.phone.trim();
     if (Object.keys(patch).length) {
-      supabase.from("profiles").update(patch).eq("id", user.id).then(({ error }) => {
-        if (!error) queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
-      });
+      supabase
+        .from("profiles")
+        .update(patch)
+        .eq("id", user.id)
+        .then(({ error }) => {
+          if (!error) queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+        });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile.data]);
@@ -77,7 +83,10 @@ function AccountPage() {
     setMessage(null);
     if (Object.keys(errs).length) return;
     setBusy(true);
-    const { error } = await supabase.from("profiles").update({ full_name, phone }).eq("id", user.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ full_name, phone })
+      .eq("id", user.id);
     setBusy(false);
     if (error) return setMessage({ ok: false, text: a.errGeneric });
     await queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
@@ -99,7 +108,9 @@ function AccountPage() {
       <dl className="grid gap-3 rounded-xl bg-secondary p-4 text-sm sm:grid-cols-2">
         <div>
           <dt className="text-muted-foreground">{a.email}</dt>
-          <dd className="font-medium" dir="ltr">{user.email}</dd>
+          <dd className="font-medium" dir="ltr">
+            {user.email}
+          </dd>
         </div>
         <div>
           <dt className="text-muted-foreground">{a.memberSince}</dt>
@@ -111,13 +122,39 @@ function AccountPage() {
       {profile.isPending ? (
         <p className="mt-4 text-muted-foreground">{a.loading}</p>
       ) : profile.isError ? (
-        <p role="alert" className="mt-4 text-sm text-destructive">{a.errGeneric}</p>
+        <p role="alert" className="mt-4 text-sm text-destructive">
+          {a.errGeneric}
+        </p>
       ) : (
-        <form key={`${initialName}|${initialPhone}`} onSubmit={onSubmit} noValidate className="mt-4 space-y-4">
-          <Field id="full_name" label={a.fullName} autoComplete="name" maxLength={120} defaultValue={initialName} error={errors.full_name} />
-          <Field id="phone" label={a.phone} type="tel" dir="ltr" autoComplete="tel" maxLength={20} defaultValue={initialPhone} error={errors.phone} />
+        <form
+          key={`${initialName}|${initialPhone}`}
+          onSubmit={onSubmit}
+          noValidate
+          className="mt-4 space-y-4"
+        >
+          <Field
+            id="full_name"
+            label={a.fullName}
+            autoComplete="name"
+            maxLength={120}
+            defaultValue={initialName}
+            error={errors.full_name}
+          />
+          <Field
+            id="phone"
+            label={a.phone}
+            type="tel"
+            dir="ltr"
+            autoComplete="tel"
+            maxLength={20}
+            defaultValue={initialPhone}
+            error={errors.phone}
+          />
           {message && (
-            <p role={message.ok ? "status" : "alert"} className={`rounded-lg p-3 text-sm ${message.ok ? "bg-secondary" : "bg-destructive/10 text-destructive"}`}>
+            <p
+              role={message.ok ? "status" : "alert"}
+              className={`rounded-lg p-3 text-sm ${message.ok ? "bg-secondary" : "bg-destructive/10 text-destructive"}`}
+            >
               {message.text}
             </p>
           )}

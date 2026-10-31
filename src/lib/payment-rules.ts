@@ -16,7 +16,10 @@ export interface KonnectPayment {
 
 export type PaymentOutcome = "paid" | "already_paid" | "pending" | "mismatch" | "order_closed";
 
-export function decidePaymentOutcome(order: OrderForPayment, payment: KonnectPayment): PaymentOutcome {
+export function decidePaymentOutcome(
+  order: OrderForPayment,
+  payment: KonnectPayment,
+): PaymentOutcome {
   if (order.status === "paid") return "already_paid";
   if (order.status !== "pending") return "order_closed";
   // Konnect: only payment.status === "completed" means paid; "pending" covers failed or not attempted.

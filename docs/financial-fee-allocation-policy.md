@@ -17,6 +17,7 @@ External provider fees must never be absorbed by the platform or deducted from t
 The buyer is responsible for the external fee charged by the payment method the buyer chooses.
 
 Before the buyer confirms payment, the checkout must:
+
 - identify the selected payment provider/method;
 - show the actual external fee separately from the product amount and platform commission;
 - show the total amount the buyer will pay.
@@ -26,6 +27,7 @@ A buyer-side fee may only be passed through where the provider's contract and ap
 ## 3. Seller-side fees
 
 The seller is responsible for external fees associated with:
+
 - receiving seller proceeds;
 - transferring seller proceeds to the seller;
 - withdrawing funds from the seller's account.

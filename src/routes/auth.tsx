@@ -4,20 +4,34 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { authErrorMessage, useLang } from "@/lib/i18n";
-import { emailSchema, fullNameSchema, passwordSchema, phoneSchema, safeRedirect } from "@/lib/account-rules";
+import {
+  emailSchema,
+  fullNameSchema,
+  passwordSchema,
+  phoneSchema,
+  safeRedirect,
+} from "@/lib/account-rules";
 
 type Mode = "signin" | "signup" | "forgot";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) =>
-    z.object({ mode: z.enum(["signin", "signup", "forgot"]).optional(), redirect: z.string().optional() }).parse({
-      mode: s["mode"],
-      redirect: typeof s["redirect"] === "string" ? s["redirect"] : undefined,
-    }),
+    z
+      .object({
+        mode: z.enum(["signin", "signup", "forgot"]).optional(),
+        redirect: z.string().optional(),
+      })
+      .parse({
+        mode: s["mode"],
+        redirect: typeof s["redirect"] === "string" ? s["redirect"] : undefined,
+      }),
   head: () => ({
     meta: [
       { title: "Connexion — Algorea Bazaar" },
-      { name: "description", content: "Connectez-vous ou créez votre compte client Algorea Bazaar." },
+      {
+        name: "description",
+        content: "Connectez-vous ou créez votre compte client Algorea Bazaar.",
+      },
       { property: "og:title", content: "Connexion — Algorea Bazaar" },
       { property: "og:description", content: "Espace client Algorea Bazaar." },
       { property: "og:type", content: "website" },
@@ -61,7 +75,8 @@ function AuthPage() {
     const v = (k: string) => String(f.get(k) ?? "");
     const errs: Errs = {};
     if (!emailSchema.safeParse(v("email")).success) errs.email = a.errEmail;
-    if (mode !== "forgot" && !passwordSchema.safeParse(v("password")).success) errs.password = a.errPassword;
+    if (mode !== "forgot" && !passwordSchema.safeParse(v("password")).success)
+      errs.password = a.errPassword;
     if (mode === "signup") {
       if (f.get("accept_terms") !== "on") {
         setFormError(a.errTerms);
@@ -79,7 +94,10 @@ function AuthPage() {
     const email = v("email").trim();
     try {
       if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password: v("password") });
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password: v("password"),
+        });
         if (error) return setFormError(authErrorMessage(a, error));
         navigate({ to: target, replace: true });
       } else if (mode === "signup") {
@@ -114,7 +132,8 @@ function AuthPage() {
     }
   }
 
-  const title = mode === "signup" ? a.signUpTitle : mode === "forgot" ? a.forgotTitle : a.signInTitle;
+  const title =
+    mode === "signup" ? a.signUpTitle : mode === "forgot" ? a.forgotTitle : a.signInTitle;
   const submit = mode === "signup" ? a.signUp : mode === "forgot" ? a.sendReset : a.signIn;
 
   return (
@@ -122,11 +141,33 @@ function AuthPage() {
       <form key={mode} onSubmit={onSubmit} noValidate className="space-y-4">
         {mode === "signup" && (
           <>
-            <Field id="full_name" label={a.fullName} autoComplete="name" maxLength={120} error={errors.full_name} />
-            <Field id="phone" label={a.phone} type="tel" dir="ltr" autoComplete="tel" maxLength={20} error={errors.phone} />
+            <Field
+              id="full_name"
+              label={a.fullName}
+              autoComplete="name"
+              maxLength={120}
+              error={errors.full_name}
+            />
+            <Field
+              id="phone"
+              label={a.phone}
+              type="tel"
+              dir="ltr"
+              autoComplete="tel"
+              maxLength={20}
+              error={errors.phone}
+            />
           </>
         )}
-        <Field id="email" label={a.email} type="email" dir="ltr" autoComplete="email" maxLength={255} error={errors.email} />
+        <Field
+          id="email"
+          label={a.email}
+          type="email"
+          dir="ltr"
+          autoComplete="email"
+          maxLength={255}
+          error={errors.email}
+        />
         {mode !== "forgot" && (
           <Field
             id="password"
@@ -139,25 +180,70 @@ function AuthPage() {
           />
         )}
         {mode === "signup" && (
-          <label htmlFor="accept_terms" className="flex items-start gap-2 text-sm leading-6 text-muted-foreground">
-            <input id="accept_terms" name="accept_terms" type="checkbox" aria-required="true" className="mt-1 size-4 shrink-0 accent-coral" />
-            <span>{a.acceptTermsPrefix} <Link to="/terms" className="font-semibold text-coral underline underline-offset-2">{a.termsLink}</Link>.</span>
+          <label
+            htmlFor="accept_terms"
+            className="flex items-start gap-2 text-sm leading-6 text-muted-foreground"
+          >
+            <input
+              id="accept_terms"
+              name="accept_terms"
+              type="checkbox"
+              aria-required="true"
+              className="mt-1 size-4 shrink-0 accent-coral"
+            />
+            <span>
+              {a.acceptTermsPrefix}{" "}
+              <Link to="/terms" className="font-semibold text-coral underline underline-offset-2">
+                {a.termsLink}
+              </Link>
+              .
+            </span>
           </label>
         )}
-        {formError && <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{formError}</p>}
-        {notice && <p role="status" className="rounded-lg bg-secondary p-3 text-sm">{notice}</p>}
+        {formError && (
+          <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+            {formError}
+          </p>
+        )}
+        {notice && (
+          <p role="status" className="rounded-lg bg-secondary p-3 text-sm">
+            {notice}
+          </p>
+        )}
         <SubmitButton busy={busy} label={submit} busyLabel={a.loading} />
       </form>
 
       <div className="mt-6 space-y-2 text-center text-sm">
         {mode === "signin" && (
           <>
-            <p><Link to="/auth" search={{ mode: "forgot" }} className="text-coral hover:underline">{a.forgot}</Link></p>
-            <p>{a.noAccount} <Link to="/auth" search={{ mode: "signup", redirect: search.redirect }} className="font-semibold text-coral hover:underline">{a.signUp}</Link></p>
+            <p>
+              <Link to="/auth" search={{ mode: "forgot" }} className="text-coral hover:underline">
+                {a.forgot}
+              </Link>
+            </p>
+            <p>
+              {a.noAccount}{" "}
+              <Link
+                to="/auth"
+                search={{ mode: "signup", redirect: search.redirect }}
+                className="font-semibold text-coral hover:underline"
+              >
+                {a.signUp}
+              </Link>
+            </p>
           </>
         )}
         {mode !== "signin" && (
-          <p>{a.haveAccount} <Link to="/auth" search={{ mode: "signin", redirect: search.redirect }} className="font-semibold text-coral hover:underline">{a.signIn}</Link></p>
+          <p>
+            {a.haveAccount}{" "}
+            <Link
+              to="/auth"
+              search={{ mode: "signin", redirect: search.redirect }}
+              className="font-semibold text-coral hover:underline"
+            >
+              {a.signIn}
+            </Link>
+          </p>
         )}
       </div>
     </AuthShell>

@@ -12,9 +12,16 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Algorea Bazaar — Ressources numériques créatives" },
-      { name: "description", content: "Algorea Bazaar : boutique de produits numériques éducatifs et créatifs, en français, arabe et anglais." },
+      {
+        name: "description",
+        content:
+          "Algorea Bazaar : boutique de produits numériques éducatifs et créatifs, en français, arabe et anglais.",
+      },
       { property: "og:title", content: "Algorea Bazaar — Ressources numériques créatives" },
-      { property: "og:description", content: "Produits numériques éducatifs et créatifs multilingues." },
+      {
+        property: "og:description",
+        content: "Produits numériques éducatifs et créatifs multilingues.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -30,7 +37,10 @@ function Index() {
     queryKey: ["current-user-admin", session?.user.id],
     enabled: !!session?.user.id,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("has_role", { _user_id: session!.user.id, _role: "admin" });
+      const { data, error } = await supabase.rpc("has_role", {
+        _user_id: session!.user.id,
+        _role: "admin",
+      });
       if (error) throw error;
       return data === true;
     },
@@ -47,7 +57,11 @@ function Index() {
   ] as const;
 
   const switcher = (
-    <div className="flex shrink-0 rounded-full border border-border bg-card p-1" role="group" aria-label="Language">
+    <div
+      className="flex shrink-0 rounded-full border border-border bg-card p-1"
+      role="group"
+      aria-label="Language"
+    >
       {LANGS.map((l) => (
         <button
           key={l}
@@ -74,12 +88,28 @@ function Index() {
           </a>
           <nav className="hidden items-center gap-7 md:flex">
             {links.map(([href, label]) => (
-              <a key={href} href={href} className="text-sm font-medium hover:text-coral">{label}</a>
+              <a key={href} href={href} className="text-sm font-medium hover:text-coral">
+                {label}
+              </a>
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            {isAdmin && <Link to="/admin" className="hidden text-sm font-semibold text-coral hover:underline lg:inline">{t.admin.title}</Link>}
-            {session && <Link to="/orders" className="hidden text-sm font-semibold text-coral hover:underline lg:inline">{t.marketplace.myOrders}</Link>}
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="hidden text-sm font-semibold text-coral hover:underline lg:inline"
+              >
+                {t.admin.title}
+              </Link>
+            )}
+            {session && (
+              <Link
+                to="/orders"
+                className="hidden text-sm font-semibold text-coral hover:underline lg:inline"
+              >
+                {t.marketplace.myOrders}
+              </Link>
+            )}
             <Link
               to={session ? "/account" : "/auth"}
               aria-label={accountLabel}
@@ -102,7 +132,12 @@ function Index() {
         {open && (
           <nav className="border-t border-border bg-background px-4 py-3 md:hidden">
             {links.map(([href, label]) => (
-              <a key={href} href={href} onClick={() => setOpen(false)} className="block py-3 font-medium">
+              <a
+                key={href}
+                href={href}
+                onClick={() => setOpen(false)}
+                className="block py-3 font-medium"
+              >
                 {label}
               </a>
             ))}
@@ -131,11 +166,36 @@ function Index() {
           <h2 className="text-2xl font-bold md:text-3xl">{t.marketplace.catalog}</h2>
           <p className="mt-2 text-sm text-muted-foreground">{t.marketplace.tndNote}</p>
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {(["ebook", "template", "printable", "planner", "software", "course", "audio", "video", "graphics", "other"] as const).map(type => (
-              <div key={type} className="rounded-xl border border-border bg-card p-4 text-center font-semibold">{t.marketplace[type]}</div>
+            {(
+              [
+                "ebook",
+                "template",
+                "printable",
+                "planner",
+                "software",
+                "course",
+                "audio",
+                "video",
+                "graphics",
+                "other",
+              ] as const
+            ).map((type) => (
+              <div
+                key={type}
+                className="rounded-xl border border-border bg-card p-4 text-center font-semibold"
+              >
+                {t.marketplace[type]}
+              </div>
             ))}
           </div>
-          <div className="mt-8 text-center"><Link to="/catalog" className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground">{t.marketplace.viewCatalog}</Link></div>
+          <div className="mt-8 text-center">
+            <Link
+              to="/catalog"
+              className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground"
+            >
+              {t.marketplace.viewCatalog}
+            </Link>
+          </div>
         </section>
       </main>
 

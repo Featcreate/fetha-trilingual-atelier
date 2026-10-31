@@ -74,7 +74,11 @@ export const startCheckout = createServerFn({ method: "POST" })
         .eq("id", order.id)
         .eq("status", "pending")
         .is("konnect_payment_ref", null);
-      const { data: saved } = await supabaseAdmin.from("orders").select("konnect_pay_url").eq("id", order.id).single();
+      const { data: saved } = await supabaseAdmin
+        .from("orders")
+        .select("konnect_pay_url")
+        .eq("id", order.id)
+        .single();
       return { ok: true as const, orderId, payUrl: saved?.konnect_pay_url ?? payUrl };
     } catch {
       return { ok: false as const, error: "payment_provider_error", orderId };
@@ -102,8 +106,14 @@ export const checkOrderPayment = createServerFn({ method: "POST" })
         }
       }
     }
-    const { data: fresh } = await context.supabase.from("orders").select("status").eq("id", data.orderId).single();
-    return { status: (fresh?.status ?? order.status) as "pending" | "paid" | "failed" | "cancelled" };
+    const { data: fresh } = await context.supabase
+      .from("orders")
+      .select("status")
+      .eq("id", data.orderId)
+      .single();
+    return {
+      status: (fresh?.status ?? order.status) as "pending" | "paid" | "failed" | "cancelled",
+    };
   });
 
 /**
@@ -132,7 +142,9 @@ export const getDownloadLink = createServerFn({ method: "POST" })
         return error || !signed ? null : signed.signedUrl;
       },
       finalize: async (id) => {
-        const { data: ok, error } = await supabaseAdmin.rpc("finalize_download", { _reservation_id: id });
+        const { data: ok, error } = await supabaseAdmin.rpc("finalize_download", {
+          _reservation_id: id,
+        });
         return !error && ok === true;
       },
       release: async (id) => {
@@ -146,17 +158,30 @@ export const adminSimulatePayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    if (process.env["PAYMENT_SIMULATION_ENABLED"] !== "true" || process.env["KONNECT_ENV"] === "live") {
+    if (
+      process.env["PAYMENT_SIMULATION_ENABLED"] !== "true" ||
+      process.env["KONNECT_ENV"] === "live"
+    ) {
       return { ok: false as const, error: "simulation_disabled" };
     }
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
     if (!isAdmin) return { ok: false as const, error: "forbidden" };
-    const { data: order } = await context.supabase.from("orders").select("total_millimes").eq("id", data.orderId).maybeSingle();
+    const { data: order } = await context.supabase
+      .from("orders")
+      .select("total_millimes")
+      .eq("id", data.orderId)
+      .maybeSingle();
     if (!order) return { ok: false as const, error: "not_found" };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: outcome, error } = await supabaseAdmin.rpc("settle_order_payment", {
-      _order_id: data.orderId, _mode: "simulation", _payment_ref: `sim-${data.orderId}`,
-      _amount_millimes: order.total_millimes, _source: "admin_simulation",
+      _order_id: data.orderId,
+      _mode: "simulation",
+      _payment_ref: `sim-${data.orderId}`,
+      _amount_millimes: order.total_millimes,
+      _source: "admin_simulation",
     });
     if (error) return { ok: false as const, error: "settlement_failed" };
     return { ok: true as const, outcome };
@@ -167,7 +192,10 @@ export const adminRecheckPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
     if (!isAdmin) return { ok: false as const, error: "forbidden" };
     const { data: order } = await context.supabase
       .from("orders")

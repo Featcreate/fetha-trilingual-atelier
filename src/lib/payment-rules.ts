@@ -26,7 +26,7 @@ export function decidePaymentOutcome(
   if (payment.status !== "completed") return "pending";
   if (payment.orderId !== order.id) return "mismatch";
   if (payment.amount !== order.total_millimes) return "mismatch";
-  if (payment.token && payment.token !== "TND") return "mismatch";
+  if (payment.token !== "TND") return "mismatch";
   return "paid";
 }
 

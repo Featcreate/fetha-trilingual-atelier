@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated/seller'
 import { Route as ApiPublicKonnectWebhookRouteImport } from './routes/api/public/konnect.webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -40,6 +41,11 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSellerRoute = AuthenticatedSellerRouteImport.update({
+  id: '/seller',
+  path: '/seller',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiPublicKonnectWebhookRoute = ApiPublicKonnectWebhookRouteImport.update({
   id: '/api/public/konnect/webhook',
   path: '/api/public/konnect/webhook',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/seller': typeof AuthenticatedSellerRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -67,6 +74,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/seller': typeof AuthenticatedSellerRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
 }
 export interface FileRouteTypes {
@@ -76,6 +84,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/account'
+    | '/seller'
     | '/api/public/konnect/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -139,6 +148,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/seller': {
+      id: '/_authenticated/seller'
+      path: '/seller'
+      fullPath: '/seller'
+      preLoaderRoute: typeof AuthenticatedSellerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/konnect/webhook': {
       id: '/api/public/konnect/webhook'
       path: '/api/public/konnect/webhook'
@@ -151,10 +167,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedSellerRoute: typeof AuthenticatedSellerRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedSellerRoute: AuthenticatedSellerRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

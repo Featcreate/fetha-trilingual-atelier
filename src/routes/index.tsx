@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { User } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Menu, X } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, useLang } from "@/lib/i18n";
@@ -24,6 +25,15 @@ function Index() {
   const { lang, setLang, t } = useLang();
   const [open, setOpen] = useState(false);
   const { session } = useSession();
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    let active = true;
+    if (!session?.user.id) { setIsAdmin(false); return () => { active = false; }; }
+    supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" }).then(({ data }) => {
+      if (active) setIsAdmin(data === true);
+    });
+    return () => { active = false; };
+  }, [session?.user.id]);
   const accountLabel = session ? t.auth.account : t.auth.signIn;
   const links = [
     ["#home", t.nav.home],
@@ -66,6 +76,7 @@ function Index() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            {isAdmin && <Link to="/admin" className="hidden text-sm font-semibold text-coral hover:underline lg:inline">{t.admin.title}</Link>}
             {session && <Link to="/orders" className="hidden text-sm font-semibold text-coral hover:underline lg:inline">{t.marketplace.myOrders}</Link>}
             <Link
               to={session ? "/account" : "/auth"}

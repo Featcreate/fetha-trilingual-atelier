@@ -10,11 +10,15 @@ export function konnectConfig() {
   const apiKey = process.env["KONNECT_API_KEY"];
   const walletId = process.env["KONNECT_WALLET_ID"];
   const mode = process.env["KONNECT_ENV"];
-  if (!isKonnectPaymentEnabled({
-    KONNECT_ENV: mode,
-    KONNECT_SANDBOX_PAYMENTS_ENABLED: process.env["KONNECT_SANDBOX_PAYMENTS_ENABLED"],
-    KONNECT_LIVE_PAYMENTS_ENABLED: process.env["KONNECT_LIVE_PAYMENTS_ENABLED"],
-  })) return null;
+  if (
+    !isKonnectPaymentEnabled({
+      KONNECT_ENV: mode,
+      KONNECT_SANDBOX_PAYMENTS_ENABLED: process.env["KONNECT_SANDBOX_PAYMENTS_ENABLED"],
+      KONNECT_LIVE_PAYMENTS_ENABLED: process.env["KONNECT_LIVE_PAYMENTS_ENABLED"],
+    })
+  ) {
+    return null;
+  }
   if (!apiKey || !walletId) return null;
   const live = mode === "live";
   return { apiKey, walletId, base: live ? LIVE : SANDBOX, live };

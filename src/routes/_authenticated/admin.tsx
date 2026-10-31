@@ -56,6 +56,9 @@ type PayoutRow = {
   store_id: string;
   status: string;
   seller_amount_millimes: number;
+  gross_millimes: number;
+  commission_millimes: number;
+  discount_millimes: number;
   commission_bps: number;
   created_at: string;
   paid_at: string | null;
@@ -129,7 +132,7 @@ function AdminPage() {
       const { data, error } = await supabase
         .from("seller_payouts")
         .select(
-          "id,store_id,status,seller_amount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason",
+          "id,store_id,status,seller_amount_millimes,gross_millimes,commission_millimes,discount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason",
         )
         .order("created_at", { ascending: false })
         .limit(100);
@@ -434,7 +437,15 @@ function AdminPage() {
                       <p className="text-xs text-destructive">{payout.failure_reason}</p>
                     )}
                   </div>
-                  <strong>{formatTND(payout.seller_amount_millimes)}</strong>
+                  <div className="text-end">
+                    <p className="font-bold">{formatTND(payout.seller_amount_millimes)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {a.payoutGross}: {formatTND(payout.gross_millimes)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {a.payoutCommission}: {formatTND(payout.commission_millimes)}
+                    </p>
+                  </div>
                 </div>
                 {payout.status !== "paid" && payout.status !== "cancelled" && (
                   <div className="mt-3 grid gap-2">

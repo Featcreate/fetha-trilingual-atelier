@@ -34,6 +34,8 @@ function AccountPage() {
   const [errors, setErrors] = useState<Errs>({});
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirmationBusy, setConfirmationBusy] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState("");
 
   const profile = useQuery({
     queryKey: ["profile", user.id],
@@ -86,6 +88,15 @@ function AccountPage() {
     setMessage({ ok: true, text: a.saved });
   }
 
+  async function resendConfirmation() {
+    if (!user.email) return;
+    setConfirmationBusy(true);
+    setConfirmationMessage("");
+    const { error } = await supabase.auth.resend({ type: "signup", email: user.email });
+    setConfirmationBusy(false);
+    setConfirmationMessage(error ? a.errGeneric : a.confirmationResent);
+  }
+
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
@@ -127,6 +138,16 @@ function AccountPage() {
         </form>
       )}
 
+      {!user.email_confirmed_at && (
+        <section className="mt-6 rounded-xl border border-border bg-secondary p-4" aria-live="polite">
+          <p className="text-sm font-semibold">{a.errUnconfirmed}</p>
+          <button type="button" onClick={resendConfirmation} disabled={confirmationBusy}
+            className="mt-3 rounded-full border border-border px-5 py-2.5 text-sm font-semibold hover:bg-background disabled:opacity-60">
+            {confirmationBusy ? a.loading : a.resendConfirmation}
+          </button>
+          {confirmationMessage && <p role="status" className="mt-2 text-sm">{confirmationMessage}</p>}
+        </section>
+      )}
       <StoreOnboarding userId={user.id} emailConfirmed={Boolean(user.email_confirmed_at)} />
       <SellerProducts userId={user.id} />
 

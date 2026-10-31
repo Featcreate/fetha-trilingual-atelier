@@ -196,8 +196,9 @@ function SellerPage() {
           <section className="rounded-xl border border-border p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div><p className="text-xs text-muted-foreground">{m.storeExists}</p><h2 className="text-xl font-bold">{store.name}</h2><p className="text-sm text-muted-foreground" dir="ltr">/stores/{store.slug}</p></div>
-              <span className="rounded-full bg-secondary px-3 py-1 text-xs">{m.freeForever}</span>
+              <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-secondary px-3 py-1 text-xs">{m.freeForever}</span><button type="button" onClick={() => setEditingStore(!editingStore)} className="rounded-full border border-border px-3 py-2 text-xs font-semibold">{m.editStore}</button></div>
             </div>
+            {editingStore && <form onSubmit={saveStore} className="mt-4 flex flex-wrap items-end gap-3"><div className="min-w-[220px] flex-1"><Field id="store_name_edit" name="store_name" label={m.storeName} defaultValue={store.name} required maxLength={120} /></div><button disabled={busy} className="rounded-full bg-accent px-4 py-2.5 text-sm font-semibold disabled:opacity-60">{m.save}</button><button type="button" onClick={() => setEditingStore(false)} className="rounded-full border border-border px-4 py-2.5 text-sm">{m.cancel}</button></form>}
           </section>
 
           <section className="space-y-4">

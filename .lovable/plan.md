@@ -23,13 +23,23 @@
 7. Emails (needs email domain). PAUSE.
 8. Final: choose payment/payout provider, adapt or retire Konnect code, sandbox tests, then live only on explicit approval.
 
-## 4. Risks
+## 4. Financial fee allocation policy — approved 2026-10-31
+- Algorea Bazaar's platform commission is configurable; no fixed percentage is promised in the Terms of Use or hard-coded as a business rule, calculated separately from all external payment, transfer, and withdrawal fees.
+- The buyer bears the external fee charged for the payment method the buyer selects, provided the provider's terms and applicable law permit the fee to be passed through and the exact fee can be disclosed before confirmation.
+- The seller bears external fees charged for receiving, transferring, or withdrawing the seller's proceeds. Weekly seller payouts remain manual.
+- Algorea Bazaar must not absorb, reimburse, or record any provider, bank, transfer, or withdrawal fee as a platform expense. Such fees must never reduce the platform commission.
+- External fees must be separately identified, accurately calculated from the selected provider/method, and disclosed to the responsible customer before the relevant transaction. No hidden fees and no guessed or hard-coded fee schedule.
+- If a provider charges the platform account and its fee cannot lawfully and transparently be assigned to the responsible buyer or seller, do not activate that payment/payout method until the commercial and technical arrangement is resolved.
+- Do not assume iPay's quoted rate or cap, or any other provider's pricing, without current written confirmation. Do not require an iPay referral code.
+- This policy is a product requirement, not permission to activate live payments. Provider selection, fee mechanics, sandbox verification, and explicit approval remain prerequisites.
+
+## 5. Risks
 - Design: new pages must reuse the existing color tokens and fonts; the header/footer live inside the homepage file, so extracting them for other pages must be done without visual change.
 - Logo: the supplied logo has a dark background; on the cream header it will show as a dark disc — acceptable, but check contrast.
 - Security: public webhook route exists (verifies with Konnect before any change — safe, but dormant). Product images bucket is private, so the storefront will need signed or public-read image access later. No admin assigned yet; first admin must be granted manually via the backend, never from the browser.
 - Data: schema changes must stay additive (no drops/renames).
 
-## 5. Files for the brand milestone (not changed now)
+## 6. Files for the brand milestone (not changed now)
 - `public/brand/` — add the new logo file (e.g. `algorea-bazaar-logo.jpg`)
 - `src/components/BrandLogo.tsx` — logo path, alt text "Algorea Bazaar", remove slot
 - `src/lib/i18n.ts` — hero texts FR/AR/EN, logo-slot label, storage key
@@ -38,6 +48,12 @@
 - `src/styles.css` — comment only
 - `src/lib/shop.functions.ts` — payment description label (optional; payment code otherwise untouched)
 
-## 6. Confirmations
+## 7. Legal terms and configurable commission
+- The concise Arabic Terms of Use are maintained in `docs/terms-of-use-ar.md`; they are an approved project draft, not a legally reviewed/published document.
+- Before launch, complete the operator's legal identity/contact details and obtain Tunisian legal review; prepare French and English translations before those languages are used for contractual consent.
+- Registration must require an explicit, unchecked acceptance of the current Terms of Use. Store the user ID, terms version, acceptance timestamp, and acceptance language; preserve prior versions and request renewed acceptance when material terms change.
+- Platform commission is configurable through the platform's commission settings. Do not hard-code a fixed percentage or present a permanent percentage in the Terms of Use. Show the applicable commission and seller proceeds before the seller publishes a product or otherwise commits to a sale; snapshot the applicable commission in each order.
+
+## 8. Confirmations
 - Yes, real database work exists: 3 applied migrations, 7 tables, security policies, 2 private buckets — the empty `drizzle/schema.ts` is normal (migrations are SQL files).
 - Yes, Konnect payment logic exists in code but is inactive (no credentials, no UI calls it, no transactions ever made).

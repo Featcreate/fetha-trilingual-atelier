@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { User } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Menu, X } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -25,15 +26,16 @@ function Index() {
   const { lang, setLang, t } = useLang();
   const [open, setOpen] = useState(false);
   const { session } = useSession();
-  const [isAdmin, setIsAdmin] = useState(false);
-  useEffect(() => {
-    let active = true;
-    if (!session?.user.id) { setIsAdmin(false); return () => { active = false; }; }
-    supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" }).then(({ data }) => {
-      if (active) setIsAdmin(data === true);
-    });
-    return () => { active = false; };
-  }, [session?.user.id]);
+  const adminRole = useQuery({
+    queryKey: ["current-user-admin", session?.user.id],
+    enabled: !!session?.user.id,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("has_role", { _user_id: session!.user.id, _role: "admin" });
+      if (error) throw error;
+      return data === true;
+    },
+  });
+  const isAdmin = adminRole.data === true;
   const accountLabel = session ? t.auth.account : t.auth.signIn;
   const links = [
     ["#home", t.nav.home],

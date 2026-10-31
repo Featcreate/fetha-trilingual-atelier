@@ -126,7 +126,7 @@ function AdminPage() {
   const payouts = useQuery({
     queryKey: ["admin-payouts"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("seller_payouts")
         .select(
           "id,store_id,status,seller_amount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason",
@@ -174,7 +174,7 @@ function AdminPage() {
     }
     setBusy("payout-create");
     setNotice(null);
-    const { error } = await (supabase as any).rpc("admin_create_seller_payout", {
+    const { error } = await supabase.rpc("admin_create_seller_payout", {
       _store_id: payoutStoreId,
       _idempotency_key: `weekly-${payoutStoreId}-${crypto.randomUUID()}`,
       _scheduled_for: null,
@@ -199,7 +199,7 @@ function AdminPage() {
     }
     setBusy(payout.id);
     setNotice(null);
-    const { error } = await (supabase as any).rpc("admin_mark_seller_payout_paid", {
+    const { error } = await supabase.rpc("admin_mark_seller_payout_paid", {
       _payout_id: payout.id,
       _transfer_reference: payoutReference.trim(),
     });
@@ -221,7 +221,7 @@ function AdminPage() {
     }
     setBusy(payout.id);
     setNotice(null);
-    const { error } = await (supabase as any).rpc("admin_mark_seller_payout_failed", {
+    const { error } = await supabase.rpc("admin_mark_seller_payout_failed", {
       _payout_id: payout.id,
       _failure_reason: payoutFailure.trim(),
     });

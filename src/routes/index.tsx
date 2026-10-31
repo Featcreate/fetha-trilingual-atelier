@@ -106,7 +106,7 @@ function Index() {
               href="/products"
               className="mt-8 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
             >
-              {t.heroCta}
+              {t.catalog.browse}
             </a>
           </div>
         </section>

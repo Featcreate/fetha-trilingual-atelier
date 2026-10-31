@@ -1,13 +1,12 @@
--- Make platform commission explicitly configurable and unset until an administrator chooses it.
-ALTER TABLE public.platform_settings
-  ALTER COLUMN commission_bps DROP DEFAULT,
-  ALTER COLUMN commission_bps DROP NOT NULL;
-
--- Do not silently carry forward the old 5% default as the active policy.
--- Existing order-item commission snapshots are intentionally untouched.
+-- Keep the platform commission configurable, with 5% as the initial default.
+-- Administrators can change it later through admin_set_commission_bps().
 UPDATE public.platform_settings
-   SET commission_bps = NULL, updated_by = NULL, updated_at = now()
- WHERE id = true;
+   SET commission_bps = 500, updated_by = NULL, updated_at = now()
+ WHERE id = true AND commission_bps IS NULL;
+
+ALTER TABLE public.platform_settings
+  ALTER COLUMN commission_bps SET DEFAULT 500,
+  ALTER COLUMN commission_bps SET NOT NULL;
 
 CREATE OR REPLACE FUNCTION public.admin_set_commission_bps(_bps integer) RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$

@@ -67,7 +67,8 @@ function AuthPage() {
     if (!emailSchema.safeParse(v("email")).success) errs.email = a.errEmail;
     if (mode !== "forgot" && !passwordSchema.safeParse(v("password")).success) errs.password = a.errPassword;
     if (mode === "signup") {
-      if (!fullNameSchema.safeParse(v("full_name")).success) errs.full_name = a.errName;
+      const fullName = v("full_name").trim();
+      if (!fullNameSchema.safeParse(fullName).success || fullName.split(/\s+/).length < 2) errs.full_name = a.errName;
     }
     setErrors(errs);
     setFormError("");

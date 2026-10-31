@@ -696,7 +696,7 @@ function SellerPage() {
                 <p className="mt-2 rounded-lg bg-secondary p-3 text-sm">{m.noPayouts}</p>
               ) : (
                 <div className="mt-3 space-y-2">
-                  {payoutHistoryQuery.data.map((p: any) => (
+                  {payoutHistoryQuery.data.map((p) => (
                     <article
                       key={p.id}
                       className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-secondary/60 p-3 text-sm"

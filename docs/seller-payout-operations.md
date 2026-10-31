@@ -5,6 +5,9 @@
 Store creation and product listings remain free for sellers. No seller registration, store-opening, listing, or mandatory seller subscription fee is charged.
 
 - Seller payout preference defaults to **weekly manual transfer**.
+- All sellers, regardless of nationality or residence, are shown the same platform Konnect referral-registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a
+- Algorea Bazaar applies no country-based seller-registration restriction. Konnect alone decides whether an applicant can register and what identity, phone, bank, residence, or other checks are required. The referral link does not guarantee acceptance or link a wallet automatically.
+- Do not block store creation or product listings because a seller has not registered with Konnect. Do not promise or process a payout through Konnect unless the seller's account and payout route are accepted and verified by the provider.
 - The platform commission is taken from each paid order item before the seller amount is recorded. The configured commission rate is snapshotted on each order item; the payout batch preserves those original amounts.
 - Seller payout batches are created by an administrator from verified, paid sales that have not already been assigned to a payout.
 - A batch is grouped by store and commission rate so that historical commission snapshots are never recalculated.

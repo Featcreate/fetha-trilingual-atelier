@@ -343,6 +343,9 @@ export type Database = {
           source: string
         }
         Insert: {
+          payment_provider?: Database["public"]["Enums"]["payment_provider"] | null
+          provider_event_id?: string | null
+          provider_status?: string | null
           created_at?: string
           id?: string
           konnect_status?: string | null
@@ -353,6 +356,9 @@ export type Database = {
           source: string
         }
         Update: {
+          payment_provider?: Database["public"]["Enums"]["payment_provider"] | null
+          provider_event_id?: string | null
+          provider_status?: string | null
           created_at?: string
           id?: string
           konnect_status?: string | null

@@ -12,6 +12,11 @@ AS $$
     SELECT 1
       FROM auth.users u
      WHERE u.id = _user_id
+       AND (
+         auth.uid() IS NULL
+         OR auth.uid() = _user_id
+         OR public.has_role(auth.uid(), 'admin')
+       )
        AND u.email_confirmed_at IS NOT NULL
   );
 $$;

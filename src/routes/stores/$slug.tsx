@@ -27,7 +27,7 @@ function StorefrontPage() {
       if (!store) return null;
       const { data: products, error: productError } = await supabase
         .from("products")
-        .select("id,name,description,price_millimes,product_type")
+        .select("id,name,description,price_millimes,product_type,image_path")
         .eq("store_id", store.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false });

@@ -24,10 +24,10 @@
 8. Final: choose payment/payout provider, adapt or retire Konnect code, sandbox tests, then live only on explicit approval.
 
 ## 4. Financial fee allocation policy — approved 2026-10-31
-- Algorea Bazaar's platform commission is 5% of the product sale amount, calculated separately from all external payment, transfer, and withdrawal fees.
+- Algorea Bazaar's platform commission is configurable; no fixed percentage is promised in the Terms of Use or hard-coded as a business rule, calculated separately from all external payment, transfer, and withdrawal fees.
 - The buyer bears the external fee charged for the payment method the buyer selects, provided the provider's terms and applicable law permit the fee to be passed through and the exact fee can be disclosed before confirmation.
 - The seller bears external fees charged for receiving, transferring, or withdrawing the seller's proceeds. Weekly seller payouts remain manual.
-- Algorea Bazaar must not absorb, reimburse, or record any provider, bank, transfer, or withdrawal fee as a platform expense. Such fees must never reduce the platform's 5% commission.
+- Algorea Bazaar must not absorb, reimburse, or record any provider, bank, transfer, or withdrawal fee as a platform expense. Such fees must never reduce the platform commission.
 - External fees must be separately identified, accurately calculated from the selected provider/method, and disclosed to the responsible customer before the relevant transaction. No hidden fees and no guessed or hard-coded fee schedule.
 - If a provider charges the platform account and its fee cannot lawfully and transparently be assigned to the responsible buyer or seller, do not activate that payment/payout method until the commercial and technical arrangement is resolved.
 - Do not assume iPay's quoted rate or cap, or any other provider's pricing, without current written confirmation. Do not require an iPay referral code.

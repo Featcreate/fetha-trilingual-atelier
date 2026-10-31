@@ -1,0 +1,26 @@
+name: Format payout UI files
+
+on:
+  push:
+    branches:
+      - configurable-commission-and-terms-consent
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bunx prettier --write src/lib/i18n.ts src/routes/_authenticated/admin.tsx src/routes/_authenticated/seller.tsx
+      - run: mkdir -p formatted && cp src/lib/i18n.ts src/routes/_authenticated/admin.tsx src/routes/_authenticated/seller.tsx formatted/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: payout-formatted-files
+          path: formatted/
+          retention-days: 1

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { useLang } from "@/lib/i18n";
 import { fullNameSchema, phoneSchema } from "@/lib/account-rules";
+import { StoreOnboarding } from "@/components/StoreOnboarding";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -124,6 +125,8 @@ function AccountPage() {
           <SubmitButton busy={busy} label={a.save} busyLabel={a.loading} />
         </form>
       )}
+
+      <StoreOnboarding userId={user.id} emailConfirmed={Boolean(user.email_confirmed_at)} />
 
       <button
         type="button"

@@ -104,7 +104,7 @@ function SellerDashboard() {
   const preferenceQuery = useQuery({
     queryKey:["seller-payout-preference",store?.id],enabled:Boolean(store?.id),
     queryFn:async()=>{
-      const {data,error}=await supabase.from("seller_payout_preferences").select("id,method,konnect_wallet_id")
+      const {data,error}=await (supabase as any).from("seller_payout_preferences").select("id,method,konnect_wallet_id")
         .eq("store_id",store!.id).maybeSingle();
       if(error) throw error; return data;
     },

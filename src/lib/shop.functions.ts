@@ -42,45 +42,6 @@ export const startCheckout = createServerFn({ method: "POST" })
     // guarantee direct-to-seller settlement. Do not create a payment until the
     // seller's verified provider account and provider-specific adapter are wired.
     return { ok: false as const, error: "seller_payment_routing_not_ready", orderId };
-
-    if (order.konnect_pay_url) return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
-
-    const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
-    if (!konnectConfig()) return { ok: false as const, error: "payments_not_configured", orderId };
-
-    const { data: profile } = await context.supabase
-      .from("profiles")
-      .select("full_name, phone")
-      .eq("id", context.userId)
-      .maybeSingle();
-    const [firstName, ...rest] = (profile?.full_name ?? "").trim().split(/\s+/);
-
-    const origin = siteOrigin();
-    try {
-      const { payUrl, paymentRef } = await konnectInitPayment({
-        amount: order.total_millimes,
-        orderId: order.id,
-        description: `Algorea Bazaar #${order.id.slice(0, 8)}`,
-        webhook: `${origin}/api/public/konnect/webhook`,
-        successUrl: `${origin}/checkout/return?order=${order.id}`,
-        failUrl: `${origin}/checkout/return?order=${order.id}`,
-        firstName,
-        lastName: rest.join(" "),
-        phoneNumber: profile?.phone,
-        email: order.customer_email ?? undefined,
-      });
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await supabaseAdmin
-        .from("orders")
-        .update({ konnect_payment_ref: paymentRef, konnect_pay_url: payUrl })
-        .eq("id", order.id)
-        .eq("status", "pending")
-        .is("konnect_payment_ref", null);
-      const { data: saved } = await supabaseAdmin.from("orders").select("konnect_pay_url").eq("id", order.id).single();
-      return { ok: true as const, orderId, payUrl: saved?.konnect_pay_url ?? payUrl };
-    } catch {
-      return { ok: false as const, error: "payment_provider_error", orderId };
-    }
   });
 
 /** Re-check an own order's payment with Konnect (never trusts redirect parameters). */

@@ -135,7 +135,7 @@ function SellerPage() {
     queryKey: ["seller-payout-preference", store?.id],
     enabled: !!store?.id,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("seller_payout_preferences")
         .select("id,method,konnect_wallet_id")
         .eq("store_id", store!.id)
@@ -149,7 +149,7 @@ function SellerPage() {
     queryKey: ["seller-payout-history", store?.id],
     enabled: !!store?.id,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("seller_payouts")
         .select(
           "id,status,seller_amount_millimes,currency,created_at,paid_at,provider_transfer_ref",
@@ -191,7 +191,7 @@ function SellerPage() {
     if (!store) return;
     setBusy(true);
     setNotice("");
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("seller_payout_preferences")
       .upsert({ store_id: store.id, method: "weekly_manual" }, { onConflict: "store_id" });
     setBusy(false);

@@ -22,7 +22,7 @@ function slugify(value: string) {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
 }
 function safeFileName(value: string) {
-  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9._ -]/g, "_").replace(/\.\./g, "_").slice(0, 180) || "digital-file.bin";
+  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9._ -]/g, "_").replace(/\.\./g, "_").replace(/^[^A-Za-z0-9]+/, "").slice(0, 180) || "digital-file.bin";
 }
 
 function SellerPage() {

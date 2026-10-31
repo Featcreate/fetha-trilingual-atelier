@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS public.seller_payouts (
   status public.seller_payout_status NOT NULL DEFAULT 'pending',
   currency text NOT NULL DEFAULT 'TND' CHECK (currency ~ '^[A-Z]{3}$'),
   gross_millimes bigint NOT NULL CHECK (gross_millimes > 0),
+  discount_millimes bigint NOT NULL DEFAULT 0 CHECK (discount_millimes >= 0),
   commission_bps integer NOT NULL CHECK (commission_bps BETWEEN 0 AND 10000),
   commission_millimes bigint NOT NULL CHECK (commission_millimes >= 0),
   seller_amount_millimes bigint NOT NULL CHECK (seller_amount_millimes >= 0),
@@ -89,7 +90,7 @@ CREATE TABLE IF NOT EXISTS public.seller_payouts (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT seller_payouts_reconcile
-    CHECK (gross_millimes = commission_millimes + seller_amount_millimes),
+    CHECK (gross_millimes = discount_millimes + commission_millimes + seller_amount_millimes),
   CONSTRAINT seller_payouts_method_provider
     CHECK ((method = 'weekly_manual' AND provider = 'manual')
         OR (method = 'konnect_direct' AND provider = 'konnect'))
@@ -125,11 +126,12 @@ CREATE TABLE IF NOT EXISTS public.seller_payout_items (
   order_item_id uuid NOT NULL UNIQUE
     REFERENCES public.order_items(id) ON DELETE RESTRICT,
   gross_millimes bigint NOT NULL CHECK (gross_millimes > 0),
+  discount_millimes bigint NOT NULL DEFAULT 0 CHECK (discount_millimes >= 0),
   commission_millimes bigint NOT NULL CHECK (commission_millimes >= 0),
   seller_amount_millimes bigint NOT NULL CHECK (seller_amount_millimes >= 0),
   created_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT seller_payout_items_reconcile
-    CHECK (gross_millimes = commission_millimes + seller_amount_millimes)
+    CHECK (gross_millimes = discount_millimes + commission_millimes + seller_amount_millimes)
 );
 CREATE INDEX IF NOT EXISTS seller_payout_items_payout_idx
   ON public.seller_payout_items(payout_id);
@@ -167,7 +169,10 @@ BEGIN
   SELECT * INTO oi FROM public.order_items WHERE id = l.order_item_id;
   IF NOT FOUND OR oi.store_id <> p.store_id OR oi.seller_id <> l.seller_id
      OR oi.order_id IS NULL OR oi.seller_net_millimes <> l.amount_millimes
-     OR oi.commission_bps <> p.commission_bps THEN
+     OR oi.commission_bps <> p.commission_bps
+     OR oi.payable_millimes <> oi.gross_millimes - oi.discount_millimes
+     OR oi.commission_millimes <> round(oi.payable_millimes::numeric * oi.commission_bps / 10000)::bigint
+     OR oi.seller_net_millimes <> oi.payable_millimes - oi.commission_millimes THEN
     RAISE EXCEPTION 'order_item_ledger_mismatch';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.orders o WHERE o.id = oi.order_id AND o.status = 'paid'
@@ -177,6 +182,7 @@ BEGIN
   IF NEW.order_item_id <> oi.id
      OR NEW.seller_amount_millimes <> l.amount_millimes
      OR NEW.gross_millimes <> oi.gross_millimes
+     OR NEW.discount_millimes <> oi.discount_millimes
      OR NEW.commission_millimes <> oi.commission_millimes THEN
     RAISE EXCEPTION 'payout_item_amount_mismatch';
   END IF;
@@ -190,11 +196,11 @@ CREATE TRIGGER seller_payout_items_guard
 CREATE OR REPLACE FUNCTION public.guard_seller_payout_update()
 RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $$
 BEGIN
-  IF (NEW.id, NEW.store_id, NEW.method, NEW.currency, NEW.gross_millimes,
+  IF (NEW.id, NEW.store_id, NEW.method, NEW.currency, NEW.gross_millimes, NEW.discount_millimes,
       NEW.commission_bps, NEW.commission_millimes, NEW.seller_amount_millimes,
       NEW.idempotency_key, NEW.provider, NEW.created_at)
      IS DISTINCT FROM
-     (OLD.id, OLD.store_id, OLD.method, OLD.currency, OLD.gross_millimes,
+     (OLD.id, OLD.store_id, OLD.method, OLD.currency, OLD.gross_millimes, OLD.discount_millimes,
       OLD.commission_bps, OLD.commission_millimes, OLD.seller_amount_millimes,
       OLD.idempotency_key, OLD.provider, OLD.created_at) THEN
     RAISE EXCEPTION 'payout_financial_snapshot_immutable';
@@ -207,6 +213,7 @@ BEGIN
       RAISE EXCEPTION 'payout_has_no_items';
     END IF;
     IF NEW.gross_millimes <> (SELECT coalesce(sum(gross_millimes),0) FROM public.seller_payout_items WHERE payout_id = NEW.id)
+       OR NEW.discount_millimes <> (SELECT coalesce(sum(discount_millimes),0) FROM public.seller_payout_items WHERE payout_id = NEW.id)
        OR NEW.commission_millimes <> (SELECT coalesce(sum(commission_millimes),0) FROM public.seller_payout_items WHERE payout_id = NEW.id)
        OR NEW.seller_amount_millimes <> (SELECT coalesce(sum(seller_amount_millimes),0) FROM public.seller_payout_items WHERE payout_id = NEW.id) THEN
       RAISE EXCEPTION 'payout_items_total_mismatch';

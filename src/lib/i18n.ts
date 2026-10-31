@@ -71,7 +71,7 @@ export const dict = {
       commissionDisclosure: "Commission actuelle de la plateforme : {value} par vente réussie.",
       commissionUnset:
         "La commission de la plateforme n'est pas encore configurée. Les produits peuvent être préparés, mais les commandes resteront désactivées.",
-      fileLimit: "Plusieurs fichiers acceptés, 50 Mo maximum chacun. Les fichiers restent privés.",
+      fileLimit: "Plusieurs fichiers acceptés, 50 Mo maximum chacun et 1 Go de stockage total par boutique. Les fichiers restent privés.",
       freeForever: "Ouverture de boutique et ajout de produits gratuits.",
       sales: "Ventes",
       sellerNet: "Montant vendeur",
@@ -262,7 +262,7 @@ export const dict = {
       commissionDisclosure: "عمولة المنصة الحالية: {value} عن كل عملية بيع ناجحة.",
       commissionUnset:
         "لم يتم ضبط عمولة المنصة بعد. يمكنك تجهيز المنتجات، لكن الطلبات ستبقى متوقفة.",
-      fileLimit: "يمكن إضافة عدة ملفات، بحد أقصى 50 ميغابايت لكل ملف. تبقى الملفات خاصة.",
+      fileLimit: "يمكن إضافة عدة ملفات، بحد أقصى 50 ميغابايت للملف الواحد و1 غيغابايت إجمالاً لكل متجر. تبقى الملفات خاصة.",
       freeForever: "إنشاء المتجر وإضافة المنتجات مجانيان.",
       sales: "المبيعات",
       sellerNet: "مستحقات البائع",
@@ -448,7 +448,7 @@ export const dict = {
       commissionDisclosure: "Current platform commission: {value} per successful sale.",
       commissionUnset:
         "The platform commission is not configured yet. Products can be prepared, but orders will remain disabled.",
-      fileLimit: "Multiple files allowed, up to 50 MB each. Files remain private.",
+      fileLimit: "Multiple files allowed, up to 50 MB each and 1 GB total storage per store. Files remain private.",
       freeForever: "Store creation and product listings are free.",
       sales: "Sales",
       sellerNet: "Seller proceeds",

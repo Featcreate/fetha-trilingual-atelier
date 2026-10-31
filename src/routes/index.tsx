@@ -5,8 +5,6 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, useLang } from "@/lib/i18n";
-import product1 from "@/assets/botanical-planner.jpg.asset.json";
-import product2 from "@/assets/spring-wellness.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,11 +19,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Index,
 });
-
-const products = [
-  { src: product1.url, ratio: "aspect-[1376/768]" },
-  { src: product2.url, ratio: "aspect-[1584/672]" },
-];
 
 function Index() {
   const { lang, setLang, t } = useLang();
@@ -122,21 +115,14 @@ function Index() {
         </section>
 
         <section id="products" className="mx-auto max-w-6xl px-4 py-16">
-          <h2 className="text-2xl font-bold md:text-3xl">{t.showcaseTitle}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{t.showcaseNote}</p>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2">
-            {products.map((p, i) => (
-              <article key={i} className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
-                <div className={`${p.ratio} bg-cream-light`}>
-                  <img src={p.src} alt={`${t.preview} ${i + 1}`} className="h-full w-full object-contain" loading="lazy" />
-                </div>
-                <div className="flex items-center justify-between p-4">
-                  <span className="font-semibold">{t.preview} {i + 1}</span>
-                  <span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold text-gold">{t.comingSoon}</span>
-                </div>
-              </article>
+          <h2 className="text-2xl font-bold md:text-3xl">{t.marketplace.catalog}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{t.marketplace.tndNote}</p>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {(["ebook", "template", "printable", "planner", "software", "course", "audio", "video", "graphics", "other"] as const).map(type => (
+              <div key={type} className="rounded-xl border border-border bg-card p-4 text-center font-semibold">{t.marketplace[type]}</div>
             ))}
           </div>
+          <div className="mt-8 text-center"><Link to="/catalog" className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground">{t.marketplace.viewCatalog}</Link></div>
         </section>
       </main>
 

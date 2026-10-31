@@ -20,14 +20,14 @@
 - [x] Add French and English Terms of Use translations matching the Arabic version; obtain Tunisian legal review and complete operator identity/contact details before launch
 - [ ] Add multi-currency support and confirm seller eligibility/payout coverage by country; current catalog and order accounting remain TND-only
 - [ ] Build and test buyer cart/checkout, payment-return route and end-to-end order flow only after provider terms, fees and sandbox behavior are confirmed
-- [ ] Verify the supplied Konnect referral route with Konnect/iPay, including attribution to the platform owner's account, Tunisian seller eligibility, seller-account identification/linking, manual transfer capability, settlement currency, limits, fees, and terms. Supplied Konnect code: `31XyM7MR8wy71ga7a`; registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a. This is the platform owner's Konnect referral, not an iPay-issued code.
+- [ ] Verify the supplied Konnect referral route with Konnect, including attribution to the platform owner's account, seller-account identification/linking, manual transfer capability, settlement currency, limits, fees, and terms. The same link is offered to every seller regardless of country, nationality, or residence; Konnect alone determines account eligibility. Supplied code: `31XyM7MR8wy71ga7a`; link: ${konnectUrl}. This is the platform owner's Konnect referral, not an iPay-issued code.
 - [ ] Configure transactional email and order notifications with a verified sender domain and tested delivery/retry handling
 
 ## Safety constraints
 
 - Seller registration, store creation and listings remain free. Email verification is required before store creation. Each store has a 1 GiB total storage quota, a 50 MiB private-file cap, and a 10 MiB public product-image cap.
 - Platform commission starts at 5% and remains administrator-configurable. Existing order commission snapshots are immutable.
-- Tunisian seller payouts are planned as manual weekly transfers after the platform's commission, subject to confirmation of the Konnect referral registration route and iPay/Konnect account-linking and transfer process; seller-side iPay/bank fees remain the seller's responsibility.
+- Seller payouts are planned as manual weekly transfers after the platform's commission. No seller-country restriction is applied; provider acceptance and verification determine whether a payout route is available. Seller-side provider/bank transfer and withdrawal fees remain the seller's responsibility.
 - Digital products only; no shipping or physical inventory.
 - Keep product files private; use short-lived signed downloads and preserve immutable order/file snapshots.
 - No live payments, publishing, production migrations, paid services, or provider connections without explicit approval.

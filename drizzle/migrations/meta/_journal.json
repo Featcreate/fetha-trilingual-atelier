@@ -43,6 +43,69 @@
       "when": 1793232369365,
       "tag": "0005_revoke_client_writes_trusted_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793404800000,
+      "tag": "0006_configurable_commission_and_terms_acceptance",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793408400000,
+      "tag": "0007_seller_order_visibility",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793412000000,
+      "tag": "0008_expand_digital_product_types",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793466000000,
+      "tag": "0009_verified_seller_storage_quota",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793466600000,
+      "tag": "0010_seller_payouts",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793467200000,
+      "tag": "0011_seller_payout_preference_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793467800000,
+      "tag": "0012_manual_payout_workflow",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793468400000,
+      "tag": "0013_storage_bucket_size_limits",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793469000000,
+      "tag": "0014_public_product_images",
+      "breakpoints": true
     }
   ]
 }

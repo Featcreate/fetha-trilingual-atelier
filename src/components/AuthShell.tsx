@@ -5,7 +5,11 @@ import { LANGS, dict, type Lang } from "@/lib/i18n";
 
 export function LangSwitcher({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
   return (
-    <div className="flex shrink-0 rounded-full border border-border bg-card p-1" role="group" aria-label="Language">
+    <div
+      className="flex shrink-0 rounded-full border border-border bg-card p-1"
+      role="group"
+      aria-label="Language"
+    >
       {LANGS.map((l) => (
         <button
           key={l}
@@ -50,12 +54,16 @@ export function AuthShell({
         </div>
       </header>
       <main className="px-4 py-10 md:py-16">
-        <div className={`mx-auto ${wide ? "max-w-2xl" : "max-w-md"} rounded-2xl border border-border bg-card p-6 shadow-soft md:p-8`}>
+        <div
+          className={`mx-auto ${wide ? "max-w-2xl" : "max-w-md"} rounded-2xl border border-border bg-card p-6 shadow-soft md:p-8`}
+        >
           <h1 className="text-2xl font-bold">{title}</h1>
           <div className="mt-6">{children}</div>
         </div>
         <p className="mt-6 text-center text-sm">
-          <Link to="/" className="text-muted-foreground hover:text-coral">{dict[lang].auth.back}</Link>
+          <Link to="/" className="text-muted-foreground hover:text-coral">
+            {dict[lang].auth.back}
+          </Link>
         </p>
       </main>
     </div>
@@ -67,10 +75,16 @@ export function Field({
   label,
   error,
   ...props
-}: { id: string; label: string; error?: string | undefined } & InputHTMLAttributes<HTMLInputElement>) {
+}: {
+  id: string;
+  label: string;
+  error?: string | undefined;
+} & InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-sm font-medium">{label}</label>
+      <label htmlFor={id} className="mb-1 block text-sm font-medium">
+        {label}
+      </label>
       <input
         id={id}
         name={id}
@@ -79,12 +93,24 @@ export function Field({
         className="w-full rounded-lg border border-input bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-ring"
         {...props}
       />
-      {error && <p id={`${id}-err`} className="mt-1 text-sm text-destructive">{error}</p>}
+      {error && (
+        <p id={`${id}-err`} className="mt-1 text-sm text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
 
-export function SubmitButton({ busy, label, busyLabel }: { busy: boolean; label: string; busyLabel: string }) {
+export function SubmitButton({
+  busy,
+  label,
+  busyLabel,
+}: {
+  busy: boolean;
+  label: string;
+  busyLabel: string;
+}) {
   return (
     <button
       type="submit"

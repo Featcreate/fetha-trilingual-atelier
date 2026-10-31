@@ -13,5 +13,7 @@ export const profileSchema = z.object({ full_name: fullNameSchema, phone: phoneS
 
 /** Safe in-app redirect target: only same-origin paths. */
 export function safeRedirect(value: unknown): string {
-  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : "/account";
+  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//")
+    ? value
+    : "/account";
 }

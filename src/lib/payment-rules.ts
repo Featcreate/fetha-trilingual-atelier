@@ -10,20 +10,31 @@ export interface OrderForPayment {
 export interface KonnectPayment {
   status?: string;
   amount?: number;
+  amountDue?: number;
+  reachedAmount?: number;
   orderId?: string;
   token?: string;
 }
 
 export type PaymentOutcome = "paid" | "already_paid" | "pending" | "mismatch" | "order_closed";
 
-export function decidePaymentOutcome(order: OrderForPayment, payment: KonnectPayment): PaymentOutcome {
+export function decidePaymentOutcome(
+  order: OrderForPayment,
+  payment: KonnectPayment,
+): PaymentOutcome {
   if (order.status === "paid") return "already_paid";
   if (order.status !== "pending") return "order_closed";
-  // Konnect: only payment.status === "completed" means paid; "pending" covers failed or not attempted.
+  // Only a completed payment for the full amount, in TND, can settle an order.
   if (payment.status !== "completed") return "pending";
   if (payment.orderId !== order.id) return "mismatch";
-  if (payment.amount !== order.total_millimes) return "mismatch";
-  if (payment.token && payment.token !== "TND") return "mismatch";
+  if (payment.token !== "TND") return "mismatch";
+  if (
+    payment.amount !== order.total_millimes ||
+    payment.amountDue !== order.total_millimes ||
+    payment.reachedAmount !== order.total_millimes
+  ) {
+    return "mismatch";
+  }
   return "paid";
 }
 

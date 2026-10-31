@@ -16,14 +16,14 @@ export interface DownloadDeps {
 }
 
 export type DownloadResult =
-  | { ok: true; url: string; counted: boolean }
-  | { ok: false; error: string };
+  { ok: true; url: string; counted: boolean } | { ok: false; error: string };
 
 export async function issueDownload(deps: DownloadDeps): Promise<DownloadResult> {
   const r = await deps.reserve();
   if (!r) return { ok: false, error: "download_failed" };
   if (r.outcome !== "new" && r.outcome !== "dedupe") return { ok: false, error: r.outcome };
-  if (!r.storage_path || !r.file_name || !r.reservation_id) return { ok: false, error: "download_failed" };
+  if (!r.storage_path || !r.file_name || !r.reservation_id)
+    return { ok: false, error: "download_failed" };
 
   let url: string | null = null;
   try {

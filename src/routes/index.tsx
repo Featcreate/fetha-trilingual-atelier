@@ -2,19 +2,26 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { User } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Menu, X } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, useLang } from "@/lib/i18n";
-import product1 from "@/assets/botanical-planner.jpg.asset.json";
-import product2 from "@/assets/spring-wellness.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Algorea Bazaar — Ressources numériques créatives" },
-      { name: "description", content: "Algorea Bazaar : boutique de produits numériques éducatifs et créatifs, en français, arabe et anglais." },
+      {
+        name: "description",
+        content:
+          "Algorea Bazaar : boutique de produits numériques éducatifs et créatifs, en français, arabe et anglais.",
+      },
       { property: "og:title", content: "Algorea Bazaar — Ressources numériques créatives" },
-      { property: "og:description", content: "Produits numériques éducatifs et créatifs multilingues." },
+      {
+        property: "og:description",
+        content: "Produits numériques éducatifs et créatifs multilingues.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -22,25 +29,39 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const products = [
-  { src: product1.url, ratio: "aspect-[1376/768]" },
-  { src: product2.url, ratio: "aspect-[1584/672]" },
-];
-
 function Index() {
   const { lang, setLang, t } = useLang();
   const [open, setOpen] = useState(false);
   const { session } = useSession();
+  const adminRole = useQuery({
+    queryKey: ["current-user-admin", session?.user.id],
+    enabled: !!session?.user.id,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("has_role", {
+        _user_id: session!.user.id,
+        _role: "admin",
+      });
+      if (error) throw error;
+      return data === true;
+    },
+  });
+  const isAdmin = adminRole.data === true;
   const accountLabel = session ? t.auth.account : t.auth.signIn;
   const links = [
     ["#home", t.nav.home],
+    ["/catalog", t.marketplace.catalog],
+    ["/seller", t.marketplace.sellerArea],
     ["#products", t.nav.products],
     ["#about", t.nav.about],
     ["#contact", t.nav.contact],
   ] as const;
 
   const switcher = (
-    <div className="flex shrink-0 rounded-full border border-border bg-card p-1" role="group" aria-label="Language">
+    <div
+      className="flex shrink-0 rounded-full border border-border bg-card p-1"
+      role="group"
+      aria-label="Language"
+    >
       {LANGS.map((l) => (
         <button
           key={l}
@@ -67,10 +88,28 @@ function Index() {
           </a>
           <nav className="hidden items-center gap-7 md:flex">
             {links.map(([href, label]) => (
-              <a key={href} href={href} className="text-sm font-medium hover:text-coral">{label}</a>
+              <a key={href} href={href} className="text-sm font-medium hover:text-coral">
+                {label}
+              </a>
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="hidden text-sm font-semibold text-coral hover:underline lg:inline"
+              >
+                {t.admin.title}
+              </Link>
+            )}
+            {session && (
+              <Link
+                to="/orders"
+                className="hidden text-sm font-semibold text-coral hover:underline lg:inline"
+              >
+                {t.marketplace.myOrders}
+              </Link>
+            )}
             <Link
               to={session ? "/account" : "/auth"}
               aria-label={accountLabel}
@@ -93,7 +132,12 @@ function Index() {
         {open && (
           <nav className="border-t border-border bg-background px-4 py-3 md:hidden">
             {links.map(([href, label]) => (
-              <a key={href} href={href} onClick={() => setOpen(false)} className="block py-3 font-medium">
+              <a
+                key={href}
+                href={href}
+                onClick={() => setOpen(false)}
+                className="block py-3 font-medium"
+              >
                 {label}
               </a>
             ))}
@@ -110,29 +154,47 @@ function Index() {
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-muted-foreground md:text-lg">{t.heroText}</p>
             <a
-              href="#products"
+              href="/catalog"
               className="mt-8 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
             >
-              {t.heroCta}
+              {t.marketplace.viewCatalog}
             </a>
           </div>
         </section>
 
         <section id="products" className="mx-auto max-w-6xl px-4 py-16">
-          <h2 className="text-2xl font-bold md:text-3xl">{t.showcaseTitle}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{t.showcaseNote}</p>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2">
-            {products.map((p, i) => (
-              <article key={i} className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
-                <div className={`${p.ratio} bg-cream-light`}>
-                  <img src={p.src} alt={`${t.preview} ${i + 1}`} className="h-full w-full object-contain" loading="lazy" />
-                </div>
-                <div className="flex items-center justify-between p-4">
-                  <span className="font-semibold">{t.preview} {i + 1}</span>
-                  <span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold text-gold">{t.comingSoon}</span>
-                </div>
-              </article>
+          <h2 className="text-2xl font-bold md:text-3xl">{t.marketplace.catalog}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{t.marketplace.tndNote}</p>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {(
+              [
+                "ebook",
+                "template",
+                "printable",
+                "planner",
+                "software",
+                "course",
+                "audio",
+                "video",
+                "graphics",
+                "other",
+              ] as const
+            ).map((type) => (
+              <div
+                key={type}
+                className="rounded-xl border border-border bg-card p-4 text-center font-semibold"
+              >
+                {t.marketplace[type]}
+              </div>
             ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Link
+              to="/catalog"
+              className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground"
+            >
+              {t.marketplace.viewCatalog}
+            </Link>
           </div>
         </section>
       </main>

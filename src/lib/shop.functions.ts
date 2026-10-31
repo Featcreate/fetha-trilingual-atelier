@@ -21,12 +21,19 @@ export const startCheckout = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
+    if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
+
     const { data: orderId, error } = await context.supabase.rpc("create_order", {
       _product_ids: data.productIds,
       _checkout_key: data.checkoutKey,
     });
     if (error || !orderId) {
-      const code = error?.message?.includes("product_unavailable") ? "product_unavailable" : "order_failed";
+      const code = error?.message?.includes("product_unavailable")
+        ? "product_unavailable"
+        : error?.message?.includes("commission_not_configured")
+          ? "commission_not_configured"
+          : "order_failed";
       return { ok: false as const, error: code };
     }
 
@@ -38,9 +45,6 @@ export const startCheckout = createServerFn({ method: "POST" })
     if (!order) return { ok: false as const, error: "order_failed" };
     if (order.status !== "pending") return { ok: false as const, error: "order_closed", orderId };
     if (order.konnect_pay_url) return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
-
-    const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
-    if (!konnectConfig()) return { ok: false as const, error: "payments_not_configured", orderId };
 
     const { data: profile } = await context.supabase
       .from("profiles")
@@ -64,14 +68,25 @@ export const startCheckout = createServerFn({ method: "POST" })
         email: order.customer_email ?? undefined,
       });
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await supabaseAdmin
+      const { error: saveError } = await supabaseAdmin
         .from("orders")
         .update({ konnect_payment_ref: paymentRef, konnect_pay_url: payUrl })
         .eq("id", order.id)
         .eq("status", "pending")
         .is("konnect_payment_ref", null);
-      const { data: saved } = await supabaseAdmin.from("orders").select("konnect_pay_url").eq("id", order.id).single();
-      return { ok: true as const, orderId, payUrl: saved?.konnect_pay_url ?? payUrl };
+      const { data: saved, error: readError } = await supabaseAdmin
+        .from("orders")
+        .select("konnect_payment_ref,konnect_pay_url")
+        .eq("id", order.id)
+        .single();
+      if (readError || !saved?.konnect_payment_ref || !saved.konnect_pay_url) {
+        console.error(
+          "Konnect payment reference could not be persisted",
+          saveError?.message ?? readError?.message ?? "missing_payment_reference",
+        );
+        return { ok: false as const, error: "payment_reference_save_failed", orderId };
+      }
+      return { ok: true as const, orderId, payUrl: saved.konnect_pay_url };
     } catch {
       return { ok: false as const, error: "payment_provider_error", orderId };
     }
@@ -98,8 +113,14 @@ export const checkOrderPayment = createServerFn({ method: "POST" })
         }
       }
     }
-    const { data: fresh } = await context.supabase.from("orders").select("status").eq("id", data.orderId).single();
-    return { status: (fresh?.status ?? order.status) as "pending" | "paid" | "failed" | "cancelled" };
+    const { data: fresh } = await context.supabase
+      .from("orders")
+      .select("status")
+      .eq("id", data.orderId)
+      .single();
+    return {
+      status: (fresh?.status ?? order.status) as "pending" | "paid" | "failed" | "cancelled",
+    };
   });
 
 /**
@@ -128,7 +149,9 @@ export const getDownloadLink = createServerFn({ method: "POST" })
         return error || !signed ? null : signed.signedUrl;
       },
       finalize: async (id) => {
-        const { data: ok, error } = await supabaseAdmin.rpc("finalize_download", { _reservation_id: id });
+        const { data: ok, error } = await supabaseAdmin.rpc("finalize_download", {
+          _reservation_id: id,
+        });
         return !error && ok === true;
       },
       release: async (id) => {
@@ -142,17 +165,30 @@ export const adminSimulatePayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    if (process.env["PAYMENT_SIMULATION_ENABLED"] !== "true" || process.env["KONNECT_ENV"] === "live") {
+    if (
+      process.env["PAYMENT_SIMULATION_ENABLED"] !== "true" ||
+      process.env["KONNECT_ENV"] === "live"
+    ) {
       return { ok: false as const, error: "simulation_disabled" };
     }
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
     if (!isAdmin) return { ok: false as const, error: "forbidden" };
-    const { data: order } = await context.supabase.from("orders").select("total_millimes").eq("id", data.orderId).maybeSingle();
+    const { data: order } = await context.supabase
+      .from("orders")
+      .select("total_millimes")
+      .eq("id", data.orderId)
+      .maybeSingle();
     if (!order) return { ok: false as const, error: "not_found" };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: outcome, error } = await supabaseAdmin.rpc("settle_order_payment", {
-      _order_id: data.orderId, _mode: "simulation", _payment_ref: `sim-${data.orderId}`,
-      _amount_millimes: order.total_millimes, _source: "admin_simulation",
+      _order_id: data.orderId,
+      _mode: "simulation",
+      _payment_ref: `sim-${data.orderId}`,
+      _amount_millimes: order.total_millimes,
+      _source: "admin_simulation",
     });
     if (error) return { ok: false as const, error: "settlement_failed" };
     return { ok: true as const, outcome };
@@ -163,7 +199,10 @@ export const adminRecheckPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
     if (!isAdmin) return { ok: false as const, error: "forbidden" };
     const { data: order } = await context.supabase
       .from("orders")

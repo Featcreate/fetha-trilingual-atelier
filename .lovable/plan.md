@@ -76,7 +76,7 @@
 - Migration 0009 adds server-side verified-email enforcement for store creation and a 1 GiB per-store storage quota, in addition to the 50 MiB per-file database cap. It has not been applied to any database.
 - Terms of Use are available in Arabic, French and English under the same version identifier.
 - CI has read-only repository permissions and no longer commits or pushes formatting changes.
-- No live payment provider, deployment, or production database was changed. The referral code will come from the platform owner's Konnect account, not from iPay. The actual Konnect code/link has not yet been supplied or configured. Verify that it correctly routes Tunisian seller registration and confirm account identification/linking, manual transfer support, fees, and terms before payout enablement. Multi-currency and international payout support remain blocked on provider selection and verification.
+- No live payment provider, deployment, or production database was changed. The referral code will come from the platform owner's Konnect account, not from iPay. The platform owner has supplied the Konnect referral code `31XyM7MR8wy71ga7a` and registration link https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a. Verify that this exact link correctly routes and attributes Tunisian seller registrations to the platform owner's Konnect account. Confirm seller account identification/linking, manual transfer support, fees, and terms before enabling payouts. Multi-currency and international payout support remain blocked on provider selection and verification.
 
 ## 10. Marketplace interface implementation — 2026-10-31
 

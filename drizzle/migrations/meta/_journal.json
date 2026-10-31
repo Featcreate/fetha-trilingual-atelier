@@ -57,6 +57,13 @@
       "when": 1793408400000,
       "tag": "0007_seller_order_visibility",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793412000000,
+      "tag": "0008_expand_digital_product_types",
+      "breakpoints": true
     }
   ]
 }

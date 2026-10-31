@@ -30,15 +30,8 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Format CI working copy (no repository write)
-        run: bunx prettier --write "**/*.{ts,tsx,js,jsx,json,md,css,html,yml,yaml}"
-      - name: Export formatted files for explicit review
-        run: |
-          while IFS= read -r path; do
-            printf 'FORMATTED_FILE:%s\n' "$path"
-            base64 -w0 "$path"
-            printf '\nEND_FORMATTED_FILE\n'
-          done < <(git diff --name-only)
+      - name: Check Prettier formatting
+        run: bunx prettier --check "**/*.{ts,tsx,js,jsx,json,md,css,html,yml,yaml}"
 
       - name: Lint
         run: bun run lint

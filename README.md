@@ -18,6 +18,7 @@ Algorea Bazaar is a multilingual marketplace for downloadable digital products, 
 - `/products/:id` — digital product detail.
 - `/stores/:slug` — public seller storefront.
 - `/seller` — authenticated seller area for store settings, product management, file uploads, and seller order/earnings views.
+- `/admin` — admin-role-only dashboard for commission configuration, store/product moderation, and order monitoring.
 - `/orders` — authenticated buyer order history and secure downloads.
 - `/terms` — Arabic Terms of Use draft.
 

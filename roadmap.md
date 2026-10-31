@@ -20,7 +20,7 @@
 - [x] Add French and English Terms of Use translations matching the Arabic version; obtain Tunisian legal review and complete operator identity/contact details before launch
 - [ ] Add multi-currency support and confirm seller eligibility/payout coverage by country; current catalog and order accounting remain TND-only
 - [ ] Add cart/checkout only after provider terms, fees and sandbox behavior are confirmed
-- [ ] Confirm iPay's official registration process for Tunisian sellers, the supported seller-account identification/linking mechanism, manual transfer capability, settlement currency, limits, fees, and terms. The planned referral code is from the platform owner's Konnect account, not from iPay itself. Obtain and verify the actual Konnect code/link before configuring the Tunisian seller registration route; do not invent it.
+- [ ] Verify the supplied Konnect referral route with Konnect/iPay, including attribution to the platform owner's account, Tunisian seller eligibility, seller-account identification/linking, manual transfer capability, settlement currency, limits, fees, and terms. Supplied Konnect code: `31XyM7MR8wy71ga7a`; registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a. This is the platform owner's Konnect referral, not an iPay-issued code.
 - [ ] Configure transactional email and order notifications
 
 ## Safety constraints

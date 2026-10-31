@@ -17,7 +17,7 @@
 - [ ] Run lint, unit tests and production build; fix all reported issues
 - [ ] Apply migrations 0006–0009 to a disposable Supabase clone and verify RLS, verified-email seller onboarding, 1 GiB storage quota, store/product creation, uploads, seller order reads, buyer entitlements and commission snapshots
 - [x] Admin settings/moderation interface, including configurable commission, store/product oversight and order monitoring
-- [ ] Add complete French and English legal translations and obtain Tunisian legal review; complete operator identity/contact details
+- [x] Add French and English Terms of Use translations matching the Arabic version; obtain Tunisian legal review and complete operator identity/contact details before launch
 - [ ] Add multi-currency support and confirm seller eligibility/payout coverage by country; current catalog and order accounting remain TND-only
 - [ ] Add cart/checkout only after provider terms, fees and sandbox behavior are confirmed
 - [ ] Configure the actual iPay Tunisia referral URL/code for Tunisian sellers; it has not yet been supplied and must not be invented. Confirm seller onboarding and payout terms with iPay.

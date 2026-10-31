@@ -56,8 +56,8 @@
 
 ## 7. Legal terms and configurable commission
 
-- The concise Arabic Terms of Use are maintained in `docs/terms-of-use-ar.md`; they are an approved project draft, not a legally reviewed/published document.
-- Before launch, complete the operator's legal identity/contact details and obtain Tunisian legal review; prepare French and English translations before those languages are used for contractual consent.
+- The Terms of Use page is available in Arabic, French and English under version `2026-10-31-v2`. These are working translations, not a legal opinion or legally reviewed/published terms.
+- Before launch, complete the operator's legal identity/contact details and obtain Tunisian legal review of all three language versions.
 - Implemented in branch `configurable-commission-and-terms-consent`: signup requires an unchecked consent checkbox, and a database trigger validates the accepted terms version/language and records the user ID, version, server timestamp, and language in an append-only table. The current signup flow records initial acceptance; prompting existing users to re-accept after a material revision remains a future task.
 - Implemented in branch `configurable-commission-and-terms-consent`: commission starts at 500 bps (5%), is NOT NULL, and can be changed by an authorized admin through the dashboard. New order items snapshot the rate; existing snapshots are preserved. The admin settings UI and seller-facing disclosure are present.
 
@@ -70,9 +70,9 @@
 
 - Branch: `configurable-commission-and-terms-consent` (based on the documentation review branch).
 - Added migration `0006_configurable_commission_and_terms_acceptance.sql`; it has not been applied to Supabase.
-- Added an Arabic Terms of Use page at `/terms` and an explicit signup checkbox translated in French, Arabic, and English. The linked legal text is currently Arabic only; French and English legal translations and Tunisian legal review are launch blockers.
+- Added a Terms of Use page at `/terms` in Arabic, French and English, plus an explicit signup checkbox in all three languages. The same version identifier is recorded for all language choices; legal review and operator identity details remain launch blockers.
 - Signup acceptance is validated by a database trigger and recorded with a server-generated timestamp. The database migration has not been run, so this behavior is not active in the deployed Supabase project.
-- Commission is unset by the migration until an administrator configures it; this intentionally blocks new orders. The admin settings UI is not yet built.
+- Commission defaults to 5% and can be changed by an authorized administrator in `/admin`. The database migration enforces a non-null commission, and new orders snapshot the rate.
 - Migration 0009 adds server-side verified-email enforcement for store creation and a 1 GiB per-store storage quota, in addition to the 50 MiB per-file database cap. It has not been applied to any database.
 - Terms of Use are available in Arabic, French and English under the same version identifier.
 - CI has read-only repository permissions and no longer commits or pushes formatting changes.
@@ -90,8 +90,8 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Added seller-scoped read access to the seller's own order lines and order status through additive migration `0007`; no buyer contact data is exposed in the seller UI.
 - Current product-file upload cap remains 50 MB per file, with multiple files supported. Files remain private. No physical products or shipping workflows are introduced.
 - Storefront prices currently display TND because the existing order schema and money helpers are TND-based. Multi-currency pricing and international payout support remain future work; do not advertise global payout coverage until a provider is selected and verified.
-- The product-detail page intentionally does not offer checkout while live payments are disabled and commission remains unconfigured.
-- Migrations `0007` and `0008` are committed but not applied to Supabase. The full branch has not yet been built or tested; run `bun run lint`, `bun run test`, and `bun run build` before merge. Apply migrations only to a disposable clone first.
+- The product-detail page intentionally does not offer checkout while live payments remain disabled.
+- Migrations `0006`–`0009` are committed but not applied to Supabase. Apply them only to a disposable clone first and verify the full migration chain and RLS policies before merge.
 
 ## 11. Administrator dashboard — 2026-10-31
 
@@ -99,8 +99,8 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Added configurable commission controls (0–100%, two decimal places) using the existing audited/role-checked `admin_set_commission_bps` RPC. Commission changes affect new orders only; existing order snapshots are preserved.
 - Added platform overview cards, latest-100 store moderation (activate/suspend), latest-100 product moderation (list/hide), and read-only latest-100 order monitoring.
 - Added a homepage admin shortcut that is shown only when the signed-in user has the admin role.
-- Added French, Arabic and English admin translations and corrected Supabase generated types for nullable commission settings.
+- Added French, Arabic and English admin translations and aligned Supabase generated types with the non-null commission setting.
 - Updated the TanStack route tree to register the file-based marketplace and admin routes that had not yet been included in the committed generated tree.
-- No new database migration was needed for the dashboard. It relies on existing admin RLS policies and the existing role-checked commission RPC.
+- The commission UI relies on the role-checked `admin_set_commission_bps` RPC. No live payout or payment action is exposed.
 - No role was assigned to any account, no database was changed, and no production settings were modified.
 - Validation remains pending: run lint, tests and production build, then verify admin and non-admin access with test accounts on a disposable environment.

@@ -42,11 +42,15 @@ function AuthPage() {
   const [formError, setFormError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [resendEmail, setResendEmail] = useState("");
+  const [showResend, setShowResend] = useState(false);
 
   useEffect(() => {
     setErrors({});
     setFormError("");
     setNotice("");
+    setShowResend(false);
+    setResendEmail("");
   }, [mode]);
 
   useEffect(() => {
@@ -73,10 +77,15 @@ function AuthPage() {
 
     setBusy(true);
     const email = v("email").trim();
+    setResendEmail(email);
     try {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password: v("password") });
-        if (error) return setFormError(authErrorMessage(a, error));
+        if (error) {
+          const detail = `${error.code ?? ""} ${error.message}`.toLowerCase();
+          if (detail.includes("not_confirmed") || detail.includes("not confirmed")) setShowResend(true);
+          return setFormError(authErrorMessage(a, error));
+        }
         navigate({ to: target, replace: true });
       } else if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
@@ -97,6 +106,22 @@ function AuthPage() {
         if (error && error.status === 429) return setFormError(a.errRate);
         setNotice(a.resetSent);
       }
+    } catch {
+      setFormError(a.errGeneric);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resendConfirmation() {
+    if (!emailSchema.safeParse(resendEmail).success) return;
+    setBusy(true);
+    setFormError("");
+    setNotice("");
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email: resendEmail });
+      if (error) setFormError(authErrorMessage(a, error));
+      else setNotice(a.confirmationResent);
     } catch {
       setFormError(a.errGeneric);
     } finally {
@@ -130,6 +155,12 @@ function AuthPage() {
         )}
         {formError && <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{formError}</p>}
         {notice && <p role="status" className="rounded-lg bg-secondary p-3 text-sm">{notice}</p>}
+        {showResend && mode === "signin" && (
+          <button type="button" disabled={busy} onClick={resendConfirmation}
+            className="w-full rounded-full border border-border px-5 py-3 text-sm font-semibold hover:bg-secondary disabled:opacity-60">
+            {busy ? a.loading : a.resendConfirmation}
+          </button>
+        )}
         <SubmitButton busy={busy} label={submit} busyLabel={a.loading} />
       </form>
 

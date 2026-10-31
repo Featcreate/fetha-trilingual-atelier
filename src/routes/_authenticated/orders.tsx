@@ -18,7 +18,7 @@ type BuyerOrder = {
     id: string; product_name: string; unit_price_millimes: number;
     order_item_files: Array<{
       id: string; file_name: string;
-      download_entitlements: Array<{ id: string; expires_at: string; max_downloads: number; used_downloads: number }>;
+      download_entitlements: { id: string; expires_at: string; max_downloads: number; used_downloads: number } | Array<{ id: string; expires_at: string; max_downloads: number; used_downloads: number }> | null;
     }>;
   }>;
 };
@@ -66,7 +66,7 @@ function BuyerOrdersPage() {
                 {order.order_items.map(item => <div key={item.id} className="flex flex-wrap items-center justify-between gap-3">
                   <div><p className="font-semibold">{item.product_name}</p><p className="text-sm text-muted-foreground">{formatTND(item.unit_price_millimes)}</p></div>
                   <div className="flex flex-wrap gap-2">
-                    {item.order_item_files.flatMap(file => file.download_entitlements.map(ent => ({file,ent}))).map(({file,ent}) => <div key={ent.id} className="text-end"><button type="button" disabled={busy === ent.id || ent.expires_at <= new Date().toISOString() || ent.used_downloads >= ent.max_downloads} onClick={() => download(ent.id)} className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50">{busy === ent.id ? m.loading : m.download}</button><p className="mt-1 text-xs text-muted-foreground">{m.downloadsLeft}: {Math.max(0,ent.max_downloads-ent.used_downloads)} · {m.expires} {new Date(ent.expires_at).toLocaleDateString(locale)}</p><p className="text-xs text-muted-foreground">{file.file_name}</p></div>)}
+                    {item.order_item_files.flatMap(file => { const entitlements = Array.isArray(file.download_entitlements) ? file.download_entitlements : file.download_entitlements ? [file.download_entitlements] : []; return entitlements.map(ent => ({ file, ent })); }).map(({file,ent}) => <div key={ent.id} className="text-end"><button type="button" disabled={busy === ent.id || ent.expires_at <= new Date().toISOString() || ent.used_downloads >= ent.max_downloads} onClick={() => download(ent.id)} className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50">{busy === ent.id ? m.loading : m.download}</button><p className="mt-1 text-xs text-muted-foreground">{m.downloadsLeft}: {Math.max(0,ent.max_downloads-ent.used_downloads)} · {m.expires} {new Date(ent.expires_at).toLocaleDateString(locale)}</p><p className="text-xs text-muted-foreground">{file.file_name}</p></div>)}
                   </div>
                 </div>)}
               </div>

@@ -48,6 +48,12 @@
 - `src/styles.css` — comment only
 - `src/lib/shop.functions.ts` — payment description label (optional; payment code otherwise untouched)
 
-## 7. Confirmations
+## 7. Legal terms and configurable commission
+- The concise Arabic Terms of Use are maintained in `docs/terms-of-use-ar.md`; they are an approved project draft, not a legally reviewed/published document.
+- Before launch, complete the operator's legal identity/contact details and obtain Tunisian legal review; prepare French and English translations before those languages are used for contractual consent.
+- Registration must require an explicit, unchecked acceptance of the current Terms of Use. Store the user ID, terms version, acceptance timestamp, and acceptance language; preserve prior versions and request renewed acceptance when material terms change.
+- Platform commission is configurable through the platform's commission settings. Do not hard-code a fixed percentage or present a permanent percentage in the Terms of Use. Show the applicable commission and seller proceeds before the seller publishes a product or otherwise commits to a sale; snapshot the applicable commission in each order.
+
+## 8. Confirmations
 - Yes, real database work exists: 3 applied migrations, 7 tables, security policies, 2 private buckets — the empty `drizzle/schema.ts` is normal (migrations are SQL files).
 - Yes, Konnect payment logic exists in code but is inactive (no credentials, no UI calls it, no transactions ever made).

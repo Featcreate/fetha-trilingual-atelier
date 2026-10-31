@@ -51,9 +51,18 @@
 ## 7. Legal terms and configurable commission
 - The concise Arabic Terms of Use are maintained in `docs/terms-of-use-ar.md`; they are an approved project draft, not a legally reviewed/published document.
 - Before launch, complete the operator's legal identity/contact details and obtain Tunisian legal review; prepare French and English translations before those languages are used for contractual consent.
-- Registration must require an explicit, unchecked acceptance of the current Terms of Use. Store the user ID, terms version, acceptance timestamp, and acceptance language; preserve prior versions and request renewed acceptance when material terms change.
-- Platform commission is configurable through the platform's commission settings. Do not hard-code a fixed percentage or present a permanent percentage in the Terms of Use. Show the applicable commission and seller proceeds before the seller publishes a product or otherwise commits to a sale; snapshot the applicable commission in each order.
+- Implemented in branch `configurable-commission-and-terms-consent`: signup requires an unchecked consent checkbox, and a database trigger validates the accepted terms version/language and records the user ID, version, server timestamp, and language in an append-only table. The current signup flow records initial acceptance; prompting existing users to re-accept after a material revision remains a future task.
+- Implemented in branch `configurable-commission-and-terms-consent`: `commission_bps` is nullable with no default, the prior 500 bps default is cleared for the active setting, the admin RPC accepts a configured value or NULL to unset it, and new order creation fails closed with `commission_not_configured` until a value is set. Existing order-item commission snapshots are preserved. A dedicated admin settings UI and seller-facing commission disclosure remain future tasks. Do not hard-code a fixed percentage or present a permanent percentage in the Terms of Use.
 
 ## 8. Confirmations
 - Yes, real database work exists: 3 applied migrations, 7 tables, security policies, 2 private buckets — the empty `drizzle/schema.ts` is normal (migrations are SQL files).
 - Yes, Konnect payment logic exists in code but is inactive (no credentials, no UI calls it, no transactions ever made).
+
+
+## 9. Current implementation branch — 2026-10-31
+- Branch: `configurable-commission-and-terms-consent` (based on the documentation review branch).
+- Added migration `0006_configurable_commission_and_terms_acceptance.sql`; it has not been applied to Supabase.
+- Added an Arabic Terms of Use page at `/terms` and an explicit signup checkbox translated in French, Arabic, and English. The linked legal text is currently Arabic only; French and English legal translations and Tunisian legal review are launch blockers.
+- Signup acceptance is validated by a database trigger and recorded with a server-generated timestamp. The database migration has not been run, so this behavior is not active in the deployed Supabase project.
+- Commission is unset by the migration until an administrator configures it; this intentionally blocks new orders. The admin settings UI is not yet built.
+- No live payment provider, deployment, or production database was changed. Automated tests/build have not yet been run against this branch.

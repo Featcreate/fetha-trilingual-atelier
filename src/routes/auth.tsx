@@ -63,6 +63,10 @@ function AuthPage() {
     if (!emailSchema.safeParse(v("email")).success) errs.email = a.errEmail;
     if (mode !== "forgot" && !passwordSchema.safeParse(v("password")).success) errs.password = a.errPassword;
     if (mode === "signup") {
+      if (f.get("accept_terms") !== "on") {
+        setFormError(a.errTerms);
+        return;
+      }
       if (!fullNameSchema.safeParse(v("full_name")).success) errs.full_name = a.errName;
       if (!phoneSchema.safeParse(v("phone")).success) errs.phone = a.errPhone;
     }
@@ -84,7 +88,13 @@ function AuthPage() {
           password: v("password"),
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: v("full_name").trim(), phone: v("phone").trim() },
+            data: {
+              full_name: v("full_name").trim(),
+              phone: v("phone").trim(),
+              accepted_terms: true,
+              terms_version: "2026-10-31-ar-v1",
+              terms_language: lang,
+            },
           },
         });
         if (error) return setFormError(authErrorMessage(a, error));
@@ -127,6 +137,12 @@ function AuthPage() {
             maxLength={72}
             error={errors.password}
           />
+        )}
+        {mode === "signup" && (
+          <label htmlFor="accept_terms" className="flex items-start gap-2 text-sm leading-6 text-muted-foreground">
+            <input id="accept_terms" name="accept_terms" type="checkbox" required className="mt-1 size-4 shrink-0 accent-coral" />
+            <span>{a.acceptTermsPrefix} <Link to="/terms" className="font-semibold text-coral underline underline-offset-2">{a.termsLink}</Link>.</span>
+          </label>
         )}
         {formError && <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{formError}</p>}
         {notice && <p role="status" className="rounded-lg bg-secondary p-3 text-sm">{notice}</p>}

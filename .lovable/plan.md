@@ -80,3 +80,15 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Storefront prices currently display TND because the existing order schema and money helpers are TND-based. Multi-currency pricing and international payout support remain future work.
 - The product-detail page intentionally does not offer checkout while live payments are disabled and commission remains unconfigured.
 - Migrations `0007` and `0008` are committed but not applied to Supabase. The full branch has not yet been built or tested; run `bun run lint`, `bun run test`, and `bun run build` before merge. Apply migrations only to a disposable clone first.
+
+
+## 11. Administrator dashboard — 2026-10-31
+- Added a role-protected `/admin` route. The route verifies the signed-in user's `admin` role server-side during route loading; non-admin users are redirected to their account page.
+- Added configurable commission controls (0–100%, two decimal places) using the existing audited/role-checked `admin_set_commission_bps` RPC. Commission changes affect new orders only; existing order snapshots are preserved.
+- Added platform overview cards, latest-100 store moderation (activate/suspend), latest-100 product moderation (list/hide), and read-only latest-100 order monitoring.
+- Added a homepage admin shortcut that is shown only when the signed-in user has the admin role.
+- Added French, Arabic and English admin translations and corrected Supabase generated types for nullable commission settings.
+- Updated the TanStack route tree to register the file-based marketplace and admin routes that had not yet been included in the committed generated tree.
+- No new database migration was needed for the dashboard. It relies on existing admin RLS policies and the existing role-checked commission RPC.
+- No role was assigned to any account, no database was changed, and no production settings were modified.
+- Validation remains pending: run lint, tests and production build, then verify admin and non-admin access with test accounts on a disposable environment.

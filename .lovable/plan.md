@@ -28,13 +28,13 @@
 
 ## 4. Financial fee allocation policy — approved 2026-10-31
 
-- Algorea Bazaar's platform commission is configurable; no fixed percentage is promised in the Terms of Use or hard-coded as a business rule, calculated separately from all external payment, transfer, and withdrawal fees.
+- Algorea Bazaar's platform commission is 5% by default and administrator-configurable, calculated separately from all external payment, transfer, and withdrawal fees. The 5% rate is captured in each order item as an immutable snapshot.
 - The buyer bears the external fee charged for the payment method the buyer selects, provided the provider's terms and applicable law permit the fee to be passed through and the exact fee can be disclosed before confirmation.
 - The seller bears external fees charged for receiving, transferring, or withdrawing the seller's proceeds. Weekly seller payouts remain manual.
 - Algorea Bazaar must not absorb, reimburse, or record any provider, bank, transfer, or withdrawal fee as a platform expense. Such fees must never reduce the platform commission.
 - External fees must be separately identified, accurately calculated from the selected provider/method, and disclosed to the responsible customer before the relevant transaction. No hidden fees and no guessed or hard-coded fee schedule.
 - If a provider charges the platform account and its fee cannot lawfully and transparently be assigned to the responsible buyer or seller, do not activate that payment/payout method until the commercial and technical arrangement is resolved.
-- Do not assume iPay's quoted rate or cap, or any other provider's pricing, without current written confirmation. Do not require an iPay referral code.
+- Do not assume iPay's quoted rate or cap, or any other provider's pricing, without current written confirmation. Tunisian sellers must use Algorea Bazaar's own iPay referral code/URL once the platform owner supplies it. The referral code is not yet available in this repository; do not invent one or enable iPay onboarding until configured.
 - This policy is a product requirement, not permission to activate live payments. Provider selection, fee mechanics, sandbox verification, and explicit approval remain prerequisites.
 
 ## 5. Risks
@@ -59,7 +59,7 @@
 - The concise Arabic Terms of Use are maintained in `docs/terms-of-use-ar.md`; they are an approved project draft, not a legally reviewed/published document.
 - Before launch, complete the operator's legal identity/contact details and obtain Tunisian legal review; prepare French and English translations before those languages are used for contractual consent.
 - Implemented in branch `configurable-commission-and-terms-consent`: signup requires an unchecked consent checkbox, and a database trigger validates the accepted terms version/language and records the user ID, version, server timestamp, and language in an append-only table. The current signup flow records initial acceptance; prompting existing users to re-accept after a material revision remains a future task.
-- Implemented in branch `configurable-commission-and-terms-consent`: `commission_bps` is nullable with no default, the prior 500 bps default is cleared for the active setting, the admin RPC accepts a configured value or NULL to unset it, and new order creation fails closed with `commission_not_configured` until a value is set. Existing order-item commission snapshots are preserved. A dedicated admin settings UI and seller-facing commission disclosure remain future tasks. Do not hard-code a fixed percentage or present a permanent percentage in the Terms of Use.
+- Implemented in branch `configurable-commission-and-terms-consent`: commission starts at 500 bps (5%), is NOT NULL, and can be changed by an authorized admin through the dashboard. New order items snapshot the rate; existing snapshots are preserved. The admin settings UI and seller-facing disclosure are present.
 
 ## 8. Confirmations
 
@@ -73,7 +73,10 @@
 - Added an Arabic Terms of Use page at `/terms` and an explicit signup checkbox translated in French, Arabic, and English. The linked legal text is currently Arabic only; French and English legal translations and Tunisian legal review are launch blockers.
 - Signup acceptance is validated by a database trigger and recorded with a server-generated timestamp. The database migration has not been run, so this behavior is not active in the deployed Supabase project.
 - Commission is unset by the migration until an administrator configures it; this intentionally blocks new orders. The admin settings UI is not yet built.
-- No live payment provider, deployment, or production database was changed. Automated tests/build have not yet been run against this branch.
+- Migration 0009 adds server-side verified-email enforcement for store creation and a 1 GiB per-store storage quota, in addition to the 50 MiB per-file database cap. It has not been applied to any database.
+- Terms of Use are available in Arabic, French and English under the same version identifier.
+- CI has read-only repository permissions and no longer commits or pushes formatting changes.
+- No live payment provider, deployment, or production database was changed. The actual iPay referral code/URL is still required; multi-currency and international payout support remain blocked on provider selection and verification.
 
 ## 10. Marketplace interface implementation — 2026-10-31
 
@@ -86,7 +89,7 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Expanded product types (PDF, educational resources, bundles, apps, worksheets, flashcards, and the existing types) through additive migration `0008`.
 - Added seller-scoped read access to the seller's own order lines and order status through additive migration `0007`; no buyer contact data is exposed in the seller UI.
 - Current product-file upload cap remains 50 MB per file, with multiple files supported. Files remain private. No physical products or shipping workflows are introduced.
-- Storefront prices currently display TND because the existing order schema and money helpers are TND-based. Multi-currency pricing and international payout support remain future work.
+- Storefront prices currently display TND because the existing order schema and money helpers are TND-based. Multi-currency pricing and international payout support remain future work; do not advertise global payout coverage until a provider is selected and verified.
 - The product-detail page intentionally does not offer checkout while live payments are disabled and commission remains unconfigured.
 - Migrations `0007` and `0008` are committed but not applied to Supabase. The full branch has not yet been built or tested; run `bun run lint`, `bun run test`, and `bun run build` before merge. Apply migrations only to a disposable clone first.
 

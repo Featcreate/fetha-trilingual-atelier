@@ -117,7 +117,8 @@ export const dict = {
         "Les prix sont actuellement affichés en TND. Les paiements réels ne sont pas activés.",
       payoutMethod: "Réception des revenus",
       weeklyManual: "Virement manuel hebdomadaire",
-      payoutHelp: "La commission de la plateforme est déduite avant le calcul de votre montant. Le solde vous est transféré manuellement chaque semaine. Les frais externes éventuels restent distincts.",
+      payoutHelp:
+        "La commission de la plateforme est déduite avant le calcul de votre montant. Le solde vous est transféré manuellement chaque semaine. Les frais externes éventuels restent distincts.",
       payoutHistory: "Historique des versements",
       payoutStatus: "Statut du versement",
       transferReference: "Référence du virement",
@@ -179,7 +180,8 @@ export const dict = {
       payoutReferenceRequired: "Saisissez la référence bancaire du virement.",
       payoutFailureRequired: "Précisez la raison de l'échec.",
       noPayouts: "Aucun versement.",
-      payoutConfirmNote: "Cette action enregistre un virement déjà effectué ; elle ne transfère pas d'argent.",
+      payoutConfirmNote:
+        "Cette action enregistre un virement déjà effectué ; elle ne transfère pas d'argent.",
       payoutFailedNote: "Le versement a été marqué comme échoué.",
     },
     auth: {
@@ -332,7 +334,8 @@ export const dict = {
       tndNote: "تُعرض الأسعار حالياً بالدينار التونسي. الدفع الحقيقي غير مفعل.",
       payoutMethod: "استلام المستحقات",
       weeklyManual: "تحويل يدوي أسبوعي",
-      payoutHelp: "تُخصم عمولة المنصة قبل احتساب مستحقاتك. ثم يُحوّل إليك المبلغ المتبقي يدوياً كل أسبوع. الرسوم الخارجية المحتملة منفصلة.",
+      payoutHelp:
+        "تُخصم عمولة المنصة قبل احتساب مستحقاتك. ثم يُحوّل إليك المبلغ المتبقي يدوياً كل أسبوع. الرسوم الخارجية المحتملة منفصلة.",
       payoutHistory: "سجل التحويلات",
       payoutStatus: "حالة التحويل",
       transferReference: "مرجع التحويل",
@@ -547,7 +550,8 @@ export const dict = {
       tndNote: "Prices are currently shown in TND. Live payments are not enabled.",
       payoutMethod: "Receive earnings",
       weeklyManual: "Weekly manual transfer",
-      payoutHelp: "The platform commission is deducted before your amount is calculated. The remaining amount is transferred manually each week. Any external fees are separate.",
+      payoutHelp:
+        "The platform commission is deducted before your amount is calculated. The remaining amount is transferred manually each week. Any external fees are separate.",
       payoutHistory: "Payout history",
       payoutStatus: "Payout status",
       transferReference: "Transfer reference",
@@ -609,7 +613,8 @@ export const dict = {
       payoutReferenceRequired: "Enter the bank transfer reference.",
       payoutFailureRequired: "Enter the reason for the failure.",
       noPayouts: "No payouts.",
-      payoutConfirmNote: "This records a transfer that has already happened; it does not move money.",
+      payoutConfirmNote:
+        "This records a transfer that has already happened; it does not move money.",
       payoutFailedNote: "The payout was marked as failed.",
     },
     auth: {

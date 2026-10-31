@@ -151,7 +151,9 @@ function SellerPage() {
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("seller_payouts")
-        .select("id,status,seller_amount_millimes,currency,created_at,paid_at,provider_transfer_ref")
+        .select(
+          "id,status,seller_amount_millimes,currency,created_at,paid_at,provider_transfer_ref",
+        )
         .eq("store_id", store!.id)
         .order("created_at", { ascending: false })
         .limit(30);
@@ -687,21 +689,38 @@ function SellerPage() {
               {payoutHistoryQuery.isPending ? (
                 <p className="mt-2 text-sm">{m.loading}</p>
               ) : payoutHistoryQuery.isError ? (
-                <p role="alert" className="mt-2 text-sm text-destructive">{m.error}</p>
+                <p role="alert" className="mt-2 text-sm text-destructive">
+                  {m.error}
+                </p>
               ) : !payoutHistoryQuery.data?.length ? (
                 <p className="mt-2 rounded-lg bg-secondary p-3 text-sm">{m.noPayouts}</p>
               ) : (
                 <div className="mt-3 space-y-2">
                   {payoutHistoryQuery.data.map((p: any) => (
-                    <article key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-secondary/60 p-3 text-sm">
+                    <article
+                      key={p.id}
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-secondary/60 p-3 text-sm"
+                    >
                       <div>
                         <p className="font-medium">
-                          {p.status === "paid" ? m.payoutPaid : p.status === "processing" ? m.payoutProcessing : p.status === "failed" ? m.payoutFailed : p.status === "cancelled" ? m.payoutCancelled : m.payoutPending}
+                          {p.status === "paid"
+                            ? m.payoutPaid
+                            : p.status === "processing"
+                              ? m.payoutProcessing
+                              : p.status === "failed"
+                                ? m.payoutFailed
+                                : p.status === "cancelled"
+                                  ? m.payoutCancelled
+                                  : m.payoutPending}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(p.paid_at ?? p.created_at).toLocaleDateString(locale)}
                         </p>
-                        {p.provider_transfer_ref && <p className="text-xs text-muted-foreground" dir="ltr">{m.transferReference}: {p.provider_transfer_ref}</p>}
+                        {p.provider_transfer_ref && (
+                          <p className="text-xs text-muted-foreground" dir="ltr">
+                            {m.transferReference}: {p.provider_transfer_ref}
+                          </p>
+                        )}
                       </div>
                       <strong>{formatTND(p.seller_amount_millimes)}</strong>
                     </article>

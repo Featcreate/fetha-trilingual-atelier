@@ -128,7 +128,9 @@ function AdminPage() {
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("seller_payouts")
-        .select("id,store_id,status,seller_amount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason")
+        .select(
+          "id,store_id,status,seller_amount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason",
+        )
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -179,7 +181,10 @@ function AdminPage() {
     });
     setBusy(null);
     if (error) {
-      setNotice({ ok: false, text: error.message.includes("no_unpaid_sales") ? a.noPayouts : a.saveError });
+      setNotice({
+        ok: false,
+        text: error.message.includes("no_unpaid_sales") ? a.noPayouts : a.saveError,
+      });
       return;
     }
     setNotice({ ok: true, text: a.saved });
@@ -385,7 +390,9 @@ function AdminPage() {
           >
             <option value="">{a.payoutStore}</option>
             {(stores.data ?? []).map((store) => (
-              <option key={store.id} value={store.id}>{store.name} · {store.slug}</option>
+              <option key={store.id} value={store.id}>
+                {store.name} · {store.slug}
+              </option>
             ))}
           </select>
           <button
@@ -400,7 +407,9 @@ function AdminPage() {
         {payouts.isPending ? (
           <p className="mt-4 text-sm">{a.loading}</p>
         ) : payouts.isError ? (
-          <p role="alert" className="mt-4 text-sm text-destructive">{a.loadError}</p>
+          <p role="alert" className="mt-4 text-sm text-destructive">
+            {a.loadError}
+          </p>
         ) : !payouts.data.length ? (
           <p className="mt-4 rounded-lg bg-secondary p-4 text-sm">{a.noPayouts}</p>
         ) : (
@@ -409,10 +418,21 @@ function AdminPage() {
               <article key={payout.id} className="rounded-lg border border-border p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold">{stores.data?.find((s) => s.id === payout.store_id)?.name ?? payout.store_id}</p>
-                    <p className="text-xs text-muted-foreground">{payout.status} · {new Date(payout.created_at).toLocaleDateString(locale)} · {(payout.commission_bps / 100).toFixed(2)}%</p>
-                    {payout.provider_transfer_ref && <p className="text-xs text-muted-foreground" dir="ltr">{payout.provider_transfer_ref}</p>}
-                    {payout.failure_reason && <p className="text-xs text-destructive">{payout.failure_reason}</p>}
+                    <p className="font-semibold">
+                      {stores.data?.find((s) => s.id === payout.store_id)?.name ?? payout.store_id}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {payout.status} · {new Date(payout.created_at).toLocaleDateString(locale)} ·{" "}
+                      {(payout.commission_bps / 100).toFixed(2)}%
+                    </p>
+                    {payout.provider_transfer_ref && (
+                      <p className="text-xs text-muted-foreground" dir="ltr">
+                        {payout.provider_transfer_ref}
+                      </p>
+                    )}
+                    {payout.failure_reason && (
+                      <p className="text-xs text-destructive">{payout.failure_reason}</p>
+                    )}
                   </div>
                   <strong>{formatTND(payout.seller_amount_millimes)}</strong>
                 </div>

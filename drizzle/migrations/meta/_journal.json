@@ -92,6 +92,13 @@
       "when": 1793467800000,
       "tag": "0012_manual_payout_workflow",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793468400000,
+      "tag": "0013_storage_bucket_size_limits",
+      "breakpoints": true
     }
   ]
 }

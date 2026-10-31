@@ -353,19 +353,19 @@ export type Database = {
       };
       platform_settings: {
         Row: {
-          commission_bps: number | null;
+          commission_bps: number;
           id: boolean;
           updated_at: string;
           updated_by: string | null;
         };
         Insert: {
-          commission_bps?: number | null;
+          commission_bps?: number;
           id?: boolean;
           updated_at?: string;
           updated_by?: string | null;
         };
         Update: {
-          commission_bps?: number | null;
+          commission_bps?: number;
           id?: boolean;
           updated_at?: string;
           updated_by?: string | null;
@@ -684,7 +684,7 @@ export type Database = {
         };
         Returns: undefined;
       };
-      admin_set_commission_bps: { Args: { _bps: number | null }; Returns: undefined };
+      admin_set_commission_bps: { Args: { _bps: number }; Returns: undefined };
       archive_file_version: {
         Args: { _version_id: string };
         Returns: undefined;

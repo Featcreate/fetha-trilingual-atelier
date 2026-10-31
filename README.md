@@ -10,7 +10,8 @@ Algorea Bazaar is a multilingual marketplace for downloadable digital products, 
 - Buyer payment fees and seller payout/withdrawal fees must be disclosed separately and allocated only where provider terms and applicable law permit.
 - Real payments remain disabled until provider terms, fees, sandbox behavior, and the user's explicit live-activation approval are confirmed.
 - Digital product files remain private and are delivered through short-lived, authorized download links.
-- Multiple files are supported per product, with a 50 MB maximum per file.
+- Multiple files are supported per product, with a 50 MiB maximum per file and 1 GiB total per store.
+- Sellers can upload public product preview images (JPG, PNG, WebP, GIF, AVIF) up to 10 MiB; digital downloads remain private.
 
 ## Marketplace interfaces
 

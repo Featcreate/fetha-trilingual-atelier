@@ -1,31 +1,34 @@
 # Tunisian seller onboarding through iPay
 
-## Required business rule
+## Confirmed referral-code status
 
-Tunisian sellers must open or link their iPay account through Algorea Bazaar's own referral URL/code. Do not substitute a generic iPay signup URL and do not invent a referral code.
+There is no iPay referral code or referral program for this purpose; this was checked against the available iPay account/dashboard information. Therefore:
 
-The platform owner has not yet supplied the actual referral URL/code. Therefore, this integration is a pre-merge blocker for enabling Tunisian seller iPay onboarding and must remain disabled until the real value is supplied and verified.
+- Do not ask the platform owner for an iPay referral code.
+- Do not invent or configure a referral URL/code.
+- Do not make the absence of a referral code a merge blocker.
+- Tunisian sellers should use iPay's official registration process.
 
-## Configuration required
+## Items to verify before enabling seller payouts
 
-Before implementation can be completed:
+1. Confirm the official iPay registration steps and eligibility requirements for Tunisian sellers.
+2. Confirm which iPay account identifier or account-verification method Algorea Bazaar can safely use to associate a seller with their payout destination.
+3. Confirm whether the platform can manually transfer each seller's post-commission proceeds weekly.
+4. Confirm supported settlement currency, transfer limits, processing times, and current fees.
+5. Confirm which party is charged for each transfer/withdrawal fee and how that fee is disclosed before the transfer.
+6. Document the seller-support and reconciliation process, including transfer references and payout history.
 
-1. Obtain the platform-owned referral URL/code from the Algorea Bazaar iPay account or directly from Audasoft.
-2. Confirm in writing that the referral route attributes the seller's iPay registration to Algorea Bazaar.
-3. Confirm which iPay account identifier can be collected safely from sellers.
-4. Confirm seller eligibility, supported countries, settlement currency, transfer limits, and current fees.
-5. Confirm whether the platform can manually transfer each seller's post-commission proceeds weekly.
-6. Confirm which party is charged for each transfer/withdrawal fee and how that fee is disclosed before the transfer.
+These checks are required before enabling iPay payouts, but the absence of a referral code is not a prerequisite.
 
 ## Payout policy
 
 - Platform commission: 5% by default, configurable by an authorized administrator.
 - Seller proceeds: sale amount less the platform commission.
-- Seller payouts: planned as manual weekly transfers.
+- Seller payouts: planned as manual weekly transfers, only after the account-linking and transfer process is verified.
 - iPay, bank, transfer, and withdrawal fees charged to the seller remain the seller's responsibility; they are separate from platform commission.
 - Do not record or reimburse provider fees as platform expenses.
-- Do not activate live payments or transfers until sandbox verification and explicit platform-owner approval.
+- Do not activate live payments or transfers until the workflow has been verified and the platform owner has explicitly approved activation.
 
 ## International sellers
 
-The current order and pricing model is TND-based and the current iPay referral route is intended for Tunisian sellers. International seller onboarding and multi-currency settlement require a separately verified provider and country-coverage policy. Do not represent international payouts as available until those pieces are implemented and tested.
+The current order and pricing model is TND-based. iPay seller onboarding and payout coverage must not be assumed to extend beyond the countries and account types explicitly confirmed by iPay. International seller onboarding and multi-currency settlement require separately verified provider coverage and a country-specific policy. Do not represent international payouts as available until those pieces are implemented and tested.

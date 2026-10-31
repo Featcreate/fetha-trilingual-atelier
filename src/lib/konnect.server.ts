@@ -1,6 +1,7 @@
 // Server-only. Import dynamically from inside server handlers.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { decidePaymentOutcome, type KonnectPayment, type PaymentOutcome } from "./payment-rules";
+import { isKonnectPaymentEnabled } from "./payment-activation";
 
 const SANDBOX = "https://api.preprod.konnect.network/api/v2";
 const LIVE = "https://api.konnect.network/api/v2";
@@ -8,9 +9,14 @@ const LIVE = "https://api.konnect.network/api/v2";
 export function konnectConfig() {
   const apiKey = process.env["KONNECT_API_KEY"];
   const walletId = process.env["KONNECT_WALLET_ID"];
-  // Live is used ONLY when KONNECT_ENV is explicitly "live". Default is sandbox.
-  const live = process.env["KONNECT_ENV"] === "live";
+  const mode = process.env["KONNECT_ENV"];
+  if (!isKonnectPaymentEnabled({
+    KONNECT_ENV: mode,
+    KONNECT_SANDBOX_PAYMENTS_ENABLED: process.env["KONNECT_SANDBOX_PAYMENTS_ENABLED"],
+    KONNECT_LIVE_PAYMENTS_ENABLED: process.env["KONNECT_LIVE_PAYMENTS_ENABLED"],
+  })) return null;
   if (!apiKey || !walletId) return null;
+  const live = mode === "live";
   return { apiKey, walletId, base: live ? LIVE : SANDBOX, live };
 }
 

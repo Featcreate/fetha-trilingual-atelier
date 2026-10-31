@@ -69,7 +69,7 @@ function CatalogPage() {
                 <span className="text-3xl font-bold text-petrol/50">AB</span>
               </div>
               <div className="space-y-3 p-4">
-                <div><p className="text-xs text-muted-foreground">{m[p.product_type as keyof typeof m] ?? p.product_type}</p><h2 className="mt-1 font-bold">{p.name}</h2><p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.description}</p></div>
+                <div><p className="text-xs text-muted-foreground">{m[p.product_type as keyof typeof m] ?? p.product_type}</p><Link to="/products/$id" params={{ id: p.id }} className="mt-1 block font-bold hover:text-coral">{p.name}</Link><p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.description}</p></div>
                 <p className="text-lg font-extrabold">{formatTND(p.price_millimes)}</p>
                 <div className="flex items-center justify-between gap-2 border-t border-border pt-3"><Link to="/stores/$slug" params={{ slug: p.store.slug }} className="text-sm font-semibold text-coral hover:underline">{p.store.name}</Link><span className="text-xs text-muted-foreground">{m.store}</span></div>
               </div>

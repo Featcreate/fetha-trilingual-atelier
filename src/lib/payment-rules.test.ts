@@ -46,7 +46,7 @@ describe("Konnect payment decisions", () => {
   });
 
   it("rejects a completed payment when currency is missing or not TND", () => {
-    const { token: _token, ...withoutCurrency } = completedPayment;
+    const withoutCurrency = { ...completedPayment, token: undefined };
     expect(decidePaymentOutcome(order, withoutCurrency)).toBe("mismatch");
     expect(
       decidePaymentOutcome(order, { ...completedPayment, token: "USD" }),

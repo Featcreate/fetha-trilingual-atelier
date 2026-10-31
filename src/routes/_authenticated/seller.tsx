@@ -22,7 +22,7 @@ const text = {
     payout:"Réception des revenus", weekly:"Virement manuel hebdomadaire", payoutNote:"Algorea retient sa commission de 5 %. Le montant restant vous est versé manuellement chaque semaine. Les frais externes éventuels sont distincts.",
     netSales:"Ventes nettes enregistrées", salesNote:"Montants du registre vendeur, pas un solde immédiatement disponible.", recentSales:"Dernières ventes",
     noProducts:"Aucun produit pour le moment.", noSales:"Aucune vente enregistrée.", product:"Produit", status:"Statut", date:"Date",
-    payoutHistory:"Historique des versements", payoutPending:"En attente", payoutProcessing:"En cours", payoutPaid:"Payé", payoutFailed:"Échec", payoutCancelled:"Annulé", transferReference:"Référence de transfert", payoutDate:"Date du versement",
+    payoutHistory:"Historique des versements", payoutPending:"En attente", payoutProcessing:"En cours", payoutPaid:"Payé", payoutFailed:"Échec", payoutCancelled:"Annulé", transferReference:"Référence de transfert", payoutDate:"Date du versement", adminTitle:"Gestion des versements", adminStore:"Boutique à payer", createPayout:"Préparer le versement", recordPaid:"Confirmer le virement", referenceRequired:"Saisissez la référence bancaire du virement.",
     currency:"TND", fileTooLarge:"Le fichier dépasse 50 Mo.", chooseFile:"Choisissez un fichier.", onlyManual:"Le versement automatique n'est pas activé.",
   },
   ar: {
@@ -36,7 +36,7 @@ const text = {
     payout:"استلام المستحقات", weekly:"تحويل يدوي أسبوعي", payoutNote:"تقتطع Algorea عمولتها 5%، ثم تحوّل إليك المنصة المبلغ المتبقي يدوياً كل أسبوع. أي رسوم خارجية منفصلة.",
     netSales:"صافي المبيعات المسجّل", salesNote:"المبالغ المسجلة في دفتر البائع، وليست رصيداً متاحاً فوراً.", recentSales:"آخر المبيعات",
     noProducts:"لا توجد منتجات حالياً.", noSales:"لا توجد مبيعات مسجلة.", product:"المنتج", status:"الحالة", date:"التاريخ",
-    payoutHistory:"سجل المستحقات", payoutPending:"قيد الانتظار", payoutProcessing:"قيد المعالجة", payoutPaid:"تم الدفع", payoutFailed:"تعذّر الدفع", payoutCancelled:"ملغى", transferReference:"مرجع التحويل", payoutDate:"تاريخ التحويل",
+    payoutHistory:"سجل المستحقات", payoutPending:"قيد الانتظار", payoutProcessing:"قيد المعالجة", payoutPaid:"تم الدفع", payoutFailed:"تعذّر الدفع", payoutCancelled:"ملغى", transferReference:"مرجع التحويل", payoutDate:"تاريخ التحويل", adminTitle:"إدارة تحويلات البائعين", adminStore:"المتجر المستحق", createPayout:"إعداد دفعة المستحقات", recordPaid:"تأكيد التحويل", referenceRequired:"أدخل مرجع التحويل البنكي.",
     currency:"د.ت", fileTooLarge:"حجم الملف يتجاوز 50 ميغابايت.", chooseFile:"اختر ملفاً.", onlyManual:"التحويل الآلي غير مفعّل.",
   },
   en: {
@@ -50,7 +50,7 @@ const text = {
     payout:"Receive earnings", weekly:"Weekly manual transfer", payoutNote:"Algorea retains its 5% commission. The remaining amount is transferred manually each week. Any external fees are separate.",
     netSales:"Recorded net sales", salesNote:"Seller ledger amounts, not an immediately withdrawable balance.", recentSales:"Recent sales",
     noProducts:"No products yet.", noSales:"No sales recorded.", product:"Product", status:"Status", date:"Date",
-    payoutHistory:"Payout history", payoutPending:"Pending", payoutProcessing:"Processing", payoutPaid:"Paid", payoutFailed:"Failed", payoutCancelled:"Cancelled", transferReference:"Transfer reference", payoutDate:"Payout date",
+    payoutHistory:"Payout history", payoutPending:"Pending", payoutProcessing:"Processing", payoutPaid:"Paid", payoutFailed:"Failed", payoutCancelled:"Cancelled", transferReference:"Transfer reference", payoutDate:"Payout date", adminTitle:"Payout administration", adminStore:"Seller store", createPayout:"Prepare payout", recordPaid:"Confirm transfer", referenceRequired:"Enter the bank transfer reference.",
     currency:"TND", fileTooLarge:"File exceeds 50 MB.", chooseFile:"Choose a file.", onlyManual:"Automatic payouts are not enabled.",
   },
 } as const;
@@ -80,6 +80,8 @@ function SellerDashboard() {
   const [description, setDescription] = useState("");
   const [productType, setProductType] = useState<(typeof productTypes)[number]>("pdf");
   const [price, setPrice] = useState("10");
+  const [adminStoreId, setAdminStoreId] = useState("");
+  const [transferReference, setTransferReference] = useState("");
 
   const storeQuery = useQuery({
     queryKey:["seller-store",user.id],
@@ -113,6 +115,29 @@ function SellerDashboard() {
       if(error) throw error; return data;
     },
   });
+  const isAdminQuery = useQuery({
+    queryKey:["seller-admin-check",user.id],
+    queryFn:async()=>{
+      const {data,error}=await supabase.rpc("has_role",{_user_id:user.id,_role:"admin"});
+      if(error) throw error; return data===true;
+    },
+  });
+  const adminStoresQuery = useQuery({
+    queryKey:["admin-payout-stores"],enabled:isAdminQuery.data===true,
+    queryFn:async()=>{
+      const {data,error}=await supabase.from("stores").select("id,name,slug,status").order("name");
+      if(error) throw error; return data??[];
+    },
+  });
+  const adminPayoutsQuery = useQuery({
+    queryKey:["admin-payouts"],enabled:isAdminQuery.data===true,
+    queryFn:async()=>{
+      const {data,error}=await (supabase as any).from("seller_payouts")
+        .select("id,store_id,status,seller_amount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason")
+        .order("created_at",{ascending:false}).limit(50);
+      if(error) throw error; return data??[];
+    },
+  });
   const payoutHistoryQuery = useQuery({
     queryKey:["seller-payout-history",store?.id],enabled:Boolean(store?.id),
     queryFn:async()=>{
@@ -137,6 +162,34 @@ function SellerDashboard() {
     const {data:createdStore}=await supabase.from("stores").select("id").eq("owner_id",user.id).maybeSingle();
     if(createdStore){ await (supabase as any).from("seller_payout_preferences").upsert({store_id:createdStore.id,method:"weekly_manual"},{onConflict:"store_id"}); }
     await queryClient.invalidateQueries({queryKey:["seller-store",user.id]}); setNotice(t.success);
+  }
+
+  async function createAdminPayout() {
+    if(!adminStoreId){setFormError(t.error);return;}
+    setBusy(true);setFormError("");setNotice("");
+    const key=`weekly-${adminStoreId}-${crypto.randomUUID()}`;
+    const {error}=await (supabase as any).rpc("admin_create_seller_payout",{
+      _store_id:adminStoreId,_idempotency_key:key,_scheduled_for:null,
+    });
+    setBusy(false);
+    if(error){setFormError(error.message==="no_unpaid_sales"?t.noSales:t.error);return;}
+    await queryClient.invalidateQueries({queryKey:["admin-payouts"]});
+    await queryClient.invalidateQueries({queryKey:["seller-payout-history"]});
+    setNotice(t.success);
+  }
+
+  async function confirmAdminPayout(payoutId:string) {
+    if(transferReference.trim().length<3){setFormError(t.referenceRequired);return;}
+    setBusy(true);setFormError("");setNotice("");
+    const {error}=await (supabase as any).rpc("admin_mark_seller_payout_paid",{
+      _payout_id:payoutId,_transfer_reference:transferReference.trim(),
+    });
+    setBusy(false);
+    if(error){setFormError(t.error);return;}
+    setTransferReference("");
+    await queryClient.invalidateQueries({queryKey:["admin-payouts"]});
+    await queryClient.invalidateQueries({queryKey:["seller-payout-history"]});
+    setNotice(t.success);
   }
 
   async function savePayoutPreference() {
@@ -250,5 +303,34 @@ function SellerDashboard() {
         <section className="mt-6"><h2 className="mb-3 text-lg font-bold">{t.recentSales}</h2>{!ledgerQuery.data?.length?<p className="rounded-xl bg-secondary p-4 text-sm">{t.noSales}</p>:<div className="overflow-x-auto rounded-xl border border-border"><table className="w-full min-w-[340px] text-sm"><thead className="bg-secondary"><tr><th className="p-3 text-start">{t.date}</th><th className="p-3 text-end">{t.netSales}</th></tr></thead><tbody>{ledgerQuery.data.map(row=><tr key={row.id} className="border-t border-border"><td className="p-3">{date(row.created_at)}</td><td className="p-3 text-end">{money(row.amount_millimes)}</td></tr>)}</tbody></table></div>}</section>
       </>
     )}
+    {isAdminQuery.data===true&&<section className="mt-8 rounded-2xl border-2 border-coral/30 bg-card p-5">
+      <h2 className="text-lg font-bold">{t.adminTitle}</h2>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <select value={adminStoreId} onChange={e=>setAdminStoreId(e.target.value)} className="min-w-[220px] flex-1 rounded-xl border border-border bg-background px-3 py-3">
+          <option value="">{t.adminStore}</option>
+          {(adminStoresQuery.data??[]).map((s:any)=><option key={s.id} value={s.id}>{s.name} — {s.slug}</option>)}
+        </select>
+        <button type="button" onClick={createAdminPayout} disabled={busy||!adminStoreId} className="rounded-full bg-primary px-5 py-3 font-semibold text-primary-foreground disabled:opacity-50">{busy?t.loading:t.createPayout}</button>
+      </div>
+      {formError&&<p role="alert" className="mt-3 text-sm text-destructive">{formError}</p>}
+      {notice&&<p role="status" className="mt-3 text-sm text-green-700">{notice}</p>}
+      <div className="mt-5 space-y-3">
+        {(adminPayoutsQuery.data??[]).map((p:any)=><div key={p.id} className="rounded-xl border border-border p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div><p className="font-semibold">{(adminStoresQuery.data??[]).find((s:any)=>s.id===p.store_id)?.name??p.store_id}</p><p className="text-xs text-muted-foreground">{p.status} · {date(p.created_at)}</p></div>
+            <p className="font-bold">{money(p.seller_amount_millimes)}</p>
+          </div>
+          {p.status!=="paid"&&p.status!=="cancelled"&&<div className="mt-3 flex flex-wrap gap-2">
+            <input value={transferReference} onChange={e=>setTransferReference(e.target.value)} placeholder={t.transferReference} maxLength={200} className="min-w-[180px] flex-1 rounded-xl border border-border bg-background px-3 py-2"/>
+            <button type="button" onClick={()=>confirmAdminPayout(p.id)} disabled={busy} className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">{t.recordPaid}</button>
+          </div>}
+          {p.provider_transfer_ref&&<p className="mt-2 text-xs text-muted-foreground" dir="ltr">{p.provider_transfer_ref}</p>}
+          {p.failure_reason&&<p className="mt-2 text-xs text-destructive">{p.failure_reason}</p>}
+        </div>)}
+        {adminPayoutsQuery.isPending&&<p className="text-sm text-muted-foreground">{t.loading}</p>}
+        {!adminPayoutsQuery.isPending&&!adminPayoutsQuery.data?.length&&<p className="text-sm text-muted-foreground">{t.noSales}</p>}
+      </div>
+      <p className="mt-4 text-xs text-muted-foreground">Confirmer un virement déjà effectué ; ce bouton ne déclenche aucun transfert.</p>
+    </section>}
   </AuthShell>;
 }

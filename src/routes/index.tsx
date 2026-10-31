@@ -73,6 +73,7 @@ function Index() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            {session && <Link to="/orders" className="hidden text-sm font-semibold text-coral hover:underline lg:inline">{t.marketplace.myOrders}</Link>}
             <Link
               to={session ? "/account" : "/auth"}
               aria-label={accountLabel}

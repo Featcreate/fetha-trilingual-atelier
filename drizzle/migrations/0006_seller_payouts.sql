@@ -166,7 +166,8 @@ BEGIN
   END IF;
   SELECT * INTO oi FROM public.order_items WHERE id = l.order_item_id;
   IF NOT FOUND OR oi.store_id <> p.store_id OR oi.seller_id <> l.seller_id
-     OR oi.order_id IS NULL OR oi.seller_net_millimes <> l.amount_millimes THEN
+     OR oi.order_id IS NULL OR oi.seller_net_millimes <> l.amount_millimes
+     OR oi.commission_bps <> p.commission_bps THEN
     RAISE EXCEPTION 'order_item_ledger_mismatch';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.orders o WHERE o.id = oi.order_id AND o.status = 'paid'
@@ -200,6 +201,16 @@ BEGIN
   END IF;
   IF OLD.status IN ('paid','cancelled') AND NEW.status <> OLD.status THEN
     RAISE EXCEPTION 'payout_terminal_state';
+  END IF;
+  IF NEW.status IN ('processing','paid') THEN
+    IF NOT EXISTS (SELECT 1 FROM public.seller_payout_items WHERE payout_id = NEW.id) THEN
+      RAISE EXCEPTION 'payout_has_no_items';
+    END IF;
+    IF NEW.gross_millimes <> (SELECT coalesce(sum(gross_millimes),0) FROM public.seller_payout_items WHERE payout_id = NEW.id)
+       OR NEW.commission_millimes <> (SELECT coalesce(sum(commission_millimes),0) FROM public.seller_payout_items WHERE payout_id = NEW.id)
+       OR NEW.seller_amount_millimes <> (SELECT coalesce(sum(seller_amount_millimes),0) FROM public.seller_payout_items WHERE payout_id = NEW.id) THEN
+      RAISE EXCEPTION 'payout_items_total_mismatch';
+    END IF;
   END IF;
   IF NEW.status = 'paid' AND (NEW.paid_at IS NULL
       OR (NEW.method = 'konnect_direct' AND NEW.provider_transfer_ref IS NULL)) THEN

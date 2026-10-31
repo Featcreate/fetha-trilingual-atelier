@@ -34,6 +34,8 @@ function Index() {
   const accountLabel = session ? t.auth.account : t.auth.signIn;
   const links = [
     ["#home", t.nav.home],
+    ["/catalog", t.marketplace.catalog],
+    ["/seller", t.marketplace.sellerArea],
     ["#products", t.nav.products],
     ["#about", t.nav.about],
     ["#contact", t.nav.contact],
@@ -110,10 +112,10 @@ function Index() {
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-muted-foreground md:text-lg">{t.heroText}</p>
             <a
-              href="#products"
+              href="/catalog"
               className="mt-8 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
             >
-              {t.heroCta}
+              {t.marketplace.viewCatalog}
             </a>
           </div>
         </section>

@@ -22,7 +22,9 @@ This document records implementation boundaries for the current GitHub work bran
 
 - Registration asks for first and last name, email, and password only; no phone, commercial registration, identity document, or other administrative document is required to open a store.
 - Sellers must confirm their email and separately accept the Privacy Policy and Seller Terms.
-- Payout onboarding is country-specific: Tunisia → platform Konnect referral link; all other countries → platform iPay registration link. Exact URLs are not yet available, so do not show placeholders or fabricated links.
+- Seller onboarding has no platform-side country, nationality, or residence restriction. Every seller is shown the same platform Konnect referral registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a.
+- Konnect alone decides whether it accepts each seller and what identity, phone, bank, residence, or other verification it requires. Do not promise acceptance or add provider eligibility checks to Algorea Bazaar.
+- The referral link does not automatically link a seller wallet, enable split payments, or enable payouts. Weekly manual transfers remain the current payout workflow; do not block store creation or product listings while provider onboarding is incomplete.
 - At payout time, sellers choose from methods they previously configured and that are actually eligible. Weekly manual transfer remains the default until providers confirm direct transfers.
 - Seller dashboard scope: products, orders, earnings, payout history/settings, storefront preview, store settings, and support.
 
@@ -40,7 +42,7 @@ This document records implementation boundaries for the current GitHub work bran
 - No payment provider integration or payout automation is authorized by this readiness work.
 - Seller registration asks only for first and last name, email, and password. Phone number and identity/business documents are not prerequisites to opening a store.
 - Email confirmation and separate acceptance of the Privacy Policy and Seller Terms remain required.
-- Payout onboarding routes are specified but not implemented: sellers in Tunisia see the platform's Konnect referral-registration link; sellers elsewhere see the platform's iPay account-registration link. The exact URLs must be supplied and verified before configuration. Do not label the UI "Code parrainage".
+- Every seller, regardless of country, nationality, or residence, sees the same platform Konnect referral-registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a. Konnect alone determines seller account eligibility and verification requirements. Do not route sellers by country or use iPay as an automatic foreign-seller fallback. The link is for registration only; it does not automatically link wallets or enable payouts.
 - At withdrawal, sellers choose only among payout methods they previously configured and that are actually eligible. Record the selected method for each payout.
 - Weekly manual seller transfers remain the default until providers confirm direct seller-wallet transfers. The 5% platform commission is separate from external provider fees.
 - Do not block store creation or product listing while payout onboarding is incomplete. Do not enable real payouts until provider support, country coverage, and transfer mechanics are verified.

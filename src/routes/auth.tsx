@@ -4,7 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { authErrorMessage, useLang } from "@/lib/i18n";
-import { emailSchema, fullNameSchema, passwordSchema, phoneSchema, safeRedirect } from "@/lib/account-rules";
+import { emailSchema, fullNameSchema, passwordSchema, safeRedirect } from "@/lib/account-rules";
 
 type Mode = "signin" | "signup" | "forgot";
 
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-type Errs = Partial<Record<"email" | "password" | "full_name" | "phone", string>>;
+type Errs = Partial<Record<"email" | "password" | "full_name", string>>;
 
 function AuthPage() {
   const { lang, setLang, t } = useLang();
@@ -68,7 +68,6 @@ function AuthPage() {
     if (mode !== "forgot" && !passwordSchema.safeParse(v("password")).success) errs.password = a.errPassword;
     if (mode === "signup") {
       if (!fullNameSchema.safeParse(v("full_name")).success) errs.full_name = a.errName;
-      if (!phoneSchema.safeParse(v("phone")).success) errs.phone = a.errPhone;
     }
     setErrors(errs);
     setFormError("");
@@ -93,7 +92,7 @@ function AuthPage() {
           password: v("password"),
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: v("full_name").trim(), phone: v("phone").trim() },
+            data: { full_name: v("full_name").trim() },
           },
         });
         if (error) return setFormError(authErrorMessage(a, error));
@@ -138,7 +137,6 @@ function AuthPage() {
         {mode === "signup" && (
           <>
             <Field id="full_name" label={a.fullName} autoComplete="name" maxLength={120} error={errors.full_name} />
-            <Field id="phone" label={a.phone} type="tel" dir="ltr" autoComplete="tel" maxLength={20} error={errors.phone} />
           </>
         )}
         <Field id="email" label={a.email} type="email" dir="ltr" autoComplete="email" maxLength={255} error={errors.email} />

@@ -49,3 +49,8 @@ bun run build
 ```
 
 Do not enable live payments, publish the application, apply database migrations, or use paid services without explicit approval.
+
+
+## Seller payouts
+
+The supported seller payout route is weekly manual transfer. Administrators can prepare idempotent payout batches from verified sales and record a completed transfer using its external reference. The dashboard does not initiate transfers. See [seller payout operations](docs/seller-payout-operations.md) for the operating procedure and rollout safeguards.

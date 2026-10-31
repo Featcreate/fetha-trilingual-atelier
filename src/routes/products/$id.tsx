@@ -50,8 +50,16 @@ function ProductPage() {
         <p className="rounded-xl bg-secondary p-5">{m.noCatalog}</p>
       ) : (
         <article className="mx-auto max-w-2xl">
-          <div className="flex aspect-[16/7] items-center justify-center rounded-2xl bg-cream-light text-4xl font-bold text-petrol/40">
-            Algorea Bazaar
+          <div className="flex aspect-[16/7] items-center justify-center overflow-hidden rounded-2xl bg-cream-light text-4xl font-bold text-petrol/40">
+            {query.data.product.image_path ? (
+              <img
+                src={supabase.storage.from("product-images").getPublicUrl(query.data.product.image_path).data.publicUrl}
+                alt={query.data.product.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              "Algorea Bazaar"
+            )}
           </div>
           <p className="mt-6 text-sm text-muted-foreground">
             {m[query.data.product.product_type as keyof typeof m] ??

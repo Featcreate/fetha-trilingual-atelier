@@ -34,7 +34,7 @@
 - Algorea Bazaar must not absorb, reimburse, or record any provider, bank, transfer, or withdrawal fee as a platform expense. Such fees must never reduce the platform commission.
 - External fees must be separately identified, accurately calculated from the selected provider/method, and disclosed to the responsible customer before the relevant transaction. No hidden fees and no guessed or hard-coded fee schedule.
 - If a provider charges the platform account and its fee cannot lawfully and transparently be assigned to the responsible buyer or seller, do not activate that payment/payout method until the commercial and technical arrangement is resolved.
-- Do not assume iPay's quoted rate or cap, or any other provider's pricing, without current written confirmation. Tunisian sellers must use Algorea Bazaar's own iPay referral code/URL once the platform owner supplies it. The referral code is not yet available in this repository; do not invent one or enable iPay onboarding until configured.
+- Do not assume iPay's quoted rate or cap, any referral program, or any other provider's pricing without current written confirmation. We have checked and confirmed that iPay does not offer a referral code/program for this purpose. Do not request, invent, or make a referral code a merge prerequisite. Tunisian sellers must use iPay's official registration process; confirm the supported seller-account identification/linking and manual transfer procedure before enabling payouts.
 - This policy is a product requirement, not permission to activate live payments. Provider selection, fee mechanics, sandbox verification, and explicit approval remain prerequisites.
 
 ## 5. Risks
@@ -76,7 +76,7 @@
 - Migration 0009 adds server-side verified-email enforcement for store creation and a 1 GiB per-store storage quota, in addition to the 50 MiB per-file database cap. It has not been applied to any database.
 - Terms of Use are available in Arabic, French and English under the same version identifier.
 - CI has read-only repository permissions and no longer commits or pushes formatting changes.
-- No live payment provider, deployment, or production database was changed. The actual iPay referral code/URL is still required; multi-currency and international payout support remain blocked on provider selection and verification.
+- No live payment provider, deployment, or production database was changed. iPay has no referral code/program for this purpose; no code is required. Official seller registration, account identification/linking, manual transfer support, fees, and terms still require verification before payout enablement. Multi-currency and international payout support remain blocked on provider selection and verification.
 
 ## 10. Marketplace interface implementation — 2026-10-31
 

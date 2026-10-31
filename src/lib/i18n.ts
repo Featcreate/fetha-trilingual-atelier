@@ -68,6 +68,8 @@ export const dict = {
       flashcards: "Cartes mémoire",
       digitalFiles: "Fichiers numériques",
       addFiles: "Ajouter des fichiers",
+      productImage: "Image du produit (facultative)",
+      imageLimit: "JPG, PNG, WebP, GIF ou AVIF — 10 Mo maximum.",
       commissionDisclosure: "Commission actuelle de la plateforme : {value} par vente réussie.",
       commissionUnset:
         "La commission de la plateforme n'est pas encore configurée. Les produits peuvent être préparés, mais les commandes resteront désactivées.",
@@ -291,6 +293,8 @@ export const dict = {
       flashcards: "بطاقات تعليمية",
       digitalFiles: "الملفات الرقمية",
       addFiles: "إضافة ملفات",
+      productImage: "صورة المنتج (اختيارية)",
+      imageLimit: "JPG أو PNG أو WebP أو GIF أو AVIF — بحد أقصى 10 ميغابايت.",
       commissionDisclosure: "عمولة المنصة الحالية: {value} عن كل عملية بيع ناجحة.",
       commissionUnset:
         "لم يتم ضبط عمولة المنصة بعد. يمكنك تجهيز المنتجات، لكن الطلبات ستبقى متوقفة.",
@@ -507,6 +511,8 @@ export const dict = {
       flashcards: "Flashcards",
       digitalFiles: "Digital files",
       addFiles: "Add files",
+      productImage: "Product image (optional)",
+      imageLimit: "JPG, PNG, WebP, GIF, or AVIF — 10 MB maximum.",
       commissionDisclosure: "Current platform commission: {value} per successful sale.",
       commissionUnset:
         "The platform commission is not configured yet. Products can be prepared, but orders will remain disabled.",

@@ -242,7 +242,7 @@ function SellerPage() {
                 <Field id="price" label={m.price} required inputMode="decimal" placeholder="12.500" />
                 <div><label htmlFor="product_type" className="mb-1 block text-sm font-medium">{m.productType}</label><select id="product_type" name="product_type" className="w-full rounded-lg border border-input bg-background px-3 py-2">{productTypes.map(type => <option key={type} value={type}>{m[type]}</option>)}</select></div>
               </div>
-              <div><label htmlFor="digital_file" className="mb-1 block text-sm font-medium">{m.digitalFile}</label><input id="digital_files" name="digital_files" type="file" multiple required className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /><p className="mt-1 text-xs text-muted-foreground">{m.fileLimit}</p></div>
+              <div><label htmlFor="digital_files" className="mb-1 block text-sm font-medium">{m.digitalFile}</label><input id="digital_files" name="digital_files" type="file" multiple required className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /><p className="mt-1 text-xs text-muted-foreground">{m.fileLimit}</p></div>
               <SubmitButton busy={busy} label={m.upload} busyLabel={m.publishing} />
             </form>
           </section>

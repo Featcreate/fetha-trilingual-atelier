@@ -33,6 +33,7 @@ function SellerPage() {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
+  const [editingStore, setEditingStore] = useState(false);
 
   const storeQuery = useQuery({
     queryKey: ["seller-store", user.id],
@@ -126,6 +127,19 @@ function SellerPage() {
     setNotice(m.productCreated);
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
     await qc.invalidateQueries({ queryKey: ["catalog"] });
+  }
+
+  async function saveStore(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!store) return;
+    const name = String(new FormData(e.currentTarget).get("store_name") ?? "").trim();
+    if (!name) return setNotice(m.nameRequired);
+    setBusy(true);
+    const { error } = await supabase.from("stores").update({ name }).eq("id", store.id).eq("owner_id", user.id);
+    setBusy(false);
+    if (error) return setNotice(m.error);
+    setEditingStore(false); setNotice(m.productUpdated);
+    await qc.invalidateQueries({ queryKey: ["seller-store", user.id] });
   }
 
   async function toggleProduct(product: Product) {

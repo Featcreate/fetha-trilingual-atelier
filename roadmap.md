@@ -20,7 +20,7 @@
 - [x] Add French and English Terms of Use translations matching the Arabic version; obtain Tunisian legal review and complete operator identity/contact details before launch
 - [ ] Add multi-currency support and confirm seller eligibility/payout coverage by country; current catalog and order accounting remain TND-only
 - [ ] Build and test buyer cart/checkout, payment-return route and end-to-end order flow only after provider terms, fees and sandbox behavior are confirmed
-- [ ] Verify the supplied Konnect referral route with Konnect, including attribution to the platform owner's account, seller-account identification/linking, manual transfer capability, settlement currency, limits, fees, and terms. The same link is offered to every seller regardless of country, nationality, or residence; Konnect alone determines account eligibility. Supplied code: `31XyM7MR8wy71ga7a`; link: ${konnectUrl}. This is the platform owner's Konnect referral, not an iPay-issued code.
+- [ ] Verify the supplied Konnect referral route with Konnect, including attribution to the platform owner's account, seller-account identification/linking, manual transfer capability, settlement currency, limits, fees, and terms. The same link is offered to every seller regardless of country, nationality, or residence; Konnect alone determines account eligibility. Supplied code: `31XyM7MR8wy71ga7a`; link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a. This is the platform owner's Konnect referral, not an iPay-issued code.
 - [ ] Configure transactional email and order notifications with a verified sender domain and tested delivery/retry handling
 
 ## Safety constraints

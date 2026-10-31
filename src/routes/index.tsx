@@ -5,8 +5,6 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, useLang } from "@/lib/i18n";
-import product1 from "@/assets/botanical-planner.jpg.asset.json";
-import product2 from "@/assets/spring-wellness.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,11 +20,6 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const products = [
-  { src: product1.url, ratio: "aspect-[1376/768]" },
-  { src: product2.url, ratio: "aspect-[1584/672]" },
-];
-
 function Index() {
   const { lang, setLang, t } = useLang();
   const [open, setOpen] = useState(false);
@@ -34,7 +27,7 @@ function Index() {
   const accountLabel = session ? t.auth.account : t.auth.signIn;
   const links = [
     ["#home", t.nav.home],
-    ["#products", t.nav.products],
+    ["/products", t.nav.products],
     ["#about", t.nav.about],
     ["#contact", t.nav.contact],
   ] as const;
@@ -110,7 +103,7 @@ function Index() {
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-muted-foreground md:text-lg">{t.heroText}</p>
             <a
-              href="#products"
+              href="/products"
               className="mt-8 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
             >
               {t.heroCta}
@@ -118,21 +111,19 @@ function Index() {
           </div>
         </section>
 
-        <section id="products" className="mx-auto max-w-6xl px-4 py-16">
-          <h2 className="text-2xl font-bold md:text-3xl">{t.showcaseTitle}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{t.showcaseNote}</p>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2">
-            {products.map((p, i) => (
-              <article key={i} className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
-                <div className={`${p.ratio} bg-cream-light`}>
-                  <img src={p.src} alt={`${t.preview} ${i + 1}`} className="h-full w-full object-contain" loading="lazy" />
-                </div>
-                <div className="flex items-center justify-between p-4">
-                  <span className="font-semibold">{t.preview} {i + 1}</span>
-                  <span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold text-gold">{t.comingSoon}</span>
-                </div>
-              </article>
-            ))}
+        <section id="products" className="bg-cream-light">
+          <div className="mx-auto max-w-6xl px-4 py-16 text-center md:py-20">
+            <h2 className="text-2xl font-bold md:text-3xl">{t.catalog.title}</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
+              {t.catalog.subtitle}
+            </p>
+            <p className="mt-4 text-base font-semibold text-petrol">{t.catalog.sellerFree}</p>
+            <a
+              href="/products"
+              className="mt-8 inline-flex rounded-full bg-accent px-6 py-3 text-base font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
+            >
+              {t.catalog.browse}
+            </a>
           </div>
         </section>
       </main>

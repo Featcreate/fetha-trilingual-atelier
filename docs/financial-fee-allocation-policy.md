@@ -14,15 +14,7 @@ External provider, bank, payment, transfer, and withdrawal fees must never be pa
 
 ## 2. Buyer-side fees
 
-The buyer is the responsible party for any payment-method fee that the provider contract and applicable law permit to be charged to the buyer. The fee is additional to the product amount and is not deducted from the platform commission or seller's 95% entitlement. If buyer pass-through is not permitted or the exact fee cannot be reliably disclosed, do not activate that payment method.
-
-Before the buyer confirms payment, the checkout must:
-
-- identify the selected payment provider/method;
-- show the actual external fee separately from the product amount and platform commission;
-- show the total amount the buyer will pay.
-
-A buyer-side fee may only be passed through where the provider's contract and applicable law permit it. Never invent, estimate as exact, or hard-code a provider fee without a current, verified fee schedule.
+The buyer is responsible for any payment-method fee charged by the selected provider, subject to that provider's terms and applicable law. The payment provider (Konnect or any future provider) is solely responsible for calculating, presenting, and collecting its own payment fees through its own checkout or payment interface. Algorea Bazaar does not calculate, display, collect, itemize, or manage those provider fees in its storefront, checkout, or buyer account. Such fees do not reduce the platform commission or the seller's 95% entitlement.
 
 ## 3. Seller-side fees
 
@@ -34,7 +26,7 @@ The seller is responsible for external fees associated with receiving, transferr
 
 Seller payouts are planned as **manual weekly transfers**. All sellers, regardless of nationality or residence, are offered the same platform-owned Konnect referral-registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a. Algorea Bazaar does not apply a seller-country eligibility filter; Konnect alone decides whether it accepts each seller and what verification details it requires. The referral link does not guarantee acceptance, automatically link a seller wallet, or enable automatic payouts. Verify referral attribution, account identification/linking, manual transfer capability, and current payout terms before enabling any payout route. The seller's sale entitlement is calculated as 95% at the 5% commission rate (or the applicable future configured rate), after applicable discounts and before the seller's own external receiving/transfer/withdrawal fees. Those fees are borne by the seller and must not become a platform expense.
 
-Where a provider deducts a fee from the transfer amount, the seller must be informed of the fee and the expected amount received before the payout is initiated, to the extent the provider exposes that information. Any fee recovery or deduction must comply with provider terms and applicable law.
+The payout/withdrawal provider is responsible for calculating, presenting, and collecting any seller-side receiving, transfer, or withdrawal fees through its own service. Algorea Bazaar does not calculate, display, collect, itemize, or manage these provider fees in the seller dashboard or payout interface. Any provider deduction remains subject to that provider's terms and applicable law.
 
 ## 4. No platform-paid external fees
 
@@ -44,15 +36,14 @@ If a provider charges fees to the platform's own account and does not support a 
 
 ## 5. Transparency and accounting
 
-- Show external fees as separate line items; do not merge them into the platform commission.
-- Disclose the responsible party and fee before the relevant party confirms the transaction.
-- Do not apply hidden fees.
+- The provider is responsible for displaying its own fees and terms in its own payment or payout interface.
+- Algorea Bazaar displays its own product price and platform commission only; it does not duplicate provider fee disclosures.
 - Do not book third-party fees as Algorea Bazaar expenses.
 - Keep provider fees separate from seller gross proceeds, platform commission, and seller payout records.
 - Do not assume a particular iPay rate, cap, referral program, or payout capability without current written confirmation from Audasoft.
 
 ## 6. Activation gate
 
-This policy does **not** authorize live payment activation. Before enabling any payment or payout method, confirm its current fee schedule, who is contractually charged, whether fee pass-through is permitted, how the fee is calculated and displayed, and how seller payouts work. Test in sandbox first and obtain explicit approval before live activation.
+This policy does **not** authorize live payment activation. Before enabling any payment or payout method, confirm its current fee schedule, who is contractually charged, that the provider itself displays and collects its fees, and how seller payouts work. Test in sandbox first and obtain explicit approval before live activation.
 
 No database migration, payment-provider connection, credential change, or live payment activation is implied by this policy document.

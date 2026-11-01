@@ -14,6 +14,7 @@ export function konnectConfig(requireActivation = false) {
   if (
     requireActivation &&
     !isKonnectPaymentEnabled({
+      PAYMENT_COLLECTION_PROVIDER: process.env["PAYMENT_COLLECTION_PROVIDER"],
       KONNECT_ENV: mode,
       KONNECT_SANDBOX_PAYMENTS_ENABLED: process.env["KONNECT_SANDBOX_PAYMENTS_ENABLED"],
       KONNECT_LIVE_PAYMENTS_ENABLED: process.env["KONNECT_LIVE_PAYMENTS_ENABLED"],

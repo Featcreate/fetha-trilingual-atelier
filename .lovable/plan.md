@@ -105,7 +105,6 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - No role was assigned to any account, no database was changed, and no production settings were modified.
 - Validation remains pending: run lint, tests and production build, then verify admin and non-admin access with test accounts on a disposable environment.
 
-
 ## 12. Configurable financial routing — 2026-11-01
 
 - Added additive migration `0015_configurable_financial_routing.sql` on branch `work/algorea-payment-provider-flexibility`.

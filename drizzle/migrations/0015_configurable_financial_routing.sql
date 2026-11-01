@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS public.platform_payment_config_audit (
 ALTER TABLE public.platform_payment_config_audit ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.platform_payment_config_audit FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON public.platform_payment_config_audit TO authenticated;
-GRANT ALL ON public.platform_payment_config_audit TO service_role;
+GRANT SELECT, INSERT ON public.platform_payment_config_audit TO service_role;
 
 DROP POLICY IF EXISTS "Admins read payment configuration audit" ON public.platform_payment_config_audit;
 CREATE POLICY "Admins read payment configuration audit"

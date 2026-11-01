@@ -204,20 +204,6 @@ function Index() {
 
       <main>
         <img src={banner.url} alt="Algorea Bazaar" className="block h-auto w-full" />
-        <section aria-labelledby="cats" className="bg-background">
-          <div className="mx-auto max-w-6xl px-4 py-8">
-            <h2 id="cats" className="mb-5 text-center text-xl font-bold text-petrol">{t.marketplace.browseCategories}</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-              {CATEGORIES.map(([id, Icon]) => (
-                <Link key={id} to="/catalog" search={{ type: id }}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center text-sm font-semibold transition hover:-translate-y-0.5 hover:border-coral hover:text-coral">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-light text-petrol"><Icon className="h-6 w-6" aria-hidden /></span>
-                  {t.marketplace[id]}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
         {session && myStoreQuery.data && (
           <section aria-labelledby="my-latest-products" className="bg-background">
             <div className="mx-auto max-w-6xl px-4 py-10">
@@ -289,6 +275,20 @@ function Index() {
             )}
           </div>
         </section>
+        <section aria-labelledby="cats" className="bg-background">
+          <div className="mx-auto max-w-6xl px-4 py-8">
+            <h2 id="cats" className="mb-5 text-center text-xl font-bold text-petrol">{t.marketplace.browseCategories}</h2>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+              {CATEGORIES.map(([id, Icon]) => (
+                <Link key={id} to="/catalog" search={{ type: id }}
+                  className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center text-sm font-semibold transition hover:-translate-y-0.5 hover:border-coral hover:text-coral">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-light text-petrol"><Icon className="h-6 w-6" aria-hidden /></span>
+                  {t.marketplace[id]}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
         <section id="home" className="bg-cream-light">
           <div className="mx-auto max-w-6xl px-4 py-16 text-center md:py-24">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">{t.heroKicker}</p>
@@ -299,7 +299,6 @@ function Index() {
           </div>
         </section>
 
-ection>
       </main>
 
       <footer id="contact" className="bg-petrol text-cream">

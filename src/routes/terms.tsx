@@ -55,15 +55,15 @@ const copy: Record<
       ],
       [
         "7. الطلبات والدفع",
-        "تُنفذ الطلبات إلكترونياً عبر وسائل الدفع التي تتيحها المنصة. تُعرض الأسعار والرسوم قبل تأكيد الدفع، ولا تُفعّل وسيلة دفع إلا بعد التحقق من شروطها وإمكانية استخدامها قانونياً.",
+        "تُنفذ الطلبات إلكترونياً عبر وسائل الدفع التي تتيحها المنصة. يعرض مزود الدفع رسوم وسيلة الدفع الخاصة به ضمن واجهته، ولا تُفعّل وسيلة دفع إلا بعد التحقق من شروطها وإمكانية استخدامها قانونياً.",
       ],
       [
         "8. عمولة المنصة ومستحقات البائع",
-        "تقتطع المنصة عمولة عن كل عملية بيع ناجحة، وتُحدد قيمتها وفق السياسة المعمول بها والمعلنة على المنصة وقت إجراء العملية. يستحق البائع المبلغ المتبقي بعد اقتطاع العمولة، مع مراعاة الرسوم الخارجية المعلنة.",
+        "تقتطع المنصة عمولة عن كل عملية بيع ناجحة، وتُحدد قيمتها وفق السياسة المعمول بها والمعلنة على المنصة وقت إجراء العملية. يستحق البائع 95% من مبلغ البيع عند اعتماد عمولة 5%، قبل أي رسوم يفرضها مزود خدمة الاستلام أو التحويل أو السحب.",
       ],
       [
         "9. الرسوم الخارجية",
-        "يتحمل المشتري الرسوم المرتبطة بوسيلة الدفع التي يختارها، ويتحمل البائع الرسوم المرتبطة باستلام مستحقاته أو تحويلها أو سحبها، وفق شروط مزود الخدمة والقانون. لا تتحمل المنصة الرسوم الخارجية، وتُوضح الرسوم الفعلية قبل تأكيد العملية متى كانت معلومة.",
+        "يتعامل المشتري مع رسوم وسيلة الدفع التي يفرضها مزود الدفع، ويتعامل البائع مع رسوم استلام مستحقاته أو تحويلها أو سحبها التي يفرضها مزود الخدمة، وفق شروط المزود والقانون. يتولى كل مزود احتساب رسومه وعرضها وتحصيلها عبر واجهته الخاصة. لا تحتسب المنصة هذه الرسوم أو تعرضها أو تديرها، ولا تتحمل أي رسوم خارجية.",
       ],
       [
         "10. التنزيل والاسترجاع",
@@ -134,15 +134,15 @@ const copy: Record<
       ],
       [
         "7. Commandes et paiements",
-        "Les commandes sont exécutées en ligne au moyen des moyens de paiement proposés par la plateforme. Les prix et frais sont présentés avant la confirmation du paiement. Un moyen de paiement n’est activé qu’après vérification de ses conditions et de sa disponibilité légale.",
+        "Les commandes sont exécutées en ligne au moyen des moyens de paiement proposés par la plateforme. Le prestataire de paiement présente les frais propres au moyen de paiement dans sa propre interface. Un moyen de paiement n’est activé qu’après vérification de ses conditions et de sa disponibilité légale.",
       ],
       [
         "8. Commission de la plateforme et sommes dues au vendeur",
-        "La plateforme prélève une commission sur chaque vente réussie. Son taux est celui de la politique affichée sur la plateforme au moment de la transaction. Le vendeur a droit au montant restant après déduction de cette commission, sous réserve des frais externes annoncés.",
+        "La plateforme prélève une commission sur chaque vente réussie. Son taux est celui de la politique affichée sur la plateforme au moment de la transaction. Au taux de commission de 5 %, le vendeur a droit à 95 % du montant de la vente, avant les frais éventuels facturés par le prestataire de réception, de transfert ou de retrait.",
       ],
       [
         "9. Frais externes",
-        "L’acheteur supporte les frais liés au moyen de paiement qu’il choisit. Le vendeur supporte les frais liés à la réception, au transfert ou au retrait de ses sommes, selon les conditions du prestataire et la loi. La plateforme ne prend pas en charge les frais externes ; les frais connus sont présentés à la partie concernée avant confirmation.",
+        "L’acheteur prend en charge les frais facturés par le prestataire de paiement pour le moyen choisi. Le vendeur prend en charge les frais de réception, de transfert ou de retrait facturés par son prestataire, selon les conditions de celui-ci et la loi. Chaque prestataire calcule, affiche et prélève ses propres frais dans sa propre interface. La plateforme ne calcule, n’affiche ni ne gère ces frais et ne prend en charge aucun frais externe.",
       ],
       [
         "10. Téléchargement et remboursements",
@@ -213,15 +213,15 @@ const copy: Record<
       ],
       [
         "7. Orders and payments",
-        "Orders are processed online using payment methods made available by the platform. Prices and fees are shown before payment is confirmed. A payment method is enabled only after its terms and lawful availability have been checked.",
+        "Orders are processed online using payment methods made available by the platform. The payment provider displays its own payment-method fees in its interface. A payment method is enabled only after its terms and lawful availability have been checked.",
       ],
       [
         "8. Platform commission and seller proceeds",
-        "The platform deducts a commission from each successful sale. The applicable rate is the policy displayed on the platform when the transaction takes place. The seller is entitled to the remaining amount after the commission, subject to disclosed external fees.",
+        "The platform deducts a commission from each successful sale. The applicable rate is the policy displayed on the platform when the transaction takes place. At the 5% commission rate, the seller is entitled to 95% of the sale amount before any receiving, transfer or withdrawal fees charged by the seller's provider.",
       ],
       [
         "9. External fees",
-        "The buyer bears fees associated with the payment method they choose. The seller bears fees associated with receiving, transferring or withdrawing seller proceeds, according to the provider’s terms and applicable law. The platform does not bear external provider fees; known fees are disclosed to the relevant party before confirmation.",
+        "The buyer handles payment-method fees charged by the selected payment provider. The seller handles fees charged by the seller's receiving, transfer or withdrawal provider, subject to provider terms and applicable law. Each provider calculates, displays and collects its own fees in its own interface. The platform does not calculate, display, duplicate, or manage provider fees and does not bear any external fees.",
       ],
       [
         "10. Downloads and refunds",

@@ -351,11 +351,39 @@ export type Database = {
           },
         ];
       };
+      platform_payment_config_audit: {
+        Row: {
+          changed_by: string;
+          created_at: string;
+          id: string;
+          new_configuration: Json;
+          previous_configuration: Json;
+        };
+        Insert: {
+          changed_by: string;
+          created_at?: string;
+          id?: string;
+          new_configuration: Json;
+          previous_configuration: Json;
+        };
+        Update: {
+          changed_by?: string;
+          created_at?: string;
+          id?: string;
+          new_configuration?: Json;
+          previous_configuration?: Json;
+        };
+        Relationships: [];
+      };
       platform_settings: {
         Row: {
           commission_bps: number;
           id: boolean;
           konnect_direct_payouts_enabled: boolean;
+          payment_configuration_status: string;
+          preferred_collection_provider: string;
+          preferred_platform_profit_destination: string;
+          preferred_seller_payout_route: string;
           updated_at: string;
           updated_by: string | null;
         };
@@ -363,6 +391,10 @@ export type Database = {
           commission_bps?: number;
           id?: boolean;
           konnect_direct_payouts_enabled?: boolean;
+          payment_configuration_status?: string;
+          preferred_collection_provider?: string;
+          preferred_platform_profit_destination?: string;
+          preferred_seller_payout_route?: string;
           updated_at?: string;
           updated_by?: string | null;
         };
@@ -370,6 +402,10 @@ export type Database = {
           commission_bps?: number;
           id?: boolean;
           konnect_direct_payouts_enabled?: boolean;
+          payment_configuration_status?: string;
+          preferred_collection_provider?: string;
+          preferred_platform_profit_destination?: string;
+          preferred_seller_payout_route?: string;
           updated_at?: string;
           updated_by?: string | null;
         };
@@ -855,6 +891,10 @@ export type Database = {
         Returns: undefined;
       };
       admin_set_commission_bps: { Args: { _bps: number }; Returns: undefined };
+      admin_update_payment_configuration: {
+        Args: { _collection_provider: string; _profit_destination: string; _seller_payout_route: string };
+        Returns: boolean;
+      };
       admin_create_seller_payout: {
         Args: { _idempotency_key: string; _scheduled_for?: string | null; _store_id: string };
         Returns: string;

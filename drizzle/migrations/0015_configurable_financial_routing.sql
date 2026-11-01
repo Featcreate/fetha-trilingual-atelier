@@ -31,6 +31,25 @@ CREATE POLICY "Admins read payment configuration audit"
   FOR SELECT TO authenticated
   USING (public.has_role(auth.uid(), 'admin'));
 
+CREATE OR REPLACE FUNCTION public.prevent_platform_payment_config_audit_mutation()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $
+BEGIN
+  RAISE EXCEPTION 'payment_configuration_audit_immutable';
+END;
+$;
+
+DROP TRIGGER IF EXISTS platform_payment_config_audit_immutable
+  ON public.platform_payment_config_audit;
+CREATE TRIGGER platform_payment_config_audit_immutable
+  BEFORE UPDATE OR DELETE ON public.platform_payment_config_audit
+  FOR EACH ROW EXECUTE FUNCTION public.prevent_platform_payment_config_audit_mutation();
+
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON public.platform_payment_config_audit
+  FROM PUBLIC, anon, authenticated;
+
 CREATE OR REPLACE FUNCTION public.admin_update_payment_configuration(
   _collection_provider text,
   _seller_payout_route text,

@@ -20,6 +20,11 @@ export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "Administration — Algorea Bazaar" },
+      { name: "description", content: "Administration privée des boutiques et produits Algorea Bazaar." },
+      { property: "og:title", content: "Administration — Algorea Bazaar" },
+      { property: "og:description", content: "Administration privée des boutiques et produits Algorea Bazaar." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -171,71 +176,25 @@ function AdminPage() {
   }
 
   async function createSellerPayout() {
-    if (!payoutStoreId) {
-      setNotice({ ok: false, text: a.saveError });
-      return;
-    }
-    setBusy("payout-create");
-    setNotice(null);
-    const { error } = await supabase.rpc("admin_create_seller_payout", {
-      _store_id: payoutStoreId,
-      _idempotency_key: `weekly-${payoutStoreId}-${crypto.randomUUID()}`,
-      _scheduled_for: null,
-    });
-    setBusy(null);
-    if (error) {
-      setNotice({
-        ok: false,
-        text: error.message.includes("no_unpaid_sales") ? a.noPayouts : a.saveError,
-      });
-      return;
-    }
-    setNotice({ ok: true, text: a.saved });
-    await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
-    await qc.invalidateQueries({ queryKey: ["seller-payout-history"] });
+    // The current database has no manual-payout RPCs. Fail closed until
+    // the separately approved database workflow is available.
+    setNotice({ ok: false, text: a.saveError });
   }
 
-  async function confirmSellerPayout(payout: PayoutRow) {
+  async function confirmSellerPayout() {
     if (payoutReference.trim().length < 3) {
       setNotice({ ok: false, text: a.payoutReferenceRequired });
       return;
     }
-    setBusy(payout.id);
-    setNotice(null);
-    const { error } = await supabase.rpc("admin_mark_seller_payout_paid", {
-      _payout_id: payout.id,
-      _transfer_reference: payoutReference.trim(),
-    });
-    setBusy(null);
-    if (error) {
-      setNotice({ ok: false, text: a.saveError });
-      return;
-    }
-    setPayoutReference("");
-    setNotice({ ok: true, text: a.saved });
-    await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
-    await qc.invalidateQueries({ queryKey: ["seller-payout-history"] });
+    setNotice({ ok: false, text: a.saveError });
   }
 
-  async function failSellerPayout(payout: PayoutRow) {
+  async function failSellerPayout() {
     if (payoutFailure.trim().length < 3) {
       setNotice({ ok: false, text: a.payoutFailureRequired });
       return;
     }
-    setBusy(payout.id);
-    setNotice(null);
-    const { error } = await supabase.rpc("admin_mark_seller_payout_failed", {
-      _payout_id: payout.id,
-      _failure_reason: payoutFailure.trim(),
-    });
-    setBusy(null);
-    if (error) {
-      setNotice({ ok: false, text: a.saveError });
-      return;
-    }
-    setPayoutFailure("");
-    setNotice({ ok: true, text: a.payoutFailedNote });
-    await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+    setNotice({ ok: false, text: a.saveError });
   }
 
   async function setStoreStatus(store: StoreRow) {
@@ -459,7 +418,7 @@ function AdminPage() {
                     <button
                       type="button"
                       disabled={busy === payout.id}
-                      onClick={() => void confirmSellerPayout(payout)}
+                      onClick={() => void confirmSellerPayout()}
                       className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50"
                     >
                       {a.markPayoutPaid}
@@ -476,7 +435,7 @@ function AdminPage() {
                         <button
                           type="button"
                           disabled={busy === payout.id}
-                          onClick={() => void failSellerPayout(payout)}
+                          onClick={() => void failSellerPayout()}
                           className="rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive disabled:opacity-50"
                         >
                           {a.markPayoutFailed}

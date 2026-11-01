@@ -6,6 +6,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { useLang } from "@/lib/i18n";
 import { formatTND, parseTNDToMillimes } from "@/lib/money";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
+import { TndEquivalents } from "@/components/TndEquivalents";
 
 export const Route = createFileRoute("/_authenticated/seller")({
   head: () => ({
@@ -385,6 +386,27 @@ function SellerPage() {
     }
     setBusy(false);
     setNotice(m.productUpdated);
+  }
+
+  async function addPreviewImages(product: Product, files: File[]) {
+    if (!store || !files.length) return;
+    if (files.some((file) => file.size < 1 || file.size > MAX_IMAGE_BYTES || !ALLOWED_IMAGE_TYPES.has(file.type))) return setNotice(m.invalidFile);
+    setBusy(true);
+    const { data: existing, error: listError } = await supabase.from("product_preview_images").select("id").eq("product_id", product.id);
+    if (listError) { setBusy(false); return setNotice(m.error); }
+    if ((existing?.length ?? 0) + files.length > 5) { setBusy(false); return setNotice(lang === "ar" ? "الحد الأقصى خمس صور معاينة للمنتج." : lang === "en" ? "A product can have up to five preview images." : "Un produit peut avoir cinq images d’aperçu au maximum."); }
+    for (let index = 0; index < files.length; index++) {
+      const file = files[index];
+      const storagePath = `${store.id}/${product.id}/previews/${crypto.randomUUID()}-${safeFileName(file.name)}`;
+      const { error: uploadError } = await supabase.storage.from("product-images").upload(storagePath, file, { contentType: file.type, upsert: false });
+      if (uploadError) { setBusy(false); return setNotice(m.fileUploadFailed); }
+      const { error: saveError } = await supabase.from("product_preview_images").insert({ product_id: product.id, storage_path: storagePath, sort_order: (existing?.length ?? 0) + index });
+      if (saveError) { setBusy(false); return setNotice(m.fileUploadFailed); }
+    }
+    setBusy(false);
+    setNotice(m.productUpdated);
+    await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
+    await qc.invalidateQueries({ queryKey: ["catalog"] });
   }
 
   async function toggleProduct(product: Product) {

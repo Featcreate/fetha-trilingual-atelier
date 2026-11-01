@@ -892,7 +892,11 @@ export type Database = {
       };
       admin_set_commission_bps: { Args: { _bps: number }; Returns: undefined };
       admin_update_payment_configuration: {
-        Args: { _collection_provider: string; _profit_destination: string; _seller_payout_route: string };
+        Args: {
+          _collection_provider: string;
+          _profit_destination: string;
+          _seller_payout_route: string;
+        };
         Returns: boolean;
       };
       admin_create_seller_payout: {

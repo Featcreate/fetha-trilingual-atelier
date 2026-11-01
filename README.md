@@ -7,7 +7,7 @@ Algorea Bazaar is a multilingual marketplace for downloadable digital products, 
 - French is the default language; Arabic uses RTL and Tajawal; English uses LTR.
 - Seller registration, store creation, and product listings remain free. A verified email is required before opening a store; storage is limited to 1 GiB per store and 50 MiB per file.
 - Platform commission starts at 5% and is configurable by an authorized administrator; every order item snapshots the rate.
-- The default platform commission is 5%; the seller receives 95% of the commissionable sale amount before seller-side receiving/transfer/withdrawal fees. The buyer bears payment-method fees only where provider terms and applicable law permit pass-through and the exact amount is disclosed.
+- The default platform commission is 5%; the seller receives 95% of the commissionable sale amount before seller-side receiving/transfer/withdrawal fees. Buyers and sellers handle provider-charged payment or payout fees directly with the provider; the provider is responsible for displaying and collecting its own fees.
 - Algorea Bazaar never pays or absorbs third-party payment, bank, transfer, or withdrawal fees; these fees must not reduce the platform commission. A method that charges the platform without a lawful, transparent allocation remains disabled.
 - Real payments remain disabled until provider terms, fees, sandbox behavior, and the user's explicit live-activation approval are confirmed.
 - Digital product files remain private and are delivered through short-lived, authorized download links.

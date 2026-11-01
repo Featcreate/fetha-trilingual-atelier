@@ -321,6 +321,25 @@ function SellerPage() {
       }
     }
 
+    for (let index = 0; index < previewFiles.length; index++) {
+      const file = previewFiles[index];
+      const storagePath = `${store.id}/${product.id}/previews/${crypto.randomUUID()}-${safeFileName(file.name)}`;
+      const { error: previewUploadError } = await supabase.storage
+        .from("product-images")
+        .upload(storagePath, file, { contentType: file.type, upsert: false });
+      if (previewUploadError) {
+        setBusy(false);
+        return setNotice(m.fileUploadFailed);
+      }
+      const { error: previewSaveError } = await supabase
+        .from("product_preview_images")
+        .insert({ product_id: product.id, storage_path: storagePath, sort_order: index });
+      if (previewSaveError) {
+        setBusy(false);
+        return setNotice(m.fileUploadFailed);
+      }
+    }
+
     for (const file of files) {
       const uploaded = await uploadFile(product.id, file);
       if (uploaded !== "ok") {
@@ -618,6 +637,20 @@ function SellerPage() {
                   id="product_image"
                   name="product_image"
                   type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">{m.imageLimit}</p>
+              </div>
+              <div>
+                <label htmlFor="preview_images" className="mb-1 block text-sm font-medium">
+                  {lang === "ar" ? "صور معاينة إضافية (حتى 5)" : lang === "en" ? "Additional preview images (up to 5)" : "Images d’aperçu supplémentaires (5 maximum)"}
+                </label>
+                <input
+                  id="preview_images"
+                  name="preview_images"
+                  type="file"
+                  multiple
                   accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
                   className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
                 />

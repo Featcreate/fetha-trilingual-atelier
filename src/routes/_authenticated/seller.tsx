@@ -184,7 +184,7 @@ function SellerPage() {
     queryKey: ["seller-payout-preference", store?.id],
     enabled: !!store?.id,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("seller_payout_preferences")
         .select("id,method,konnect_wallet_id,preferred_provider")
         .eq("store_id", store!.id)

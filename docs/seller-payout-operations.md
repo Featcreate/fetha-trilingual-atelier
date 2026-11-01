@@ -21,7 +21,9 @@ Store creation and product listings remain free for sellers. No seller registrat
 - The admin confirmation action is an accounting record only. It **does not send money** or call a payment provider.
 - Direct Konnect wallet payouts remain disabled by default. Do not enable them until Konnect confirms in writing that the API supports transfers to individual seller wallets, with the required seller account linking, eligibility, limits, currency, fees, and transfer references.
 - No iPay or Konnect API credentials are required for weekly manual payout recording.
-- The seller's amount is the full amount remaining after the platform commission. External provider/bank transfer fees are separate and must be disclosed to the party charged; they are not silently deducted from the platform commission.
+- At the default 5% commission rate, the seller's entitlement is 95% of the commissionable sale amount (after applicable discounts), before seller-side receiving, transfer, or withdrawal fees. The applicable rate is snapshotted per order item.
+- The buyer is responsible for a payment-method fee only where provider terms and applicable law permit it to be passed through and the exact fee can be disclosed before confirmation. Seller-side payout/withdrawal fees are the seller's responsibility.
+- Algorea Bazaar must never pay, reimburse, absorb, or book any external payment, bank, transfer, or withdrawal fee as a platform expense. No such fee may reduce the platform commission. If a provider charges the platform account and no lawful, transparent allocation is available, keep that method disabled.
 - Live checkout, live payment collection, automatic payouts, and production deployment remain separate activation steps.
 
 ## Payment activation safety

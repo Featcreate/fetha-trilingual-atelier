@@ -33,6 +33,9 @@ jobs:
       - name: Check Prettier formatting
         run: bunx prettier --check "**/*.{ts,tsx,js,jsx,json,md,css,html,yml,yaml}"
 
+      - name: Print formatted payment panel (temporary diagnostic)
+        if: always()
+        run: bunx prettier src/components/PaymentConfigurationPanel.tsx
       - name: Lint
         run: bun run lint
 

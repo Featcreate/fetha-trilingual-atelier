@@ -23,7 +23,7 @@ Algorea Bazaar is a multilingual marketplace for downloadable digital products, 
 - `/orders` — authenticated buyer order history and secure downloads.
 - `/terms` — Arabic, French and English Terms of Use draft.
 
-Prices currently display in TND. Checkout is intentionally unavailable until the payment provider has been verified and explicitly approved. International currency and payout coverage are not yet implemented.
+Prices currently display in TND. Konnect remains the only implemented collection provider; selection is controlled by the server-side `PAYMENT_COLLECTION_PROVIDER` setting (unset preserves Konnect, `disabled` blocks new checkout, unknown values fail closed). Checkout remains unavailable unless the existing explicit provider activation gates are satisfied. International providers, multi-currency collection, and provider-neutral payment storage are not yet implemented. The settlement account is intentionally not hard-coded; changing it later must not change marketplace ledger or commission logic.
 
 ## Technical stack
 
@@ -35,6 +35,7 @@ React, TypeScript, TanStack Start, Vite, Tailwind CSS, Supabase Auth/Postgres/St
 - `.lovable/plan.md` — project scope, audit findings, and implementation constraints.
 - `docs/terms-of-use-ar.md` — approved concise Arabic Terms of Use draft; legal review and operator details are still required before publication.
 - `docs/financial-fee-allocation-policy.md` — external payment, transfer, and withdrawal fee allocation.
+- `docs/payment-and-settlement-configuration.md` — provider selection, settlement-account flexibility, and safe future expansion.
 - `docs/konnect-seller-onboarding.md` — one Konnect referral route for all sellers; provider-controlled eligibility and payout safeguards.
 
 ## Development

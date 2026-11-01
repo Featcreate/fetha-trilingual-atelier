@@ -251,7 +251,7 @@ function Index() {
                       <p className="text-xs text-muted-foreground">{t.marketplace[product.product_type as keyof typeof t.marketplace] ?? product.product_type}</p>
                       <Link to="/products/$id" params={{ id: product.id }} className="block font-bold hover:text-coral">{product.name}</Link>
                       <p className="line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
-                      <p className="text-lg font-extrabold">{formatTND(product.price_millimes)}</p>
+                      <p className="text-lg font-extrabold">{formatTND(product.price_millimes)}<TndEquivalents millimes={product.price_millimes} /></p>
                     </div>
                   </article>
                 ))}

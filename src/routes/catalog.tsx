@@ -13,6 +13,8 @@ export const Route = createFileRoute("/catalog")({
       { name: "description", content: "Découvrez des produits numériques sur Algorea Bazaar." },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { type?: string } =>
+    typeof s.type === "string" ? { type: s.type } : {},
   component: CatalogPage,
 });
 
@@ -31,7 +33,7 @@ function CatalogPage() {
   const { lang, setLang, t } = useLang();
   const m = t.marketplace;
   const [search, setSearch] = useState("");
-  const [type, setType] = useState("all");
+  const [type, setType] = useState(Route.useSearch().type ?? "all");
   const catalog = useQuery({
     queryKey: ["catalog"],
     queryFn: async () => {

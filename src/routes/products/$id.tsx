@@ -68,6 +68,19 @@ function ProductPage() {
               "Algorea Bazaar"
             )}
           </div>
+          {query.data.previews.length > 0 && (
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {query.data.previews.map((preview) => (
+                <img
+                  key={preview.id}
+                  src={supabase.storage.from("product-images").getPublicUrl(preview.storage_path).data.publicUrl}
+                  alt={query.data.product.name}
+                  loading="lazy"
+                  className="aspect-square w-full rounded-xl border border-border object-cover"
+                />
+              ))}
+            </div>
+          )}
           <p className="mt-6 text-sm text-muted-foreground">
             {m[query.data.product.product_type as keyof typeof m] ??
               query.data.product.product_type}
@@ -76,9 +89,13 @@ function ProductPage() {
           <p className="mt-4 whitespace-pre-wrap leading-8 text-muted-foreground">
             {query.data.product.description}
           </p>
-          <p className="mt-6 text-2xl font-extrabold">
+          <div className="mt-6 text-2xl font-extrabold">
             {formatTND(query.data.product.price_millimes)}
-          </p>
+            <TndEquivalents
+              millimes={query.data.product.price_millimes}
+              locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+            />
+          </div>
           <Link
             to="/stores/$slug"
             params={{ slug: query.data.store.slug }}

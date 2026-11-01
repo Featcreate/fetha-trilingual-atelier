@@ -49,9 +49,9 @@ BEGIN
     RAISE EXCEPTION 'forbidden';
   END IF;
 
-  IF _collection_provider NOT IN ('konnect','bank_gateway','ipay','other')
-     OR _seller_payout_route NOT IN ('weekly_manual','manual_bank_transfer','manual_provider_transfer','future_automated')
-     OR _profit_destination NOT IN ('owner_choice','konnect','ipay','bank_account','other') THEN
+  IF _collection_provider IS NULL OR _collection_provider NOT IN ('konnect','bank_gateway','ipay','other')
+     OR _seller_payout_route IS NULL OR _seller_payout_route NOT IN ('weekly_manual','manual_bank_transfer','manual_provider_transfer','future_automated')
+     OR _profit_destination IS NULL OR _profit_destination NOT IN ('owner_choice','konnect','ipay','bank_account','other') THEN
     RAISE EXCEPTION 'invalid_payment_configuration';
   END IF;
 

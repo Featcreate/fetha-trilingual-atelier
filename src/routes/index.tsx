@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTND } from "@/lib/money";
+import { TndEquivalents } from "@/components/TndEquivalents";
 import { Menu, X, BookOpen, LayoutTemplate, Printer, CalendarCheck, GraduationCap, Laptop, Headphones, Video, Palette, Sparkles } from "lucide-react";
 import banner from "@/assets/homepage-banner.jpg.asset.json";
 
@@ -283,7 +284,7 @@ function Index() {
                       <p className="text-xs text-muted-foreground">{t.marketplace[product.product_type as keyof typeof t.marketplace] ?? product.product_type}</p>
                       <Link to="/products/$id" params={{ id: product.id }} className="block font-bold hover:text-coral">{product.name}</Link>
                       <p className="line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
-                      <p className="text-lg font-extrabold">{formatTND(product.price_millimes)}</p>
+                      <p className="text-lg font-extrabold">{formatTND(product.price_millimes)}<TndEquivalents millimes={product.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></p>
                     </div>
                   </article>
                 ))}

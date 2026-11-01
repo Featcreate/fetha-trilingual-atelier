@@ -5,10 +5,7 @@ import { useLang } from "@/lib/i18n";
 
 type CollectionProvider = "konnect" | "bank_gateway" | "ipay" | "other";
 type SellerPayoutRoute =
-  | "weekly_manual"
-  | "manual_bank_transfer"
-  | "manual_provider_transfer"
-  | "future_automated";
+  "weekly_manual" | "manual_bank_transfer" | "manual_provider_transfer" | "future_automated";
 type ProfitDestination = "owner_choice" | "konnect" | "ipay" | "bank_account" | "other";
 
 const copy = {

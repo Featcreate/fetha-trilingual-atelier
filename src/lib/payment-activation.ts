@@ -1,7 +1,7 @@
 export type KonnectPaymentEnvironment = {
-  KONNECT_ENV?: string;
-  KONNECT_SANDBOX_PAYMENTS_ENABLED?: string;
-  KONNECT_LIVE_PAYMENTS_ENABLED?: string;
+  KONNECT_ENV?: string | undefined;
+  KONNECT_SANDBOX_PAYMENTS_ENABLED?: string | undefined;
+  KONNECT_LIVE_PAYMENTS_ENABLED?: string | undefined;
 };
 
 /**

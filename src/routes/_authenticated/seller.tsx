@@ -9,15 +9,22 @@ import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/_authenticated/seller")({
   head: () => ({
-    meta: [{ title: "Espace vendeur — Algorea Bazaar" }, { name: "robots", content: "noindex" }],
+    meta: [
+      { title: "Espace vendeur — Algorea Bazaar" },
+      { name: "description", content: "Gérez votre boutique et vos produits numériques sur Algorea Bazaar." },
+      { property: "og:title", content: "Espace vendeur — Algorea Bazaar" },
+      { property: "og:description", content: "Gérez votre boutique et vos produits numériques sur Algorea Bazaar." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
+    ],
   }),
   component: SellerPage,
 });
 
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
-type ProductType = Product["product_type"];
-const productTypes: ProductType[] = [
+const productTypes = [
   "ebook",
   "pdf",
   "template",
@@ -34,7 +41,8 @@ const productTypes: ProductType[] = [
   "video",
   "graphics",
   "other",
-];
+] as const;
+type ProductType = (typeof productTypes)[number];
 const KONNECT_SELLER_REGISTRATION_URL =
   "https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a";
 const MAX_FILE_BYTES = 50 * 1024 * 1024;

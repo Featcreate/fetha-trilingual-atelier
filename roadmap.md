@@ -14,6 +14,8 @@
 
 ## Remaining before a safe launch
 
+- [ ] Complete all 16 seller/buyer categories after explicit approval to expand the current database category constraint (currently 10 allowed values).
+
 - [ ] Run the latest CI after payment-gating, storage-limit and product-image changes; resolve any format, lint, test or build failures
 - [ ] Apply migrations 0000–0014 in order to a disposable Supabase clone and verify migration compatibility, RLS, verified-email onboarding, 1 GiB store quota, 50 MiB private file limit, 10 MiB public image limit, image/file uploads, downloads, commission snapshots and payout workflows
 - [x] Admin settings/moderation interface, including configurable commission, store/product oversight and order monitoring

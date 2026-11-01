@@ -88,6 +88,24 @@ function Index() {
   const latestLoading = lang === "ar" ? "جارٍ تحميل منتجات متجرك…" : lang === "en" ? "Loading your store products…" : "Chargement des produits de votre boutique…";
   const latestError = lang === "ar" ? "تعذر تحميل منتجات متجرك." : lang === "en" ? "Could not load your store products." : "Impossible de charger les produits de votre boutique.";
   const viewMyStore = lang === "ar" ? "عرض متجري" : lang === "en" ? "View my store" : "Voir ma boutique";
+  const platformLatestQuery = useQuery({
+    queryKey: ["home-platform-latest-products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id,name,description,price_millimes,product_type,image_path")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const platformLatestTitle = lang === "ar" ? "أحدث المنتجات على المنصة" : lang === "en" ? "Latest products on the platform" : "Derniers produits sur la plateforme";
+  const platformLatestEmpty = lang === "ar" ? "لا توجد منتجات منشورة حالياً." : lang === "en" ? "There are no published products yet." : "Aucun produit publié pour le moment.";
+  const platformLatestLoading = lang === "ar" ? "جارٍ تحميل أحدث المنتجات…" : lang === "en" ? "Loading the latest products…" : "Chargement des derniers produits…";
+  const platformLatestError = lang === "ar" ? "تعذر تحميل أحدث المنتجات." : lang === "en" ? "Could not load the latest products." : "Impossible de charger les derniers produits.";
+
   const links = [
     ["#home", t.nav.home],
     ["/seller", t.marketplace.sellerArea],
@@ -239,6 +257,38 @@ function Index() {
             </div>
           </section>
         )}
+        <section aria-labelledby="platform-latest-products" className="bg-cream-light">
+          <div className="mx-auto max-w-6xl px-4 py-10">
+            <h2 id="platform-latest-products" className="mb-5 text-xl font-bold text-petrol">{platformLatestTitle}</h2>
+            {platformLatestQuery.isPending ? (
+              <p className="py-5 text-center text-muted-foreground">{platformLatestLoading}</p>
+            ) : platformLatestQuery.isError ? (
+              <p role="alert" className="py-5 text-center text-muted-foreground">{platformLatestError}</p>
+            ) : !platformLatestQuery.data?.length ? (
+              <p className="py-5 text-center text-muted-foreground">{platformLatestEmpty}</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {platformLatestQuery.data.map((product) => (
+                  <article key={product.id} className="overflow-hidden rounded-xl border border-border bg-card">
+                    <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-background p-5">
+                      {product.image_path ? (
+                        <img src={supabase.storage.from("product-images").getPublicUrl(product.image_path).data.publicUrl} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-3xl font-bold text-petrol/50">AB</span>
+                      )}
+                    </div>
+                    <div className="space-y-2 p-4">
+                      <p className="text-xs text-muted-foreground">{t.marketplace[product.product_type as keyof typeof t.marketplace] ?? product.product_type}</p>
+                      <Link to="/products/$id" params={{ id: product.id }} className="block font-bold hover:text-coral">{product.name}</Link>
+                      <p className="line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
+                      <p className="text-lg font-extrabold">{formatTND(product.price_millimes)}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
         <section id="home" className="bg-cream-light">
           <div className="mx-auto max-w-6xl px-4 py-16 text-center md:py-24">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">{t.heroKicker}</p>

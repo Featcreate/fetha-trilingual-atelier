@@ -14,7 +14,7 @@ export const Route = createFileRoute("/catalog")({
     ],
   }),
   validateSearch: (s: Record<string, unknown>): { type?: string } =>
-    typeof s.type === "string" ? { type: s.type } : {},
+    typeof s["type"] === "string" ? { type: s["type"] } : {},
   component: CatalogPage,
 });
 

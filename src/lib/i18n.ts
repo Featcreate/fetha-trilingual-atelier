@@ -125,7 +125,7 @@ export const dict = {
       payoutMethod: "Réception des revenus",
       weeklyManual: "Virement manuel hebdomadaire",
       payoutHelp:
-        "La commission de la plateforme est de 5 % par défaut : votre part est donc de 95 % du montant de vente après remise, avant vos éventuels frais de réception ou de retrait. Les frais de paiement autorisés sont facturés séparément à l’acheteur. La plateforme ne prend en charge aucun frais externe. Le versement reste manuel et hebdomadaire.",
+        "La commission de la plateforme est de 5 % par défaut : votre part est donc de 95 % du montant de vente après remise, avant les éventuels frais de réception, de transfert ou de retrait facturés par le prestataire. Le prestataire calcule, affiche et prélève directement ses propres frais ; la plateforme ne les calcule pas et ne les reproduit pas dans le tableau de bord vendeur. La plateforme ne prend en charge aucun frais externe. Le versement reste manuel et hebdomadaire.",
       konnectRegister: "S’inscrire sur Konnect via le lien de la plateforme",
       konnectEligibility:
         "Ce lien est proposé à tous les vendeurs, quel que soit leur pays ou leur lieu de résidence. Konnect vérifie directement l’identité, le téléphone et le moyen de réception du vendeur, puis décide de son éligibilité. Le lien ne garantit pas l’acceptation et n’active pas les virements automatiques.",
@@ -354,7 +354,7 @@ export const dict = {
       payoutMethod: "استلام المستحقات",
       weeklyManual: "تحويل يدوي أسبوعي",
       payoutHelp:
-        "عمولة المنصة الافتراضية 5%، وبالتالي تبلغ حصتك 95% من مبلغ البيع بعد الخصم، وقبل رسوم استلام مستحقاتك أو تحويلها أو سحبها. يتحمل المشتري رسوم وسيلة الدفع المسموح بها قانونياً وتعاقدياً، وتُعرض منفصلة. لا تتحمل المنصة أي رسوم خارجية. يتم تحويل المستحقات يدوياً كل أسبوع.",
+        "عمولة المنصة الافتراضية 5%، وبالتالي تبلغ حصتك 95% من مبلغ البيع بعد الخصم، قبل رسوم الاستلام أو التحويل أو السحب التي يفرضها مزود الخدمة. يتولى مزود الدفع أو التحويل احتساب رسومه وعرضها وتحصيلها مباشرةً؛ ولا تحتسب المنصة هذه الرسوم أو تعرضها أو تديرها في لوحة البائع. لا تتحمل المنصة أي رسوم خارجية. يتم تحويل المستحقات يدوياً كل أسبوع.",
       konnectRegister: "التسجيل في Konnect عبر رابط المنصة",
       konnectEligibility:
         "الرابط متاح لجميع البائعين مهما كانت بلدانهم أو أماكن إقامتهم. تتولى Konnect مباشرة التحقق من هوية البائع ورقم هاتفه ووسيلة استلام أمواله وتحديد أهليته. لا يضمن الرابط قبول الحساب ولا يفعّل التحويلات التلقائية.",
@@ -582,7 +582,7 @@ export const dict = {
       payoutMethod: "Receive earnings",
       weeklyManual: "Weekly manual transfer",
       payoutHelp:
-        "The default platform commission is 5%, so your share is 95% of the sale amount after discounts, before your own receiving, transfer or withdrawal fees. Payment-method fees are charged separately to the buyer only where provider terms and applicable law permit. The platform bears no external fees. Seller transfers are manual and weekly.",
+        "The default platform commission is 5%, so your share is 95% of the sale amount after discounts, before any receiving, transfer or withdrawal fees charged by the provider. The payment or payout provider calculates, displays and collects its own fees directly; the platform does not calculate or duplicate them in the seller dashboard. The platform bears no external fees. Seller transfers are manual and weekly.",
       konnectRegister: "Register with Konnect using the platform link",
       konnectEligibility:
         "This link is available to all sellers, regardless of country or residence. Konnect independently verifies each seller’s identity, phone number and receiving method, and decides eligibility. The link does not guarantee acceptance or enable automatic payouts.",

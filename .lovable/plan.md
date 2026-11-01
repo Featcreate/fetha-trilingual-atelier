@@ -104,3 +104,12 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - The commission UI relies on the role-checked `admin_set_commission_bps` RPC. No live payout or payment action is exposed.
 - No role was assigned to any account, no database was changed, and no production settings were modified.
 - Validation remains pending: run lint, tests and production build, then verify admin and non-admin access with test accounts on a disposable environment.
+
+## 12. Configurable financial routing — 2026-11-01
+
+- Added additive migration `0015_configurable_financial_routing.sql` on branch `work/algorea-payment-provider-flexibility`.
+- Added admin-only, audited preferences for the initial collection provider (Konnect), seller settlement route (weekly manual), and platform-profit withdrawal destination (owner choice).
+- Preference changes always reset the configuration state to `pending_verification`; they do not switch provider adapters, activate checkout, call APIs, move funds, or change historical ledger entries and payout batches.
+- Added a role-protected admin panel with Arabic, French, and English labels and a persistent audit trail for configuration changes.
+- Konnect remains the only implemented payment adapter. Bank gateway, iPay, alternative providers, and future automated payouts remain preferences only until separately implemented, verified, tested, and explicitly approved.
+- No migrations were applied to Supabase; no payment credentials, production settings, live payments, transfers, or deployments were changed.

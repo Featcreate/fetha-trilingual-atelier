@@ -20,7 +20,10 @@ The registration link is an account-registration/referral link only. It does not
 ## Payout operating policy
 
 - Platform commission: 5% by default, configurable by an authorized administrator.
-- Seller proceeds: the sale amount less the platform commission; provider/bank/transfer/withdrawal fees remain separate and are charged to the responsible party as disclosed.
+- Seller proceeds: 95% of the commissionable sale amount at the default 5% platform commission, before seller-side receiving, transfer, or withdrawal fees. The applicable commission rate is snapshotted for each sale.
+- The buyer is responsible for payment-method fees charged by the selected provider, subject to provider terms and applicable law. The provider itself calculates, displays, and collects these fees; Algorea Bazaar does not duplicate them in checkout.
+- Seller receiving, transfer, and withdrawal fees are the seller's responsibility and are calculated, displayed, and collected by the payout provider, not itemized by Algorea Bazaar.
+- Algorea Bazaar never pays, reimburses, absorbs, or records third-party payment, bank, transfer, or withdrawal fees as platform expenses. Fees must not reduce the platform commission. Keep any provider/method disabled if it charges the platform and no lawful, transparent allocation is available.
 - Weekly manual transfer remains the current payout workflow. The admin dashboard records a transfer only after it has actually been completed; it does not send money.
 - Direct Konnect wallet payouts and automatic split payments remain disabled until Konnect confirms the required API capability, seller-account linking, eligibility, settlement currency, limits, fees, and transfer references, and sandbox tests pass.
 - Do not use iPay as an automatic fallback for sellers outside Tunisia. Any additional provider must be separately evaluated and explicitly configured; no seller-country routing is currently implemented.

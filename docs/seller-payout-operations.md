@@ -21,7 +21,10 @@ Store creation and product listings remain free for sellers. No seller registrat
 - The admin confirmation action is an accounting record only. It **does not send money** or call a payment provider.
 - Direct Konnect wallet payouts remain disabled by default. Do not enable them until Konnect confirms in writing that the API supports transfers to individual seller wallets, with the required seller account linking, eligibility, limits, currency, fees, and transfer references.
 - No iPay or Konnect API credentials are required for weekly manual payout recording.
-- The seller's amount is the full amount remaining after the platform commission. External provider/bank transfer fees are separate and must be disclosed to the party charged; they are not silently deducted from the platform commission.
+- At the default 5% commission rate, the seller's entitlement is 95% of the commissionable sale amount (after applicable discounts), before seller-side receiving, transfer, or withdrawal fees. The applicable rate is snapshotted per order item.
+- The buyer is responsible for payment-method fees charged by the selected provider, subject to provider terms and applicable law. The provider itself calculates, displays, and collects those fees; Algorea Bazaar does not duplicate them in its checkout.
+- Seller receiving, transfer, and withdrawal fees are the seller's responsibility and are calculated, displayed, and collected by the relevant provider. Algorea Bazaar does not itemize or manage those fees in the seller dashboard or payout interface.
+- Algorea Bazaar must never pay, reimburse, absorb, or book any external payment, bank, transfer, or withdrawal fee as a platform expense. No such fee may reduce the platform commission. If a provider charges the platform account and no lawful, transparent allocation is available, keep that method disabled.
 - Live checkout, live payment collection, automatic payouts, and production deployment remain separate activation steps.
 
 ## Payment activation safety
@@ -30,7 +33,7 @@ Konnect credentials alone do not enable checkout. Server-side activation is fail
 
 - Sandbox: set `KONNECT_ENV=sandbox` (or leave it unset) and `KONNECT_SANDBOX_PAYMENTS_ENABLED=true`.
 - Live: set `KONNECT_ENV=live` and `KONNECT_LIVE_PAYMENTS_ENABLED=true`.
-- Unknown environment values are rejected. Keep the live switch unset until provider, legal, fee-disclosure, sandbox, and explicit live-launch checks are complete.
+- Unknown environment values are rejected. Keep the live switch unset until provider, legal, provider-owned fee presentation, sandbox, and explicit live-launch checks are complete.
 - When activation is off, checkout returns `payments_not_configured` before creating an order, preventing orphaned pending orders.
 - Status verification for already-created Konnect payment references remains available when credentials are present, even if new checkout initiation is paused; this prevents a temporary kill switch from blocking reconciliation of payments already in flight.
 

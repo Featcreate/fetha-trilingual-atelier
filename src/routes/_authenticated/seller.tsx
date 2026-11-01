@@ -265,9 +265,9 @@ function SellerPage() {
     const files = values
       .getAll("digital_files")
       .filter((value): value is File => value instanceof File && value.size > 0);
-    const imageValue = values.get("product_image");
+    const previewFiles = values.getAll("preview_images").filter((value): value is File => value instanceof File && value.size > 0);\n    const imageValue = values.get("product_image");
     const imageFile = imageValue instanceof File && imageValue.size > 0 ? imageValue : null;
-    if (!name || !description) return setNotice(m.productRequired);
+    if (!name || !description) return setNotice(m.productRequired);\n    if (previewFiles.length > 5 || previewFiles.some((file) => file.size > MAX_IMAGE_BYTES || !ALLOWED_IMAGE_TYPES.has(file.type))) return setNotice(m.invalidFile);
     if (!price) return setNotice(m.invalidPrice);
     if (!files.length || files.some((file) => file.size < 1 || file.size > MAX_FILE_BYTES))
       return setNotice(m.invalidFile);

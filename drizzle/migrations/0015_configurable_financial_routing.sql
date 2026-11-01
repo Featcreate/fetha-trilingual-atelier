@@ -35,11 +35,11 @@ CREATE OR REPLACE FUNCTION public.prevent_platform_payment_config_audit_mutation
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = ''
-AS $
+AS $$
 BEGIN
   RAISE EXCEPTION 'payment_configuration_audit_immutable';
 END;
-$;
+$$;
 
 DROP TRIGGER IF EXISTS platform_payment_config_audit_immutable
   ON public.platform_payment_config_audit;

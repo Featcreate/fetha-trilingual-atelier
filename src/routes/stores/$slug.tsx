@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { AuthShell } from "@/components/AuthShell";
+import { TndEquivalents } from "@/components/TndEquivalents";
 
 export const Route = createFileRoute("/stores/$slug")({
   head: () => ({ meta: [{ title: "Boutique — Algorea Bazaar" }] }),
@@ -92,7 +93,7 @@ function StorefrontPage() {
                     {p.name}
                   </Link>
                   <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
-                  <p className="mt-3 text-lg font-extrabold">{formatTND(p.price_millimes)}</p>
+                  <p className="mt-3 text-lg font-extrabold">{formatTND(p.price_millimes)}<TndEquivalents millimes={p.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></p>
                 </article>
               ))}
             </div>

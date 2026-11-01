@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 
@@ -93,6 +93,7 @@ export function PaymentConfigurationPanel() {
   const [payout, setPayout] = useState<SellerPayoutRoute>("weekly_manual");
   const [profit, setProfit] = useState<ProfitDestination>("owner_choice");
   const [busy, setBusy] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
 
   const config = useQuery({
@@ -108,10 +109,14 @@ export function PaymentConfigurationPanel() {
     },
   });
 
-  if (config.data && collection === "konnect" && payout === "weekly_manual" && profit === "owner_choice") {
-    // Initial values are defaults only; synchronize them with the saved settings once loaded.
-    // The query key is stable and the form remains controlled after the first render.
-  }
+  useEffect(() => {
+    if (!config.data || initialized) return;
+    setCollection(config.data.preferred_collection_provider as CollectionProvider);
+    setPayout(config.data.preferred_seller_payout_route as SellerPayoutRoute);
+    setProfit(config.data.preferred_platform_profit_destination as ProfitDestination);
+    setInitialized(true);
+  }, [config.data, initialized]);
+
 
   async function save() {
     setBusy(true);

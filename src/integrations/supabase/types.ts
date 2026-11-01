@@ -520,6 +520,18 @@ export type Database = {
           },
         ]
       }
+      product_preview_images: {
+        Row: { created_at: string; id: string; product_id: string; sort_order: number; storage_path: string }
+        Insert: { created_at?: string; id?: string; product_id: string; sort_order?: number; storage_path: string }
+        Update: { created_at?: string; id?: string; product_id?: string; sort_order?: number; storage_path?: string }
+        Relationships: [{
+          foreignKeyName: "product_preview_images_product_id_fkey"
+          columns: ["product_id"]
+          isOneToOne: false
+          referencedRelation: "products"
+          referencedColumns: ["id"]
+        }]
+      }
       profiles: {
         Row: {
           created_at: string

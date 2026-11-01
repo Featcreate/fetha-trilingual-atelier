@@ -8,7 +8,9 @@ describe("collection provider selection", () => {
   });
 
   it("can disable collection without changing marketplace accounting", () => {
-    expect(selectedCollectionProvider({ PAYMENT_COLLECTION_PROVIDER: "disabled" })).toBe("disabled");
+    expect(
+      selectedCollectionProvider({ PAYMENT_COLLECTION_PROVIDER: "disabled" }),
+    ).toBe("disabled");
     expect(
       isKonnectPaymentEnabled({
         PAYMENT_COLLECTION_PROVIDER: "disabled",

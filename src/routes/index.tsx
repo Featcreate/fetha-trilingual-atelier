@@ -56,9 +56,7 @@ function Index() {
   const accountLabel = session ? t.auth.account : t.auth.signIn;
   const links = [
     ["#home", t.nav.home],
-    ["/catalog", t.marketplace.catalog],
     ["/seller", t.marketplace.sellerArea],
-    ["#products", t.nav.products],
     ["#about", t.nav.about],
     ["#contact", t.nav.contact],
   ] as const;
@@ -175,50 +173,10 @@ function Index() {
               {t.heroTitle}
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-muted-foreground md:text-lg">{t.heroText}</p>
-            <a
-              href="/catalog"
-              className="mt-8 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
-            >
-              {t.marketplace.viewCatalog}
-            </a>
           </div>
         </section>
 
-        <section id="products" className="mx-auto max-w-6xl px-4 py-16">
-          <h2 className="text-2xl font-bold md:text-3xl">{t.marketplace.catalog}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{t.marketplace.tndNote}</p>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {(
-              [
-                "ebook",
-                "template",
-                "printable",
-                "planner",
-                "software",
-                "course",
-                "audio",
-                "video",
-                "graphics",
-                "other",
-              ] as const
-            ).map((type) => (
-              <div
-                key={type}
-                className="rounded-xl border border-border bg-card p-4 text-center font-semibold"
-              >
-                {t.marketplace[type]}
-              </div>
-            ))}
-          </div>
-          <div className="mt-8 text-center">
-            <Link
-              to="/catalog"
-              className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground"
-            >
-              {t.marketplace.viewCatalog}
-            </Link>
-          </div>
-        </section>
+ection>
       </main>
 
       <footer id="contact" className="bg-petrol text-cream">

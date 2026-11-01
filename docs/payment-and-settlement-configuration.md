@@ -15,12 +15,12 @@
 
 The server-side setting `PAYMENT_COLLECTION_PROVIDER` selects the current collection route:
 
-| Value | Behavior |
-|---|---|
-| unset | Preserves the current Konnect route for backward compatibility |
-| `konnect` | Selects Konnect, subject to the existing credentials and explicit sandbox/live activation switches |
-| `disabled` | Blocks new Konnect checkout initiation |
-| any other value | Fails closed; no unimplemented provider can accidentally be selected |
+| Value       | Behavior                                                                    |
+| ----------- | --------------------------------------------------------------------------- |
+| unset       | Preserves the current Konnect route for backward compatibility              |
+| `konnect`  | Selects Konnect, subject to credentials and explicit sandbox/live switches |
+| `disabled` | Blocks new Konnect checkout initiation                                      |
+| any other   | Fails closed; no unimplemented provider can accidentally be selected         |
 
 The selector is implemented in `src/lib/payment-activation.ts` and enforced by `src/lib/konnect.server.ts`. The existing explicit activation gates remain mandatory:
 

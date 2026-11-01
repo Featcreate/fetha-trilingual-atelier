@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { AuthShell } from "@/components/AuthShell";
+import { TndEquivalents } from "@/components/TndEquivalents";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({
@@ -150,7 +151,7 @@ function CatalogPage() {
                   </Link>
                   <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
                 </div>
-                <p className="text-lg font-extrabold">{formatTND(p.price_millimes)}</p>
+                <p className="text-lg font-extrabold">{formatTND(p.price_millimes)}<TndEquivalents millimes={p.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></p>
                 <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
                   <Link
                     to="/stores/$slug"

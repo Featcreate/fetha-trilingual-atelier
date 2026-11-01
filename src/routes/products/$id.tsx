@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { AuthShell } from "@/components/AuthShell";
+import { TndEquivalents } from "@/components/TndEquivalents";
 
 export const Route = createFileRoute("/products/$id")({
   head: () => ({ meta: [{ title: "Produit numérique — Algorea Bazaar" }] }),
@@ -25,6 +26,8 @@ function ProductPage() {
         .maybeSingle();
       if (error) throw error;
       if (!product?.store_id) return null;
+      const { data: previews, error: previewError } = await supabase.from("product_preview_images").select("id,storage_path,sort_order").eq("product_id", id).order("sort_order");
+      if (previewError) throw previewError;
       const { data: store, error: storeError } = await supabase
         .from("stores")
         .select("id,name,slug")
@@ -32,7 +35,7 @@ function ProductPage() {
         .eq("status", "active")
         .maybeSingle();
       if (storeError) throw storeError;
-      return store ? { product, store } : null;
+      return store ? { product, store, previews: previews ?? [] } : null;
     },
   });
   return (

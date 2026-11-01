@@ -87,7 +87,7 @@ function SellerPage() {
           ipay: "iPay",
           openKonnect: "إنشاء حساب Konnect عبر رابط المنصة",
           openIpay: "زيارة iPay وطلب فتح حساب",
-          help: "اختر المزود الذي تفضّل إنشاء حساب لديه أو ربط حسابك به. قبول الحساب وشروطه يحددهما المزود مباشرة. حفظ اختيارك لا يفعّل الدفع أو التحويلات الحقيقية؛ تبقى التسوية اليدوية الأسبوعية هي المعتمدة حالياً إلى حين التحقق والموافقة.",
+          help: "اختر المزود الذي تفضّل إنشاء حساب بائع لديه. قبول الحساب وشروطه يحددهما المزود مباشرة. حفظ اختيارك لا يفعّل الدفع أو التحويلات الحقيقية؛ تبقى التسوية اليدوية الأسبوعية هي المعتمدة حالياً إلى حين التحقق والموافقة.",
           saved: "المزود المختار:",
         }
       : lang === "en"
@@ -97,7 +97,7 @@ function SellerPage() {
             ipay: "iPay",
             openKonnect: "Create a Konnect account through the platform link",
             openIpay: "Visit iPay to request an account",
-            help: "Choose the provider with which you prefer to open or link an account. The provider alone decides account eligibility and terms. Saving your choice does not activate live payments or transfers; weekly manual settlement remains the current method until separately verified and approved.",
+            help: "Choose the provider with which you prefer to open your seller account. The provider alone decides account eligibility and terms. Saving your choice does not activate live payments or transfers; weekly manual settlement remains the current method until separately verified and approved.",
             saved: "Selected provider:",
           }
         : {
@@ -106,7 +106,7 @@ function SellerPage() {
             ipay: "iPay",
             openKonnect: "Créer un compte Konnect via le lien de la plateforme",
             openIpay: "Visiter iPay pour demander l’ouverture d’un compte",
-            help: "Choisissez le prestataire auprès duquel vous souhaitez ouvrir ou relier un compte. Le prestataire décide seul de l’éligibilité et de ses conditions. L’enregistrement de votre choix n’active ni les paiements ni les transferts réels ; le règlement manuel hebdomadaire reste la méthode actuelle jusqu’à vérification et approbation séparées.",
+            help: "Choisissez le prestataire auprès duquel vous souhaitez ouvrir votre compte vendeur. Le prestataire décide seul de l’éligibilité et de ses conditions. L’enregistrement de votre choix n’active ni les paiements ni les transferts réels ; le règlement manuel hebdomadaire reste la méthode actuelle jusqu’à vérification et approbation séparées.",
             saved: "Prestataire choisi :",
           };
   const { user } = Route.useRouteContext();

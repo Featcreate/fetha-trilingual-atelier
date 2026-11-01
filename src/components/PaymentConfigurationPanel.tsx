@@ -170,9 +170,7 @@ export function PaymentConfigurationPanel() {
       <h2 className="text-lg font-bold">{t.title}</h2>
       <p className="mt-2 text-sm leading-7 text-muted-foreground">{t.description}</p>
       {config.isPending ? (
-        <p className="mt-4 text-sm">
-          {t.status}: …
-        </p>
+        <p className="mt-4 text-sm">{t.status}: …</p>
       ) : config.isError ? (
         <p role="alert" className="mt-4 text-sm text-destructive">
           {t.loadFailed}

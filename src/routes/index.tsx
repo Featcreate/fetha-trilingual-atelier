@@ -4,13 +4,14 @@ import { useSession } from "@/hooks/use-session";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, X, BookOpen, LayoutTemplate, Printer, CalendarCheck, GraduationCap, Laptop, Headphones, Video, Palette, Sparkles } from "lucide-react";
+import { Menu, X, BookOpen, LayoutTemplate, Printer, CalendarCheck, GraduationCap, Laptop, Headphones, Video, Palette, Sparkles, FileText, BookMarked, Package, AppWindow, ClipboardList, Layers } from "lucide-react";
 import banner from "@/assets/homepage-banner.jpg.asset.json";
 
 const CATEGORIES = [
-  ["ebook", BookOpen], ["template", LayoutTemplate], ["printable", Printer], ["planner", CalendarCheck],
-  ["course", GraduationCap], ["software", Laptop], ["audio", Headphones], ["video", Video],
-  ["graphics", Palette], ["other", Sparkles],
+  ["ebook", BookOpen], ["pdf", FileText], ["template", LayoutTemplate], ["educational", BookMarked],
+  ["bundle", Package], ["software", Laptop], ["app", AppWindow], ["printable", Printer],
+  ["planner", CalendarCheck], ["course", GraduationCap], ["worksheets", ClipboardList],
+  ["flashcards", Layers], ["audio", Headphones], ["video", Video], ["graphics", Palette], ["other", Sparkles],
 ] as const;
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, useLang } from "@/lib/i18n";

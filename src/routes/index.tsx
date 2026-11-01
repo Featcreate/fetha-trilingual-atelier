@@ -4,6 +4,7 @@ import { useSession } from "@/hooks/use-session";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { formatTND } from "@/lib/money";
 import { Menu, X, BookOpen, LayoutTemplate, Printer, CalendarCheck, GraduationCap, Laptop, Headphones, Video, Palette, Sparkles } from "lucide-react";
 import banner from "@/assets/homepage-banner.jpg.asset.json";
 
@@ -54,11 +55,60 @@ function Index() {
   });
   const isAdmin = adminRole.data === true;
   const accountLabel = session ? t.auth.account : t.auth.signIn;
+  const myStoreQuery = useQuery({
+    queryKey: ["home-my-store", session?.user.id],
+    enabled: !!session?.user.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("stores")
+        .select("id,name,slug")
+        .eq("owner_id", session!.user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const myLatestProductsQuery = useQuery({
+    queryKey: ["home-my-latest-products", myStoreQuery.data?.id],
+    enabled: !!myStoreQuery.data?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id,name,description,price_millimes,product_type,image_path")
+        .eq("store_id", myStoreQuery.data!.id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const latestTitle = lang === "ar" ? "أحدث منتجات متجري" : lang === "en" ? "Latest from my store" : "Derniers produits de ma boutique";
+  const latestEmpty = lang === "ar" ? "لم تضف منتجات منشورة بعد." : lang === "en" ? "You have no published products yet." : "Vous n’avez pas encore de produits publiés.";
+  const latestLoading = lang === "ar" ? "جارٍ تحميل منتجات متجرك…" : lang === "en" ? "Loading your store products…" : "Chargement des produits de votre boutique…";
+  const latestError = lang === "ar" ? "تعذر تحميل منتجات متجرك." : lang === "en" ? "Could not load your store products." : "Impossible de charger les produits de votre boutique.";
+  const viewMyStore = lang === "ar" ? "عرض متجري" : lang === "en" ? "View my store" : "Voir ma boutique";
+  const platformLatestQuery = useQuery({
+    queryKey: ["home-platform-latest-products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id,name,description,price_millimes,product_type,image_path")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const platformLatestTitle = lang === "ar" ? "أحدث المنتجات على المنصة" : lang === "en" ? "Latest products on the platform" : "Derniers produits sur la plateforme";
+  const platformLatestEmpty = lang === "ar" ? "لا توجد منتجات منشورة حالياً." : lang === "en" ? "There are no published products yet." : "Aucun produit publié pour le moment.";
+  const platformLatestLoading = lang === "ar" ? "جارٍ تحميل أحدث المنتجات…" : lang === "en" ? "Loading the latest products…" : "Chargement des derniers produits…";
+  const platformLatestError = lang === "ar" ? "تعذر تحميل أحدث المنتجات." : lang === "en" ? "Could not load the latest products." : "Impossible de charger les derniers produits.";
+
   const links = [
     ["#home", t.nav.home],
-    ["/catalog", t.marketplace.catalog],
     ["/seller", t.marketplace.sellerArea],
-    ["#products", t.nav.products],
     ["#about", t.nav.about],
     ["#contact", t.nav.contact],
   ] as const;
@@ -154,6 +204,77 @@ function Index() {
 
       <main>
         <img src={banner.url} alt="Algorea Bazaar" className="block h-auto w-full" />
+        {session && myStoreQuery.data && (
+          <section aria-labelledby="my-latest-products" className="bg-background">
+            <div className="mx-auto max-w-6xl px-4 py-10">
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <h2 id="my-latest-products" className="text-xl font-bold text-petrol">{latestTitle}</h2>
+                <Link to="/stores/$slug" params={{ slug: myStoreQuery.data.slug }} className="text-sm font-semibold text-coral hover:underline">
+                  {viewMyStore}
+                </Link>
+              </div>
+              {myLatestProductsQuery.isPending ? (
+                <p className="py-5 text-center text-muted-foreground">{latestLoading}</p>
+              ) : myLatestProductsQuery.isError ? (
+                <p role="alert" className="py-5 text-center text-muted-foreground">{latestError}</p>
+              ) : !myLatestProductsQuery.data?.length ? (
+                <p className="py-5 text-center text-muted-foreground">{latestEmpty}</p>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {myLatestProductsQuery.data.map((product) => (
+                    <article key={product.id} className="overflow-hidden rounded-xl border border-border bg-card">
+                      <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-cream-light p-5">
+                        {product.image_path ? (
+                          <img src={supabase.storage.from("product-images").getPublicUrl(product.image_path).data.publicUrl} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="text-3xl font-bold text-petrol/50">AB</span>
+                        )}
+                      </div>
+                      <div className="space-y-2 p-4">
+                        <p className="text-xs text-muted-foreground">{t.marketplace[product.product_type as keyof typeof t.marketplace] ?? product.product_type}</p>
+                        <Link to="/products/$id" params={{ id: product.id }} className="block font-bold hover:text-coral">{product.name}</Link>
+                        <p className="line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
+                        <p className="text-lg font-extrabold">{formatTND(product.price_millimes)}</p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+        <section aria-labelledby="platform-latest-products" className="bg-cream-light">
+          <div className="mx-auto max-w-6xl px-4 py-10">
+            <h2 id="platform-latest-products" className="mb-5 text-xl font-bold text-petrol">{platformLatestTitle}</h2>
+            {platformLatestQuery.isPending ? (
+              <p className="py-5 text-center text-muted-foreground">{platformLatestLoading}</p>
+            ) : platformLatestQuery.isError ? (
+              <p role="alert" className="py-5 text-center text-muted-foreground">{platformLatestError}</p>
+            ) : !platformLatestQuery.data?.length ? (
+              <p className="py-5 text-center text-muted-foreground">{platformLatestEmpty}</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {platformLatestQuery.data.map((product) => (
+                  <article key={product.id} className="overflow-hidden rounded-xl border border-border bg-card">
+                    <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-background p-5">
+                      {product.image_path ? (
+                        <img src={supabase.storage.from("product-images").getPublicUrl(product.image_path).data.publicUrl} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-3xl font-bold text-petrol/50">AB</span>
+                      )}
+                    </div>
+                    <div className="space-y-2 p-4">
+                      <p className="text-xs text-muted-foreground">{t.marketplace[product.product_type as keyof typeof t.marketplace] ?? product.product_type}</p>
+                      <Link to="/products/$id" params={{ id: product.id }} className="block font-bold hover:text-coral">{product.name}</Link>
+                      <p className="line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
+                      <p className="text-lg font-extrabold">{formatTND(product.price_millimes)}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
         <section aria-labelledby="cats" className="bg-background">
           <div className="mx-auto max-w-6xl px-4 py-8">
             <h2 id="cats" className="mb-5 text-center text-xl font-bold text-petrol">{t.marketplace.browseCategories}</h2>
@@ -175,50 +296,9 @@ function Index() {
               {t.heroTitle}
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-muted-foreground md:text-lg">{t.heroText}</p>
-            <a
-              href="/catalog"
-              className="mt-8 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
-            >
-              {t.marketplace.viewCatalog}
-            </a>
           </div>
         </section>
 
-        <section id="products" className="mx-auto max-w-6xl px-4 py-16">
-          <h2 className="text-2xl font-bold md:text-3xl">{t.marketplace.catalog}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{t.marketplace.tndNote}</p>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {(
-              [
-                "ebook",
-                "template",
-                "printable",
-                "planner",
-                "software",
-                "course",
-                "audio",
-                "video",
-                "graphics",
-                "other",
-              ] as const
-            ).map((type) => (
-              <div
-                key={type}
-                className="rounded-xl border border-border bg-card p-4 text-center font-semibold"
-              >
-                {t.marketplace[type]}
-              </div>
-            ))}
-          </div>
-          <div className="mt-8 text-center">
-            <Link
-              to="/catalog"
-              className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground"
-            >
-              {t.marketplace.viewCatalog}
-            </Link>
-          </div>
-        </section>
       </main>
 
       <footer id="contact" className="bg-petrol text-cream">

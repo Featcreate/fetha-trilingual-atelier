@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { AuthShell, SubmitButton } from "@/components/AuthShell";
+import { PaymentConfigurationPanel } from "@/components/PaymentConfigurationPanel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async ({ location }) => {
@@ -379,6 +380,8 @@ function AdminPage() {
         </form>
         <p className="mt-3 text-xs text-muted-foreground">{a.commissionWarning}</p>
       </section>
+
+      <PaymentConfigurationPanel />
 
       <section className="mb-8 rounded-xl border border-border p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

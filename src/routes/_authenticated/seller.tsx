@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useLang } from "@/lib/i18n";
@@ -79,9 +79,40 @@ function safeFileName(value: string) {
 function SellerPage() {
   const { lang, setLang, t } = useLang();
   const m = t.marketplace;
+  const providerCopy =
+    lang === "ar"
+      ? {
+          title: "اختر مزود الحساب",
+          konnect: "Konnect",
+          ipay: "iPay",
+          openKonnect: "إنشاء حساب Konnect عبر رابط المنصة",
+          openIpay: "زيارة iPay وطلب فتح حساب",
+          help: "اختر المزود الذي تفضّل إنشاء حساب لديه أو ربط حسابك به. قبول الحساب وشروطه يحددهما المزود مباشرة. حفظ اختيارك لا يفعّل الدفع أو التحويلات الحقيقية؛ تبقى التسوية اليدوية الأسبوعية هي المعتمدة حالياً إلى حين التحقق والموافقة.",
+          saved: "المزود المختار:",
+        }
+      : lang === "en"
+        ? {
+            title: "Choose your account provider",
+            konnect: "Konnect",
+            ipay: "iPay",
+            openKonnect: "Create a Konnect account through the platform link",
+            openIpay: "Visit iPay to request an account",
+            help: "Choose the provider with which you prefer to open or link an account. The provider alone decides account eligibility and terms. Saving your choice does not activate live payments or transfers; weekly manual settlement remains the current method until separately verified and approved.",
+            saved: "Selected provider:",
+          }
+        : {
+            title: "Choisissez votre prestataire de compte",
+            konnect: "Konnect",
+            ipay: "iPay",
+            openKonnect: "Créer un compte Konnect via le lien de la plateforme",
+            openIpay: "Visiter iPay pour demander l’ouverture d’un compte",
+            help: "Choisissez le prestataire auprès duquel vous souhaitez ouvrir ou relier un compte. Le prestataire décide seul de l’éligibilité et de ses conditions. L’enregistrement de votre choix n’active ni les paiements ni les transferts réels ; le règlement manuel hebdomadaire reste la méthode actuelle jusqu’à vérification et approbation séparées.",
+            saved: "Prestataire choisi :",
+          };
   const { user } = Route.useRouteContext();
   const qc = useQueryClient();
   const [notice, setNotice] = useState("");
+  const [providerChoice, setProviderChoice] = useState<"konnect" | "ipay">("konnect");
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [editingStore, setEditingStore] = useState(false);
@@ -155,13 +186,20 @@ function SellerPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("seller_payout_preferences")
-        .select("id,method,konnect_wallet_id")
+        .select("id,method,konnect_wallet_id,preferred_provider")
         .eq("store_id", store!.id)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
   });
+
+  useEffect(() => {
+    const savedProvider = payoutPreferenceQuery.data?.preferred_provider;
+    if (savedProvider === "konnect" || savedProvider === "ipay") {
+      setProviderChoice(savedProvider);
+    }
+  }, [payoutPreferenceQuery.data]);
 
   const payoutHistoryQuery = useQuery({
     queryKey: ["seller-payout-history", store?.id],
@@ -209,9 +247,12 @@ function SellerPage() {
     if (!store) return;
     setBusy(true);
     setNotice("");
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from("seller_payout_preferences")
-      .upsert({ store_id: store.id, method: "weekly_manual" }, { onConflict: "store_id" });
+      .upsert(
+        { store_id: store.id, method: "weekly_manual", preferred_provider: providerChoice },
+        { onConflict: "store_id" },
+      );
     setBusy(false);
     if (error) return setNotice(m.error);
     setNotice(m.productUpdated);
@@ -742,18 +783,42 @@ function SellerPage() {
 
           <section className="space-y-4 rounded-xl border border-border p-5">
             <div>
-              <h2 className="text-xl font-bold">{m.payoutMethod}</h2>
-              <p className="mt-2 font-semibold">{m.weeklyManual}</p>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">{m.payoutHelp}</p>
+              <h2 className="text-xl font-bold">{providerCopy.title}</h2>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border p-4">
+                  <input
+                    type="radio"
+                    name="seller-payment-provider"
+                    value="konnect"
+                    checked={providerChoice === "konnect"}
+                    onChange={() => setProviderChoice("konnect")}
+                  />
+                  <span className="font-semibold">{providerCopy.konnect}</span>
+                </label>
+                <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border p-4">
+                  <input
+                    type="radio"
+                    name="seller-payment-provider"
+                    value="ipay"
+                    checked={providerChoice === "ipay"}
+                    onChange={() => setProviderChoice("ipay")}
+                  />
+                  <span className="font-semibold">{providerCopy.ipay}</span>
+                </label>
+              </div>
+              <p className="mt-3 text-sm leading-7 text-muted-foreground">{providerCopy.help}</p>
               <a
-                href={KONNECT_SELLER_REGISTRATION_URL}
+                href={providerChoice === "konnect" ? KONNECT_SELLER_REGISTRATION_URL : "https://www.ipay.tn/"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-4 inline-flex rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90"
               >
-                {m.konnectRegister}
+                {providerChoice === "konnect" ? providerCopy.openKonnect : providerCopy.openIpay}
               </a>
-              <p className="mt-2 text-xs leading-6 text-muted-foreground">{m.konnectEligibility}</p>
+              <p className="mt-3 text-sm font-medium">
+                {providerCopy.saved} {providerChoice === "konnect" ? providerCopy.konnect : providerCopy.ipay}
+              </p>
+              <p className="mt-2 text-xs leading-6 text-muted-foreground">{m.weeklyManual}: {m.payoutHelp}</p>
             </div>
             <button
               type="button"

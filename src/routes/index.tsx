@@ -9,9 +9,16 @@ import { Menu, X, BookOpen, LayoutTemplate, Printer, CalendarCheck, GraduationCa
 import banner from "@/assets/homepage-banner.jpg.asset.json";
 
 const CATEGORIES = [
-  ["ebook", BookOpen], ["template", LayoutTemplate], ["printable", Printer], ["planner", CalendarCheck],
-  ["course", GraduationCap], ["software", Laptop], ["audio", Headphones], ["video", Video],
-  ["graphics", Palette], ["other", Sparkles],
+  ["ebook", BookOpen, "bg-rose-50 text-rose-700 border-rose-200"],
+  ["template", LayoutTemplate, "bg-sky-50 text-sky-700 border-sky-200"],
+  ["printable", Printer, "bg-amber-50 text-amber-700 border-amber-200"],
+  ["planner", CalendarCheck, "bg-violet-50 text-violet-700 border-violet-200"],
+  ["course", GraduationCap, "bg-emerald-50 text-emerald-700 border-emerald-200"],
+  ["software", Laptop, "bg-cyan-50 text-cyan-700 border-cyan-200"],
+  ["audio", Headphones, "bg-orange-50 text-orange-700 border-orange-200"],
+  ["video", Video, "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200"],
+  ["graphics", Palette, "bg-lime-50 text-lime-700 border-lime-200"],
+  ["other", Sparkles, "bg-pink-50 text-pink-700 border-pink-200"],
 ] as const;
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, useLang } from "@/lib/i18n";
@@ -203,6 +210,22 @@ function Index() {
       </header>
 
       <main>
+        <section aria-labelledby="cats" className="bg-background">
+          <div className="mx-auto max-w-6xl px-3 py-4 md:px-4 md:py-6">
+            <h2 id="cats" className="mb-3 text-center text-lg font-bold text-petrol md:mb-4 md:text-xl">{t.marketplace.browseCategories}</h2>
+            <div className="grid grid-cols-5 gap-2 md:gap-3">
+              {CATEGORIES.map(([id, Icon, colorClass]) => (
+                <Link key={id} to="/catalog" search={{ type: id }}
+                  className="flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-xl border bg-card px-1.5 py-3 text-center text-[11px] font-semibold transition hover:-translate-y-0.5 hover:shadow-sm sm:min-h-24 sm:gap-2 sm:px-2 sm:text-sm">
+                  <span className={`flex h-9 w-9 items-center justify-center rounded-full border sm:h-11 sm:w-11 ${colorClass}`}>
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden />
+                  </span>
+                  <span className="leading-tight">{t.marketplace[id]}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
         <img src={banner.url} alt="Algorea Bazaar" className="block h-auto w-full" />
         {session && myStoreQuery.data && (
           <section aria-labelledby="my-latest-products" className="bg-background">
@@ -273,20 +296,6 @@ function Index() {
                 ))}
               </div>
             )}
-          </div>
-        </section>
-        <section aria-labelledby="cats" className="bg-background">
-          <div className="mx-auto max-w-6xl px-4 py-8">
-            <h2 id="cats" className="mb-5 text-center text-xl font-bold text-petrol">{t.marketplace.browseCategories}</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-              {CATEGORIES.map(([id, Icon]) => (
-                <Link key={id} to="/catalog" search={{ type: id }}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center text-sm font-semibold transition hover:-translate-y-0.5 hover:border-coral hover:text-coral">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-light text-petrol"><Icon className="h-6 w-6" aria-hidden /></span>
-                  {t.marketplace[id]}
-                </Link>
-              ))}
-            </div>
           </div>
         </section>
         <section id="home" className="bg-cream-light">

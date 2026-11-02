@@ -32,7 +32,10 @@ function ProductPage() {
         .eq("status", "active")
         .maybeSingle();
       if (storeError) throw storeError;
-      return store ? { product, store } : null;
+      if (!store) return null;
+      const { data: gallery, error: galleryError } = await (supabase as any).from("product_images").select("id,image_path,sort_order").eq("product_id", product.id).order("sort_order", { ascending: true });
+      if (galleryError) throw galleryError;
+      return { product, store, gallery: gallery ?? [] };
     },
   });
   return (

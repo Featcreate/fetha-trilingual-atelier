@@ -74,6 +74,8 @@ export const dict = {
       digitalFiles: "Fichiers numériques",
       addFiles: "Ajouter des fichiers",
       productImage: "Image du produit (facultative)",
+      productCover: "Image de couverture",
+      productGallery: "Images de prévisualisation (plusieurs images possibles)",
       imageLimit: "JPG, PNG, WebP, GIF ou AVIF — 10 Mo maximum.",
       commissionDisclosure: "Commission actuelle de la plateforme : {value} par vente réussie.",
       commissionUnset:
@@ -307,6 +309,8 @@ export const dict = {
       digitalFiles: "الملفات الرقمية",
       addFiles: "إضافة ملفات",
       productImage: "صورة المنتج (اختيارية)",
+      productCover: "صورة الغلاف",
+      productGallery: "صور معاينة المنتج (يمكن اختيار عدة صور)",
       imageLimit: "JPG أو PNG أو WebP أو GIF أو AVIF — بحد أقصى 10 ميغابايت.",
       commissionDisclosure: "عمولة المنصة الحالية: {value} عن كل عملية بيع ناجحة.",
       commissionUnset:
@@ -533,6 +537,8 @@ export const dict = {
       digitalFiles: "Digital files",
       addFiles: "Add files",
       productImage: "Product image (optional)",
+      productCover: "Product cover image",
+      productGallery: "Product preview images (select multiple)",
       imageLimit: "JPG, PNG, WebP, GIF, or AVIF — 10 MB maximum.",
       commissionDisclosure: "Current platform commission: {value} per successful sale.",
       commissionUnset:

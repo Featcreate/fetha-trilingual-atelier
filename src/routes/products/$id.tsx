@@ -32,7 +32,10 @@ function ProductPage() {
         .eq("status", "active")
         .maybeSingle();
       if (storeError) throw storeError;
-      return store ? { product, store } : null;
+      if (!store) return null;
+      const { data: gallery, error: galleryError } = await (supabase as any).from("product_images").select("id,image_path,sort_order").eq("product_id", product.id).order("sort_order", { ascending: true });
+      if (galleryError) throw galleryError;
+      return { product, store, gallery: gallery ?? [] };
     },
   });
   return (
@@ -50,19 +53,18 @@ function ProductPage() {
         <p className="rounded-xl bg-secondary p-5">{m.noCatalog}</p>
       ) : (
         <article className="mx-auto max-w-2xl">
-          <div className="flex aspect-[16/7] items-center justify-center overflow-hidden rounded-2xl bg-cream-light text-4xl font-bold text-petrol/40">
-            {query.data.product.image_path ? (
-              <img
-                src={
-                  supabase.storage
-                    .from("product-images")
-                    .getPublicUrl(query.data.product.image_path).data.publicUrl
-                }
-                alt={query.data.product.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              "Algorea Bazaar"
+          <div className="space-y-3">
+            <div className="flex aspect-[16/7] items-center justify-center overflow-hidden rounded-2xl bg-cream-light text-4xl font-bold text-petrol/40">
+              {query.data.product.image_path ? (
+                <img src={supabase.storage.from("product-images").getPublicUrl(query.data.product.image_path).data.publicUrl} alt={query.data.product.name} className="h-full w-full object-contain" />
+              ) : "Algorea Bazaar"}
+            </div>
+            {query.data.gallery.length > 0 && (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {query.data.gallery.map((image: { id: string; image_path: string }, index: number) => (
+                  <img key={image.id} src={supabase.storage.from("product-images").getPublicUrl(image.image_path).data.publicUrl} alt={`${query.data.product.name} — ${index + 1}`} loading="lazy" className="aspect-square w-full rounded-xl object-cover" />
+                ))}
+              </div>
             )}
           </div>
           <p className="mt-6 text-sm text-muted-foreground">

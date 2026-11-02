@@ -85,6 +85,8 @@ function SellerPage() {
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [editingStore, setEditingStore] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
 
   const storeQuery = useQuery({
     queryKey: ["seller-store", user.id],
@@ -267,13 +269,13 @@ function SellerPage() {
       .filter((value): value is File => value instanceof File && value.size > 0);
     const imageValue = values.get("product_image");
     const imageFile = imageValue instanceof File && imageValue.size > 0 ? imageValue : null;
+    const galleryFiles = values.getAll("product_gallery").filter((value): value is File => value instanceof File && value.size > 0);
     if (!name || !description) return setNotice(m.productRequired);
     if (!price) return setNotice(m.invalidPrice);
     if (!files.length || files.some((file) => file.size < 1 || file.size > MAX_FILE_BYTES))
       return setNotice(m.invalidFile);
     if (
-      imageFile &&
-      (imageFile.size > MAX_IMAGE_BYTES || !ALLOWED_IMAGE_TYPES.has(imageFile.type))
+      [...(imageFile ? [imageFile] : []), ...galleryFiles].some((file) => file.size > MAX_IMAGE_BYTES || !ALLOWED_IMAGE_TYPES.has(file.type))
     ) {
       return setNotice(m.invalidFile);
     }
@@ -320,6 +322,14 @@ function SellerPage() {
       }
     }
 
+    for (const [index, galleryFile] of galleryFiles.entries()) {
+      const galleryPath = `${store.id}/${product.id}/gallery/${crypto.randomUUID()}-${safeFileName(galleryFile.name)}`;
+      const { error: galleryUploadError } = await supabase.storage.from("product-images").upload(galleryPath, galleryFile, { contentType: galleryFile.type, upsert: false });
+      if (galleryUploadError) { setBusy(false); return setNotice(m.fileUploadFailed); }
+      const { error: gallerySaveError } = await (supabase as any).from("product_images").insert({ product_id: product.id, image_path: galleryPath, sort_order: index });
+      if (gallerySaveError) { setBusy(false); return setNotice(m.fileUploadFailed); }
+    }
+
     for (const file of files) {
       const uploaded = await uploadFile(product.id, file);
       if (uploaded !== "ok") {
@@ -341,6 +351,8 @@ function SellerPage() {
     setBusy(false);
     if (publishError) return setNotice(m.fileUploadFailed);
     form.reset();
+    setCoverPreview(null);
+    setGalleryPreviews([]);
     setNotice(m.productCreated);
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
     await qc.invalidateQueries({ queryKey: ["catalog"] });
@@ -588,18 +600,14 @@ function SellerPage() {
                   </select>
                 </div>
               </div>
-              <div>
-                <label htmlFor="product_image" className="mb-1 block text-sm font-medium">
-                  {m.productImage}
-                </label>
-                <input
-                  id="product_image"
-                  name="product_image"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                />
-                <p className="mt-1 text-xs text-muted-foreground">{m.imageLimit}</p>
+              <div className="space-y-3">
+                <label htmlFor="product_image" className="mb-1 block text-sm font-medium">{m.productCover}</label>
+                <input id="product_image" name="product_image" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" onChange={(e) => { const file=e.currentTarget.files?.[0]; setCoverPreview(file ? URL.createObjectURL(file) : null); }} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                {coverPreview && <img src={coverPreview} alt={m.productCover} className="h-32 w-44 rounded-lg object-cover" />}
+                <label htmlFor="product_gallery" className="block text-sm font-medium">{m.productGallery}</label>
+                <input id="product_gallery" name="product_gallery" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif" onChange={(e) => { setGalleryPreviews(Array.from(e.currentTarget.files ?? []).map((file) => URL.createObjectURL(file))); }} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                {galleryPreviews.length > 0 && <div className="flex flex-wrap gap-2">{galleryPreviews.map((src,index)=><img key={src} src={src} alt={`${m.productGallery} ${index+1}`} className="h-20 w-24 rounded-lg object-cover" />)}</div>}
+                <p className="text-xs text-muted-foreground">{m.imageLimit}</p>
               </div>
               <div>
                 <label htmlFor="digital_files" className="mb-1 block text-sm font-medium">

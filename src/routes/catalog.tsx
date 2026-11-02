@@ -93,11 +93,17 @@ function CatalogPage() {
           <option value="all">{m.allTypes}</option>
           {[
             "ebook",
+            "pdf",
             "template",
+            "educational",
+            "bundle",
+            "software",
+            "app",
             "printable",
             "planner",
             "course",
-            "software",
+            "worksheets",
+            "flashcards",
             "audio",
             "video",
             "graphics",

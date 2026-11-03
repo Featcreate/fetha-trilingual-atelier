@@ -428,28 +428,6 @@ function AdminPage() {
           <h2 className="text-lg font-bold">{a.payouts}</h2>
           <span className="text-xs text-muted-foreground">{a.payoutConfirmNote}</span>
         </div>
-        <div className="mb-4 rounded-lg border border-border p-4">
-          <h3 className="font-semibold">{lang === "ar" ? "تسجيل رسوم خارجية فعلية" : lang === "en" ? "Record an actual external fee" : "Enregistrer des frais externes réels"}</h3>
-          <p className="mt-1 text-xs text-muted-foreground">{lang === "ar" ? "لا تسجل إلا الرسوم المثبتة في كشف أو إيصال فعلي. تُخصم من مستحق البائع مرة واحدة عند إعداد التحويل." : lang === "en" ? "Record only fees supported by an actual statement or receipt. They are deducted once when the seller payout is prepared." : "Enregistrez uniquement les frais justifiés par un relevé ou reçu réel. Ils sont déduits une seule fois lors de la préparation du versement."}</p>
-          <form onSubmit={recordSellerExternalFee} className="mt-3 grid gap-2 sm:grid-cols-2">
-            <select value={feeCategory} onChange={(e) => setFeeCategory(e.target.value)} className="rounded-lg border border-input bg-background px-3 py-2">
-              <option value="payment_processing">{lang === "ar" ? "معالجة الدفع" : lang === "en" ? "Payment processing" : "Traitement du paiement"}</option>
-              <option value="payment_collection">{lang === "ar" ? "تحصيل الدفع" : lang === "en" ? "Payment collection" : "Encaissement"}</option>
-              <option value="currency_conversion">{lang === "ar" ? "تحويل العملة" : lang === "en" ? "Currency conversion" : "Conversion de devise"}</option>
-              <option value="provider_settlement">{lang === "ar" ? "تسوية المزود" : lang === "en" ? "Provider settlement" : "Règlement prestataire"}</option>
-              <option value="seller_transfer">{lang === "ar" ? "تحويل مستحقات البائع" : lang === "en" ? "Seller transfer" : "Virement vendeur"}</option>
-              <option value="receiving">{lang === "ar" ? "رسوم الاستلام" : lang === "en" ? "Receiving fee" : "Frais de réception"}</option>
-              <option value="withdrawal">{lang === "ar" ? "السحب" : lang === "en" ? "Withdrawal" : "Retrait"}</option>
-              <option value="other">{lang === "ar" ? "أخرى" : lang === "en" ? "Other" : "Autres"}</option>
-            </select>
-            <input value={feeAmount} onChange={(e) => setFeeAmount(e.target.value)} placeholder={lang === "ar" ? "المبلغ بالدينار التونسي" : lang === "en" ? "Amount in TND" : "Montant en TND"} className="rounded-lg border border-input bg-background px-3 py-2" />
-            <input value={feeReference} onChange={(e) => setFeeReference(e.target.value)} placeholder={lang === "ar" ? "مرجع الإيصال أو كشف المزود" : lang === "en" ? "Statement / receipt reference" : "Référence du relevé / reçu"} className="rounded-lg border border-input bg-background px-3 py-2" />
-            <input value={feeDescription} onChange={(e) => setFeeDescription(e.target.value)} placeholder={lang === "ar" ? "وصف الرسوم" : lang === "en" ? "Fee description" : "Description des frais"} className="rounded-lg border border-input bg-background px-3 py-2" />
-            <button type="submit" disabled={busy === "external-fee" || !payoutStoreId} className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50 sm:col-span-2">
-              {busy === "external-fee" ? a.saving : lang === "ar" ? "تسجيل الرسوم على البائع المحدد" : lang === "en" ? "Record fee against selected seller" : "Imputer les frais au vendeur sélectionné"}
-            </button>
-          </form>
-        </div>
         <div className="flex flex-wrap gap-3">
           <select
             value={payoutStoreId}
@@ -471,6 +449,28 @@ function AdminPage() {
           >
             {busy === "payout-create" ? a.saving : a.createPayout}
           </button>
+        </div>
+        <div className="mb-4 rounded-lg border border-border p-4">
+          <h3 className="font-semibold">{lang === "ar" ? "تسجيل رسوم خارجية فعلية" : lang === "en" ? "Record an actual external fee" : "Enregistrer des frais externes réels"}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">{lang === "ar" ? "لا تسجل إلا الرسوم المثبتة في كشف أو إيصال فعلي. تُخصم من مستحق البائع مرة واحدة عند إعداد التحويل." : lang === "en" ? "Record only fees supported by an actual statement or receipt. They are deducted once when the seller payout is prepared." : "Enregistrez uniquement les frais justifiés par un relevé ou reçu réel. Ils sont déduits une seule fois lors de la préparation du versement."}</p>
+          <form onSubmit={recordSellerExternalFee} className="mt-3 grid gap-2 sm:grid-cols-2">
+            <select value={feeCategory} onChange={(e) => setFeeCategory(e.target.value)} className="rounded-lg border border-input bg-background px-3 py-2">
+              <option value="payment_processing">{lang === "ar" ? "معالجة الدفع" : lang === "en" ? "Payment processing" : "Traitement du paiement"}</option>
+              <option value="payment_collection">{lang === "ar" ? "تحصيل الدفع" : lang === "en" ? "Payment collection" : "Encaissement"}</option>
+              <option value="currency_conversion">{lang === "ar" ? "تحويل العملة" : lang === "en" ? "Currency conversion" : "Conversion de devise"}</option>
+              <option value="provider_settlement">{lang === "ar" ? "تسوية المزود" : lang === "en" ? "Provider settlement" : "Règlement prestataire"}</option>
+              <option value="seller_transfer">{lang === "ar" ? "تحويل مستحقات البائع" : lang === "en" ? "Seller transfer" : "Virement vendeur"}</option>
+              <option value="receiving">{lang === "ar" ? "رسوم الاستلام" : lang === "en" ? "Receiving fee" : "Frais de réception"}</option>
+              <option value="withdrawal">{lang === "ar" ? "السحب" : lang === "en" ? "Withdrawal" : "Retrait"}</option>
+              <option value="other">{lang === "ar" ? "أخرى" : lang === "en" ? "Other" : "Autres"}</option>
+            </select>
+            <input value={feeAmount} onChange={(e) => setFeeAmount(e.target.value)} placeholder={lang === "ar" ? "المبلغ بالدينار التونسي" : lang === "en" ? "Amount in TND" : "Montant en TND"} className="rounded-lg border border-input bg-background px-3 py-2" />
+            <input value={feeReference} onChange={(e) => setFeeReference(e.target.value)} placeholder={lang === "ar" ? "مرجع الإيصال أو كشف المزود" : lang === "en" ? "Statement / receipt reference" : "Référence du relevé / reçu"} className="rounded-lg border border-input bg-background px-3 py-2" />
+            <input value={feeDescription} onChange={(e) => setFeeDescription(e.target.value)} placeholder={lang === "ar" ? "وصف الرسوم" : lang === "en" ? "Fee description" : "Description des frais"} className="rounded-lg border border-input bg-background px-3 py-2" />
+            <button type="submit" disabled={busy === "external-fee" || !payoutStoreId} className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50 sm:col-span-2">
+              {busy === "external-fee" ? a.saving : lang === "ar" ? "تسجيل الرسوم على البائع المحدد" : lang === "en" ? "Record fee against selected seller" : "Imputer les frais au vendeur sélectionné"}
+            </button>
+          </form>
         </div>
         {payouts.isPending ? (
           <p className="mt-4 text-sm">{a.loading}</p>

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
+import { TndEquivalents } from "@/components/TndEquivalents";
 import { PRODUCT_TYPES } from "@/lib/product-types";
 import { ProductPreview } from "@/components/ProductPreview";
 import { localizedProductText } from "@/lib/product-translations";
@@ -150,7 +151,13 @@ function CatalogPage() {
                     {localizedProductText(p.description, p.description_translations, lang)}
                   </p>
                 </div>
-                <p className="text-lg font-extrabold">{formatTND(p.price_millimes)}</p>
+                <p className="text-lg font-extrabold">
+                  {formatTND(p.price_millimes)}
+                  <TndEquivalents
+                    millimes={p.price_millimes}
+                    locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                  />
+                </p>
                 <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
                   <Link
                     to="/stores/$slug"

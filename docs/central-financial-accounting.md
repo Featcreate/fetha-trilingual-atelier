@@ -63,7 +63,7 @@ A provider's general Visa/Mastercard logo or claim of international payments is 
 
 This implementation does not connect a provider, create credentials, activate checkout, make live charges, or transfer money. Migrations 0022–0024 have been applied to the original Supabase project. The provider adapter and checkout FX quote flow remain blocked until provider terms and sandbox behavior are verified.
 
-Seller payout APIs are deliberately excluded. The existing weekly manual payout workflow remains the only approved method.
+Provider-side seller payout APIs are deliberately excluded. The administrator-controlled weekly manual payout functions are the only approved method; they prepare accounting records and confirm transfers only after an operator has sent the money.
 
 
 ## Current international card route — Konnect (not live)

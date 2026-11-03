@@ -261,6 +261,12 @@ export type Database = {
       }
       orders: {
         Row: {
+          buyer_amount_minor: number | null
+          buyer_currency: string | null
+          buyer_currency_exponent: number | null
+          buyer_fx_quoted_at: string | null
+          buyer_fx_rate: number | null
+          buyer_fx_rate_source: string | null
           checkout_key: string
           created_at: string
           currency: string
@@ -273,12 +279,21 @@ export type Database = {
           paid_at: string | null
           payment_confirmation_ref: string | null
           payment_mode: string | null
+          platform_settlement_amount_minor: number | null
+          platform_settlement_currency: string
+          platform_settlement_currency_exponent: number | null
           status: Database["public"]["Enums"]["order_status"]
           total_millimes: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          buyer_amount_minor?: number | null
+          buyer_currency?: string | null
+          buyer_currency_exponent?: number | null
+          buyer_fx_quoted_at?: string | null
+          buyer_fx_rate?: number | null
+          buyer_fx_rate_source?: string | null
           checkout_key: string
           created_at?: string
           currency?: string
@@ -291,12 +306,21 @@ export type Database = {
           paid_at?: string | null
           payment_confirmation_ref?: string | null
           payment_mode?: string | null
+          platform_settlement_amount_minor?: number | null
+          platform_settlement_currency?: string
+          platform_settlement_currency_exponent?: number | null
           status?: Database["public"]["Enums"]["order_status"]
           total_millimes: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          buyer_amount_minor?: number | null
+          buyer_currency?: string | null
+          buyer_currency_exponent?: number | null
+          buyer_fx_quoted_at?: string | null
+          buyer_fx_rate?: number | null
+          buyer_fx_rate_source?: string | null
           checkout_key?: string
           created_at?: string
           currency?: string
@@ -309,6 +333,9 @@ export type Database = {
           paid_at?: string | null
           payment_confirmation_ref?: string | null
           payment_mode?: string | null
+          platform_settlement_amount_minor?: number | null
+          platform_settlement_currency?: string
+          platform_settlement_currency_exponent?: number | null
           status?: Database["public"]["Enums"]["order_status"]
           total_millimes?: number
           updated_at?: string
@@ -353,6 +380,104 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_financial_ledger_entries: {
+        Row: {
+          accounting_amount_millimes: number
+          accounting_currency: string
+          created_at: string
+          entry_side: string
+          entry_type: string
+          external_reference: string | null
+          fx_rate: number | null
+          fx_rate_at: string | null
+          fx_rate_source: string | null
+          id: string
+          idempotency_key: string
+          order_id: string | null
+          order_item_id: string | null
+          seller_id: string | null
+          seller_payout_id: string | null
+          source: string
+          store_id: string | null
+          transaction_amount_minor: number
+          transaction_currency: string
+          transaction_currency_exponent: number
+        }
+        Insert: {
+          accounting_amount_millimes: number
+          accounting_currency?: string
+          created_at?: string
+          entry_side: string
+          entry_type: string
+          external_reference?: string | null
+          fx_rate?: number | null
+          fx_rate_at?: string | null
+          fx_rate_source?: string | null
+          id?: string
+          idempotency_key: string
+          order_id?: string | null
+          order_item_id?: string | null
+          seller_id?: string | null
+          seller_payout_id?: string | null
+          source: string
+          store_id?: string | null
+          transaction_amount_minor: number
+          transaction_currency: string
+          transaction_currency_exponent: number
+        }
+        Update: {
+          accounting_amount_millimes?: number
+          accounting_currency?: string
+          created_at?: string
+          entry_side?: string
+          entry_type?: string
+          external_reference?: string | null
+          fx_rate?: number | null
+          fx_rate_at?: string | null
+          fx_rate_source?: string | null
+          id?: string
+          idempotency_key?: string
+          order_id?: string | null
+          order_item_id?: string | null
+          seller_id?: string | null
+          seller_payout_id?: string | null
+          source?: string
+          store_id?: string | null
+          transaction_amount_minor?: number
+          transaction_currency?: string
+          transaction_currency_exponent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_financial_ledger_entries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_financial_ledger_entries_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_financial_ledger_entries_seller_payout_id_fkey"
+            columns: ["seller_payout_id"]
+            isOneToOne: false
+            referencedRelation: "seller_payouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_financial_ledger_entries_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]

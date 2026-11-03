@@ -11,19 +11,17 @@
 - [x] Terms of Use acceptance at signup in Arabic, French and English; configurable platform commission set to 5% by default
 - [x] Expanded digital product types and seller-scoped order visibility
 - [x] Admin dashboard: configurable commission, store/product moderation, and order monitoring
-- [x] Added migration `0022_platform_central_financial_ledger.sql` for append-only platform accounting entries and immutable buyer-currency/FX snapshots (GitHub only; not applied to Supabase)
+- [x] Added and applied migration `0022_platform_central_financial_ledger.sql` to the original Supabase project; verified RLS, constraints, triggers and append-only behavior
 
 ## Remaining before a safe launch
 
-- [ ] Complete all 16 seller/buyer categories after explicit approval to expand the current database category constraint (currently 10 allowed values).
-- [ ] Run CI after the latest changes; resolve any format, lint, test or build failures.
-- [ ] Create/rebuild a disposable database from migrations 0000–0021, then validate migration 0022 and verify RLS, verified-email onboarding, storage quotas, uploads, downloads, commission snapshots, payout workflows, ledger immutability, and accounting reconciliation. The current separate test project is empty, not a clone.
+- [x] Apply migration 0022 to the original Supabase project after a successful transaction-wrapped dry run against its actual schema; verify migration history, ledger RLS, constraints, indexes, triggers, append-only behavior, and payout guards.
+- [x] Regenerate and commit Supabase TypeScript types after migration 0022.
+- [x] Prepare the current Konnect international-card route: hosted API checkout, server-to-server payment verification, bank_card prioritized, TND canonical charge, local methods retained, fail-closed activation.
 - [ ] Obtain written Konnect approval for worldwide international-card acceptance for this exact digital multi-vendor marketplace, with the platform as sole collection beneficiary and no seller splits/payouts.
 - [ ] Confirm provider fee allocation, buyer-paid fee behavior, settlement timing/currency, reserves, refunds/chargebacks, and API/webhook reconciliation in sandbox.
 - [ ] Keep current checkout TND-only until a foreign-currency quote/settlement flow is proven. Do not use informational display rates as payment quotes or accounting evidence.
 - [ ] Run CI, lint, tests and production build after the SQL and checkout changes are finalized.
-- [ ] Configure transactional email and order notifications with a verified sender domain and tested delivery/retry handling.
-- [ ] Complete legal review and operator identity/contact details before public launch.
 
 ## Financial operating model
 

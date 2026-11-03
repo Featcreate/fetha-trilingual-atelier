@@ -151,7 +151,7 @@ export const dict = {
       payoutMethod: "Versement de vos revenus",
       weeklyManual: "Virement hebdomadaire manuel par Algorea Bazaar",
       payoutHelp:
-        "Algorea Bazaar calcule votre montant après déduction de sa commission (5 % par défaut), puis vous le transfère manuellement chaque semaine depuis le compte de la plateforme. Les liens de prestataires ci-dessous sont informatifs et ne gèrent pas vos versements.",
+        "Algorea Bazaar calcule votre montant après déduction de sa commission (5 % par défaut) et des frais externes réels justifiés qui sont à votre charge, puis vous le transfère manuellement chaque semaine. Les frais sont détaillés séparément et déduits une seule fois. Les liens de prestataires ci-dessous sont informatifs et ne gèrent pas vos versements.",
       konnectRegister: "S’inscrire sur Konnect via le lien de la plateforme",
       ipayRegister: "Accéder à iPay",
       wepayRegister: "Accéder à WePay",

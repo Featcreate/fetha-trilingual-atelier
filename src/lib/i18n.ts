@@ -408,7 +408,7 @@ export const dict = {
       payoutMethod: "تحويل مستحقاتك",
       weeklyManual: "تحويل أسبوعي يدوي من Algorea Bazaar",
       payoutHelp:
-        "تحتسب Algorea Bazaar مستحقاتك بعد خصم عمولتها (5% افتراضياً)، ثم تحوّلها إليك يدوياً كل أسبوع من حساب المنصة. روابط مزودي الخدمات أدناه معلوماتية فقط ولا تتولى تحويل مستحقاتك.",
+        "تحتسب Algorea Bazaar مستحقاتك بعد خصم عمولتها (5% افتراضياً) والرسوم الخارجية الفعلية المثبتة التي تتحملها، ثم تحوّلها إليك يدوياً كل أسبوع. تُعرض الرسوم منفصلة وتُخصم مرة واحدة فقط. روابط مزودي الخدمات أدناه معلوماتية فقط ولا تتولى تحويل مستحقاتك.",
       konnectRegister: "التسجيل في Konnect عبر رابط المنصة",
       ipayRegister: "الانتقال إلى iPay",
       wepayRegister: "الانتقال إلى WePay",
@@ -664,7 +664,7 @@ export const dict = {
       payoutMethod: "Seller payouts",
       weeklyManual: "Weekly manual transfer by Algorea Bazaar",
       payoutHelp:
-        "Algorea Bazaar calculates your proceeds after its commission (5% by default), then transfers them manually each week from the platform's own account. The provider links below are informational and do not manage your payout.",
+        "Algorea Bazaar calculates your proceeds after its commission (5% by default) and verified actual external fees borne by you, then transfers them manually each week. Fees are itemized separately and deducted only once. The provider links below are informational and do not manage your payout.",
       konnectRegister: "Register with Konnect using the platform link",
       ipayRegister: "Go to iPay",
       wepayRegister: "Go to WePay",

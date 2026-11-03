@@ -45,11 +45,15 @@ export async function konnectInitPayment(input: {
     headers: { "x-api-key": cfg.apiKey, "content-type": "application/json" },
     body: JSON.stringify({
       receiverWalletId: cfg.walletId,
+      // Canonical platform accounting and Phase 1 seller payables are TND.
+      // International card issuers may convert the TND charge into the buyer's card currency.
       token: "TND",
       amount: input.amount,
       type: "immediate",
       description: input.description,
-      acceptedPaymentMethods: ["wallet", "bank_card", "e-DINAR"],
+      // Keep bank_card available for international Visa/Mastercard buyers;
+      // local wallet and e-DINAR methods remain available where supported.
+      acceptedPaymentMethods: ["bank_card", "wallet", "e-DINAR"],
       lifespan: 30,
       checkoutForm: false,
       addPaymentFeesToAmount: false,

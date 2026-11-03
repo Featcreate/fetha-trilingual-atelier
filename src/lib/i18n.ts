@@ -286,7 +286,8 @@ export const dict = {
       storeLogo: "شعار المتجر",
       sellerAvatar: "الصورة الشخصية للبائع",
       storeBanner: "غلاف المتجر",
-      storeImageHelp: "الصور اختيارية. الصيغ المقبولة JPEG وPNG وWebP وAVIF، بحد أقصى 5 ميغابايت لكل صورة.",
+      storeImageHelp:
+        "الصور اختيارية. الصيغ المقبولة JPEG وPNG وWebP وAVIF، بحد أقصى 5 ميغابايت لكل صورة.",
       storeImageInvalid: "اختر صورة صالحة لا يتجاوز حجمها 5 ميغابايت.",
       storeImageSaveFailed: "تعذر حفظ الصورة. حاول مرة أخرى.",
       storeImageSaved: "تم حفظ الصورة.",

@@ -18,7 +18,10 @@ const labels = {
 const maxBytes = 5 * 1024 * 1024;
 const mimeTypes = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
-export function StoreBrandingEditor({ store, onSaved }: {
+export function StoreBrandingEditor({
+  store,
+  onSaved,
+}: {
   store: Store;
   onSaved: () => Promise<unknown> | void;
 }) {
@@ -47,9 +50,11 @@ export function StoreBrandingEditor({ store, onSaved }: {
       setNotice(m.storeImageSaveFailed);
       return;
     }
-    const { error } = await supabase.from("stores")
+    const { error } = await supabase
+      .from("stores")
       .update({ [field]: path })
-      .eq("id", store.id).eq("owner_id", store.owner_id);
+      .eq("id", store.id)
+      .eq("owner_id", store.owner_id);
     if (error) {
       await supabase.storage.from("store-assets").remove([path]);
       setBusy(null);
@@ -69,9 +74,11 @@ export function StoreBrandingEditor({ store, onSaved }: {
     if (!oldPath) return;
     setBusy(kind);
     setNotice("");
-    const { error } = await supabase.from("stores")
+    const { error } = await supabase
+      .from("stores")
       .update({ [field]: null })
-      .eq("id", store.id).eq("owner_id", store.owner_id);
+      .eq("id", store.id)
+      .eq("owner_id", store.owner_id);
     if (error) {
       setBusy(null);
       setNotice(m.storeImageSaveFailed);
@@ -90,36 +97,66 @@ export function StoreBrandingEditor({ store, onSaved }: {
       <div className="mt-4 grid gap-4 md:grid-cols-3">
         {(["logo", "avatar", "banner"] as Kind[]).map((kind) => {
           const path = store[fields[kind]];
-          const url = path ? supabase.storage.from("store-assets").getPublicUrl(path).data.publicUrl : null;
+          const url = path
+            ? supabase.storage.from("store-assets").getPublicUrl(path).data.publicUrl
+            : null;
           const label = m[labels[kind]];
           return (
             <div key={kind} className="rounded-lg border border-border p-3">
               <p className="mb-2 text-sm font-medium">{label}</p>
               {url ? (
-                <img src={url} alt={label} className={kind === "banner" ? "mb-3 h-20 w-full rounded-md object-cover" : "mb-3 h-20 w-20 rounded-full object-cover"} />
+                <img
+                  src={url}
+                  alt={label}
+                  className={
+                    kind === "banner"
+                      ? "mb-3 h-20 w-full rounded-md object-cover"
+                      : "mb-3 h-20 w-20 rounded-full object-cover"
+                  }
+                />
               ) : (
-                <div className={kind === "banner" ? "mb-3 flex h-20 items-center justify-center rounded-md bg-secondary text-xs" : "mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-secondary text-xs"}>
+                <div
+                  className={
+                    kind === "banner"
+                      ? "mb-3 flex h-20 items-center justify-center rounded-md bg-secondary text-xs"
+                      : "mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-secondary text-xs"
+                  }
+                >
                   {m.noImage}
                 </div>
               )}
-              <input type="file" accept="image/jpeg,image/png,image/webp,image/avif"
-                aria-label={label} disabled={busy !== null}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/avif"
+                aria-label={label}
+                disabled={busy !== null}
                 onChange={(event) => {
                   const file = event.currentTarget.files?.[0];
                   event.currentTarget.value = "";
                   if (file) void upload(kind, file);
-                }} className="block w-full text-xs" />
-              {path && <button type="button" disabled={busy !== null}
-                onClick={() => void remove(kind)}
-                className="mt-2 text-xs font-semibold text-destructive underline disabled:opacity-50">
-                {m.removeImage}
-              </button>}
+                }}
+                className="block w-full text-xs"
+              />
+              {path && (
+                <button
+                  type="button"
+                  disabled={busy !== null}
+                  onClick={() => void remove(kind)}
+                  className="mt-2 text-xs font-semibold text-destructive underline disabled:opacity-50"
+                >
+                  {m.removeImage}
+                </button>
+              )}
               {busy === kind && <p className="mt-2 text-xs">{m.loading}</p>}
             </div>
           );
         })}
       </div>
-      {notice && <p role="status" className="mt-3 text-sm">{notice}</p>}
+      {notice && (
+        <p role="status" className="mt-3 text-sm">
+          {notice}
+        </p>
+      )}
     </div>
   );
 }

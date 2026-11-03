@@ -3,6 +3,9 @@
 DO $$
 DECLARE
   _sum bigint;
+  _first bigint;
+  _second bigint;
+  _third bigint;
   _effective_bps integer;
 BEGIN
   -- Exact proportional allocation: 10,000 millimes across weights 2:3:5.
@@ -57,18 +60,15 @@ BEGIN
     SELECT store_id, base_amount + CASE WHEN remainder_rank <= remainder_units THEN 1 ELSE 0 END AS amount
     FROM ranked
   )
-  SELECT sum(amount) INTO _sum FROM allocations;
+  SELECT
+    sum(amount),
+    max(amount) FILTER (WHERE store_id = '00000000-0000-0000-0000-000000000001'::uuid),
+    max(amount) FILTER (WHERE store_id = '00000000-0000-0000-0000-000000000002'::uuid),
+    max(amount) FILTER (WHERE store_id = '00000000-0000-0000-0000-000000000003'::uuid)
+  INTO _sum, _first, _second, _third
+  FROM allocations;
 
-  IF _sum <> 2 OR NOT EXISTS (
-    SELECT 1 FROM allocations
-    WHERE store_id = '00000000-0000-0000-0000-000000000001'::uuid AND amount = 1
-  ) OR NOT EXISTS (
-    SELECT 1 FROM allocations
-    WHERE store_id = '00000000-0000-0000-0000-000000000002'::uuid AND amount = 1
-  ) OR NOT EXISTS (
-    SELECT 1 FROM allocations
-    WHERE store_id = '00000000-0000-0000-0000-000000000003'::uuid AND amount = 0
-  ) THEN
+  IF _sum <> 2 OR _first <> 1 OR _second <> 1 OR _third <> 0 THEN
     RAISE EXCEPTION 'test_failed: largest-remainder tie ordering or total preservation failed';
   END IF;
 

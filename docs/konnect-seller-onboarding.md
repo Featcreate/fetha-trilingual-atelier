@@ -1,32 +1,32 @@
-# Konnect seller registration — all countries
+# Seller payment-provider links — Phase 1
 
-## One registration route for every seller
+## Scope
 
-Algorea Bazaar does not restrict seller onboarding by nationality, country, or place of residence. Every seller is offered two separate provider links and may choose either provider:
+Worldwide buyers may purchase from Algorea Bazaar, subject to the selected buyer-payment provider's coverage. Phase 1 seller onboarding is limited to sellers in Tunisia.
 
-- Referral code: `31XyM7MR8wy71ga7a`
-- Konnect registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a
-- iPay website link (direct, without referral): https://www.ipay.tn/
+The seller-facing Konnect, iPay, and WePay buttons are external information/account links only. They do not connect a seller account to Algorea Bazaar, receive buyer payments, calculate seller balances, or execute payouts.
 
-Keep both provider links visible to every seller; the seller chooses which provider to visit. The iPay button opens the official iPay Tunisia website directly and carries no referral code. Do not impose a platform-side country, nationality, residence, Tunisian phone-number, or Tunisian-bank-account eligibility check.
+## Platform-owned financial flow
 
-## Provider-controlled eligibility
+- Buyer payments are collected for Algorea Bazaar and settled to the platform's own merchant/settlement account.
+- The platform alone records the collection, commission, seller payable, and payout obligation.
+- Platform commission is 5% by default and configurable by an authorized administrator.
+- The default seller payout method is a weekly manual transfer initiated by Algorea Bazaar from the platform's own funds.
+- No payment provider may split a buyer payment or send seller proceeds directly.
+- No direct Konnect wallet payout, automatic split, iPay payout, or WePay payout is enabled or part of the approved model.
 
-Konnect alone decides whether it can open and verify an account for a particular seller and which identity, phone, banking, residency, and other documents or details it requires. Algorea Bazaar does not guarantee that Konnect will accept every applicant and does not override Konnect's checks.
+## Seller-facing links
 
-A seller who cannot open or verify a Konnect account is not blocked from creating an Algorea Bazaar account, opening a free store, or preparing product listings solely for that reason. Payouts to that seller cannot be promised or processed through Konnect unless the provider has accepted the seller and a lawful, verified payout route exists.
+The seller workspace may display the following external links as optional information:
 
-The registration link is an account-registration/referral link only. It does not link the seller's Konnect wallet to Algorea Bazaar automatically, prove account ownership, enable checkout, or enable automatic split payments or payouts. Do not collect or store Konnect passwords, OTPs, or private credentials.
+- Konnect: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a
+- iPay: https://www.ipay.tn/
+- WePay: https://we-pay.io/en/home/
 
-## Payout operating policy
+These links do not imply provider approval, a commercial agreement, account linking, or an available payout route. Do not collect or store provider passwords, OTPs, API secrets, or private credentials.
 
-- Platform commission: 5% by default, configurable by an authorized administrator.
-- Seller proceeds: the sale amount less the platform commission; provider/bank/transfer/withdrawal fees remain separate and are charged to the responsible party as disclosed.
-- Weekly manual transfer remains the current payout workflow. The admin dashboard records a transfer only after it has actually been completed; it does not send money.
-- Direct Konnect wallet payouts and automatic split payments remain disabled until Konnect confirms the required API capability, seller-account linking, eligibility, settlement currency, limits, fees, and transfer references, and sandbox tests pass.
-- iPay is an optional seller-selected provider link only; it opens https://www.ipay.tn/ directly. It is not an automatic fallback, payment integration, account-linking mechanism, or payout execution feature.
-- Do not block store creation or product listing because a seller has not registered with Konnect.
+## Activation checks
 
-## Launch checks
+Before selecting a provider for buyer checkout, verify its worldwide buyer coverage, digital-goods/multi-vendor acceptance, platform-owned collection and settlement, currencies, fees, refunds/chargebacks, API/webhook verification, and sandbox behavior. Seller payout execution remains separate and exclusively platform-controlled.
 
-Before enabling live checkout or any payout method, verify the referral attribution, seller-account identification/linking, legal and contractual payout flow, transfer currency and fees, reconciliation, and failure handling. Keep live payments and payouts disabled until the required review and explicit approval are complete.
+No live payments, provider connection, automatic payouts, or production deployment is authorized by this document.

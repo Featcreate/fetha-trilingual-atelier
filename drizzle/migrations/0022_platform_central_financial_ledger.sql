@@ -117,3 +117,190 @@ REVOKE ALL ON FUNCTION public.prevent_platform_financial_ledger_mutation() FROM 
 
 COMMENT ON TABLE public.platform_financial_ledger_entries IS
   'Append-only internal accounting record for buyer collections, provider settlement, platform commission, seller payables and platform-controlled payouts. This is a ledger, not a bank account or payment instrument. No provider is authorized to split or pay sellers.';
+
+-- Replace the trusted settlement function so verified collections, commission,
+-- and seller payables are posted to the platform ledger in the same transaction.
+-- Simulation mode deliberately creates no financial ledger entries.
+CREATE OR REPLACE FUNCTION public.settle_order_payment(
+  _order_id uuid,
+  _mode text,
+  _payment_ref text,
+  _amount_millimes integer,
+  _source text
+)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  o record;
+  _now timestamptz := now();
+BEGIN
+  IF _mode NOT IN ('verified','simulation') THEN
+    RAISE EXCEPTION 'invalid_mode';
+  END IF;
+
+  SELECT * INTO o FROM public.orders WHERE id = _order_id FOR UPDATE;
+  IF NOT FOUND THEN RETURN 'unknown_order'; END IF;
+
+  IF o.status = 'paid' THEN
+    INSERT INTO public.payment_events (order_id, payment_ref, source, outcome, payment_mode)
+    VALUES (o.id, _payment_ref, _source, 'already_paid', _mode);
+    RETURN 'already_paid';
+  END IF;
+  IF o.status <> 'pending' THEN RETURN 'order_closed'; END IF;
+
+  IF _amount_millimes IS DISTINCT FROM o.total_millimes THEN
+    INSERT INTO public.payment_events (order_id, payment_ref, source, outcome, payment_mode)
+    VALUES (o.id, _payment_ref, _source, 'mismatch', _mode);
+    RETURN 'mismatch';
+  END IF;
+
+  UPDATE public.orders
+  SET status = 'paid', paid_at = _now, payment_mode = _mode,
+      payment_confirmation_ref = _payment_ref
+  WHERE id = o.id;
+
+  INSERT INTO public.download_entitlements
+    (order_id, order_item_file_id, user_id, starts_at, expires_at)
+  SELECT o.id, f.id, o.user_id, _now, _now + interval '7 days'
+  FROM public.order_item_files f
+  JOIN public.order_items i ON i.id = f.order_item_id
+  WHERE i.order_id = o.id
+  ON CONFLICT (order_item_file_id) DO NOTHING;
+
+  IF _mode = 'verified' THEN
+    INSERT INTO public.seller_ledger_entries
+      (order_item_id, store_id, seller_id, entry_type, amount_millimes)
+    SELECT i.id, i.store_id, i.seller_id, 'sale_net', i.seller_net_millimes
+    FROM public.order_items i
+    WHERE i.order_id = o.id
+    ON CONFLICT (order_item_id, entry_type) DO NOTHING;
+
+    -- Platform cash/collection side of the journal.
+    INSERT INTO public.platform_financial_ledger_entries (
+      entry_type, entry_side, order_id,
+      transaction_currency, transaction_amount_minor, transaction_currency_exponent,
+      accounting_currency, accounting_amount_millimes,
+      fx_rate, fx_rate_source, fx_rate_at,
+      source, external_reference, idempotency_key
+    ) VALUES (
+      'buyer_collection', 'debit', o.id,
+      'TND', o.total_millimes, 3,
+      'TND', o.total_millimes,
+      1, 'TND_base_order', _now,
+      'verified_payment_settlement', _payment_ref,
+      'order:' || o.id::text || ':buyer_collection'
+    ) ON CONFLICT (idempotency_key) DO NOTHING;
+
+    -- Platform commission and seller payable are separate credits per item.
+    INSERT INTO public.platform_financial_ledger_entries (
+      entry_type, entry_side, order_id, order_item_id, seller_id, store_id,
+      transaction_currency, transaction_amount_minor, transaction_currency_exponent,
+      accounting_currency, accounting_amount_millimes,
+      fx_rate, fx_rate_source, fx_rate_at,
+      source, external_reference, idempotency_key
+    )
+    SELECT
+      'platform_commission', 'credit', o.id, i.id, i.seller_id, i.store_id,
+      'TND', i.commission_millimes, 3,
+      'TND', i.commission_millimes,
+      1, 'TND_base_order', _now,
+      'verified_payment_settlement', _payment_ref,
+      'order_item:' || i.id::text || ':platform_commission'
+    FROM public.order_items i
+    WHERE i.order_id = o.id AND coalesce(i.commission_millimes, 0) > 0
+    ON CONFLICT (idempotency_key) DO NOTHING;
+
+    INSERT INTO public.platform_financial_ledger_entries (
+      entry_type, entry_side, order_id, order_item_id, seller_id, store_id,
+      transaction_currency, transaction_amount_minor, transaction_currency_exponent,
+      accounting_currency, accounting_amount_millimes,
+      fx_rate, fx_rate_source, fx_rate_at,
+      source, external_reference, idempotency_key
+    )
+    SELECT
+      'seller_payable', 'credit', o.id, i.id, i.seller_id, i.store_id,
+      'TND', i.seller_net_millimes, 3,
+      'TND', i.seller_net_millimes,
+      1, 'TND_base_order', _now,
+      'verified_payment_settlement', _payment_ref,
+      'order_item:' || i.id::text || ':seller_payable'
+    FROM public.order_items i
+    WHERE i.order_id = o.id AND coalesce(i.seller_net_millimes, 0) > 0
+    ON CONFLICT (idempotency_key) DO NOTHING;
+  END IF;
+
+  INSERT INTO public.payment_events (order_id, payment_ref, source, outcome, payment_mode)
+  VALUES (o.id, _payment_ref, _source, 'paid', _mode);
+  RETURN 'paid';
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.settle_order_payment(uuid, text, text, integer, text)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.settle_order_payment(uuid, text, text, integer, text)
+  TO service_role;
+
+-- Backfill the platform ledger for any previously verified paid orders.
+-- Unique idempotency keys make this safe if the migration is reviewed/replayed
+-- in a disposable environment before production rollout.
+INSERT INTO public.platform_financial_ledger_entries (
+  entry_type, entry_side, order_id,
+  transaction_currency, transaction_amount_minor, transaction_currency_exponent,
+  accounting_currency, accounting_amount_millimes,
+  fx_rate, fx_rate_source, fx_rate_at,
+  source, external_reference, idempotency_key
+)
+SELECT
+  'buyer_collection', 'debit', o.id,
+  'TND', o.total_millimes, 3,
+  'TND', o.total_millimes,
+  1, 'TND_base_order', coalesce(o.paid_at, o.created_at),
+  'verified_payment_backfill', o.payment_confirmation_ref,
+  'order:' || o.id::text || ':buyer_collection'
+FROM public.orders o
+WHERE o.status = 'paid' AND o.payment_mode = 'verified'
+ON CONFLICT (idempotency_key) DO NOTHING;
+
+INSERT INTO public.platform_financial_ledger_entries (
+  entry_type, entry_side, order_id, order_item_id, seller_id, store_id,
+  transaction_currency, transaction_amount_minor, transaction_currency_exponent,
+  accounting_currency, accounting_amount_millimes,
+  fx_rate, fx_rate_source, fx_rate_at,
+  source, external_reference, idempotency_key
+)
+SELECT
+  'platform_commission', 'credit', o.id, i.id, i.seller_id, i.store_id,
+  'TND', i.commission_millimes, 3,
+  'TND', i.commission_millimes,
+  1, 'TND_base_order', coalesce(o.paid_at, o.created_at),
+  'verified_payment_backfill', o.payment_confirmation_ref,
+  'order_item:' || i.id::text || ':platform_commission'
+FROM public.orders o
+JOIN public.order_items i ON i.order_id = o.id
+WHERE o.status = 'paid' AND o.payment_mode = 'verified'
+  AND coalesce(i.commission_millimes, 0) > 0
+ON CONFLICT (idempotency_key) DO NOTHING;
+
+INSERT INTO public.platform_financial_ledger_entries (
+  entry_type, entry_side, order_id, order_item_id, seller_id, store_id,
+  transaction_currency, transaction_amount_minor, transaction_currency_exponent,
+  accounting_currency, accounting_amount_millimes,
+  fx_rate, fx_rate_source, fx_rate_at,
+  source, external_reference, idempotency_key
+)
+SELECT
+  'seller_payable', 'credit', o.id, i.id, i.seller_id, i.store_id,
+  'TND', i.seller_net_millimes, 3,
+  'TND', i.seller_net_millimes,
+  1, 'TND_base_order', coalesce(o.paid_at, o.created_at),
+  'verified_payment_backfill', o.payment_confirmation_ref,
+  'order_item:' || i.id::text || ':seller_payable'
+FROM public.orders o
+JOIN public.order_items i ON i.order_id = o.id
+WHERE o.status = 'paid' AND o.payment_mode = 'verified'
+  AND coalesce(i.seller_net_millimes, 0) > 0
+ON CONFLICT (idempotency_key) DO NOTHING;
+

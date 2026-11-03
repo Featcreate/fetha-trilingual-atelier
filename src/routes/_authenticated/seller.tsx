@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useLang } from "@/lib/i18n";
 import { formatTND, parseTNDToMillimes } from "@/lib/money";
+import { TndEquivalents } from "@/components/TndEquivalents";
 import { PRODUCT_TYPES, type ProductType } from "@/lib/product-types";
 import {
   IMAGE_ACCEPT,
@@ -892,6 +893,10 @@ function SellerPage() {
                           </p>
                           <p className="mt-2 text-sm font-bold">
                             {formatTND(product.price_millimes)}
+                            <TndEquivalents
+                              millimes={product.price_millimes}
+                              locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                            />
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">

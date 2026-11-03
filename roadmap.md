@@ -38,4 +38,4 @@
 ## Activation and deployment constraints
 
 - No live payments, provider connections, production migrations, publishing, or paid services without explicit approval.
-- Migration 0022 is a schema addition only. It has not been applied to Supabase and does not activate checkout or move funds.
+- Migration 0022 has been applied to the original Supabase project and verified. It adds accounting controls only; it does not activate checkout or move funds.

@@ -125,7 +125,7 @@ export const dict = {
       deleteProductConfirmation:
         "Voulez-vous vraiment supprimer ce produit ? Il sera retiré de la boutique, mais les achats précédents et leurs fichiers resteront conservés.",
       productDeleted: "Le produit a été retiré de votre boutique.",
-      deleteProductFailed: "Impossible de supprimer ce produit. Réessayez. ",
+      deleteProductFailed: "Impossible de supprimer ce produit. Réessayez.",
       storeCreated: "Votre boutique est créée.",
       productCreated: "Produit enregistré et publié.",
       productUpdated: "Produit mis à jour.",

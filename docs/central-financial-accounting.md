@@ -73,3 +73,8 @@ Konnect publicly documents acceptance of international Visa and Mastercard cards
 This makes Konnect the leading candidate for the initial worldwide-buyer card route, not an approved production provider yet. Before activation, Konnect must confirm in writing that it accepts Algorea Bazaar's exact business model: one platform merchant account collecting payment for digital products supplied by multiple independent Tunisian sellers, with no provider-side split and all seller balances/payouts managed exclusively by Algorea Bazaar. Confirm digital-goods eligibility, country/card restrictions, settlement to the platform's account, fees, reserves, refund/chargeback liability, and settlement timing.
 
 The current checkout code is fail-closed and remains disabled until separate sandbox and live activation controls are configured and approved. No API credentials, live charges, or transfers are activated by the repository changes.
+
+
+## Database deployment status — 2026-11-03
+
+Migration 0022 has been applied to the original Supabase project jgjcychkntsokhzeziqs and is recorded in its migration history. A transaction-wrapped dry run against the actual project schema succeeded before application. Post-application checks confirmed the ledger table, RLS, indexes, immutability triggers, currency constraints, and weekly/manual-only payout constraints. The ledger, orders, order items, payout batches and payout preferences remain empty. This database change does not activate checkout or move money.

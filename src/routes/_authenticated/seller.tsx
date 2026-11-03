@@ -16,7 +16,11 @@ import { ProductPreview } from "@/components/ProductPreview";
 import { translateProductContent } from "@/lib/product-translations";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
-import { SellerLegalAcceptance, SELLER_PRIVACY_VERSION, SELLER_TERMS_VERSION } from "@/components/SellerLegalAcceptance";
+import {
+  SellerLegalAcceptance,
+  SELLER_PRIVACY_VERSION,
+  SELLER_TERMS_VERSION,
+} from "@/components/SellerLegalAcceptance";
 
 export const Route = createFileRoute("/_authenticated/seller")({
   head: () => ({
@@ -182,13 +186,15 @@ function SellerPage() {
     setConfirmationBusy(true);
     const { error } = await supabase.auth.resend({ type: "signup", email: user.email });
     setConfirmationBusy(false);
-    setNotice(error
-      ? m.error
-      : lang === "ar"
-        ? "طلبنا إعادة إرسال رسالة تأكيد البريد الإلكتروني."
-        : lang === "en"
-          ? "A new email confirmation message has been requested."
-          : "Un nouvel e-mail de confirmation a été demandé.");
+    setNotice(
+      error
+        ? m.error
+        : lang === "ar"
+          ? "طلبنا إعادة إرسال رسالة تأكيد البريد الإلكتروني."
+          : lang === "en"
+            ? "A new email confirmation message has been requested."
+            : "Un nouvel e-mail de confirmation a été demandé.",
+    );
   }
 
   async function createStore(e: FormEvent<HTMLFormElement>) {
@@ -200,11 +206,13 @@ function SellerPage() {
     if (slug.length < 3) return setNotice(m.slugHint);
     if (!user.email_confirmed_at) return setNotice(m.emailVerificationRequired);
     if (!acceptPrivacy || !acceptSellerTerms) {
-      return setNotice(lang === "ar"
-        ? "يجب قراءة الوثيقتين والموافقة على كل واحدة منهما لإنشاء المتجر."
-        : lang === "en"
-          ? "Read and accept each document separately before creating your store."
-          : "Lisez et acceptez séparément chaque document avant de créer votre boutique.");
+      return setNotice(
+        lang === "ar"
+          ? "يجب قراءة الوثيقتين والموافقة على كل واحدة منهما لإنشاء المتجر."
+          : lang === "en"
+            ? "Read and accept each document separately before creating your store."
+            : "Lisez et acceptez séparément chaque document avant de créer votre boutique.",
+      );
     }
     setBusy(true);
     setNotice("");
@@ -222,7 +230,11 @@ function SellerPage() {
         detail.includes("email_verification_required")
           ? m.emailVerificationRequired
           : detail.includes("legal_documents_outdated")
-            ? (lang === "ar" ? "إصدار الوثائق غير صالح. حدّث الصفحة وحاول مجدداً." : lang === "en" ? "The legal document version is outdated. Refresh and try again." : "La version des documents est obsolète. Actualisez la page et réessayez.")
+            ? lang === "ar"
+              ? "إصدار الوثائق غير صالح. حدّث الصفحة وحاول مجدداً."
+              : lang === "en"
+                ? "The legal document version is outdated. Refresh and try again."
+                : "La version des documents est obsolète. Actualisez la page et réessayez."
             : error.code === "23505"
               ? m.slugHint
               : m.error,
@@ -556,11 +568,19 @@ function SellerPage() {
           {!user.email_confirmed_at && (
             <div className="mt-4 rounded-xl bg-secondary p-4">
               <p className="text-sm font-semibold">{m.emailVerificationRequired}</p>
-              <button type="button" onClick={resendSellerConfirmation} disabled={confirmationBusy}
-                className="mt-3 rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-60">
+              <button
+                type="button"
+                onClick={resendSellerConfirmation}
+                disabled={confirmationBusy}
+                className="mt-3 rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-60"
+              >
                 {confirmationBusy
                   ? m.loading
-                  : lang === "ar" ? "إعادة إرسال رسالة التأكيد" : lang === "en" ? "Resend confirmation email" : "Renvoyer l’e-mail de confirmation"}
+                  : lang === "ar"
+                    ? "إعادة إرسال رسالة التأكيد"
+                    : lang === "en"
+                      ? "Resend confirmation email"
+                      : "Renvoyer l’e-mail de confirmation"}
               </button>
             </div>
           )}

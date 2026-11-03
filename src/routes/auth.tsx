@@ -4,12 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { authErrorMessage, useLang } from "@/lib/i18n";
-import {
-  emailSchema,
-  fullNameSchema,
-  passwordSchema,
-  safeRedirect,
-} from "@/lib/account-rules";
+import { emailSchema, fullNameSchema, passwordSchema, safeRedirect } from "@/lib/account-rules";
 
 type Mode = "signin" | "signup" | "forgot";
 
@@ -82,7 +77,8 @@ function AuthPage() {
         return;
       }
       const fullName = v("full_name").trim();
-      if (!fullNameSchema.safeParse(fullName).success || fullName.split(/\s+/).length < 2) errs.full_name = a.errName;
+      if (!fullNameSchema.safeParse(fullName).success || fullName.split(/\s+/).length < 2)
+        errs.full_name = a.errName;
     }
     setErrors(errs);
     setFormError("");

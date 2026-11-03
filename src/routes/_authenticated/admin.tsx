@@ -528,7 +528,7 @@ function AdminPage() {
             <input value={sharedFeeOrderId} onChange={(e) => setSharedFeeOrderId(e.target.value)} placeholder={lang === "ar" ? "رقم الطلب (اختياري لتوزيع الرسوم بالتناسب)" : lang === "en" ? "Order ID (optional: allocate proportionally)" : "ID de commande (facultatif : répartition proportionnelle)"} className="rounded-lg border border-input bg-background px-3 py-2 sm:col-span-2" />
             <input value={feeDescription} onChange={(e) => setFeeDescription(e.target.value)} placeholder={lang === "ar" ? "وصف الرسوم" : lang === "en" ? "Fee description" : "Description des frais"} className="rounded-lg border border-input bg-background px-3 py-2" />
             <button type="submit" disabled={busy === "external-fee" || (!payoutStoreId && !sharedFeeOrderId.trim())} className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50 sm:col-span-2">
-              {busy === "external-fee" ? a.saving : lang === "ar" ? "تسجيل الرسوم على البائع المحدد" : lang === "en" ? "Record fee against selected seller" : "Imputer les frais au vendeur sélectionné"}
+              {busy === "external-fee" ? a.saving : sharedFeeOrderId.trim() ? (lang === "ar" ? "توزيع الرسوم على بائعي الطلب" : lang === "en" ? "Allocate fee across order sellers" : "Répartir les frais entre les vendeurs de la commande") : (lang === "ar" ? "تسجيل الرسوم على البائع المحدد" : lang === "en" ? "Record fee against selected seller" : "Imputer les frais au vendeur sélectionné")}
             </button>
           </form>
         </div>

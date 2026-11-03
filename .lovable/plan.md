@@ -139,7 +139,20 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Current checkout adapter requests TND only, with bank_card listed first and local wallet/e-DINAR methods retained. International card issuers may convert the TND charge into the card's billing currency. Algorea Bazaar does not yet charge every buyer in their local currency.
 - No live checkout is enabled. Konnect must first confirm in writing that it accepts Algorea Bazaar's digital multi-vendor model with the platform as sole collection beneficiary and no provider-side seller split or payouts.
 - Added docs/global-buyer-payment-route.md and clarified currency behavior in the financial policy and buyer-facing TND notes.
-- Reviewed original Supabase project jgjcychkntsokhzeziqs: migration history is 0000–0021, migration 0022 is absent; relevant order, item, payout and payout-preference tables exist; RLS is enabled on existing public tables; current orders, order items, payout batches and payout preferences are all zero rows.
+- Reviewed original Supabase project jgjcychkntsokhzeziqs before deployment: migration history was 0000–0021; relevant order, item, payout and payout-preference tables existed; RLS was enabled; orders, order items, payout batches and payout preferences were all zero rows.
 - Separate test project iblfizhtvzfnfuntnazk is empty (no migrations or public tables), so it is not a ready-made schema clone.
-- Static review found and fixed the malformed DO block in migration 0022, added immutable FX/settlement snapshot enforcement and tightened ledger amount/currency checks. The migration remains GitHub-only and has NOT been applied to Supabase.
-- Before production migration: complete SQL validation on a disposable schema/database, verify the entire chain and security/performance advisors. Do not activate live payments or change provider secrets without separate approval.
+- Static review found and fixed SQL delimiter errors in migration 0022, added immutable FX/settlement snapshot enforcement, and tightened ledger amount/currency checks. A transaction-wrapped dry run against the original project's actual schema succeeded.
+- Migration 0022 was then applied successfully to the original project. Post-apply checks confirmed migration history, ledger table/RLS, constraints, indexes, triggers, append-only behavior, and platform-only payout controls. The migration did not create transactions or move funds.
+- The separate test project is empty and is not a ready-made clone. A full disposable migration-chain test remains pending; do not represent it as completed.
+- No payment provider credentials were configured, no live checkout was activated, and no live payments or seller transfers occurred.
+
+
+## 14. Migration 0022 deployment verification — 2026-11-03
+
+- Applied migration 0022 successfully to the original Supabase project jgjcychkntsokhzeziqs; migration history now ends at 0022_platform_central_financial_ledger.
+- Before application, the full migration was executed inside BEGIN/ROLLBACK against the actual original schema and returned migration_0022_dry_run_ok. The rollback was verified: no new ledger table/columns remained and order/payout rows stayed zero.
+- After application, confirmed ledger table exists with RLS enabled; required indexes, constraints and triggers exist; direct Konnect payout setting is false; no orders, payouts or ledger rows exist.
+- A transactional behavior test confirmed the direct-payout switch cannot be set true and ledger updates are rejected; test rows were rolled back and ledger remains empty.
+- Regenerated and committed src/integrations/supabase/types.ts from the live original database.
+- Security Advisor still reports 12 authenticated SECURITY DEFINER RPC warnings (including the admin-guarded payout RPC) and leaked-password protection disabled. Performance Advisor reports pre-existing RLS initialization-plan and unindexed-FK warnings; these were not part of migration 0022.
+- Checkout remains fail-closed and TND-only. Konnect international Visa/Mastercard is the leading candidate, but written approval for the digital multi-vendor platform-collection model and sandbox fee/settlement reconciliation remain release gates.

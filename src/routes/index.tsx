@@ -12,6 +12,7 @@ const categoryIcons = { ebook: BookOpen, pdf: BookOpen, template: LayoutTemplate
 const CATEGORIES = PRODUCT_TYPES.map((id) => [id, categoryIcons[id]] as const);
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, useLang } from "@/lib/i18n";
+import { localizedProductText } from "@/lib/product-translations";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -55,6 +56,7 @@ function Index() {
   type HomeProduct = {
     id: string;
     name: string;
+    name_translations: unknown;
     product_type: string;
     image_path: string | null;
     store_id: string | null;
@@ -81,7 +83,7 @@ function Index() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,name,product_type,image_path,store_id")
+        .select("id,name,name_translations,product_type,image_path,store_id")
         .eq("store_id", myStoreQuery.data!.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false })
@@ -128,7 +130,7 @@ function Index() {
             {product.image_path ? (
               <img
                 src={supabase.storage.from("product-images").getPublicUrl(product.image_path).data.publicUrl}
-                alt={product.name}
+                alt={localizedProductText(product.name, product.name_translations, lang)}
                 loading="lazy"
                 className="h-full w-full object-cover"
               />
@@ -140,7 +142,7 @@ function Index() {
         <div className="space-y-2 p-4">
           <p className="text-xs text-muted-foreground">{t.marketplace[product.product_type as keyof typeof t.marketplace] ?? product.product_type}</p>
           <Link to="/products/$id" params={{ id: product.id }} className="block font-bold hover:text-coral">
-            {product.name}
+            {localizedProductText(product.name, product.name_translations, lang)}
           </Link>
           <Link to="/stores/$slug" params={{ slug: storeSlug }} className="text-sm font-semibold text-coral hover:underline">
             {storeName}

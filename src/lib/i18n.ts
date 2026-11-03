@@ -117,6 +117,8 @@ export const dict = {
         "Confirmez votre adresse e-mail avant de créer une boutique ou d’ajouter des fichiers.",
       nameRequired: "Saisissez le nom de la boutique.",
       productRequired: "Saisissez le nom et la description du produit.",
+      automaticTranslation: "Le titre et la description seront automatiquement traduits en arabe, français et anglais.",
+      translationFailed: "La traduction automatique est momentanément indisponible. Réessayez avant de publier le produit.",
       noCommission:
         "Les commandes sont temporairement indisponibles tant que la commission de la plateforme n'est pas configurée.",
       myOrders: "Mes commandes",
@@ -352,6 +354,8 @@ export const dict = {
       emailVerificationRequired: "أكد بريدك الإلكتروني قبل إنشاء المتجر أو إضافة الملفات.",
       nameRequired: "أدخل اسم المتجر.",
       productRequired: "أدخل اسم المنتج ووصفه.",
+      automaticTranslation: "ستُترجم تسمية المنتج ووصفه تلقائياً إلى العربية والفرنسية والإنجليزية.",
+      translationFailed: "الترجمة التلقائية غير متاحة مؤقتاً. أعد المحاولة قبل نشر المنتج.",
       noCommission: "الطلبات متوقفة مؤقتاً إلى أن يتم ضبط عمولة المنصة.",
       myOrders: "طلباتي",
       download: "تنزيل",
@@ -583,6 +587,8 @@ export const dict = {
         "Confirm your email address before creating a store or adding files.",
       nameRequired: "Enter a store name.",
       productRequired: "Enter the product name and description.",
+      automaticTranslation: "The product title and description are translated automatically into Arabic, French, and English.",
+      translationFailed: "Automatic translation is temporarily unavailable. Please retry before publishing the product.",
       noCommission:
         "Orders are temporarily unavailable until the platform commission is configured.",
       myOrders: "My orders",

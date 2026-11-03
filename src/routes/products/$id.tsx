@@ -5,6 +5,7 @@ import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { loadProductGallery } from "@/lib/product-previews";
 import { ProductPreview } from "@/components/ProductPreview";
+import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/products/$id")({
@@ -28,7 +29,7 @@ function ProductPage() {
     queryFn: async () => {
       const { data: product, error } = await supabase
         .from("products")
-        .select("id,name,description,price_millimes,product_type,store_id,image_path")
+        .select("id,name,description,name_translations,description_translations,price_millimes,product_type,store_id,image_path")
         .eq("id", id)
         .eq("is_active", true)
         .maybeSingle();
@@ -79,9 +80,9 @@ function ProductPage() {
             {m[query.data.product.product_type as keyof typeof m] ??
               query.data.product.product_type}
           </p>
-          <h1 className="mt-2 text-2xl font-extrabold">{query.data.product.name}</h1>
+          <h1 className="mt-2 text-2xl font-extrabold">{localizedProductText(query.data.product.name, query.data.product.name_translations, lang)}</h1>
           <p className="mt-4 whitespace-pre-wrap leading-8 text-muted-foreground">
-            {query.data.product.description}
+            {localizedProductText(query.data.product.description, query.data.product.description_translations, lang)}
           </p>
           <p className="mt-6 text-2xl font-extrabold">
             {formatTND(query.data.product.price_millimes)}

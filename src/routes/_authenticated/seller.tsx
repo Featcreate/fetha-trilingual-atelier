@@ -8,6 +8,7 @@ import { formatTND, parseTNDToMillimes } from "@/lib/money";
 import { PRODUCT_TYPES, type ProductType } from "@/lib/product-types";
 import { IMAGE_ACCEPT, validPreviewImage, saveProductPreviews, loadProductGallery } from "@/lib/product-previews";
 import { ProductPreview } from "@/components/ProductPreview";
+import { translateProductContent } from "@/lib/product-translations";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/_authenticated/seller")({
@@ -259,12 +260,21 @@ function SellerPage() {
     if (!productTypes.includes(productType)) return setNotice(m.error);
     setBusy(true);
     setNotice("");
+    let translatedContent: Awaited<ReturnType<typeof translateProductContent>>;
+    try {
+      translatedContent = await translateProductContent(name, description);
+    } catch {
+      setBusy(false);
+      return setNotice(m.translationFailed);
+    }
     const { data: product, error: productError } = await supabase
       .from("products")
       .insert({
         store_id: store.id,
         name,
         description,
+        name_translations: translatedContent.nameTranslations,
+        description_translations: translatedContent.descriptionTranslations,
         price_millimes: price,
         product_type: productType,
         is_active: false,
@@ -280,7 +290,11 @@ function SellerPage() {
       await saveProductPreviews(store.id, product.id, imageFile, galleryFiles);
     } catch (error) {
       setBusy(false);
-      return setNotice(error instanceof Error && error.message === "preview_setup_required" ? m.previewSetupRequired : m.previewSaveFailed);
+      return setNotice(error instanceof Error && error.message === "translation_failed"
+        ? m.translationFailed
+        : error instanceof Error && error.message === "preview_setup_required"
+          ? m.previewSetupRequired
+          : m.previewSaveFailed);
     }
 
     for (const file of files) {
@@ -390,9 +404,17 @@ function SellerPage() {
     if ([...(cover ? [cover] : []), ...gallery].some((file) => !validPreviewImage(file))) return setNotice(m.invalidFile);
     setBusy(true);
     try {
+      const translatedContent = await translateProductContent(name, description);
       await saveProductPreviews(store.id, product.id, cover, gallery);
       const { error } = await supabase.from("products")
-        .update({ name, description, price_millimes: price, product_type: productType })
+        .update({
+          name,
+          description,
+          name_translations: translatedContent.nameTranslations,
+          description_translations: translatedContent.descriptionTranslations,
+          price_millimes: price,
+          product_type: productType,
+        })
         .eq("id", product.id).eq("store_id", store.id);
       if (error) throw error;
     } catch (error) {
@@ -542,6 +564,7 @@ function SellerPage() {
                   maxLength={5000}
                   className="w-full rounded-lg border border-input bg-background px-3 py-2"
                 />
+                <p className="mt-1 text-xs text-muted-foreground">{m.automaticTranslation}</p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
@@ -631,6 +654,7 @@ function SellerPage() {
                             required
                             className="w-full rounded-lg border border-input bg-background px-3 py-2"
                           />
+                          <p className="mt-1 text-xs text-muted-foreground">{m.automaticTranslation}</p>
                         </div>
                         <Field
                           id={`edit_price_${product.id}`}

@@ -304,3 +304,111 @@ WHERE o.status = 'paid' AND o.payment_mode = 'verified'
   AND coalesce(i.seller_net_millimes, 0) > 0
 ON CONFLICT (idempotency_key) DO NOTHING;
 
+
+-- Record the platform's own completed weekly/manual seller transfer in the
+-- same ledger. This function only records a transfer already made externally;
+-- it never calls a bank, wallet, or payment provider.
+CREATE OR REPLACE FUNCTION public.admin_mark_seller_payout_paid(
+  _payout_id uuid,
+  _transfer_reference text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  _p record;
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.has_role(auth.uid(), 'admin') THEN
+    RAISE EXCEPTION 'forbidden';
+  END IF;
+  IF _transfer_reference IS NULL
+     OR length(trim(_transfer_reference)) NOT BETWEEN 3 AND 200 THEN
+    RAISE EXCEPTION 'transfer_reference_required';
+  END IF;
+
+  SELECT po.*, s.owner_id AS seller_id
+    INTO _p
+  FROM public.seller_payouts po
+  JOIN public.stores s ON s.id = po.store_id
+  WHERE po.id = _payout_id
+  FOR UPDATE OF po;
+  IF NOT FOUND THEN RAISE EXCEPTION 'payout_not_found'; END IF;
+  IF _p.method <> 'weekly_manual' OR _p.provider <> 'manual' THEN
+    RAISE EXCEPTION 'unsupported_payout_method';
+  END IF;
+  IF _p.currency <> 'TND' THEN
+    RAISE EXCEPTION 'phase_one_payout_currency_must_be_tnd';
+  END IF;
+  IF _p.status = 'paid' THEN
+    IF _p.provider_transfer_ref = trim(_transfer_reference) THEN
+      RETURN true;
+    END IF;
+    RAISE EXCEPTION 'payout_already_paid';
+  END IF;
+  IF _p.status NOT IN ('pending','processing','failed') THEN
+    RAISE EXCEPTION 'payout_not_payable';
+  END IF;
+  IF _p.seller_amount_millimes <= 0 THEN
+    RAISE EXCEPTION 'invalid_seller_payout_amount';
+  END IF;
+
+  UPDATE public.seller_payouts
+  SET status = 'paid',
+      provider_transfer_ref = trim(_transfer_reference),
+      initiated_at = coalesce(initiated_at, now()),
+      paid_at = now(),
+      failure_reason = NULL
+  WHERE id = _payout_id;
+
+  INSERT INTO public.platform_financial_ledger_entries (
+    entry_type, entry_side, seller_id, store_id,
+    transaction_currency, transaction_amount_minor, transaction_currency_exponent,
+    accounting_currency, accounting_amount_millimes,
+    fx_rate, fx_rate_source, fx_rate_at,
+    source, external_reference, idempotency_key
+  ) VALUES (
+    'seller_payout', 'debit', _p.seller_id, _p.store_id,
+    'TND', _p.seller_amount_millimes, 3,
+    'TND', _p.seller_amount_millimes,
+    1, 'TND_manual_payout', now(),
+    'platform_manual_seller_payout', trim(_transfer_reference),
+    'seller_payout:' || _payout_id::text
+  ) ON CONFLICT (idempotency_key) DO NOTHING;
+
+  RETURN true;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.admin_mark_seller_payout_paid(uuid, text)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_mark_seller_payout_paid(uuid, text)
+  TO authenticated, service_role;
+
+-- Backfill completed TND manual payouts so the internal ledger also reflects
+-- historical platform transfers that predate this migration.
+INSERT INTO public.platform_financial_ledger_entries (
+  entry_type, entry_side, seller_id, store_id,
+  transaction_currency, transaction_amount_minor, transaction_currency_exponent,
+  accounting_currency, accounting_amount_millimes,
+  fx_rate, fx_rate_source, fx_rate_at,
+  source, external_reference, idempotency_key
+)
+SELECT
+  'seller_payout', 'debit', s.owner_id, p.store_id,
+  'TND', p.seller_amount_millimes, 3,
+  'TND', p.seller_amount_millimes,
+  1, 'TND_manual_payout', coalesce(p.paid_at, p.created_at),
+  'platform_manual_payout_backfill', p.provider_transfer_ref,
+  'seller_payout:' || p.id::text
+FROM public.seller_payouts p
+JOIN public.stores s ON s.id = p.store_id
+WHERE p.status = 'paid'
+  AND p.method = 'weekly_manual'
+  AND p.provider = 'manual'
+  AND p.currency = 'TND'
+  AND p.seller_amount_millimes > 0
+  AND p.provider_transfer_ref IS NOT NULL
+ON CONFLICT (idempotency_key) DO NOTHING;
+

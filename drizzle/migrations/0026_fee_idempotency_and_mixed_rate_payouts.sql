@@ -307,6 +307,21 @@ BEGIN
     RAISE EXCEPTION 'shared_fee_requires_verified_paid_tnd_order';
   END IF;
 
+  -- Serialize against payout creation and seller-only fee registration for every
+  -- affected store. A payout cannot snapshot proceeds while this fee is pending.
+  PERFORM s.id
+  FROM public.stores s
+  WHERE s.id IN (
+    SELECT DISTINCT oi.store_id
+    FROM public.order_items oi
+    WHERE oi.order_id = _order_id
+      AND oi.store_id IS NOT NULL
+      AND oi.seller_id IS NOT NULL
+      AND oi.payable_millimes > 0
+  )
+  ORDER BY s.id
+  FOR UPDATE OF s;
+
   -- If this evidence reference was already applied to this order, validate the
   -- complete expected allocation and return it. Never create a second debit.
   SELECT count(*)::integer, coalesce(sum(f.amount_millimes), 0),

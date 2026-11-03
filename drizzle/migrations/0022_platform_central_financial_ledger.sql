@@ -36,8 +36,15 @@ COMMENT ON COLUMN public.orders.buyer_fx_rate IS
 
 ALTER TABLE public.orders
   ADD CONSTRAINT orders_buyer_amount_snapshot_complete CHECK (
-    (buyer_currency IS NULL AND buyer_amount_minor IS NULL AND buyer_currency_exponent IS NULL)
-    OR (buyer_currency IS NOT NULL AND buyer_amount_minor IS NOT NULL AND buyer_currency_exponent IS NOT NULL)
+    (buyer_currency IS NULL
+      AND buyer_amount_minor IS NULL
+      AND buyer_currency_exponent IS NULL
+      AND buyer_fx_rate IS NULL
+      AND buyer_fx_rate_source IS NULL
+      AND buyer_fx_quoted_at IS NULL)
+    OR (buyer_currency IS NOT NULL
+      AND buyer_amount_minor IS NOT NULL
+      AND buyer_currency_exponent IS NOT NULL)
   ),
   ADD CONSTRAINT orders_foreign_buyer_fx_snapshot_complete CHECK (
     buyer_currency IS NULL OR buyer_currency = 'TND'
@@ -183,14 +190,28 @@ BEGIN
       RAISE EXCEPTION 'platform_ledger_order_item_mismatch';
     END IF;
     IF NEW.entry_type = 'platform_commission'
-       AND NEW.accounting_amount_millimes IS DISTINCT FROM (
-         SELECT oi.commission_millimes FROM public.order_items oi WHERE oi.id = NEW.order_item_id
+       AND (
+         NEW.accounting_amount_millimes IS DISTINCT FROM (
+           SELECT oi.commission_millimes FROM public.order_items oi WHERE oi.id = NEW.order_item_id
+         )
+         OR NEW.transaction_currency <> 'TND'
+         OR NEW.transaction_currency_exponent <> 3
+         OR NEW.transaction_amount_minor IS DISTINCT FROM (
+           SELECT oi.commission_millimes FROM public.order_items oi WHERE oi.id = NEW.order_item_id
+         )
        ) THEN
       RAISE EXCEPTION 'platform_ledger_commission_amount_mismatch';
     END IF;
     IF NEW.entry_type = 'seller_payable'
-       AND NEW.accounting_amount_millimes IS DISTINCT FROM (
-         SELECT oi.seller_net_millimes FROM public.order_items oi WHERE oi.id = NEW.order_item_id
+       AND (
+         NEW.accounting_amount_millimes IS DISTINCT FROM (
+           SELECT oi.seller_net_millimes FROM public.order_items oi WHERE oi.id = NEW.order_item_id
+         )
+         OR NEW.transaction_currency <> 'TND'
+         OR NEW.transaction_currency_exponent <> 3
+         OR NEW.transaction_amount_minor IS DISTINCT FROM (
+           SELECT oi.seller_net_millimes FROM public.order_items oi WHERE oi.id = NEW.order_item_id
+         )
        ) THEN
       RAISE EXCEPTION 'platform_ledger_seller_payable_amount_mismatch';
     END IF;
@@ -204,6 +225,9 @@ BEGIN
         AND o.payment_mode = 'verified'
         AND o.currency = 'TND'
         AND o.total_millimes = NEW.accounting_amount_millimes
+        AND NEW.transaction_currency = 'TND'
+        AND NEW.transaction_currency_exponent = 3
+        AND NEW.transaction_amount_minor = o.total_millimes
     ) THEN
       RAISE EXCEPTION 'platform_ledger_buyer_collection_mismatch';
     END IF;
@@ -222,7 +246,13 @@ BEGIN
         AND p.status = 'paid'
         AND p.currency = 'TND'
         AND p.seller_amount_millimes = NEW.accounting_amount_millimes
-        AND p.provider_transfer_ref = NEW.external_reference
+        AND NEW.transaction_currency = 'TND'
+        AND NEW.transaction_currency_exponent = 3
+        AND NEW.transaction_amount_minor = p.seller_amount_millimes
+        AND NEW.entry_side = 'debit'
+        AND NEW.order_id IS NULL
+        AND NEW.order_item_id IS NULL
+        AND NEW.provider_transfer_ref = NEW.external_reference
     ) THEN
       RAISE EXCEPTION 'platform_ledger_seller_payout_mismatch';
     END IF;

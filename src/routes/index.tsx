@@ -4,14 +4,45 @@ import { useSession } from "@/hooks/use-session";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, X, BookOpen, LayoutTemplate, Printer, CalendarCheck, GraduationCap, Laptop, Headphones, Video, Palette, Sparkles } from "lucide-react";
+import {
+  Menu,
+  X,
+  BookOpen,
+  LayoutTemplate,
+  Printer,
+  CalendarCheck,
+  GraduationCap,
+  Laptop,
+  Headphones,
+  Video,
+  Palette,
+  Sparkles,
+} from "lucide-react";
 import banner from "@/assets/homepage-banner.jpg.asset.json";
 
 import { PRODUCT_TYPES } from "@/lib/product-types";
-const categoryIcons = { ebook: BookOpen, pdf: BookOpen, template: LayoutTemplate, educational: GraduationCap, bundle: Sparkles, software: Laptop, app: Laptop, printable: Printer, planner: CalendarCheck, course: GraduationCap, worksheets: Printer, flashcards: BookOpen, audio: Headphones, video: Video, graphics: Palette, other: Sparkles };
+const categoryIcons = {
+  ebook: BookOpen,
+  pdf: BookOpen,
+  template: LayoutTemplate,
+  educational: GraduationCap,
+  bundle: Sparkles,
+  software: Laptop,
+  app: Laptop,
+  printable: Printer,
+  planner: CalendarCheck,
+  course: GraduationCap,
+  worksheets: Printer,
+  flashcards: BookOpen,
+  audio: Headphones,
+  video: Video,
+  graphics: Palette,
+  other: Sparkles,
+};
 const CATEGORIES = PRODUCT_TYPES.map((id) => [id, categoryIcons[id]] as const);
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, useLang } from "@/lib/i18n";
+import { localizedProductText } from "@/lib/product-translations";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -55,6 +86,7 @@ function Index() {
   type HomeProduct = {
     id: string;
     name: string;
+    name_translations: unknown;
     product_type: string;
     image_path: string | null;
     store_id: string | null;
@@ -81,7 +113,7 @@ function Index() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,name,product_type,image_path,store_id")
+        .select("id,name,name_translations,product_type,image_path,store_id")
         .eq("store_id", myStoreQuery.data!.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false })
@@ -102,7 +134,11 @@ function Index() {
         .order("created_at", { ascending: false })
         .limit(6);
       if (error) throw error;
-      const storeIds = [...new Set((products ?? []).map((product) => product.store_id).filter((id): id is string => !!id))];
+      const storeIds = [
+        ...new Set(
+          (products ?? []).map((product) => product.store_id).filter((id): id is string => !!id),
+        ),
+      ];
       if (!storeIds.length) return [] as HomeProduct[];
       const { data: stores, error: storesError } = await supabase
         .from("stores")
@@ -120,15 +156,22 @@ function Index() {
     },
   });
 
-  function renderProductCard(product: Omit<HomeProduct, "store"> | HomeProduct, storeName: string, storeSlug: string) {
+  function renderProductCard(
+    product: Omit<HomeProduct, "store"> | HomeProduct,
+    storeName: string,
+    storeSlug: string,
+  ) {
     return (
       <article key={product.id} className="overflow-hidden rounded-xl border border-border bg-card">
         <Link to="/products/$id" params={{ id: product.id }} className="block">
           <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-cream-light p-5">
             {product.image_path ? (
               <img
-                src={supabase.storage.from("product-images").getPublicUrl(product.image_path).data.publicUrl}
-                alt={product.name}
+                src={
+                  supabase.storage.from("product-images").getPublicUrl(product.image_path).data
+                    .publicUrl
+                }
+                alt={localizedProductText(product.name, product.name_translations, lang)}
                 loading="lazy"
                 className="h-full w-full object-cover"
               />
@@ -138,11 +181,22 @@ function Index() {
           </div>
         </Link>
         <div className="space-y-2 p-4">
-          <p className="text-xs text-muted-foreground">{t.marketplace[product.product_type as keyof typeof t.marketplace] ?? product.product_type}</p>
-          <Link to="/products/$id" params={{ id: product.id }} className="block font-bold hover:text-coral">
-            {product.name}
+          <p className="text-xs text-muted-foreground">
+            {t.marketplace[product.product_type as keyof typeof t.marketplace] ??
+              product.product_type}
+          </p>
+          <Link
+            to="/products/$id"
+            params={{ id: product.id }}
+            className="block font-bold hover:text-coral"
+          >
+            {localizedProductText(product.name, product.name_translations, lang)}
           </Link>
-          <Link to="/stores/$slug" params={{ slug: storeSlug }} className="text-sm font-semibold text-coral hover:underline">
+          <Link
+            to="/stores/$slug"
+            params={{ slug: storeSlug }}
+            className="text-sm font-semibold text-coral hover:underline"
+          >
             {storeName}
           </Link>
         </div>
@@ -253,18 +307,29 @@ function Index() {
 
         <section aria-labelledby="cats" className="bg-background">
           <div className="mx-auto max-w-6xl px-4 py-10">
-            <h2 id="cats" className="mb-5 text-center text-xl font-bold text-petrol">{t.marketplace.browseCategories}</h2>
+            <h2 id="cats" className="mb-5 text-center text-xl font-bold text-petrol">
+              {t.marketplace.browseCategories}
+            </h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
               {CATEGORIES.map(([id, Icon]) => (
-                <Link key={id} to="/catalog" search={{ type: id }}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center text-sm font-semibold transition hover:-translate-y-0.5 hover:border-coral hover:text-coral">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-light text-petrol"><Icon className="h-6 w-6" aria-hidden /></span>
+                <Link
+                  key={id}
+                  to="/catalog"
+                  search={{ type: id }}
+                  className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center text-sm font-semibold transition hover:-translate-y-0.5 hover:border-coral hover:text-coral"
+                >
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-light text-petrol">
+                    <Icon className="h-6 w-6" aria-hidden />
+                  </span>
                   {t.marketplace[id]}
                 </Link>
               ))}
             </div>
             <div className="mt-8 text-center">
-              <Link to="/catalog" className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground">
+              <Link
+                to="/catalog"
+                className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground"
+              >
                 {t.marketplace.viewCatalog}
               </Link>
             </div>
@@ -287,14 +352,25 @@ function Index() {
           </div>
         </section>
 
-        <section id="my-store-products" aria-labelledby="my-store-products-title" className="bg-background">
+        <section
+          id="my-store-products"
+          aria-labelledby="my-store-products-title"
+          className="bg-background"
+        >
           <div className="mx-auto max-w-6xl px-4 py-10">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-              <h2 id="my-store-products-title" className="text-xl font-bold text-petrol md:text-2xl">
+              <h2
+                id="my-store-products-title"
+                className="text-xl font-bold text-petrol md:text-2xl"
+              >
                 {t.marketplace.myLatestProducts}
               </h2>
               {myStoreQuery.data && (
-                <Link to="/stores/$slug" params={{ slug: myStoreQuery.data.slug }} className="text-sm font-semibold text-coral hover:underline">
+                <Link
+                  to="/stores/$slug"
+                  params={{ slug: myStoreQuery.data.slug }}
+                  className="text-sm font-semibold text-coral hover:underline"
+                >
                   {t.marketplace.viewStore}
                 </Link>
               )}
@@ -304,49 +380,78 @@ function Index() {
                 {t.marketplace.signInForMyStore}
               </p>
             ) : myStoreQuery.isPending ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">{t.marketplace.loading}</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                {t.marketplace.loading}
+              </p>
             ) : myStoreQuery.isError ? (
-              <p role="alert" className="py-6 text-center text-sm text-muted-foreground">{t.marketplace.error}</p>
+              <p role="alert" className="py-6 text-center text-sm text-muted-foreground">
+                {t.marketplace.error}
+              </p>
             ) : !myStoreQuery.data ? (
               <div className="rounded-xl border border-border bg-card p-5 text-center">
                 <p className="text-sm text-muted-foreground">{t.marketplace.noStore}</p>
-                <Link to="/seller" className="mt-3 inline-flex rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground">
+                <Link
+                  to="/seller"
+                  className="mt-3 inline-flex rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground"
+                >
                   {t.marketplace.createStore}
                 </Link>
               </div>
             ) : myStoreProductsQuery.isPending ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">{t.marketplace.loading}</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                {t.marketplace.loading}
+              </p>
             ) : myStoreProductsQuery.isError ? (
-              <p role="alert" className="py-6 text-center text-sm text-muted-foreground">{t.marketplace.error}</p>
+              <p role="alert" className="py-6 text-center text-sm text-muted-foreground">
+                {t.marketplace.error}
+              </p>
             ) : !myStoreProductsQuery.data?.length ? (
-              <p className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">{t.marketplace.noRecentProducts}</p>
+              <p className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+                {t.marketplace.noRecentProducts}
+              </p>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {myStoreProductsQuery.data.map((product) => renderProductCard(product, myStoreQuery.data!.name, myStoreQuery.data!.slug))}
+                {myStoreProductsQuery.data.map((product) =>
+                  renderProductCard(product, myStoreQuery.data!.name, myStoreQuery.data!.slug),
+                )}
               </div>
             )}
           </div>
         </section>
 
-        <section id="latest-products" aria-labelledby="latest-products-title" className="bg-cream-light">
+        <section
+          id="latest-products"
+          aria-labelledby="latest-products-title"
+          className="bg-cream-light"
+        >
           <div className="mx-auto max-w-6xl px-4 py-10">
-            <h2 id="latest-products-title" className="mb-6 text-xl font-bold text-petrol md:text-2xl">
+            <h2
+              id="latest-products-title"
+              className="mb-6 text-xl font-bold text-petrol md:text-2xl"
+            >
               {t.marketplace.latestMarketplaceProducts}
             </h2>
             {latestProductsQuery.isPending ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">{t.marketplace.loading}</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                {t.marketplace.loading}
+              </p>
             ) : latestProductsQuery.isError ? (
-              <p role="alert" className="py-6 text-center text-sm text-muted-foreground">{t.marketplace.error}</p>
+              <p role="alert" className="py-6 text-center text-sm text-muted-foreground">
+                {t.marketplace.error}
+              </p>
             ) : !latestProductsQuery.data?.length ? (
-              <p className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">{t.marketplace.noRecentProducts}</p>
+              <p className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+                {t.marketplace.noRecentProducts}
+              </p>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {latestProductsQuery.data.map((product) => renderProductCard(product, product.store.name, product.store.slug))}
+                {latestProductsQuery.data.map((product) =>
+                  renderProductCard(product, product.store.name, product.store.slug),
+                )}
               </div>
             )}
           </div>
         </section>
-
       </main>
 
       <footer id="contact" className="bg-petrol text-cream">

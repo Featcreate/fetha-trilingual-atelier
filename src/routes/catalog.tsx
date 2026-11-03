@@ -6,6 +6,7 @@ import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { PRODUCT_TYPES } from "@/lib/product-types";
 import { ProductPreview } from "@/components/ProductPreview";
+import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/catalog")({
@@ -14,7 +15,10 @@ export const Route = createFileRoute("/catalog")({
       { title: "Catalogue — Algorea Bazaar" },
       { name: "description", content: "Découvrez des produits numériques sur Algorea Bazaar." },
       { property: "og:title", content: "Catalogue — Algorea Bazaar" },
-      { property: "og:description", content: "Découvrez des produits numériques sur Algorea Bazaar." },
+      {
+        property: "og:description",
+        content: "Découvrez des produits numériques sur Algorea Bazaar.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -32,6 +36,8 @@ type Product = {
   product_type: string;
   store_id: string | null;
   image_path: string | null;
+  name_translations: unknown;
+  description_translations: unknown;
 };
 type Store = { id: string; name: string; slug: string };
 
@@ -45,7 +51,9 @@ function CatalogPage() {
     queryFn: async () => {
       const { data: products, error } = await supabase
         .from("products")
-        .select("id,name,description,price_millimes,product_type,store_id,image_path")
+        .select(
+          "id,name,description,name_translations,description_translations,price_millimes,product_type,store_id,image_path",
+        )
         .eq("is_active", true)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -68,14 +76,18 @@ function CatalogPage() {
         const matchesType = type === "all" || p.product_type === type;
         const matchesText =
           !q ||
-          [p.name, p.description, store?.name ?? ""].some((v) => v.toLocaleLowerCase().includes(q));
+          [
+            localizedProductText(p.name, p.name_translations, lang),
+            localizedProductText(p.description, p.description_translations, lang),
+            store?.name ?? "",
+          ].some((v) => v.toLocaleLowerCase().includes(q));
         return matchesType && matchesText && !!store;
       })
       .flatMap((p) => {
         const store = p.store_id ? storeMap.get(p.store_id) : undefined;
         return store ? [{ ...p, store }] : [];
       });
-  }, [catalog.data, search, type]);
+  }, [catalog.data, search, type, lang]);
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.catalog} wide>
@@ -134,7 +146,9 @@ function CatalogPage() {
                   >
                     {p.name}
                   </Link>
-                  <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
+                  <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
+                    {localizedProductText(p.description, p.description_translations, lang)}
+                  </p>
                 </div>
                 <p className="text-lg font-extrabold">{formatTND(p.price_millimes)}</p>
                 <div className="flex items-center justify-between gap-2 border-t border-border pt-3">

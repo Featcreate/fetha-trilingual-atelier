@@ -104,7 +104,6 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - No role was assigned to any account, no database was changed, and no production settings were modified.
 - Validation remains pending: run lint, tests and production build, then verify admin and non-admin access with test accounts on a disposable environment.
 
-
 ## 12. Original Supabase project deployment — 2026-11-03
 
 - The original project is `jgjcychkntsokhzeziqs` (`algorea-bazaar`, eu-west-1). The separate test project was not modified.
@@ -115,7 +114,6 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Confirmed the production database is still empty of auth users, products, stores, and Storage objects. No live payments, provider transfers, or seller payouts were activated.
 - Regenerated and committed `src/integrations/supabase/types.ts` from the live original database after migration deployment.
 - Remaining operational checks: create/assign the first administrator through a secure owner-controlled process; run a full app build and end-to-end signup/seller/catalog/download tests against this original project; confirm Lovable/Render runtime environment variables match this project. Security Advisor still reports authenticated SECURITY DEFINER RPCs that are intentionally exposed for app workflows and guarded by their function-level authorization checks; performance Advisor reports RLS plan/index optimization notices to address before scale.
-
 
 ## 12. Authoritative financial model — 2026-11-03 (supersedes conflicting historical notes above)
 
@@ -129,7 +127,6 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Seller-facing Konnect, iPay, and WePay buttons are external information/account links only. They do not connect seller balances, collect buyer payments, or execute seller payouts.
 - Added migration 0022_platform_central_financial_ledger.sql and the docs/central-financial-accounting.md specification. The migration is committed to GitHub but has not been applied to Supabase. It is additive and does not enable checkout or move money.
 - Provider selection, global buyer currency coverage, sandbox validation, legal review, and separate explicit live-activation approval remain required.
-
 
 ## 13. Global buyer payment route and central-ledger review — 2026-11-03
 
@@ -145,7 +142,6 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - The separate test project is empty and is not a ready-made clone. A full disposable migration-chain test remains pending; do not represent it as completed.
 - No payment provider credentials were configured, no live checkout was activated, and no live payments or seller transfers occurred.
 
-
 ## 14. Migration 0022 deployment verification — 2026-11-03
 
 - Applied migration 0022 successfully to the original Supabase project jgjcychkntsokhzeziqs; migration history now ends at 0022_platform_central_financial_ledger.
@@ -155,7 +151,6 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Regenerated and committed src/integrations/supabase/types.ts from the live original database.
 - Security Advisor still reports 12 authenticated SECURITY DEFINER RPC warnings (including the admin-guarded payout RPC) and leaked-password protection disabled. Performance Advisor reports pre-existing RLS initialization-plan and unindexed-FK warnings; these were not part of migration 0022.
 - Checkout remains fail-closed and TND-only. Konnect international Visa/Mastercard is the leading candidate, but written approval for the digital multi-vendor platform-collection model and sandbox fee/settlement reconciliation remain release gates.
-
 
 ## 15. Seller-borne external fees — 2026-11-03
 
@@ -167,7 +162,6 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Automatic provider fee API ingestion is not implemented; administrators must reconcile actual statements and enter verified fees manually. TND only; no estimated charges.
 - Supabase TypeScript types regenerated and committed. No orders, fees, allocations, payouts or financial ledger entries were created. Checkout remains disabled; no provider credentials or live money movement were activated.
 
-
 ## 16. Shared order fee allocation — 2026-11-03
 
 - Migration 0025 was applied to the original Supabase project after a transaction-wrapped dry run.
@@ -175,3 +169,12 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Largest-remainder rounding guarantees that per-seller allocations sum exactly to the provider/bank fee total; each seller share is written to the append-only fee register and central platform ledger with per-store idempotency.
 - Seller-specific fees can still be recorded against one store. All fees remain evidence-based, TND-only, and separate from the platform commission.
 - Automatic provider API ingestion remains unimplemented; an administrator must enter the actual total from provider/bank evidence.
+
+## 17. Financial fee idempotency and mixed-rate payout hardening — 2026-11-03
+
+- Added Migration 0026 as an additive follow-up; it does not rewrite prior fee/payout history or initiate payments.
+- Actual fee evidence references are unique per seller/order scope. Retrying after a lost response returns the existing fee allocation when the amount and category/source match; changed financial details are rejected.
+- Shared order-fee retries validate the complete seller allocation and total before returning the existing allocation set.
+- Payout batches now include all unbatched verified sales for a store across historical commission rates. Each payout item snapshots its exact commission basis points; the payout header retains a weighted effective rate for display.
+- Added data-free SQL regression assertions for largest-remainder totals, deterministic tie handling, mixed-rate summaries and required schema indexes.
+- Migration 0026 is committed to GitHub but is not applied to Supabase. Checkout and all real payment/transfer flows remain disabled.

@@ -684,7 +684,7 @@ function AdminPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {payout.status} · {new Date(payout.created_at).toLocaleDateString(locale)} ·{" "}
-                      {(payout.commission_bps / 100).toFixed(2)}%
+                      {(payout.commission_bps / 100).toFixed(2)}% · {lang === "ar" ? "متوسط مرجّح" : lang === "en" ? "weighted average" : "moyenne pondérée"}
                     </p>
                     {payout.provider_transfer_ref && (
                       <p className="text-xs text-muted-foreground" dir="ltr">

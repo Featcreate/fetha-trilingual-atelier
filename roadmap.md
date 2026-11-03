@@ -19,7 +19,8 @@
 - [x] Regenerate and commit Supabase TypeScript types after migration 0022.
 - [x] Prepare the current Konnect international-card route: hosted API checkout, server-to-server payment verification, bank_card prioritized, TND canonical charge, local methods retained, fail-closed activation.
 - [ ] Obtain written Konnect approval for worldwide international-card acceptance for this exact digital multi-vendor marketplace, with the platform as sole collection beneficiary and no seller splits/payouts.
-- [ ] Confirm provider fee allocation, buyer-paid fee behavior, settlement timing/currency, reserves, refunds/chargebacks, and API/webhook reconciliation in sandbox.
+- [ ] Confirm the provider permits all verified processing/collection/conversion/settlement fees to be borne by the seller, and verify fee amounts, settlement timing/currency, reserves, refunds/chargebacks, and API/webhook reconciliation in sandbox.
+- [ ] Implement actual provider-fee ingestion, seller-level/proportional fee allocation, append-only fee ledger entries, seller statement breakdowns, and payout deductions. Do not deduct estimates or deduct any fee twice.
 - [ ] Keep current checkout TND-only until a foreign-currency quote/settlement flow is proven. Do not use informational display rates as payment quotes or accounting evidence.
 - [ ] Run CI, lint, tests and production build after the SQL and checkout changes are finalized.
 
@@ -31,6 +32,7 @@
 - The platform's internal financial system is the sole source of truth for collections, settlement, FX snapshots, commission, seller payable balances, and payout records.
 - Canonical seller accounting and Phase 1 seller payouts are in TND. Foreign buyer charge amounts and the actual platform settlement are stored separately with immutable FX metadata.
 - Platform commission starts at 5% and remains administrator-configurable. Existing order commission snapshots are immutable.
+- Sellers bear all verified external fees attributable to sales, separately from the 5% commission. Actual fees must be itemized, allocated once, recorded in the ledger, and deducted from final seller payables; no separate external checkout fee is added to buyers under this rule.
 - Seller payouts are initiated only by Algorea Bazaar, weekly by default and manually. Provider APIs do not initiate seller payouts.
 - Digital products only; no shipping or physical inventory. Seller registration, store creation and listings remain free.
 - Keep product files private; use short-lived signed downloads and preserve immutable order/file snapshots.

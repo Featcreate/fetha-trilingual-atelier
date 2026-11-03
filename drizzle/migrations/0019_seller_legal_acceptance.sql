@@ -35,7 +35,7 @@ END;
 $$;
 
 CREATE TRIGGER seller_legal_acceptances_immutable
-  BEFORE UPDATE OR DELETE ON public.seller_legal_acceptances
+  BEFORE UPDATE ON public.seller_legal_acceptances
   FOR EACH ROW EXECUTE FUNCTION public.prevent_seller_legal_acceptance_mutation();
 
 -- A direct client INSERT cannot bypass the consent workflow.

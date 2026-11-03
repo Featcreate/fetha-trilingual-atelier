@@ -39,6 +39,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS seller_external_fee_store_reference_uidx
 ALTER TABLE public.seller_payout_items
   ADD COLUMN IF NOT EXISTS commission_bps integer;
 
+-- Existing payout items are append-only. Temporarily remove only the guard
+-- trigger inside this migration transaction to backfill the new immutable snapshot.
+DROP TRIGGER IF EXISTS seller_payout_items_guard ON public.seller_payout_items;
+
 UPDATE public.seller_payout_items pi
 SET commission_bps = oi.commission_bps
 FROM public.order_items oi
@@ -132,6 +136,10 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.guard_seller_payout_item() FROM PUBLIC, anon, authenticated;
+
+CREATE TRIGGER seller_payout_items_guard
+  BEFORE INSERT OR UPDATE OR DELETE ON public.seller_payout_items
+  FOR EACH ROW EXECUTE FUNCTION public.guard_seller_payout_item();
 
 -- Record one seller-only fee. Repeated submissions with a new client request key
 -- but the same store/evidence reference return the original fee instead of

@@ -57,11 +57,9 @@ const categoryColors = [
   "bg-yellow-100 text-yellow-800 border-yellow-200",
   "bg-stone-100 text-stone-700 border-stone-200",
 ];
-const CATEGORIES = PRODUCT_TYPES.map((id, index) => [
-  id,
-  categoryIcons[id],
-  categoryColors[index % categoryColors.length],
-] as const);
+const CATEGORIES = PRODUCT_TYPES.map(
+  (id, index) => [id, categoryIcons[id], categoryColors[index % categoryColors.length]] as const,
+);
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 import { localizedProductText } from "@/lib/product-translations";
@@ -327,8 +325,6 @@ function Index() {
       <main>
         <img src={banner.url} alt="Algorea Bazaar" className="block h-auto w-full" />
 
-
-
         <section id="home" className="bg-cream-light">
           <div className="mx-auto max-w-6xl px-4 py-16 text-center md:py-24">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">{t.heroKicker}</p>
@@ -459,7 +455,9 @@ function Index() {
                   search={{ type: id }}
                   className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-5 text-center text-sm font-semibold transition duration-200 hover:-translate-y-1 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral"
                 >
-                  <span className={`flex h-14 w-14 items-center justify-center rounded-2xl border ${colorClass}`}>
+                  <span
+                    className={`flex h-14 w-14 items-center justify-center rounded-2xl border ${colorClass}`}
+                  >
                     <Icon className="h-7 w-7" aria-hidden />
                   </span>
                   <span>{t.marketplace[id]}</span>

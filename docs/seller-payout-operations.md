@@ -48,4 +48,4 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 
 ## Database rollout
 
-Migration `0022_platform_central_financial_ledger.sql` adds immutable platform-ledger entries and buyer-currency/FX snapshots without changing historical TND amounts. It is committed to GitHub but must be tested through the complete migration chain on a disposable Supabase clone before any production application. Verify RLS, append-only behavior, idempotency, reconciliation, and payout safeguards. Do not apply it to the production database as part of this GitHub change.
+Migration 0022 has been applied to the original Supabase project after a transaction-wrapped compatibility dry run against its current schema. It adds the append-only platform ledger, immutable FX/settlement snapshots, and database constraints that prohibit direct provider payouts. Post-apply verification confirmed the migration history entry, RLS, indexes, triggers, and append-only behavior. The database still contains zero orders and payout records. Checkout and live payment activation remain disabled.

@@ -35,12 +35,16 @@ The platform ledger is an append-only accounting record. It is not a bank accoun
 
 The ledger migration:
 - records transaction currency/amount separately from canonical TND accounting amount;
-- supports order, order-item, seller, and store attribution;
-- uses unique idempotency keys to prevent duplicate accounting entries;
-- validates seller/store and order-item ownership consistency;
+- posts verified TND buyer collections, platform commission, and seller payables inside the same trusted order-settlement transaction;
+- posts a seller-payout debit only when an administrator records a completed weekly/manual transfer;
+- backfills verified paid TND orders and completed TND manual payouts using idempotent keys;
+- supports order, order-item, seller, store, and payout-batch attribution;
+- validates seller/store ownership, order-item amounts, and payout amount/reference consistency;
 - permits read access to administrators only;
 - permits writes only through the trusted service role;
 - rejects updates and deletes to preserve the audit trail.
+
+**Current implementation boundary:** the existing verified settlement path is TND-only. The migration adds buyer-currency and FX snapshot columns, but it does not yet enable foreign-currency checkout or populate provider-settlement, provider-fee, or FX-conversion entries. Those require the selected provider's confirmed charge/settlement contract and a provider-specific adapter. Checkout remains disabled.
 
 ## Provider acceptance checklist
 

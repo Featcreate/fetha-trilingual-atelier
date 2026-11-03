@@ -42,7 +42,8 @@ The ledger migration:
 - validates seller/store ownership, order-item amounts, and payout amount/reference consistency;
 - permits read access to administrators only;
 - permits writes only through the trusted service role;
-- rejects updates and deletes to preserve the audit trail.
+- rejects updates and deletes to preserve the audit trail;
+- forces every seller payout preference and payout batch to the weekly/manual platform route, and permanently keeps the legacy Konnect-direct-payout switch false.
 
 **Current implementation boundary:** the existing verified settlement path is TND-only. The migration adds buyer-currency and FX snapshot columns, but it does not yet enable foreign-currency checkout or populate provider-settlement, provider-fee, or FX-conversion entries. Those require the selected provider's confirmed charge/settlement contract and a provider-specific adapter. Checkout remains disabled.
 

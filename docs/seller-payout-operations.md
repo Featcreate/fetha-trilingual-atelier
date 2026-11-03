@@ -43,7 +43,7 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 ## Weekly operating procedure
 
 1. Reconcile the provider/bank statement and identify actual fees attributable to the seller. Do not use estimates.
-2. In the administrator dashboard, select the seller's store and record each actual fee with its category, TND amount, statement/receipt reference, and description.
+2. In the administrator dashboard, record each actual fee with its category, TND amount, statement/receipt reference, and description. For a fee covering a specific paid order, enter the order ID so the system allocates the total proportionally to each seller's discounted paid amount. For a seller-specific charge, select that seller's store.
 3. Prepare the weekly payout batch. The database allocates each outstanding fee once and calculates the final transfer as verified seller proceeds after the 5% commission and the fee snapshot.
 4. Review gross sales, discount, commission, external fees, and final payable. If fees exceed available proceeds, the system blocks payout preparation and carries the fees forward.
 5. Transfer the displayed final payable from the platform's own funds using the approved external transfer method.
@@ -51,4 +51,4 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 
 ## Database rollout
 
-Migrations 0022, 0023 and 0024 have been applied to the original Supabase project. Migration 0023 adds the append-only seller external-fee register, fee-allocation records, administrator-only fee recording, and fee-aware payout snapshots. Migration 0024 adds indexes for the remaining fee-table foreign keys. The database currently contains zero orders, seller fee records, fee allocations, payouts, or platform ledger entries. Checkout and live payment activation remain disabled.
+Migrations 0022, 0023 and 0024 have been applied to the original Supabase project. Migration 0023 adds the append-only seller external-fee register, fee-allocation records, administrator-only fee recording, and fee-aware payout snapshots. Migration 0024 adds indexes for the remaining fee-table foreign keys. Migration 0025 adds automatic proportional allocation for shared order-level fees with exact largest-remainder rounding. The database currently contains zero orders, seller fee records, fee allocations, payouts, or platform ledger entries. Checkout and live payment activation remain disabled.

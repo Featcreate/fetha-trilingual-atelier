@@ -45,7 +45,7 @@ jobs:
               git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
               git add -- "${files[@]}"
               git commit -m "Format changed files with Prettier"
-              git push
+              git push origin HEAD:"${{ github.head_ref }}"
             fi
           else
             echo "No changed files require formatting."

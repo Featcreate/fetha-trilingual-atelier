@@ -7,18 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Menu, X, BookOpen, LayoutTemplate, Printer, CalendarCheck, GraduationCap, Laptop, Headphones, Video, Palette, Sparkles } from "lucide-react";
 import banner from "@/assets/homepage-banner.jpg.asset.json";
 
-const CATEGORIES = [
-  ["ebook", BookOpen],
-  ["template", LayoutTemplate],
-  ["printable", Printer],
-  ["planner", CalendarCheck],
-  ["course", GraduationCap],
-  ["software", Laptop],
-  ["audio", Headphones],
-  ["video", Video],
-  ["graphics", Palette],
-  ["other", Sparkles],
-] as const;
+import { PRODUCT_TYPES } from "@/lib/product-types";
+const categoryIcons = { ebook: BookOpen, pdf: BookOpen, template: LayoutTemplate, educational: GraduationCap, bundle: Sparkles, software: Laptop, app: Laptop, printable: Printer, planner: CalendarCheck, course: GraduationCap, worksheets: Printer, flashcards: BookOpen, audio: Headphones, video: Video, graphics: Palette, other: Sparkles };
+const CATEGORIES = PRODUCT_TYPES.map((id) => [id, categoryIcons[id]] as const);
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 

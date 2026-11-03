@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useLang } from "@/lib/i18n";
 import { formatTND, parseTNDToMillimes } from "@/lib/money";
+import { PRODUCT_TYPES, type ProductType } from "@/lib/product-types";
+import { IMAGE_ACCEPT, validPreviewImage, saveProductPreviews, loadProductGallery } from "@/lib/product-previews";
+import { ProductPreview } from "@/components/ProductPreview";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/_authenticated/seller")({
@@ -24,36 +27,10 @@ export const Route = createFileRoute("/_authenticated/seller")({
 
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
-const productTypes = [
-  "ebook",
-  "pdf",
-  "template",
-  "educational",
-  "bundle",
-  "software",
-  "app",
-  "printable",
-  "planner",
-  "course",
-  "worksheets",
-  "flashcards",
-  "audio",
-  "video",
-  "graphics",
-  "other",
-] as const;
-type ProductType = (typeof productTypes)[number];
+const productTypes = PRODUCT_TYPES;
 const KONNECT_SELLER_REGISTRATION_URL =
   "https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a";
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "image/avif",
-]);
 
 function slugify(value: string) {
   return value
@@ -275,7 +252,7 @@ function SellerPage() {
     if (!files.length || files.some((file) => file.size < 1 || file.size > MAX_FILE_BYTES))
       return setNotice(m.invalidFile);
     if (
-      [...(imageFile ? [imageFile] : []), ...galleryFiles].some((file) => file.size > MAX_IMAGE_BYTES || !ALLOWED_IMAGE_TYPES.has(file.type))
+      [...(imageFile ? [imageFile] : []), ...galleryFiles].some((file) => !validPreviewImage(file))
     ) {
       return setNotice(m.invalidFile);
     }
@@ -299,35 +276,11 @@ function SellerPage() {
       return setNotice(m.error);
     }
 
-    if (imageFile) {
-      const imagePath = `${store.id}/${product.id}/${crypto.randomUUID()}-${safeFileName(imageFile.name)}`;
-      const { error: imageUploadError } = await supabase.storage
-        .from("product-images")
-        .upload(imagePath, imageFile, {
-          contentType: imageFile.type,
-          upsert: false,
-        });
-      if (imageUploadError) {
-        setBusy(false);
-        return setNotice(m.fileUploadFailed);
-      }
-      const { error: imageSaveError } = await supabase
-        .from("products")
-        .update({ image_path: imagePath })
-        .eq("id", product.id)
-        .eq("store_id", store.id);
-      if (imageSaveError) {
-        setBusy(false);
-        return setNotice(m.fileUploadFailed);
-      }
-    }
-
-    for (const [index, galleryFile] of galleryFiles.entries()) {
-      const galleryPath = `${store.id}/${product.id}/gallery/${crypto.randomUUID()}-${safeFileName(galleryFile.name)}`;
-      const { error: galleryUploadError } = await supabase.storage.from("product-images").upload(galleryPath, galleryFile, { contentType: galleryFile.type, upsert: false });
-      if (galleryUploadError) { setBusy(false); return setNotice(m.fileUploadFailed); }
-      const { error: gallerySaveError } = await (supabase as any).from("product_images").insert({ product_id: product.id, image_path: galleryPath, sort_order: index });
-      if (gallerySaveError) { setBusy(false); return setNotice(m.fileUploadFailed); }
+    try {
+      await saveProductPreviews(store.id, product.id, imageFile, galleryFiles);
+    } catch (error) {
+      setBusy(false);
+      return setNotice(error instanceof Error && error.message === "preview_setup_required" ? m.previewSetupRequired : m.previewSaveFailed);
     }
 
     for (const file of files) {
@@ -429,12 +382,27 @@ function SellerPage() {
     const price = parseTNDToMillimes(String(f.get(`edit_price_${product.id}`) ?? ""));
     if (!name || !description) return setNotice(m.productRequired);
     if (!price) return setNotice(m.invalidPrice);
-    const { error } = await supabase
-      .from("products")
-      .update({ name, description, price_millimes: price })
-      .eq("id", product.id)
-      .eq("store_id", store.id);
-    if (error) return setNotice(m.error);
+    const productType = String(f.get(`edit_type_${product.id}`) ?? product.product_type) as ProductType;
+    if (!productTypes.includes(productType)) return setNotice(m.error);
+    const coverValue = f.get(`edit_cover_${product.id}`);
+    const cover = coverValue instanceof File && coverValue.size > 0 ? coverValue : null;
+    const gallery = f.getAll(`edit_gallery_${product.id}`).filter((value): value is File => value instanceof File && value.size > 0);
+    if ([...(cover ? [cover] : []), ...gallery].some((file) => !validPreviewImage(file))) return setNotice(m.invalidFile);
+    setBusy(true);
+    try {
+      await saveProductPreviews(store.id, product.id, cover, gallery);
+      const { error } = await supabase.from("products")
+        .update({ name, description, price_millimes: price, product_type: productType })
+        .eq("id", product.id).eq("store_id", store.id);
+      if (error) throw error;
+    } catch (error) {
+      await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
+      await qc.invalidateQueries({ queryKey: ["seller-product-gallery", product.id] });
+      return setNotice(error instanceof Error && error.message === "preview_setup_required" ? m.previewSetupRequired : m.previewSaveFailed);
+    } finally {
+      setBusy(false);
+    }
+    await qc.invalidateQueries({ queryKey: ["seller-product-gallery", product.id] });
     setEditing(null);
     setNotice(m.productUpdated);
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
@@ -602,10 +570,10 @@ function SellerPage() {
               </div>
               <div className="space-y-3">
                 <label htmlFor="product_image" className="mb-1 block text-sm font-medium">{m.productCover}</label>
-                <input id="product_image" name="product_image" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" onChange={(e) => { const file=e.currentTarget.files?.[0]; setCoverPreview(file ? URL.createObjectURL(file) : null); }} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                <input id="product_image" name="product_image" type="file" accept={IMAGE_ACCEPT} onChange={(e) => { const file=e.currentTarget.files?.[0]; setCoverPreview(file ? URL.createObjectURL(file) : null); }} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
                 {coverPreview && <img src={coverPreview} alt={m.productCover} className="h-32 w-44 rounded-lg object-cover" />}
                 <label htmlFor="product_gallery" className="block text-sm font-medium">{m.productGallery}</label>
-                <input id="product_gallery" name="product_gallery" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif" onChange={(e) => { setGalleryPreviews(Array.from(e.currentTarget.files ?? []).map((file) => URL.createObjectURL(file))); }} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                <input id="product_gallery" name="product_gallery" type="file" multiple accept={IMAGE_ACCEPT} onChange={(e) => { setGalleryPreviews(Array.from(e.currentTarget.files ?? []).map((file) => URL.createObjectURL(file))); }} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
                 {galleryPreviews.length > 0 && <div className="flex flex-wrap gap-2">{galleryPreviews.map((src,index)=><img key={src} src={src} alt={`${m.productGallery} ${index+1}`} className="h-20 w-24 rounded-lg object-cover" />)}</div>}
                 <p className="text-xs text-muted-foreground">{m.imageLimit}</p>
               </div>
@@ -670,8 +638,13 @@ function SellerPage() {
                           defaultValue={(product.price_millimes / 1000).toFixed(3)}
                           required
                         />
+                        <label className="block text-sm font-medium" htmlFor={`edit_type_${product.id}`}>{m.productType}</label>
+                        <select id={`edit_type_${product.id}`} name={`edit_type_${product.id}`} defaultValue={product.product_type} className="w-full rounded-lg border border-input bg-background px-3 py-2">
+                          {productTypes.map((type) => <option key={type} value={type}>{m[type]}</option>)}
+                        </select>
+                        <SellerImageFields product={product} labels={m} />
                         <div className="flex gap-2">
-                          <button className="rounded-full bg-accent px-4 py-2 text-sm font-semibold">
+                          <button disabled={busy} className="rounded-full bg-accent px-4 py-2 text-sm font-semibold">
                             {m.save}
                           </button>
                           <button
@@ -869,4 +842,19 @@ function SellerPage() {
       )}
     </AuthShell>
   );
+}
+
+function SellerImageFields({ product, labels: m }: { product: Product; labels: ReturnType<typeof useLang>["t"]["marketplace"] }) {
+  const gallery = useQuery({ queryKey: ["seller-product-gallery", product.id], queryFn: () => loadProductGallery(product.id) });
+  return <div className="space-y-3">
+    <label htmlFor={`edit_cover_${product.id}`} className="block text-sm font-medium">{m.productCover}</label>
+    <div className="flex h-32 w-44 items-center justify-center overflow-hidden rounded-lg bg-cream-light"><ProductPreview path={product.image_path} alt={product.name} /></div>
+    <input id={`edit_cover_${product.id}`} name={`edit_cover_${product.id}`} type="file" accept={IMAGE_ACCEPT} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+    <label htmlFor={`edit_gallery_${product.id}`} className="block text-sm font-medium">{m.productGallery}</label>
+    {gallery.isError && <p role="alert">{m.error}</p>}
+    {gallery.data?.available === false && <p role="status">{m.previewSetupRequired}</p>}
+    <div className="flex flex-wrap gap-2">{gallery.data?.images.map((image) => <div key={image.id} className="flex h-20 w-24 items-center justify-center overflow-hidden rounded-lg bg-cream-light"><ProductPreview path={image.image_path} alt={product.name} /></div>)}</div>
+    <input id={`edit_gallery_${product.id}`} name={`edit_gallery_${product.id}`} type="file" multiple accept={IMAGE_ACCEPT} disabled={!gallery.data?.available} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+    <p className="text-xs text-muted-foreground">{m.imageLimit}</p>
+  </div>;
 }

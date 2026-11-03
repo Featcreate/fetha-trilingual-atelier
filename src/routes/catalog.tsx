@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
+import { PRODUCT_TYPES } from "@/lib/product-types";
+import { ProductPreview } from "@/components/ProductPreview";
 import { AuthShell } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/catalog")({
@@ -11,6 +13,10 @@ export const Route = createFileRoute("/catalog")({
     meta: [
       { title: "Catalogue — Algorea Bazaar" },
       { name: "description", content: "Découvrez des produits numériques sur Algorea Bazaar." },
+      { property: "og:title", content: "Catalogue — Algorea Bazaar" },
+      { property: "og:description", content: "Découvrez des produits numériques sur Algorea Bazaar." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   validateSearch: (s: Record<string, unknown>): { type?: string } =>
@@ -65,7 +71,10 @@ function CatalogPage() {
           [p.name, p.description, store?.name ?? ""].some((v) => v.toLocaleLowerCase().includes(q));
         return matchesType && matchesText && !!store;
       })
-      .map((p) => ({ ...p, store: storeMap.get(p.store_id!)! }));
+      .flatMap((p) => {
+        const store = p.store_id ? storeMap.get(p.store_id) : undefined;
+        return store ? [{ ...p, store }] : [];
+      });
   }, [catalog.data, search, type]);
 
   return (
@@ -91,24 +100,7 @@ function CatalogPage() {
           className="rounded-lg border border-input bg-background px-3 py-3"
         >
           <option value="all">{m.allTypes}</option>
-          {[
-            "ebook",
-            "pdf",
-            "template",
-            "educational",
-            "bundle",
-            "software",
-            "app",
-            "printable",
-            "planner",
-            "course",
-            "worksheets",
-            "flashcards",
-            "audio",
-            "video",
-            "graphics",
-            "other",
-          ].map((v) => (
+          {PRODUCT_TYPES.map((v) => (
             <option key={v} value={v}>
               {m[v as keyof typeof m]}
             </option>
@@ -128,19 +120,7 @@ function CatalogPage() {
           {visible.map((p) => (
             <article key={p.id} className="overflow-hidden rounded-xl border border-border bg-card">
               <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-cream-light p-6 text-center">
-                {p.image_path ? (
-                  <img
-                    src={
-                      supabase.storage.from("product-images").getPublicUrl(p.image_path).data
-                        .publicUrl
-                    }
-                    alt={p.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <span className="text-3xl font-bold text-petrol/50">AB</span>
-                )}
+                <ProductPreview path={p.image_path} alt={p.name} />
               </div>
               <div className="space-y-3 p-4">
                 <div>

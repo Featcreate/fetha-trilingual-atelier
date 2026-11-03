@@ -3,10 +3,19 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
+import { loadProductGallery } from "@/lib/product-previews";
+import { ProductPreview } from "@/components/ProductPreview";
 import { AuthShell } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/products/$id")({
-  head: () => ({ meta: [{ title: "Produit numérique — Algorea Bazaar" }] }),
+  head: () => ({ meta: [
+    { title: "Produit numérique — Algorea Bazaar" },
+    { name: "description", content: "Découvrez ce produit numérique sur Algorea Bazaar." },
+    { property: "og:title", content: "Produit numérique — Algorea Bazaar" },
+    { property: "og:description", content: "Découvrez ce produit numérique sur Algorea Bazaar." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: ProductPage,
 });
 
@@ -33,9 +42,8 @@ function ProductPage() {
         .maybeSingle();
       if (storeError) throw storeError;
       if (!store) return null;
-      const { data: gallery, error: galleryError } = await (supabase as any).from("product_images").select("id,image_path,sort_order").eq("product_id", product.id).order("sort_order", { ascending: true });
-      if (galleryError) throw galleryError;
-      return { product, store, gallery: gallery ?? [] };
+      const gallery = await loadProductGallery(product.id);
+      return { product, store, gallery: gallery.images };
     },
   });
   return (
@@ -55,14 +63,14 @@ function ProductPage() {
         <article className="mx-auto max-w-2xl">
           <div className="space-y-3">
             <div className="flex aspect-[16/7] items-center justify-center overflow-hidden rounded-2xl bg-cream-light text-4xl font-bold text-petrol/40">
-              {query.data.product.image_path ? (
-                <img src={supabase.storage.from("product-images").getPublicUrl(query.data.product.image_path).data.publicUrl} alt={query.data.product.name} className="h-full w-full object-contain" />
-              ) : "Algorea Bazaar"}
+              <ProductPreview path={query.data.product.image_path} alt={query.data.product.name} />
             </div>
             {query.data.gallery.length > 0 && (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {query.data.gallery.map((image: { id: string; image_path: string }, index: number) => (
-                  <img key={image.id} src={supabase.storage.from("product-images").getPublicUrl(image.image_path).data.publicUrl} alt={`${query.data!.product.name} — ${index + 1}`} loading="lazy" className="aspect-square w-full rounded-xl object-cover" />
+                  <div key={image.id} className="flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-cream-light">
+                    <ProductPreview path={image.image_path} alt={`${query.data?.product.name ?? "Algorea Bazaar"} — ${index + 1}`} />
+                  </div>
                 ))}
               </div>
             )}

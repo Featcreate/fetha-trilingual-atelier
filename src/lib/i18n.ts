@@ -76,6 +76,8 @@ export const dict = {
       productImage: "Image du produit (facultative)",
       productCover: "Image de couverture",
       productGallery: "Images de prévisualisation (plusieurs images possibles)",
+      previewSetupRequired: "Les images de galerie nécessitent la mise à jour prévue du stockage des aperçus.",
+      previewSaveFailed: "Les images n’ont pas toutes été enregistrées. Les images existantes sont conservées ; vérifiez le produit avant de réessayer.",
       imageLimit: "JPG, PNG, WebP, GIF ou AVIF — 10 Mo maximum.",
       commissionDisclosure: "Commission actuelle de la plateforme : {value} par vente réussie.",
       commissionUnset:
@@ -311,6 +313,8 @@ export const dict = {
       productImage: "صورة المنتج (اختيارية)",
       productCover: "صورة الغلاف",
       productGallery: "صور معاينة المنتج (يمكن اختيار عدة صور)",
+      previewSetupRequired: "تتطلب صور المعاينة تحديث تخزين الصور المقرر.",
+      previewSaveFailed: "لم تُحفظ جميع الصور. تم الاحتفاظ بالصور الحالية؛ تحقق من المنتج قبل إعادة المحاولة.",
       imageLimit: "JPG أو PNG أو WebP أو GIF أو AVIF — بحد أقصى 10 ميغابايت.",
       commissionDisclosure: "عمولة المنصة الحالية: {value} عن كل عملية بيع ناجحة.",
       commissionUnset:
@@ -539,6 +543,8 @@ export const dict = {
       productImage: "Product image (optional)",
       productCover: "Product cover image",
       productGallery: "Product preview images (select multiple)",
+      previewSetupRequired: "Gallery images require the planned preview storage update.",
+      previewSaveFailed: "Not all images were saved. Existing images are preserved; check the product before retrying.",
       imageLimit: "JPG, PNG, WebP, GIF, or AVIF — 10 MB maximum.",
       commissionDisclosure: "Current platform commission: {value} per successful sale.",
       commissionUnset:

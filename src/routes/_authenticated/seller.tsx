@@ -821,7 +821,10 @@ function SellerPage() {
                           </p>
                           <p className="mt-2 text-sm font-bold">
                             {formatTND(product.price_millimes)}
-                            <TndEquivalents millimes={product.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} />
+                            <TndEquivalents
+                              millimes={product.price_millimes}
+                              locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                            />
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">

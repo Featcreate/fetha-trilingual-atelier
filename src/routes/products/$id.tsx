@@ -109,7 +109,10 @@ function ProductPage() {
           </p>
           <p className="mt-6 text-2xl font-extrabold">
             {formatTND(query.data.product.price_millimes)}
-            <TndEquivalents millimes={query.data.product.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} />
+            <TndEquivalents
+              millimes={query.data.product.price_millimes}
+              locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+            />
           </p>
           <Link
             to="/stores/$slug"

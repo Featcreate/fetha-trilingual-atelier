@@ -135,7 +135,10 @@ function StorefrontPage() {
                   </p>
                   <p className="mt-3 text-lg font-extrabold">
                     {formatTND(p.price_millimes)}
-                    <TndEquivalents millimes={p.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} />
+                    <TndEquivalents
+                      millimes={p.price_millimes}
+                      locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                    />
                   </p>
                 </article>
               ))}

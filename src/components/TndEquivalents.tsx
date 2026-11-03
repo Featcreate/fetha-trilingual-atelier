@@ -9,8 +9,14 @@ let ratesRequest: Promise<TndRates | null> | null = null;
 function isFresh(rates: TndRates | null): rates is TndRates {
   if (!rates) return false;
   const age = Date.now() - rates.fetchedAt;
-  return Number.isFinite(rates.USD) && Number.isFinite(rates.EUR) &&
-    rates.USD > 0 && rates.EUR > 0 && age >= 0 && age < CACHE_TTL_MS;
+  return (
+    Number.isFinite(rates.USD) &&
+    Number.isFinite(rates.EUR) &&
+    rates.USD > 0 &&
+    rates.EUR > 0 &&
+    age >= 0 &&
+    age < CACHE_TTL_MS
+  );
 }
 
 function readFreshCache(): TndRates | null {
@@ -43,8 +49,13 @@ function loadTndRates(): Promise<TndRates | null> {
     .then((data) => {
       const USD = data.rates?.USD;
       const EUR = data.rates?.EUR;
-      if (data.result !== "success" || !Number.isFinite(USD) ||
-          !Number.isFinite(EUR) || !USD || !EUR) {
+      if (
+        data.result !== "success" ||
+        !Number.isFinite(USD) ||
+        !Number.isFinite(EUR) ||
+        !USD ||
+        !EUR
+      ) {
         throw new Error("exchange_rates_invalid");
       }
       const next = { USD, EUR, fetchedAt: Date.now() };

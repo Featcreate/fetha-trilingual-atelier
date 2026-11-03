@@ -401,7 +401,8 @@ export const dict = {
       downloadsLeft: "التنزيلات المتبقية",
       expires: "تنتهي في",
       downloadError: "التنزيل غير متاح أو تم استنفاد العدد المسموح.",
-      tndNote: "الدينار التونسي هو العملة المرجعية. المقابل بالدولار واليورو تقديري ويُحدّث دورياً. الدفع الفعلي غير مفعّل.",
+      tndNote:
+        "الدينار التونسي هو العملة المرجعية. المقابل بالدولار واليورو تقديري ويُحدّث دورياً. الدفع الفعلي غير مفعّل.",
       payoutMethod: "استلام المستحقات",
       weeklyManual: "تحويل يدوي أسبوعي",
       payoutHelp:
@@ -654,7 +655,8 @@ export const dict = {
       downloadsLeft: "Downloads left",
       expires: "Expires",
       downloadError: "Download unavailable or quota exhausted.",
-      tndNote: "TND remains the reference currency. USD and EUR equivalents are indicative and updated periodically. Live payments are not enabled.",
+      tndNote:
+        "TND remains the reference currency. USD and EUR equivalents are indicative and updated periodically. Live payments are not enabled.",
       payoutMethod: "Receive earnings",
       weeklyManual: "Weekly manual transfer",
       payoutHelp:

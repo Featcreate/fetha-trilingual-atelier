@@ -153,7 +153,10 @@ function CatalogPage() {
                 </div>
                 <p className="text-lg font-extrabold">
                   {formatTND(p.price_millimes)}
-                  <TndEquivalents millimes={p.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} />
+                  <TndEquivalents
+                    millimes={p.price_millimes}
+                    locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                  />
                 </p>
                 <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
                   <Link

@@ -23,7 +23,7 @@ Algorea Bazaar is a multilingual marketplace for downloadable digital products, 
 - `/orders` — authenticated buyer order history and secure downloads.
 - `/terms` — Arabic, French and English Terms of Use draft.
 
-Prices currently display in TND. Checkout is intentionally unavailable until the payment provider has been verified and explicitly approved. International currency and payout coverage are not yet implemented.
+Prices remain denominated in TND. Approximate USD and EUR equivalents are displayed on the homepage, catalogue, product detail, storefront, and seller product list using periodically refreshed public exchange rates. These equivalents are informational only and never change the TND sale price. Checkout is intentionally unavailable until the payment provider has been verified and explicitly approved; international settlement and payout coverage are not enabled.
 
 ## Technical stack
 

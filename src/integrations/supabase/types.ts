@@ -906,6 +906,7 @@ export type Database = {
       }
       seller_payout_items: {
         Row: {
+          commission_bps: number
           commission_millimes: number
           created_at: string
           discount_millimes: number
@@ -917,6 +918,7 @@ export type Database = {
           seller_amount_millimes: number
         }
         Insert: {
+          commission_bps: number
           commission_millimes: number
           created_at?: string
           discount_millimes?: number
@@ -928,6 +930,7 @@ export type Database = {
           seller_amount_millimes: number
         }
         Update: {
+          commission_bps?: number
           commission_millimes?: number
           created_at?: string
           discount_millimes?: number

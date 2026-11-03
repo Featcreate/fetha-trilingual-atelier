@@ -214,41 +214,88 @@ function AdminPage() {
     }
     const amount = parseTNDToMillimes(feeAmount);
     if (!amount || feeReference.trim().length < 3 || feeDescription.trim().length < 3) {
-      setNotice({ ok: false, text: lang === "ar" ? "أدخل مبلغاً صحيحاً ومرجعاً ووصفاً يثبت الرسوم الفعلية." : lang === "en" ? "Enter a valid amount, evidence reference and description for the actual fee." : "Saisissez un montant valide, une référence justificative et une description des frais réels." });
+      setNotice({
+        ok: false,
+        text: lang === "ar"
+          ? "أدخل مبلغاً صحيحاً ومرجعاً ووصفاً يثبت الرسوم الفعلية."
+          : lang === "en"
+            ? "Enter a valid amount, evidence reference and description for the actual fee."
+            : "Saisissez un montant valide, une référence justificative et une description des frais réels.",
+      });
       return;
     }
+
     setBusy("external-fee");
     setNotice(null);
-    const { error } = sharedFeeOrderId.trim()
-      ? await supabase.rpc("admin_record_shared_seller_fee", {
-          _order_id: sharedFeeOrderId.trim(),
-          _fee_category: feeCategory,
-          _amount_millimes: amount,
-          _source: "verified_provider_or_bank_statement",
-          _external_reference: feeReference.trim(),
-          _description: feeDescription.trim(),
-          _idempotency_key: `seller-shared-fee:${crypto.randomUUID()}`,
-        })
-      : await supabase.rpc("admin_record_seller_external_fee", {
-          _store_id: payoutStoreId,
-          _fee_category: feeCategory,
-          _amount_millimes: amount,
-          _source: "verified_provider_or_bank_statement",
-          _external_reference: feeReference.trim(),
-          _description: feeDescription.trim(),
-          _idempotency_key: `seller-external-fee:${crypto.randomUUID()}`,
+    try {
+      const isSharedOrderFee = Boolean(sharedFeeOrderId.trim());
+      const { error } = isSharedOrderFee
+        ? await supabase.rpc("admin_record_shared_seller_fee", {
+            _order_id: sharedFeeOrderId.trim(),
+            _fee_category: feeCategory,
+            _amount_millimes: amount,
+            _source: "verified_provider_or_bank_statement",
+            _external_reference: feeReference.trim(),
+            _description: feeDescription.trim(),
+            _idempotency_key: `seller-shared-fee:${crypto.randomUUID()}`,
+          })
+        : await supabase.rpc("admin_record_seller_external_fee", {
+            _store_id: payoutStoreId,
+            _fee_category: feeCategory,
+            _amount_millimes: amount,
+            _source: "verified_provider_or_bank_statement",
+            _external_reference: feeReference.trim(),
+            _description: feeDescription.trim(),
+            _idempotency_key: `seller-external-fee:${crypto.randomUUID()}`,
+          });
+
+      if (error) {
+        const conflict = error.message.includes("business_reference_conflict")
+          || error.message.includes("idempotency_conflict");
+        setNotice({
+          ok: false,
+          text: conflict
+            ? (lang === "ar"
+                ? "مرجع الرسوم مستخدم سابقاً بمبلغ أو بيانات مختلفة. راجع كشف المزود قبل إعادة التسجيل."
+                : lang === "en"
+                  ? "This fee reference was already used with different financial details. Check the provider statement before retrying."
+                  : "Cette référence de frais existe déjà avec des données financières différentes. Vérifiez le relevé avant de réessayer.")
+            : a.saveError,
         });
-    setBusy(null);
-    if (error) {
-      setNotice({ ok: false, text: a.saveError });
-      return;
+        return;
+      }
+
+      setFeeAmount("");
+      setFeeReference("");
+      setFeeDescription("");
+      setSharedFeeOrderId("");
+      setNotice({
+        ok: true,
+        text: isSharedOrderFee
+          ? (lang === "ar"
+              ? "تم تسجيل الرسوم أو التحقق من تسجيلها سابقاً دون تكرار الخصم."
+              : lang === "en"
+                ? "The fee was recorded or matched to its previous record; no duplicate deduction was created."
+                : "Les frais ont été enregistrés ou rapprochés de leur enregistrement précédent, sans double déduction.")
+          : (lang === "ar"
+              ? "تم تسجيل الرسوم الفعلية أو التحقق من تسجيلها سابقاً."
+              : lang === "en"
+                ? "The actual fee was recorded or matched to its previous record."
+                : "Les frais réels ont été enregistrés ou rapprochés de leur enregistrement précédent."),
+      });
+      await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+    } catch {
+      setNotice({
+        ok: false,
+        text: lang === "ar"
+          ? "تعذر تأكيد العملية. يمكنك إعادة المحاولة بنفس مرجع الإيصال؛ ستمنع قاعدة البيانات تكرار الخصم."
+          : lang === "en"
+            ? "The result could not be confirmed. Retry with the same receipt reference; the database will prevent a duplicate deduction."
+            : "Le résultat n'a pas pu être confirmé. Réessayez avec la même référence de reçu ; la base de données empêchera un double débit.",
+      });
+    } finally {
+      setBusy(null);
     }
-    setFeeAmount("");
-    setFeeReference("");
-    setFeeDescription("");
-    setSharedFeeOrderId("");
-    setNotice({ ok: true, text: lang === "ar" ? "تم تسجيل الرسوم الفعلية وتوزيعها على مستحقيها." : lang === "en" ? "The actual external fee was recorded and allocated to the relevant sellers." : "Les frais externes réels ont été enregistrés et répartis entre les vendeurs concernés." });
-    await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
   }
 
   async function confirmSellerPayout(payoutId: string) {
@@ -481,7 +528,7 @@ function AdminPage() {
             <input value={sharedFeeOrderId} onChange={(e) => setSharedFeeOrderId(e.target.value)} placeholder={lang === "ar" ? "رقم الطلب (اختياري لتوزيع الرسوم بالتناسب)" : lang === "en" ? "Order ID (optional: allocate proportionally)" : "ID de commande (facultatif : répartition proportionnelle)"} className="rounded-lg border border-input bg-background px-3 py-2 sm:col-span-2" />
             <input value={feeDescription} onChange={(e) => setFeeDescription(e.target.value)} placeholder={lang === "ar" ? "وصف الرسوم" : lang === "en" ? "Fee description" : "Description des frais"} className="rounded-lg border border-input bg-background px-3 py-2" />
             <button type="submit" disabled={busy === "external-fee" || (!payoutStoreId && !sharedFeeOrderId.trim())} className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50 sm:col-span-2">
-              {busy === "external-fee" ? a.saving : lang === "ar" ? "تسجيل الرسوم على البائع المحدد" : lang === "en" ? "Record fee against selected seller" : "Imputer les frais au vendeur sélectionné"}
+              {busy === "external-fee" ? a.saving : sharedFeeOrderId.trim() ? (lang === "ar" ? "توزيع الرسوم على بائعي الطلب" : lang === "en" ? "Allocate fee across order sellers" : "Répartir les frais entre les vendeurs de la commande") : (lang === "ar" ? "تسجيل الرسوم على البائع المحدد" : lang === "en" ? "Record fee against selected seller" : "Imputer les frais au vendeur sélectionné")}
             </button>
           </form>
         </div>

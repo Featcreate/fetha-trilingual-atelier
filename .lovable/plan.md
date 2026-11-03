@@ -175,3 +175,12 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Largest-remainder rounding guarantees that per-seller allocations sum exactly to the provider/bank fee total; each seller share is written to the append-only fee register and central platform ledger with per-store idempotency.
 - Seller-specific fees can still be recorded against one store. All fees remain evidence-based, TND-only, and separate from the platform commission.
 - Automatic provider API ingestion remains unimplemented; an administrator must enter the actual total from provider/bank evidence.
+
+ 
+## 17. Financial fee idempotency and mixed-rate payout hardening — 2026-11-03
+- Added Migration 0026 as an additive follow-up; it does not rewrite prior fee/payout history or initiate payments.
+- Actual fee evidence references are unique per seller/order scope. Retrying after a lost response returns the existing fee allocation when the amount and category/source match; changed financial details are rejected.
+- Shared order-fee retries validate the complete seller allocation and total before returning the existing allocation set.
+- Payout batches now include all unbatched verified sales for a store across historical commission rates. Each payout item snapshots its exact commission basis points; the payout header retains a weighted effective rate for display.
+- Added data-free SQL regression assertions for largest-remainder totals, deterministic tie handling, mixed-rate summaries and required schema indexes.
+- Migration 0026 is committed to GitHub but is not applied to Supabase. Checkout and all real payment/transfer flows remain disabled.

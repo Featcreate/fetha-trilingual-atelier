@@ -104,3 +104,14 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - The commission UI relies on the role-checked `admin_set_commission_bps` RPC. No live payout or payment action is exposed.
 - No role was assigned to any account, no database was changed, and no production settings were modified.
 - Validation remains pending: run lint, tests and production build, then verify admin and non-admin access with test accounts on a disposable environment.
+
+
+## 12. Original Supabase project deployment — 2026-11-03
+
+- The original project is `jgjcychkntsokhzeziqs` (`algorea-bazaar`, eu-west-1). The separate test project was not modified.
+- Applied and recorded the complete migration chain `0000`–`0021` to the original project (including the new `0012a_storage_bucket_bootstrap` and `0020`/`0021` internal-function privilege hardening migrations).
+- Updated `supabase/config.toml` and the tracked `.env` public project settings to the original Supabase URL and its public publishable key. No service-role key was added to GitHub.
+- Added the missing Storage bucket bootstrap before the existing bucket size-limit migration. Final Storage state: `product-files` private, 50 MiB per file; `product-images` public, 10 MiB; `store-assets` public, 5 MiB.
+- Verified 22 public tables; all 22 have RLS enabled. No public tables without RLS. The 5% default commission is present. Trigger-only SECURITY DEFINER helpers are no longer callable through the Data API by anon/authenticated roles.
+- Confirmed the production database is still empty of auth users, products, stores, and Storage objects. No live payments, provider transfers, or seller payouts were activated.
+- Remaining operational checks: create/assign the first administrator through a secure owner-controlled process; run a full app build and end-to-end signup/seller/catalog/download tests against this original project; confirm Lovable/Render runtime environment variables match this project. Security Advisor still reports authenticated SECURITY DEFINER RPCs that are intentionally exposed for app workflows and guarded by their function-level authorization checks; performance Advisor reports RLS plan/index optimization notices to address before scale.

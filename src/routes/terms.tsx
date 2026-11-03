@@ -142,7 +142,7 @@ const copy: Record<
       ],
       [
         "9. Frais externes",
-        "L’acheteur supporte les frais liés au moyen de paiement qu’il choisit. Le vendeur supporte les frais liés à la réception, au transfert ou au retrait de ses sommes, selon les conditions du prestataire et la loi. La plateforme ne prend pas en charge les frais externes ; les frais connus sont présentés à la partie concernée avant confirmation.",
+        "Le vendeur supporte tous les frais externes réels liés à la vente, notamment les frais de traitement et d’encaissement du paiement, de conversion de devise, de règlement, de transfert, de réception et de retrait. Ces frais restent distincts de la commission de 5 % de la plateforme et sont déduits une seule fois des sommes dues au vendeur, sur la base des frais réellement facturés et d’une méthode de répartition documentée. Ils sont détaillés dans son relevé. Aucun frais externe distinct n’est ajouté au paiement de l’acheteur au titre de cette règle. Cette répartition reste soumise aux conditions du prestataire et au droit applicable.",
       ],
       [
         "10. Téléchargement et remboursements",

@@ -18,11 +18,7 @@ export async function translateProductContent(name: string, description: string)
   };
 }
 
-export function localizedProductText(
-  original: string,
-  translations: unknown,
-  lang: Lang,
-): string {
+export function localizedProductText(original: string, translations: unknown, lang: Lang): string {
   if (!translations || typeof translations !== "object" || Array.isArray(translations)) {
     return original;
   }

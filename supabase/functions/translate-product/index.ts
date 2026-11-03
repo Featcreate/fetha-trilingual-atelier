@@ -108,10 +108,9 @@ async function translateText(text: string, source: string | null, target: Langua
 async function translateField(text: string, source: string | null) {
   const output: Record<Language, string> = { fr: text, ar: text, en: text };
   const translated = await Promise.all(
-    LANGUAGES.filter((target) => source !== target).map(async (target) => [
-      target,
-      await translateText(text, source, target),
-    ] as const),
+    LANGUAGES.filter((target) => source !== target).map(
+      async (target) => [target, await translateText(text, source, target)] as const,
+    ),
   );
   for (const [target, value] of translated) output[target] = value;
   return output;

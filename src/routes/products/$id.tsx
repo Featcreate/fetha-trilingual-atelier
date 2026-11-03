@@ -9,14 +9,16 @@ import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/products/$id")({
-  head: () => ({ meta: [
-    { title: "Produit numérique — Algorea Bazaar" },
-    { name: "description", content: "Découvrez ce produit numérique sur Algorea Bazaar." },
-    { property: "og:title", content: "Produit numérique — Algorea Bazaar" },
-    { property: "og:description", content: "Découvrez ce produit numérique sur Algorea Bazaar." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "Produit numérique — Algorea Bazaar" },
+      { name: "description", content: "Découvrez ce produit numérique sur Algorea Bazaar." },
+      { property: "og:title", content: "Produit numérique — Algorea Bazaar" },
+      { property: "og:description", content: "Découvrez ce produit numérique sur Algorea Bazaar." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: ProductPage,
 });
 
@@ -29,7 +31,9 @@ function ProductPage() {
     queryFn: async () => {
       const { data: product, error } = await supabase
         .from("products")
-        .select("id,name,description,name_translations,description_translations,price_millimes,product_type,store_id,image_path")
+        .select(
+          "id,name,description,name_translations,description_translations,price_millimes,product_type,store_id,image_path",
+        )
         .eq("id", id)
         .eq("is_active", true)
         .maybeSingle();
@@ -68,11 +72,19 @@ function ProductPage() {
             </div>
             {query.data.gallery.length > 0 && (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {query.data.gallery.map((image: { id: string; image_path: string }, index: number) => (
-                  <div key={image.id} className="flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-cream-light">
-                    <ProductPreview path={image.image_path} alt={`${query.data?.product.name ?? "Algorea Bazaar"} — ${index + 1}`} />
-                  </div>
-                ))}
+                {query.data.gallery.map(
+                  (image: { id: string; image_path: string }, index: number) => (
+                    <div
+                      key={image.id}
+                      className="flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-cream-light"
+                    >
+                      <ProductPreview
+                        path={image.image_path}
+                        alt={`${query.data?.product.name ?? "Algorea Bazaar"} — ${index + 1}`}
+                      />
+                    </div>
+                  ),
+                )}
               </div>
             )}
           </div>
@@ -80,9 +92,19 @@ function ProductPage() {
             {m[query.data.product.product_type as keyof typeof m] ??
               query.data.product.product_type}
           </p>
-          <h1 className="mt-2 text-2xl font-extrabold">{localizedProductText(query.data.product.name, query.data.product.name_translations, lang)}</h1>
+          <h1 className="mt-2 text-2xl font-extrabold">
+            {localizedProductText(
+              query.data.product.name,
+              query.data.product.name_translations,
+              lang,
+            )}
+          </h1>
           <p className="mt-4 whitespace-pre-wrap leading-8 text-muted-foreground">
-            {localizedProductText(query.data.product.description, query.data.product.description_translations, lang)}
+            {localizedProductText(
+              query.data.product.description,
+              query.data.product.description_translations,
+              lang,
+            )}
           </p>
           <p className="mt-6 text-2xl font-extrabold">
             {formatTND(query.data.product.price_millimes)}

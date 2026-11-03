@@ -290,11 +290,7 @@ function SellerPage() {
       await saveProductPreviews(store.id, product.id, imageFile, galleryFiles);
     } catch (error) {
       setBusy(false);
-      return setNotice(error instanceof Error && error.message === "translation_failed"
-        ? m.translationFailed
-        : error instanceof Error && error.message === "preview_setup_required"
-          ? m.previewSetupRequired
-          : m.previewSaveFailed);
+      return setNotice(error instanceof Error && error.message === "preview_setup_required" ? m.previewSetupRequired : m.previewSaveFailed);
     }
 
     for (const file of files) {
@@ -420,7 +416,11 @@ function SellerPage() {
     } catch (error) {
       await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
       await qc.invalidateQueries({ queryKey: ["seller-product-gallery", product.id] });
-      return setNotice(error instanceof Error && error.message === "preview_setup_required" ? m.previewSetupRequired : m.previewSaveFailed);
+      return setNotice(error instanceof Error && error.message === "translation_failed"
+        ? m.translationFailed
+        : error instanceof Error && error.message === "preview_setup_required"
+          ? m.previewSetupRequired
+          : m.previewSaveFailed);
     } finally {
       setBusy(false);
     }

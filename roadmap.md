@@ -16,11 +16,12 @@
 ## Remaining before a safe launch
 
 - [x] Apply migration 0022 to the original Supabase project after a successful transaction-wrapped dry run against its actual schema; verify migration history, ledger RLS, constraints, indexes, triggers, append-only behavior, and payout guards.
-- [x] Regenerate and commit Supabase TypeScript types after migration 0022.
+- [x] Regenerate and commit Supabase TypeScript types after migrations 0022–0023.
 - [x] Prepare the current Konnect international-card route: hosted API checkout, server-to-server payment verification, bank_card prioritized, TND canonical charge, local methods retained, fail-closed activation.
 - [ ] Obtain written Konnect approval for worldwide international-card acceptance for this exact digital multi-vendor marketplace, with the platform as sole collection beneficiary and no seller splits/payouts.
 - [ ] Confirm the provider permits all verified processing/collection/conversion/settlement fees to be borne by the seller, and verify fee amounts, settlement timing/currency, reserves, refunds/chargebacks, and API/webhook reconciliation in sandbox.
-- [ ] Implement actual provider-fee ingestion, seller-level/proportional fee allocation, append-only fee ledger entries, seller statement breakdowns, and payout deductions. Do not deduct estimates or deduct any fee twice.
+- [x] Implement evidence-based manual external-fee recording, append-only seller fee entries, central ledger debits, seller statement breakdowns, fee allocation snapshots and once-only payout deductions (migrations 0023–0024 applied to the original Supabase project).
+- [ ] Add automatic provider API fee ingestion only after the provider's statement/webhook contract is verified; retain manual evidence entry as the reconciliation fallback.
 - [ ] Keep current checkout TND-only until a foreign-currency quote/settlement flow is proven. Do not use informational display rates as payment quotes or accounting evidence.
 - [ ] Run CI, lint, tests and production build after the SQL and checkout changes are finalized.
 

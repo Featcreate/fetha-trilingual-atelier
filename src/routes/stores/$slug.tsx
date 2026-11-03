@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
+import { TndEquivalents } from "@/components/TndEquivalents";
 import { AuthShell } from "@/components/AuthShell";
 import { localizedProductText } from "@/lib/product-translations";
 
@@ -132,7 +133,10 @@ function StorefrontPage() {
                   <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
                     {localizedProductText(p.description, p.description_translations, lang)}
                   </p>
-                  <p className="mt-3 text-lg font-extrabold">{formatTND(p.price_millimes)}</p>
+                  <p className="mt-3 text-lg font-extrabold">
+                    {formatTND(p.price_millimes)}
+                    <TndEquivalents millimes={p.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} />
+                  </p>
                 </article>
               ))}
             </div>

@@ -4,6 +4,8 @@ import { useSession } from "@/hooks/use-session";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { formatTND } from "@/lib/money";
+import { TndEquivalents } from "@/components/TndEquivalents";
 import {
   Menu,
   X,
@@ -39,7 +41,27 @@ const categoryIcons = {
   graphics: Palette,
   other: Sparkles,
 };
-const CATEGORIES = PRODUCT_TYPES.map((id) => [id, categoryIcons[id]] as const);
+const categoryColors = [
+  "bg-rose-100 text-rose-700 border-rose-200",
+  "bg-sky-100 text-sky-700 border-sky-200",
+  "bg-violet-100 text-violet-700 border-violet-200",
+  "bg-emerald-100 text-emerald-700 border-emerald-200",
+  "bg-amber-100 text-amber-700 border-amber-200",
+  "bg-cyan-100 text-cyan-700 border-cyan-200",
+  "bg-orange-100 text-orange-700 border-orange-200",
+  "bg-lime-100 text-lime-700 border-lime-200",
+  "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200",
+  "bg-indigo-100 text-indigo-700 border-indigo-200",
+  "bg-teal-100 text-teal-700 border-teal-200",
+  "bg-pink-100 text-pink-700 border-pink-200",
+  "bg-purple-100 text-purple-700 border-purple-200",
+  "bg-blue-100 text-blue-700 border-blue-200",
+  "bg-yellow-100 text-yellow-800 border-yellow-200",
+  "bg-stone-100 text-stone-700 border-stone-200",
+];
+const CATEGORIES = PRODUCT_TYPES.map(
+  (id, index) => [id, categoryIcons[id], categoryColors[index % categoryColors.length]] as const,
+);
 import { BrandLogo } from "@/components/BrandLogo";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 import { localizedProductText } from "@/lib/product-translations";
@@ -88,6 +110,7 @@ function Index() {
     name: string;
     name_translations: unknown;
     product_type: string;
+    price_millimes: number;
     image_path: string | null;
     store_id: string | null;
     store: { name: string; slug: string };
@@ -113,7 +136,7 @@ function Index() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,name,name_translations,product_type,image_path,store_id")
+        .select("id,name,name_translations,product_type,price_millimes,image_path,store_id")
         .eq("store_id", myStoreQuery.data!.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false })
@@ -128,7 +151,7 @@ function Index() {
     queryFn: async () => {
       const { data: products, error } = await supabase
         .from("products")
-        .select("id,name,product_type,image_path,store_id")
+        .select("id,name,product_type,price_millimes,image_path,store_id")
         .eq("is_active", true)
         .not("store_id", "is", null)
         .order("created_at", { ascending: false })
@@ -192,6 +215,10 @@ function Index() {
           >
             {localizedProductText(product.name, product.name_translations, lang)}
           </Link>
+          <p className="mt-2 font-bold">
+            {formatTND(product.price_millimes)}
+            <TndEquivalents millimes={product.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} />
+          </p>
           <Link
             to="/stores/$slug"
             params={{ slug: storeSlug }}
@@ -304,37 +331,6 @@ function Index() {
 
       <main>
         <img src={banner.url} alt="Algorea Bazaar" className="block h-auto w-full" />
-
-        <section aria-labelledby="cats" className="bg-background">
-          <div className="mx-auto max-w-6xl px-4 py-10">
-            <h2 id="cats" className="mb-5 text-center text-xl font-bold text-petrol">
-              {t.marketplace.browseCategories}
-            </h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-              {CATEGORIES.map(([id, Icon]) => (
-                <Link
-                  key={id}
-                  to="/catalog"
-                  search={{ type: id }}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center text-sm font-semibold transition hover:-translate-y-0.5 hover:border-coral hover:text-coral"
-                >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-light text-petrol">
-                    <Icon className="h-6 w-6" aria-hidden />
-                  </span>
-                  {t.marketplace[id]}
-                </Link>
-              ))}
-            </div>
-            <div className="mt-8 text-center">
-              <Link
-                to="/catalog"
-                className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground"
-              >
-                {t.marketplace.viewCatalog}
-              </Link>
-            </div>
-          </div>
-        </section>
 
         <section id="home" className="bg-cream-light">
           <div className="mx-auto max-w-6xl px-4 py-16 text-center md:py-24">
@@ -450,6 +446,40 @@ function Index() {
                 )}
               </div>
             )}
+          </div>
+        </section>
+
+        <section aria-labelledby="cats" className="bg-background">
+          <div className="mx-auto max-w-6xl px-4 py-10">
+            <h2 id="cats" className="mb-5 text-center text-xl font-bold text-petrol">
+              {t.marketplace.browseCategories}
+            </h2>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+              {CATEGORIES.map(([id, Icon, colorClass]) => (
+                <Link
+                  key={id}
+                  to="/catalog"
+                  search={{ type: id }}
+                  className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-5 text-center text-sm font-semibold transition duration-200 hover:-translate-y-1 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral"
+                >
+                  <span
+                    className={`flex h-14 w-14 items-center justify-center rounded-2xl border ${colorClass}`}
+                  >
+                    <Icon className="h-7 w-7" aria-hidden />
+                  </span>
+                  <span>{t.marketplace[id]}</span>
+                </Link>
+              ))}
+            </div>
+            <div className="mt-8 text-center">
+              <Link
+                to="/catalog"
+                className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground"
+              >
+                {t.marketplace.viewCatalog}
+              </Link>
+            </div>
+            <p className="mt-6 text-center text-xs text-muted-foreground">{t.marketplace.tndNote}</p>
           </div>
         </section>
       </main>

@@ -15,8 +15,10 @@ ALTER TABLE public.orders
     CHECK (buyer_currency_exponent IS NULL OR buyer_currency_exponent BETWEEN 0 AND 3),
   ADD COLUMN IF NOT EXISTS platform_settlement_currency text NOT NULL DEFAULT 'TND'
     CHECK (platform_settlement_currency ~ '^[A-Z]{3}$'),
-  ADD COLUMN IF NOT EXISTS platform_settlement_amount_millimes bigint
-    CHECK (platform_settlement_amount_millimes IS NULL OR platform_settlement_amount_millimes > 0),
+  ADD COLUMN IF NOT EXISTS platform_settlement_amount_minor bigint
+    CHECK (platform_settlement_amount_minor IS NULL OR platform_settlement_amount_minor > 0),
+  ADD COLUMN IF NOT EXISTS platform_settlement_currency_exponent smallint
+    CHECK (platform_settlement_currency_exponent IS NULL OR platform_settlement_currency_exponent BETWEEN 0 AND 3),
   ADD COLUMN IF NOT EXISTS buyer_fx_rate numeric(24,12)
     CHECK (buyer_fx_rate IS NULL OR buyer_fx_rate > 0),
   ADD COLUMN IF NOT EXISTS buyer_fx_rate_source text
@@ -27,8 +29,8 @@ COMMENT ON COLUMN public.orders.total_millimes IS
   'Canonical order value in TND millimes used for seller accounting and commission calculations.';
 COMMENT ON COLUMN public.orders.buyer_amount_minor IS
   'Immutable buyer-facing charge amount in buyer_currency minor units; populated only when a provider/currency flow is approved.';
-COMMENT ON COLUMN public.orders.platform_settlement_amount_millimes IS
-  'Actual or verified provider settlement value expressed in TND millimes; distinct from the buyer charge amount.';
+COMMENT ON COLUMN public.orders.platform_settlement_amount_minor IS
+  'Actual or verified provider settlement value in the minor units of platform_settlement_currency; distinct from the buyer charge amount.';
 COMMENT ON COLUMN public.orders.buyer_fx_rate IS
   'Immutable FX snapshot: TND per one unit of buyer_currency, captured for this order. Never recompute historical orders.';
 
@@ -40,6 +42,10 @@ ALTER TABLE public.orders
   ADD CONSTRAINT orders_foreign_buyer_fx_snapshot_complete CHECK (
     buyer_currency IS NULL OR buyer_currency = 'TND'
     OR (buyer_fx_rate IS NOT NULL AND buyer_fx_rate_source IS NOT NULL AND buyer_fx_quoted_at IS NOT NULL)
+  ),
+  ADD CONSTRAINT orders_provider_settlement_snapshot_complete CHECK (
+    (platform_settlement_amount_minor IS NULL AND platform_settlement_currency_exponent IS NULL)
+    OR (platform_settlement_amount_minor IS NOT NULL AND platform_settlement_currency_exponent IS NOT NULL)
   );
 
 CREATE TABLE public.platform_financial_ledger_entries (

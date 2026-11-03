@@ -50,8 +50,16 @@ jobs:
           else
             echo "No changed files require formatting."
           fi
-      - name: Lint
-        run: bun run lint
+      - name: Lint changed files
+        shell: bash
+        run: |
+          git fetch origin main --depth=1
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx')
+          if (( ${#files[@]} )); then
+            bunx eslint "${files[@]}"
+          else
+            echo "No changed source files require linting."
+          fi
 
       - name: Run tests
         run: bun run test

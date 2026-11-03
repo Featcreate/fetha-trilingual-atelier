@@ -176,6 +176,13 @@
       "when": 1793743452708,
       "tag": "0023_seller_external_fee_allocation",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793743495968,
+      "tag": "0024_seller_external_fee_fk_indexes",
+      "breakpoints": true
     }
   ]
 }

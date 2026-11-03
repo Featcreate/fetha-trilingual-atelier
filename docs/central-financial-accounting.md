@@ -21,11 +21,11 @@ No payment provider, bank integration, wallet, or intermediary is allowed to spl
 ## Accounting currency and FX
 
 - The canonical product price, commission calculation, seller payable, and Phase 1 seller payout currency are TND.
-- A foreign buyer charge is represented separately from the canonical TND order value.
-- Record buyer currency, buyer amount in that currency's minor units, currency exponent, actual platform settlement currency/amount, FX rate, FX source, and quote timestamp.
-- FX rate snapshots are immutable. Historical orders are never recalculated using a newer rate.
+- Current checkout baseline: the platform's canonical charge is TND. Konnect's public API accepts TND, EUR, and USD, and its documentation says non-TND payments are automatically converted; however, Algorea Bazaar currently sends TND only. An international buyer's card issuer may convert the TND charge into the cardholder's billing currency under the issuer's own exchange rate and fees.
+- Do not describe this as charging every buyer in their local currency. Local-currency checkout (including EUR/USD) remains disabled until the exact charge, conversion, settlement currency, fee and FX fields returned by the provider are confirmed and implemented.
+- When a foreign-currency charge is later enabled, record buyer currency, buyer amount in that currency's minor units, currency exponent, actual platform settlement currency/amount, FX rate, FX source, and quote timestamp.
+- FX rate snapshots must be immutable. Historical orders are never recalculated using a newer rate.
 - Informational USD/EUR equivalents shown in the catalogue are not checkout quotes and must never be used to settle orders.
-- Provider conversion/settlement behavior must be confirmed before selecting the checkout amount and recording the final FX result.
 - Commission is calculated against the canonical TND accounting amount. Use integer millimes for TND and deterministic rounding; never use binary floating-point for money.
 - Buyer collection, platform settlement, provider fees, FX differences, platform commission, seller payable, refund, chargeback, and seller payout must remain separate ledger events.
 
@@ -64,3 +64,12 @@ A provider's general Visa/Mastercard logo or claim of international payments is 
 This implementation does not connect a provider, create credentials, activate checkout, make live charges, apply the migration to Supabase, or transfer money. The provider adapter and checkout FX quote flow remain blocked until provider terms and sandbox behavior are verified and the user separately approves live activation.
 
 Seller payout APIs are deliberately excluded. The existing weekly manual payout workflow remains the only approved method.
+
+
+## Current international card route — Konnect (not live)
+
+Konnect publicly documents acceptance of international Visa and Mastercard cards and API support for TND, EUR and USD. Its published indicative fee for international cards is 2.9%, subject to the actual merchant agreement. The current Algorea Bazaar adapter uses the platform's Konnect receiver wallet and charges in TND, while the provider handles card processing and the buyer's issuer may convert the charge into the buyer's card currency.
+
+This makes Konnect the leading candidate for the initial worldwide-buyer card route, not an approved production provider yet. Before activation, Konnect must confirm in writing that it accepts Algorea Bazaar's exact business model: one platform merchant account collecting payment for digital products supplied by multiple independent Tunisian sellers, with no provider-side split and all seller balances/payouts managed exclusively by Algorea Bazaar. Confirm digital-goods eligibility, country/card restrictions, settlement to the platform's account, fees, reserves, refund/chargeback liability, and settlement timing.
+
+The current checkout code is fail-closed and remains disabled until separate sandbox and live activation controls are configured and approved. No API credentials, live charges, or transfers are activated by the repository changes.

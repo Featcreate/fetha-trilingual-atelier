@@ -20,7 +20,7 @@
 ## Seller country and provider eligibility
 
 - Never restrict seller signup, store creation, or product listing by nationality, country, or place of residence.
-- Show every seller the same platform Konnect referral registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a
+- Show every seller two separate provider links: the platform's Konnect referral registration link (https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a) and a direct link to the official iPay Tunisia website (https://www.ipay.tn/) without a referral code. The seller chooses which link to open.
 - Konnect alone decides whether it accepts a seller and what identity, phone, banking, residence, or other verification it requires. Do not duplicate those provider checks as platform eligibility rules or promise acceptance.
 - Do not block store creation or listings while provider onboarding is incomplete. Do not promise or execute a payout unless the seller's provider account and payout route are accepted and verified.
-- The referral link is not an API integration, wallet-linking mechanism, automatic split-payment feature, or authorization to enable live payments.
+- Neither provider link is an API integration, wallet-linking mechanism, automatic split-payment feature, or authorization to enable live payments.

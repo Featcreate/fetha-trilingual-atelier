@@ -166,3 +166,12 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Seller dashboard displays fee entries, allocated amounts, remaining amounts and external fees deducted on each payout. Admin dashboard can record actual fees, prepare payout, confirm completed transfer, and mark failure.
 - Automatic provider fee API ingestion is not implemented; administrators must reconcile actual statements and enter verified fees manually. TND only; no estimated charges.
 - Supabase TypeScript types regenerated and committed. No orders, fees, allocations, payouts or financial ledger entries were created. Checkout remains disabled; no provider credentials or live money movement were activated.
+
+
+## 16. Shared order fee allocation — 2026-11-03
+
+- Migration 0025 was applied to the original Supabase project after a transaction-wrapped dry run.
+- Admin can enter a verified paid TND order ID with the actual external fee total. The database allocates the total proportionally by each seller's discounted paid order-item payable amount.
+- Largest-remainder rounding guarantees that per-seller allocations sum exactly to the provider/bank fee total; each seller share is written to the append-only fee register and central platform ledger with per-store idempotency.
+- Seller-specific fees can still be recorded against one store. All fees remain evidence-based, TND-only, and separate from the platform commission.
+- Automatic provider API ingestion remains unimplemented; an administrator must enter the actual total from provider/bank evidence.

@@ -70,5 +70,5 @@ The public Konnect fee schedule is indicative. Do not silently absorb or pass on
 2. Confirm platform-owned merchant/settlement account and fee/FX terms.
 3. Configure server-only sandbox credentials.
 4. Complete sandbox tests for local and international cards, webhooks, duplicate notifications, partial/failed/expired payments, amount mismatch, refunds and reconciliation.
-5. Apply and verify database migration 0022 only after a successful migration-chain test.
+5. Migration 0022 is applied to the original Supabase project and verified against the live schema with a transaction-wrapped dry run before application. A full disposable migration-chain test remains unavailable because the separate test project is empty.
 6. Obtain separate explicit approval before any live payment activation.

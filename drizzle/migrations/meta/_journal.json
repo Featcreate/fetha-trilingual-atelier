@@ -22,6 +22,7 @@
     {"idx":17,"version":"7","when":1793555401000,"tag":"0016_product_trilingual_content","breakpoints":true},
     {"idx":18,"version":"7","when":1793555402000,"tag":"0017_store_branding_assets","breakpoints":true},
     {"idx":19,"version":"7","when":1793555403000,"tag":"0018_product_soft_delete","breakpoints":true},
-    {"idx":20,"version":"7","when":1793555404000,"tag":"0019_seller_legal_acceptance","breakpoints":true}
+    {"idx":20,"version":"7","when":1793555404000,"tag":"0019_seller_legal_acceptance","breakpoints":true},
+    {"idx":21,"version":"7","when":1793555405000,"tag":"0020_secure_rls_auto_enable_function","breakpoints":true}
   ]
 }

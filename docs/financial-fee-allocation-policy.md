@@ -57,8 +57,8 @@ No fee may be guessed, presented as exact without a current verified fee schedul
 
 ## 6. Implementation and activation gate
 
-This policy does **not** authorize live payment activation. The current checkout adapter is TND-only and does not yet implement provider-fee ingestion or seller-level fee allocation. Before enabling seller deductions, implement and test the actual fee capture, proportional allocation, ledger entries, seller statements and payout reconciliation using provider sandbox/settlement evidence.
+Implementation status: migrations 0023 and 0024 are applied to the original Supabase project. The administrator can record an actual external fee in TND only when a provider/bank statement or receipt reference is supplied. The fee is stored in an append-only seller fee register and the central platform ledger. Seller dashboards show each fee and its outstanding/allocated amounts. The weekly payout preparation function allocates each outstanding fee once, snapshots the fee total, and deducts it from the seller's final transfer amount after the platform commission. If verified fees exceed available seller proceeds, payout preparation is blocked and the fees remain outstanding for a later payout.
 
-Before enabling a provider, confirm its merchant terms permit the seller-borne fee arrangement, and verify its fee schedule, settlement timing, refunds/chargebacks, currency behavior and API/webhook reconciliation. Obtain explicit approval before live activation.
+Automatic provider API ingestion is **not** implemented; fees must currently be entered by an administrator from actual evidence. No estimates or guessed rates are accepted. The current workflow records TND amounts only; non-TND fees must not be entered until their actual TND settlement conversion is evidenced.
 
-No provider connection, credential change, production database migration, or live payment activation is implied by this policy.
+This policy does **not** authorize live payment activation. Before enabling a provider, confirm its merchant terms permit the seller-borne fee arrangement, and verify its fee schedule, settlement timing, refunds/chargebacks, currency behavior and API/webhook reconciliation. Checkout remains fail-closed pending provider verification and sandbox reconciliation.

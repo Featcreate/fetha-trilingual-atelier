@@ -4,22 +4,16 @@ import { useSession } from "@/hooks/use-session";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, X, BookOpen, FileText, LayoutTemplate, BookOpenCheck, Package, Smartphone, Printer, CalendarCheck, GraduationCap, ClipboardList, Layers, Laptop, Headphones, Video, Palette, Sparkles } from "lucide-react";
+import { Menu, X, BookOpen, LayoutTemplate, Printer, CalendarCheck, GraduationCap, Laptop, Headphones, Video, Palette, Sparkles } from "lucide-react";
 import banner from "@/assets/homepage-banner.jpg.asset.json";
 
 const CATEGORIES = [
   ["ebook", BookOpen],
-  ["pdf", FileText],
   ["template", LayoutTemplate],
-  ["educational", BookOpenCheck],
-  ["bundle", Package],
-  ["software", Laptop],
-  ["app", Smartphone],
   ["printable", Printer],
   ["planner", CalendarCheck],
   ["course", GraduationCap],
-  ["worksheets", ClipboardList],
-  ["flashcards", Layers],
+  ["software", Laptop],
   ["audio", Headphones],
   ["video", Video],
   ["graphics", Palette],

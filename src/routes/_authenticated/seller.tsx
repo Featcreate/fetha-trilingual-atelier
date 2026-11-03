@@ -659,17 +659,9 @@ function SellerPage() {
                     ) : (
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          {product.image_path && (
-                            <img
-                              src={
-                                supabase.storage
-                                  .from("product-images")
-                                  .getPublicUrl(product.image_path).data.publicUrl
-                              }
-                              alt={product.name}
-                              className="mb-3 h-24 w-32 rounded-lg object-cover"
-                            />
-                          )}
+                          <div className="mb-3 flex h-24 w-32 items-center justify-center overflow-hidden rounded-lg bg-cream-light">
+                            <ProductPreview path={product.image_path} alt={product.name} />
+                          </div>
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="font-semibold">{product.name}</h3>
                             <span className="rounded-full bg-secondary px-2 py-1 text-xs">

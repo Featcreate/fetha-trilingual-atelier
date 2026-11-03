@@ -116,7 +116,7 @@ RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $guard$
 DECLARE
   _owner_id uuid;
   _item_order_id uuid;
@@ -191,7 +191,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$;
+$guard$;
 
 CREATE TRIGGER platform_financial_ledger_validate_insert
   BEFORE INSERT ON public.platform_financial_ledger_entries

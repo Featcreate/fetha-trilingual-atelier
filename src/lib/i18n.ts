@@ -147,7 +147,7 @@ export const dict = {
       expires: "Expire le",
       downloadError: "Téléchargement indisponible ou quota atteint.",
       tndNote:
-        "Les prix sont actuellement affichés en TND. Les paiements réels ne sont pas activés.",
+        "Le TND reste la devise de référence. Les équivalents USD et EUR sont indicatifs et actualisés périodiquement. Les paiements réels ne sont pas activés.",
       payoutMethod: "Réception des revenus",
       weeklyManual: "Virement manuel hebdomadaire",
       payoutHelp:
@@ -401,7 +401,7 @@ export const dict = {
       downloadsLeft: "التنزيلات المتبقية",
       expires: "تنتهي في",
       downloadError: "التنزيل غير متاح أو تم استنفاد العدد المسموح.",
-      tndNote: "تُعرض الأسعار حالياً بالدينار التونسي. الدفع الحقيقي غير مفعل.",
+      tndNote: "الدينار التونسي هو العملة المرجعية. المقابل بالدولار واليورو تقديري ويُحدّث دورياً. الدفع الفعلي غير مفعّل.",
       payoutMethod: "استلام المستحقات",
       weeklyManual: "تحويل يدوي أسبوعي",
       payoutHelp:
@@ -654,7 +654,7 @@ export const dict = {
       downloadsLeft: "Downloads left",
       expires: "Expires",
       downloadError: "Download unavailable or quota exhausted.",
-      tndNote: "Prices are currently shown in TND. Live payments are not enabled.",
+      tndNote: "TND remains the reference currency. USD and EUR equivalents are indicative and updated periodically. Live payments are not enabled.",
       payoutMethod: "Receive earnings",
       weeklyManual: "Weekly manual transfer",
       payoutHelp:

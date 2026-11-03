@@ -32,6 +32,16 @@ COMMENT ON COLUMN public.orders.platform_settlement_amount_millimes IS
 COMMENT ON COLUMN public.orders.buyer_fx_rate IS
   'Immutable FX snapshot: TND per one unit of buyer_currency, captured for this order. Never recompute historical orders.';
 
+ALTER TABLE public.orders
+  ADD CONSTRAINT orders_buyer_amount_snapshot_complete CHECK (
+    (buyer_currency IS NULL AND buyer_amount_minor IS NULL AND buyer_currency_exponent IS NULL)
+    OR (buyer_currency IS NOT NULL AND buyer_amount_minor IS NOT NULL AND buyer_currency_exponent IS NOT NULL)
+  ),
+  ADD CONSTRAINT orders_foreign_buyer_fx_snapshot_complete CHECK (
+    buyer_currency IS NULL OR buyer_currency = 'TND'
+    OR (buyer_fx_rate IS NOT NULL AND buyer_fx_rate_source IS NOT NULL AND buyer_fx_quoted_at IS NOT NULL)
+  );
+
 CREATE TABLE public.platform_financial_ledger_entries (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   entry_type text NOT NULL CHECK (entry_type IN (

@@ -218,6 +218,50 @@ REVOKE ALL ON FUNCTION public.prevent_platform_financial_ledger_mutation() FROM 
 COMMENT ON TABLE public.platform_financial_ledger_entries IS
   'Append-only internal accounting record for buyer collections, provider settlement, platform commission, seller payables and platform-controlled payouts. This is a ledger, not a bank account or payment instrument. No provider is authorized to split or pay sellers.';
 
+-- Permanently enforce the approved rule: seller payouts are platform-only.
+-- Abort rather than rewrite any existing direct-provider payout history.
+DO $
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM public.seller_payout_preferences
+    WHERE method <> 'weekly_manual'
+  ) THEN
+    RAISE EXCEPTION 'preflight_failed: direct_provider_seller_payout_preferences_exist';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.seller_payouts
+    WHERE method <> 'weekly_manual' OR provider <> 'manual'
+  ) THEN
+    RAISE EXCEPTION 'preflight_failed: direct_provider_seller_payout_records_exist';
+  END IF;
+END;
+$;
+
+UPDATE public.platform_settings
+SET konnect_direct_payouts_enabled = false
+WHERE konnect_direct_payouts_enabled IS DISTINCT FROM false;
+
+ALTER TABLE public.platform_settings
+  DROP CONSTRAINT IF EXISTS platform_settings_platform_only_payouts;
+ALTER TABLE public.platform_settings
+  ADD CONSTRAINT platform_settings_platform_only_payouts
+  CHECK (konnect_direct_payouts_enabled = false);
+
+ALTER TABLE public.seller_payout_preferences
+  DROP CONSTRAINT IF EXISTS seller_payout_preferences_platform_only;
+ALTER TABLE public.seller_payout_preferences
+  ADD CONSTRAINT seller_payout_preferences_platform_only
+  CHECK (method = 'weekly_manual');
+
+ALTER TABLE public.seller_payouts
+  DROP CONSTRAINT IF EXISTS seller_payouts_platform_only;
+ALTER TABLE public.seller_payouts
+  ADD CONSTRAINT seller_payouts_platform_only
+  CHECK (method = 'weekly_manual' AND provider = 'manual');
+
+COMMENT ON COLUMN public.platform_settings.konnect_direct_payouts_enabled IS
+  'Retained for backward compatibility only; must remain false. Algorea Bazaar alone initiates seller payouts.';
+
 -- Replace the trusted settlement function so verified collections, commission,
 -- and seller payables are posted to the platform ledger in the same transaction.
 -- Simulation mode deliberately creates no financial ledger entries.

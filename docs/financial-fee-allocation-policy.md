@@ -21,7 +21,9 @@ External provider fees must never be merged into or silently deducted from the p
 
 ## 3. Currency and FX accounting
 
-- Product prices and canonical seller accounting remain in TND during Phase 1 because the initial seller cohort is in Tunisia.
+- Product prices, current checkout charges, canonical seller accounting and Phase 1 seller payouts remain in TND because the initial seller cohort is in Tunisia.
+- The current Konnect adapter requests TND. International Visa/Mastercard cardholders may have their card issuer convert the TND charge to the card's billing currency; this is not a local-currency checkout by Algorea Bazaar.
+- Konnect's public API documents TND, EUR and USD charge tokens and says non-TND amounts are automatically converted. EUR/USD checkout is not enabled until the provider confirms the actual buyer charge, conversion, settlement and fee behavior and the sandbox proves reconciliation.
 - A buyer may be charged in another currency only when the selected provider confirms that currency and the actual settlement behavior.
 - For every foreign-currency order, retain an immutable snapshot of the buyer charge currency and amount, the platform settlement currency and actual settled amount, the FX rate, its source, and its timestamp.
 - The accounting rate used for the order must be a verified checkout/settlement rate, not an informational rate used to display approximate prices.
@@ -46,6 +48,6 @@ External provider fees must never be merged into or silently deducted from the p
 
 ## 6. Activation gate
 
-This policy does **not** authorize live payment activation. Before enabling a provider, confirm its support for worldwide buyers, foreign-currency charge and TND settlement behavior, marketplace/digital-goods model, actual fee schedule, settlement timing, refunds/chargebacks, and webhook/API verification. Test in sandbox and obtain explicit approval before live activation.
+This policy does **not** authorize live payment activation. Before enabling a provider, confirm its support for worldwide buyers, international cards, foreign-currency charge and TND settlement behavior, marketplace/digital-goods model, actual fee schedule, settlement timing, refunds/chargebacks, and webhook/API verification. Test in sandbox and obtain explicit approval before live activation.
 
 No production database migration, payment-provider connection, credential change, or live payment activation is implied by this policy.

@@ -59,6 +59,7 @@ CREATE TABLE public.platform_financial_ledger_entries (
   entry_side text NOT NULL CHECK (entry_side IN ('debit','credit')),
   order_id uuid REFERENCES public.orders(id) ON DELETE RESTRICT,
   order_item_id uuid REFERENCES public.order_items(id) ON DELETE RESTRICT,
+  seller_payout_id uuid REFERENCES public.seller_payouts(id) ON DELETE RESTRICT,
   seller_id uuid REFERENCES auth.users(id) ON DELETE RESTRICT,
   store_id uuid REFERENCES public.stores(id) ON DELETE RESTRICT,
   transaction_currency text NOT NULL CHECK (transaction_currency ~ '^[A-Z]{3}$'),
@@ -78,7 +79,12 @@ CREATE TABLE public.platform_financial_ledger_entries (
   ),
   CONSTRAINT platform_financial_ledger_seller_scope_check CHECK (
     (seller_id IS NULL AND store_id IS NULL) OR (seller_id IS NOT NULL AND store_id IS NOT NULL)
-  )
+  ),
+  CONSTRAINT platform_financial_ledger_payout_scope_check CHECK (
+    (entry_type = 'seller_payout' AND seller_payout_id IS NOT NULL)
+    OR (entry_type <> 'seller_payout' AND seller_payout_id IS NULL)
+  ),
+  CONSTRAINT platform_financial_ledger_payout_entry_unique UNIQUE (seller_payout_id, entry_type)
 );
 
 CREATE INDEX platform_financial_ledger_order_idx
@@ -363,13 +369,13 @@ BEGIN
   WHERE id = _payout_id;
 
   INSERT INTO public.platform_financial_ledger_entries (
-    entry_type, entry_side, seller_id, store_id,
+    entry_type, entry_side, seller_payout_id, seller_id, store_id,
     transaction_currency, transaction_amount_minor, transaction_currency_exponent,
     accounting_currency, accounting_amount_millimes,
     fx_rate, fx_rate_source, fx_rate_at,
     source, external_reference, idempotency_key
   ) VALUES (
-    'seller_payout', 'debit', _p.seller_id, _p.store_id,
+    'seller_payout', 'debit', _payout_id, _p.seller_id, _p.store_id,
     'TND', _p.seller_amount_millimes, 3,
     'TND', _p.seller_amount_millimes,
     1, 'TND_manual_payout', now(),
@@ -389,14 +395,14 @@ GRANT EXECUTE ON FUNCTION public.admin_mark_seller_payout_paid(uuid, text)
 -- Backfill completed TND manual payouts so the internal ledger also reflects
 -- historical platform transfers that predate this migration.
 INSERT INTO public.platform_financial_ledger_entries (
-  entry_type, entry_side, seller_id, store_id,
+  entry_type, entry_side, seller_payout_id, seller_id, store_id,
   transaction_currency, transaction_amount_minor, transaction_currency_exponent,
   accounting_currency, accounting_amount_millimes,
   fx_rate, fx_rate_source, fx_rate_at,
   source, external_reference, idempotency_key
 )
 SELECT
-  'seller_payout', 'debit', s.owner_id, p.store_id,
+  'seller_payout', 'debit', p.id, s.owner_id, p.store_id,
   'TND', p.seller_amount_millimes, 3,
   'TND', p.seller_amount_millimes,
   1, 'TND_manual_payout', coalesce(p.paid_at, p.created_at),

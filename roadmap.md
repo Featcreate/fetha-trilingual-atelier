@@ -1,6 +1,6 @@
 # Algorea Bazaar roadmap
 
-## Completed on the feature branch (not yet merged or deployed)
+## Completed on the feature branch
 
 - [x] Homepage shell, brand, French/Arabic/English language switching
 - [x] Marketplace schema, seller/store/product relationships, private product files and secure downloads
@@ -8,28 +8,35 @@
 - [x] Seller workspace: free store creation, store profile name, product create/edit/publish/pause, multiple private file uploads
 - [x] Seller order and earnings view (read-only order status and seller proceeds)
 - [x] Buyer order history and secure downloads using the existing entitlement flow
-- [x] Terms of Use acceptance at signup in Arabic, French and English; configurable platform commission set to 5% by default (migrations pending)
-- [x] Expanded digital product types and seller-scoped order visibility (migrations pending)
-- [x] Admin dashboard: configurable commission, store suspension/reactivation, product moderation, and order monitoring (no new migration)
+- [x] Terms of Use acceptance at signup in Arabic, French and English; configurable platform commission set to 5% by default
+- [x] Expanded digital product types and seller-scoped order visibility
+- [x] Admin dashboard: configurable commission, store/product moderation, and order monitoring
+- [x] Added migration `0022_platform_central_financial_ledger.sql` for append-only platform accounting entries and immutable buyer-currency/FX snapshots (GitHub only; not applied to Supabase)
 
 ## Remaining before a safe launch
 
 - [ ] Complete all 16 seller/buyer categories after explicit approval to expand the current database category constraint (currently 10 allowed values).
+- [ ] Run CI after the latest changes; resolve any format, lint, test or build failures.
+- [ ] Apply migrations 0000–0022 in order to a disposable Supabase clone and verify migration compatibility, RLS, verified-email onboarding, storage quotas, uploads, downloads, commission snapshots, payout workflows, ledger immutability, and accounting reconciliation.
+- [ ] Build and test buyer cart/checkout, payment-return route and end-to-end order flow only after provider terms, fees, currency support, and sandbox behavior are confirmed.
+- [ ] Select a provider that confirms worldwide buyer coverage, digital multi-vendor collection for the platform's own merchant account, foreign-currency charge support where required, settlement behavior, fees, refunds/chargebacks, and reliable API/webhook verification.
+- [ ] Implement the approved provider adapter and checkout FX quote flow; do not use informational display rates for real charges or accounting.
+- [ ] Configure transactional email and order notifications with a verified sender domain and tested delivery/retry handling.
+- [ ] Complete legal review and operator identity/contact details before public launch.
 
-- [ ] Run the latest CI after payment-gating, storage-limit and product-image changes; resolve any format, lint, test or build failures
-- [ ] Apply migrations 0000–0014 in order to a disposable Supabase clone and verify migration compatibility, RLS, verified-email onboarding, 1 GiB store quota, 50 MiB private file limit, 10 MiB public image limit, image/file uploads, downloads, commission snapshots and payout workflows
-- [x] Admin settings/moderation interface, including configurable commission, store/product oversight and order monitoring
-- [x] Add French and English Terms of Use translations matching the Arabic version; obtain Tunisian legal review and complete operator identity/contact details before launch
-- [ ] Add multi-currency support and confirm seller eligibility/payout coverage by country; current catalog and order accounting remain TND-only
-- [ ] Build and test buyer cart/checkout, payment-return route and end-to-end order flow only after provider terms, fees and sandbox behavior are confirmed
-- [ ] Verify the supplied Konnect referral route with Konnect, including attribution to the platform owner's account, seller-account identification/linking, manual transfer capability, settlement currency, limits, fees, and terms. The same link is offered to every seller regardless of country, nationality, or residence; Konnect alone determines account eligibility. Supplied code: `31XyM7MR8wy71ga7a`; link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a. This is the platform owner's Konnect referral, not an iPay-issued code.
-- [ ] Configure transactional email and order notifications with a verified sender domain and tested delivery/retry handling
+## Financial operating model
 
-## Safety constraints
-
-- Seller registration, store creation and listings remain free. Email verification is required before store creation. Each store has a 1 GiB total storage quota, a 50 MiB private-file cap, and a 10 MiB public product-image cap.
+- Worldwide buyers may purchase subject to provider and legal coverage.
+- Phase 1 seller onboarding is limited to Tunisia; global buyer access does not imply global seller payout support.
+- The payment provider collects buyer payments for Algorea Bazaar and settles them to the platform's own merchant/settlement account. The provider never splits or distributes seller proceeds.
+- The platform's internal financial system is the sole source of truth for collections, settlement, FX snapshots, commission, seller payable balances, and payout records.
+- Canonical seller accounting and Phase 1 seller payouts are in TND. Foreign buyer charge amounts and the actual platform settlement are stored separately with immutable FX metadata.
 - Platform commission starts at 5% and remains administrator-configurable. Existing order commission snapshots are immutable.
-- Seller payouts are planned as manual weekly transfers after the platform's commission. No seller-country restriction is applied; provider acceptance and verification determine whether a payout route is available. Seller-side provider/bank transfer and withdrawal fees remain the seller's responsibility.
-- Digital products only; no shipping or physical inventory.
+- Seller payouts are initiated only by Algorea Bazaar, weekly by default and manually. Provider APIs do not initiate seller payouts.
+- Digital products only; no shipping or physical inventory. Seller registration, store creation and listings remain free.
 - Keep product files private; use short-lived signed downloads and preserve immutable order/file snapshots.
-- No live payments, publishing, production migrations, paid services, or provider connections without explicit approval.
+
+## Activation and deployment constraints
+
+- No live payments, provider connections, production migrations, publishing, or paid services without explicit approval.
+- Migration 0022 is a schema addition only. It has not been applied to Supabase and does not activate checkout or move funds.

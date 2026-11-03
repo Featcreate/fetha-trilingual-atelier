@@ -174,11 +174,26 @@ function SellerPage() {
       const { data, error } = await supabase
         .from("seller_payouts")
         .select(
-          "id,status,seller_amount_millimes,currency,created_at,paid_at,provider_transfer_ref",
+          "id,status,seller_amount_millimes,external_fees_millimes,currency,created_at,paid_at,provider_transfer_ref",
         )
         .eq("store_id", store!.id)
         .order("created_at", { ascending: false })
         .limit(30);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const externalFeesQuery = useQuery({
+    queryKey: ["seller-external-fees", store?.id],
+    enabled: !!store?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("seller_external_fee_entries")
+        .select("id,fee_category,amount_millimes,currency,source,external_reference,description,created_at")
+        .eq("store_id", store!.id)
+        .order("created_at", { ascending: false })
+        .limit(100);
       if (error) throw error;
       return data ?? [];
     },
@@ -1027,12 +1042,47 @@ function SellerPage() {
                           </p>
                         )}
                       </div>
-                      <strong>{formatTND(p.seller_amount_millimes)}</strong>
+                      <div className="text-end">
+                        <strong>{formatTND(p.seller_amount_millimes)}</strong>
+                        <p className="text-xs text-muted-foreground">
+                          {lang === "ar" ? "رسوم خارجية مخصومة" : lang === "en" ? "External fees deducted" : "Frais externes déduits"}: {formatTND(p.external_fees_millimes)}
+                        </p>
+                      </div>
                     </article>
                   ))}
                 </div>
               )}
             </div>
+          </section>
+
+          <section className="space-y-4 rounded-xl border border-border p-5">
+            <h2 className="text-xl font-bold">{lang === "ar" ? "الرسوم الخارجية على حسابك" : lang === "en" ? "External fees charged to your account" : "Frais externes à votre charge"}</h2>
+            <p className="text-sm leading-7 text-muted-foreground">
+              {lang === "ar" ? "تُسجّل الرسوم الفعلية المثبتة بصورة منفصلة عن عمولة المنصة 5%، وتُخصم مرة واحدة عند إعداد التحويل الأسبوعي. لا تُحتسب أي رسوم تقديرية." : lang === "en" ? "Verified actual fees are itemized separately from the 5% platform commission and deducted once when the weekly transfer is prepared. Estimated fees are never charged." : "Les frais réels justifiés sont détaillés séparément de la commission de 5 % et déduits une seule fois lors de la préparation du virement hebdomadaire. Aucun frais estimé n’est imputé."}
+            </p>
+            {externalFeesQuery.isPending ? (
+              <p className="text-sm">{m.loading}</p>
+            ) : externalFeesQuery.isError ? (
+              <p role="alert" className="text-sm text-destructive">{m.error}</p>
+            ) : !externalFeesQuery.data?.length ? (
+              <p className="rounded-lg bg-secondary p-3 text-sm">{lang === "ar" ? "لا توجد رسوم خارجية مسجلة." : lang === "en" ? "No external fees have been recorded." : "Aucun frais externe enregistré."}</p>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm font-semibold">
+                  {lang === "ar" ? "إجمالي الرسوم المسجلة" : lang === "en" ? "Total recorded fees" : "Total des frais enregistrés"}: {formatTND(externalFeesQuery.data.reduce((sum, fee) => sum + fee.amount_millimes, 0))}
+                </p>
+                {externalFeesQuery.data.map((fee) => (
+                  <article key={fee.id} className="rounded-lg bg-secondary/60 p-3 text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <strong>{formatTND(fee.amount_millimes)}</strong>
+                      <span className="text-xs text-muted-foreground">{new Date(fee.created_at).toLocaleDateString(locale)}</span>
+                    </div>
+                    <p className="mt-1">{fee.description}</p>
+                    <p className="mt-1 text-xs text-muted-foreground" dir="ltr">{fee.fee_category} · {fee.external_reference}</p>
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
 
           <section className="space-y-4">

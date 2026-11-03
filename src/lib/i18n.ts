@@ -148,10 +148,10 @@ export const dict = {
       downloadError: "Téléchargement indisponible ou quota atteint.",
       tndNote:
         "Le TND reste la devise de référence. Les équivalents USD et EUR sont indicatifs et actualisés périodiquement. Les paiements réels ne sont pas activés.",
-      payoutMethod: "Réception des revenus",
-      weeklyManual: "Virement manuel hebdomadaire",
+      payoutMethod: "Versement de vos revenus",
+      weeklyManual: "Virement hebdomadaire manuel par Algorea Bazaar",
       payoutHelp:
-        "La commission de la plateforme est déduite avant le calcul de votre montant. Le solde vous est transféré manuellement chaque semaine. Les frais externes éventuels restent distincts.",
+        "Algorea Bazaar calcule votre montant après déduction de sa commission (5 % par défaut), puis vous le transfère manuellement chaque semaine depuis le compte de la plateforme. Les liens de prestataires ci-dessous sont informatifs et ne gèrent pas vos versements.",
       konnectRegister: "S’inscrire sur Konnect via le lien de la plateforme",
       ipayRegister: "Accéder à iPay",
       wepayRegister: "Accéder à WePay",
@@ -405,10 +405,10 @@ export const dict = {
       downloadError: "التنزيل غير متاح أو تم استنفاد العدد المسموح.",
       tndNote:
         "الدينار التونسي هو العملة المرجعية. المقابل بالدولار واليورو تقديري ويُحدّث دورياً. الدفع الفعلي غير مفعّل.",
-      payoutMethod: "استلام المستحقات",
-      weeklyManual: "تحويل يدوي أسبوعي",
+      payoutMethod: "تحويل مستحقاتك",
+      weeklyManual: "تحويل أسبوعي يدوي من Algorea Bazaar",
       payoutHelp:
-        "تُخصم عمولة المنصة قبل احتساب مستحقاتك. ثم يُحوّل إليك المبلغ المتبقي يدوياً كل أسبوع. الرسوم الخارجية المحتملة منفصلة.",
+        "تحتسب Algorea Bazaar مستحقاتك بعد خصم عمولتها (5% افتراضياً)، ثم تحوّلها إليك يدوياً كل أسبوع من حساب المنصة. روابط مزودي الخدمات أدناه معلوماتية فقط ولا تتولى تحويل مستحقاتك.",
       konnectRegister: "التسجيل في Konnect عبر رابط المنصة",
       ipayRegister: "الانتقال إلى iPay",
       wepayRegister: "الانتقال إلى WePay",
@@ -661,10 +661,10 @@ export const dict = {
       downloadError: "Download unavailable or quota exhausted.",
       tndNote:
         "TND remains the reference currency. USD and EUR equivalents are indicative and updated periodically. Live payments are not enabled.",
-      payoutMethod: "Receive earnings",
-      weeklyManual: "Weekly manual transfer",
+      payoutMethod: "Seller payouts",
+      weeklyManual: "Weekly manual transfer by Algorea Bazaar",
       payoutHelp:
-        "The platform commission is deducted before your amount is calculated. The remaining amount is transferred manually each week. Any external fees are separate.",
+        "Algorea Bazaar calculates your proceeds after its commission (5% by default), then transfers them manually each week from the platform's own account. The provider links below are informational and do not manage your payout.",
       konnectRegister: "Register with Konnect using the platform link",
       ipayRegister: "Go to iPay",
       wepayRegister: "Go to WePay",

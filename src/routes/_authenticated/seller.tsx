@@ -15,6 +15,7 @@ import {
 import { ProductPreview } from "@/components/ProductPreview";
 import { translateProductContent } from "@/lib/product-translations";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
+import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 
 export const Route = createFileRoute("/_authenticated/seller")({
   head: () => ({
@@ -559,6 +560,10 @@ function SellerPage() {
                 </button>
               </form>
             )}
+            <StoreBrandingEditor
+              store={store}
+              onSaved={() => qc.invalidateQueries({ queryKey: ["seller-store", user.id] })}
+            />
           </section>
 
           <section className="rounded-xl border border-border bg-secondary/40 p-4 text-sm leading-7">

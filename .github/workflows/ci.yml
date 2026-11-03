@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -32,17 +32,24 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Check Prettier formatting for changed files
+      - name: Format changed files
         shell: bash
         run: |
           git fetch origin main --depth=1
           mapfile -t files < <(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.md' '*.css' '*.html' '*.yml' '*.yaml')
           if (( ${#files[@]} )); then
+            bunx prettier --write "${files[@]}"
             bunx prettier --check "${files[@]}"
+            if ! git diff --quiet; then
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git add -- "${files[@]}"
+              git commit -m "Format changed files with Prettier"
+              git push
+            fi
           else
-            echo "No changed files require formatting checks."
+            echo "No changed files require formatting."
           fi
-
       - name: Lint
         run: bun run lint
 

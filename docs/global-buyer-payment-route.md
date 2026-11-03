@@ -31,7 +31,7 @@ Official references:
 - The canonical order and seller accounting currency is TND.
 - The current request sends TND. International Visa/Mastercard cardholders may see a conversion by their card issuer into their card billing currency. Algorea Bazaar does not yet charge the buyer in their local currency.
 - Bank card is listed first in accepted methods; local wallet and e-DINAR methods remain available where the provider supports them.
-- Payment confirmation is checked server-to-server against Konnect's payment-details API; browser return parameters are not trusted.
+- Payment confirmation is checked server-to-server against Konnect's payment-details API; both the completed payment status and at least one successful transaction status are required, and browser return parameters are not trusted.
 - The settlement RPC is the only route that marks an order paid and grants download entitlements.
 - Payment activation remains fail-closed. No credentials, live charges, or provider connection are activated by this code change.
 

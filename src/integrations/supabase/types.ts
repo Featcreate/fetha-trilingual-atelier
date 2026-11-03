@@ -481,6 +481,8 @@ export type Database = {
           image_path: string | null
           is_active: boolean
           name: string
+          name_translations: Json
+          description_translations: Json
           price_millimes: number
           product_type: string
           store_id: string | null
@@ -493,6 +495,8 @@ export type Database = {
           image_path?: string | null
           is_active?: boolean
           name: string
+          name_translations?: Json
+          description_translations?: Json
           price_millimes: number
           product_type?: string
           store_id?: string | null
@@ -505,6 +509,8 @@ export type Database = {
           image_path?: string | null
           is_active?: boolean
           name?: string
+          name_translations?: Json
+          description_translations?: Json
           price_millimes?: number
           product_type?: string
           store_id?: string | null

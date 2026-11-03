@@ -42,12 +42,13 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 
 ## Weekly operating procedure
 
-1. In the administrator dashboard, select the seller's store and prepare a payout batch from verified, settled sales.
-2. Review the original sale amount, currency/FX snapshot, platform settlement, provider fees, commission-rate snapshot, and seller payable against the platform ledger.
-3. Transfer the displayed seller payable from the platform's own funds using the approved external transfer method.
-4. After the transfer succeeds, record the transfer reference in the administrator dashboard and confirm the payout.
-5. If the transfer fails, record the reason. Do not create another payout batch for the same sales.
+1. Reconcile the provider/bank statement and identify actual fees attributable to the seller. Do not use estimates.
+2. In the administrator dashboard, select the seller's store and record each actual fee with its category, TND amount, statement/receipt reference, and description.
+3. Prepare the weekly payout batch. The database allocates each outstanding fee once and calculates the final transfer as verified seller proceeds after the 5% commission and the fee snapshot.
+4. Review gross sales, discount, commission, external fees, and final payable. If fees exceed available proceeds, the system blocks payout preparation and carries the fees forward.
+5. Transfer the displayed final payable from the platform's own funds using the approved external transfer method.
+6. After the transfer succeeds, record the transfer reference and confirm the payout. If the transfer fails, record the reason and retry the same payout; do not create a second batch for the same sales.
 
 ## Database rollout
 
-Migration 0022 has been applied to the original Supabase project after a transaction-wrapped compatibility dry run against its current schema. It adds the append-only platform ledger, immutable FX/settlement snapshots, and database constraints that prohibit direct provider payouts. Post-apply verification confirmed the migration history entry, RLS, indexes, triggers, and append-only behavior. The database still contains zero orders and payout records. Checkout and live payment activation remain disabled.
+Migrations 0022, 0023 and 0024 have been applied to the original Supabase project. Migration 0023 adds the append-only seller external-fee register, fee-allocation records, administrator-only fee recording, and fee-aware payout snapshots. Migration 0024 adds indexes for the remaining fee-table foreign keys. The database currently contains zero orders, seller fee records, fee allocations, payouts, or platform ledger entries. Checkout and live payment activation remain disabled.

@@ -17,10 +17,11 @@
 
 - [ ] Complete all 16 seller/buyer categories after explicit approval to expand the current database category constraint (currently 10 allowed values).
 - [ ] Run CI after the latest changes; resolve any format, lint, test or build failures.
-- [ ] Apply migrations 0000–0022 in order to a disposable Supabase clone and verify migration compatibility, RLS, verified-email onboarding, storage quotas, uploads, downloads, commission snapshots, payout workflows, ledger immutability, and accounting reconciliation.
-- [ ] Build and test buyer cart/checkout, payment-return route and end-to-end order flow only after provider terms, fees, currency support, and sandbox behavior are confirmed.
-- [ ] Select a provider that confirms worldwide buyer coverage, digital multi-vendor collection for the platform's own merchant account, foreign-currency charge support where required, settlement behavior, fees, refunds/chargebacks, and reliable API/webhook verification.
-- [ ] Implement the approved provider adapter and checkout FX quote flow; do not use informational display rates for real charges or accounting.
+- [ ] Create/rebuild a disposable database from migrations 0000–0021, then validate migration 0022 and verify RLS, verified-email onboarding, storage quotas, uploads, downloads, commission snapshots, payout workflows, ledger immutability, and accounting reconciliation. The current separate test project is empty, not a clone.
+- [ ] Obtain written Konnect approval for worldwide international-card acceptance for this exact digital multi-vendor marketplace, with the platform as sole collection beneficiary and no seller splits/payouts.
+- [ ] Confirm provider fee allocation, buyer-paid fee behavior, settlement timing/currency, reserves, refunds/chargebacks, and API/webhook reconciliation in sandbox.
+- [ ] Keep current checkout TND-only until a foreign-currency quote/settlement flow is proven. Do not use informational display rates as payment quotes or accounting evidence.
+- [ ] Run CI, lint, tests and production build after the SQL and checkout changes are finalized.
 - [ ] Configure transactional email and order notifications with a verified sender domain and tested delivery/retry handling.
 - [ ] Complete legal review and operator identity/contact details before public launch.
 

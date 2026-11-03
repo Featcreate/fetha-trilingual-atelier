@@ -31,7 +31,7 @@ async function requestJson(url: string, body: Record<string, unknown>) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(12000),
+    signal: AbortSignal.timeout(6000),
   });
   if (!response.ok) throw new Error("translation_provider_error");
   return await response.json();
@@ -107,10 +107,13 @@ async function translateText(text: string, source: string | null, target: Langua
 
 async function translateField(text: string, source: string | null) {
   const output: Record<Language, string> = { fr: text, ar: text, en: text };
-  for (const target of LANGUAGES) {
-    if (source === target) continue;
-    output[target] = await translateText(text, source, target);
-  }
+  const translated = await Promise.all(
+    LANGUAGES.filter((target) => source !== target).map(async (target) => [
+      target,
+      await translateText(text, source, target),
+    ] as const),
+  );
+  for (const [target, value] of translated) output[target] = value;
   return output;
 }
 

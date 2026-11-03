@@ -1,47 +1,51 @@
 # Algorea Bazaar — seller payout operations
 
-## Current supported route
+## Approved operating model
 
-Store creation and product listings remain free for sellers. No seller registration, store-opening, listing, or mandatory seller subscription fee is charged.
+Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller payouts. Payment providers are used only to collect buyer payments and settle those collections to the platform's own merchant/settlement account.
 
+- Phase 1 seller onboarding is for sellers in Tunisia. Worldwide buyer access does not mean worldwide seller payout coverage.
+- Seller registration, store creation, and product listings remain free. No registration, store-opening, listing, or mandatory seller subscription fee is charged.
+- The platform commission is 5% by default and administrator-configurable. Each order item snapshots its commission rate and amounts; historical snapshots are never recalculated.
+- After verified collection and settlement, the platform records the sale, commission, and seller payable in its internal financial ledger.
 - Seller payout preference defaults to **weekly manual transfer**.
-- All sellers, regardless of nationality or residence, are shown the same platform Konnect referral-registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a
-- Algorea Bazaar applies no country-based seller-registration restriction. Konnect alone decides whether an applicant can register and what identity, phone, bank, residence, or other checks are required. The referral link does not guarantee acceptance or link a wallet automatically.
-- Do not block store creation or product listings because a seller has not registered with Konnect. Do not promise or process a payout through Konnect unless the seller's account and payout route are accepted and verified by the provider.
-- The platform commission is taken from each paid order item before the seller amount is recorded. The configured commission rate is snapshotted on each order item; the payout batch preserves those original amounts.
-- Seller payout batches are created by an administrator from verified, paid sales that have not already been assigned to a payout.
-- A batch is grouped by store and commission rate so that historical commission snapshots are never recalculated.
-- Every batch has a unique idempotency key. Every sale ledger entry and order item can belong to at most one payout batch.
-- An administrator records a transfer as paid only after the real transfer has been completed and its external transfer reference is available.
-- Failed transfers remain recorded and are not silently returned to the unpaid ledger. An administrator can retry the same payout after resolving the failure.
+- During Phase 1, seller payables and transfers are denominated in TND.
+- The platform operator transfers the seller's full recorded payable from the platform's funds to the seller's own account. Any applicable external receiving/transfer/withdrawal fee is shown separately and allocated to the responsible party under the fee policy.
+- An administrator records the transfer reference and marks the payout paid only after the real transfer has succeeded.
+- The admin confirmation action is an accounting record only; it does not itself send money.
+- Every payout batch has a unique idempotency key. Each verified sale ledger entry can belong to at most one payout batch. Failed transfers remain recorded and must not be silently released for duplicate payment.
 - Sellers can view their payout history and recorded transfer references.
 
-## Important limits
+## Provider restrictions
 
-- The admin confirmation action is an accounting record only. It **does not send money** or call a payment provider.
-- Direct Konnect wallet payouts remain disabled by default. Do not enable them until Konnect confirms in writing that the API supports transfers to individual seller wallets, with the required seller account linking, eligibility, limits, currency, fees, and transfer references.
-- No iPay or Konnect API credentials are required for weekly manual payout recording.
-- The seller's amount is the full amount remaining after the platform commission. External provider/bank transfer fees are separate and must be disclosed to the party charged; they are not silently deducted from the platform commission.
-- Live checkout, live payment collection, automatic payouts, and production deployment remain separate activation steps.
+- No provider may split a buyer payment or send seller proceeds directly.
+- No provider API is used to initiate seller payouts.
+- Seller registration links to Konnect, iPay, and WePay (where shown in the seller workspace) are external account-information links only. They do not authorize those providers to control seller balances or distribute marketplace proceeds.
+- Do not collect or store seller payment-provider passwords, OTPs, or private credentials.
+- Do not promise a seller payout route until the platform has verified the seller's destination details and lawful transfer method.
+
+## Buyer collection and FX
+
+- Buyers may purchase from any country, subject to the selected payment provider's confirmed coverage.
+- The provider must settle buyer collections to the platform's own merchant/settlement account.
+- Product prices and seller accounting remain TND during Phase 1. If a buyer is charged in a foreign currency, preserve the exact buyer amount/currency and the provider's actual settlement amount/currency with the FX rate, source, and timestamp.
+- Calculate commission and seller payable from the canonical TND accounting amount. Informational exchange-rate displays are not accounting evidence.
+- Reconcile provider fees and FX differences separately; never hide them inside the commission or seller payable.
 
 ## Payment activation safety
 
-Konnect credentials alone do not enable checkout. Server-side activation is fail-closed and requires one explicit environment switch for the selected mode:
-
-- Sandbox: set `KONNECT_ENV=sandbox` (or leave it unset) and `KONNECT_SANDBOX_PAYMENTS_ENABLED=true`.
-- Live: set `KONNECT_ENV=live` and `KONNECT_LIVE_PAYMENTS_ENABLED=true`.
-- Unknown environment values are rejected. Keep the live switch unset until provider, legal, fee-disclosure, sandbox, and explicit live-launch checks are complete.
-- When activation is off, checkout returns `payments_not_configured` before creating an order, preventing orphaned pending orders.
-- Status verification for already-created Konnect payment references remains available when credentials are present, even if new checkout initiation is paused; this prevents a temporary kill switch from blocking reconciliation of payments already in flight.
+- Checkout remains disabled until a provider confirms in writing that it supports worldwide buyers, the platform-owned collection model, digital multi-vendor sales, the required currencies, and settlement to the platform's account.
+- Provider API credentials alone do not enable checkout. Sandbox verification, fee disclosure, webhook/status verification, refund/chargeback handling, and explicit approval for live activation are required.
+- No provider connection, automatic payout, live payment, or production deployment is authorized by this document.
 
 ## Weekly operating procedure
 
-1. In the administrator dashboard, select the seller's store and prepare a payout batch.
-2. Review the seller amount and commission-rate snapshot against the seller ledger.
-3. Transfer the displayed seller amount using the agreed external payment method.
+1. In the administrator dashboard, select the seller's store and prepare a payout batch from verified, settled sales.
+2. Review the original sale amount, currency/FX snapshot, platform settlement, provider fees, commission-rate snapshot, and seller payable against the platform ledger.
+3. Transfer the displayed seller payable from the platform's own funds using the approved external transfer method.
 4. After the transfer succeeds, record the transfer reference in the administrator dashboard and confirm the payout.
 5. If the transfer fails, record the reason. Do not create another payout batch for the same sales.
 
 ## Database rollout
 
-Apply migrations in order on a disposable Supabase clone first. Verify RLS, role checks, migration ordering, commission reconciliation, idempotency under concurrent requests, terminal payout states, and seller-only payout visibility before applying any migration to a production database.
+Migration `0022_platform_central_financial_ledger.sql` adds immutable platform-ledger entries and buyer-currency/FX snapshots without changing historical TND amounts. It is committed to GitHub but must be tested through the complete migration chain on a disposable Supabase clone before any production application. Verify RLS, append-only behavior, idempotency, reconciliation, and payout safeguards. Do not apply it to the production database as part of this GitHub change.

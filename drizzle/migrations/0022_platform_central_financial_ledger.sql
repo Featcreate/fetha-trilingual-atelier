@@ -105,6 +105,94 @@ CREATE POLICY "Admins read platform financial ledger"
   ON public.platform_financial_ledger_entries FOR SELECT TO authenticated
   USING (public.has_role((SELECT auth.uid()), 'admin'));
 
+CREATE OR REPLACE FUNCTION public.guard_platform_financial_ledger_entry()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $
+DECLARE
+  _owner_id uuid;
+  _item_order_id uuid;
+  _item_store_id uuid;
+  _item_seller_id uuid;
+BEGIN
+  IF NEW.store_id IS NOT NULL THEN
+    SELECT st.owner_id INTO _owner_id
+    FROM public.stores st
+    WHERE st.id = NEW.store_id;
+    IF NOT FOUND OR _owner_id IS DISTINCT FROM NEW.seller_id THEN
+      RAISE EXCEPTION 'platform_ledger_seller_store_mismatch';
+    END IF;
+  END IF;
+
+  IF NEW.order_item_id IS NOT NULL THEN
+    SELECT oi.order_id, oi.store_id, oi.seller_id
+      INTO _item_order_id, _item_store_id, _item_seller_id
+    FROM public.order_items oi
+    WHERE oi.id = NEW.order_item_id;
+    IF NOT FOUND
+       OR _item_order_id IS DISTINCT FROM NEW.order_id
+       OR _item_store_id IS DISTINCT FROM NEW.store_id
+       OR _item_seller_id IS DISTINCT FROM NEW.seller_id THEN
+      RAISE EXCEPTION 'platform_ledger_order_item_mismatch';
+    END IF;
+    IF NEW.entry_type = 'platform_commission'
+       AND NEW.accounting_amount_millimes IS DISTINCT FROM (
+         SELECT oi.commission_millimes FROM public.order_items oi WHERE oi.id = NEW.order_item_id
+       ) THEN
+      RAISE EXCEPTION 'platform_ledger_commission_amount_mismatch';
+    END IF;
+    IF NEW.entry_type = 'seller_payable'
+       AND NEW.accounting_amount_millimes IS DISTINCT FROM (
+         SELECT oi.seller_net_millimes FROM public.order_items oi WHERE oi.id = NEW.order_item_id
+       ) THEN
+      RAISE EXCEPTION 'platform_ledger_seller_payable_amount_mismatch';
+    END IF;
+  END IF;
+
+  IF NEW.entry_type = 'buyer_collection' THEN
+    IF NOT EXISTS (
+      SELECT 1 FROM public.orders o
+      WHERE o.id = NEW.order_id
+        AND o.status = 'paid'
+        AND o.payment_mode = 'verified'
+        AND o.currency = 'TND'
+        AND o.total_millimes = NEW.accounting_amount_millimes
+    ) THEN
+      RAISE EXCEPTION 'platform_ledger_buyer_collection_mismatch';
+    END IF;
+  END IF;
+
+  IF NEW.entry_type = 'seller_payout' THEN
+    IF NEW.seller_id IS NULL OR NEW.store_id IS NULL OR NEW.seller_payout_id IS NULL THEN
+      RAISE EXCEPTION 'platform_ledger_seller_payout_scope_required';
+    END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM public.seller_payouts p
+      JOIN public.stores st ON st.id = p.store_id
+      WHERE p.id = NEW.seller_payout_id
+        AND p.store_id = NEW.store_id
+        AND st.owner_id = NEW.seller_id
+        AND p.status = 'paid'
+        AND p.currency = 'TND'
+        AND p.seller_amount_millimes = NEW.accounting_amount_millimes
+        AND p.provider_transfer_ref = NEW.external_reference
+    ) THEN
+      RAISE EXCEPTION 'platform_ledger_seller_payout_mismatch';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$;
+
+CREATE TRIGGER platform_financial_ledger_validate_insert
+  BEFORE INSERT ON public.platform_financial_ledger_entries
+  FOR EACH ROW EXECUTE FUNCTION public.guard_platform_financial_ledger_entry();
+
+REVOKE ALL ON FUNCTION public.guard_platform_financial_ledger_entry() FROM PUBLIC, anon, authenticated;
+
 CREATE OR REPLACE FUNCTION public.prevent_platform_financial_ledger_mutation()
 RETURNS trigger
 LANGUAGE plpgsql

@@ -155,3 +155,14 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Regenerated and committed src/integrations/supabase/types.ts from the live original database.
 - Security Advisor still reports 12 authenticated SECURITY DEFINER RPC warnings (including the admin-guarded payout RPC) and leaked-password protection disabled. Performance Advisor reports pre-existing RLS initialization-plan and unindexed-FK warnings; these were not part of migration 0022.
 - Checkout remains fail-closed and TND-only. Konnect international Visa/Mastercard is the leading candidate, but written approval for the digital multi-vendor platform-collection model and sandbox fee/settlement reconciliation remain release gates.
+
+
+## 15. Seller-borne external fees — 2026-11-03
+
+- Migration 0023 was applied to the original Supabase project after a transaction-wrapped dry run. It adds append-only seller external-fee entries and payout allocations, with seller/admin read policies and admin-only recording RPC.
+- Migration 0024 adds indexes for the remaining fee-table foreign keys.
+- Admin fee entry requires actual TND amount, fee category, source, external statement/receipt reference and description. The fee is recorded in the central platform ledger as a seller-scoped provider-fee debit.
+- Manual payout preparation allocates outstanding fees once, snapshots the fee total on the payout, and subtracts it from seller proceeds after commission. If fees exceed current proceeds, payout creation fails closed and leaves fees outstanding.
+- Seller dashboard displays fee entries, allocated amounts, remaining amounts and external fees deducted on each payout. Admin dashboard can record actual fees, prepare payout, confirm completed transfer, and mark failure.
+- Automatic provider fee API ingestion is not implemented; administrators must reconcile actual statements and enter verified fees manually. TND only; no estimated charges.
+- Supabase TypeScript types regenerated and committed. No orders, fees, allocations, payouts or financial ledger entries were created. Checkout remains disabled; no provider credentials or live money movement were activated.

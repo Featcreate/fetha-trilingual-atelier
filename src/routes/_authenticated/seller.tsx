@@ -199,6 +199,19 @@ function SellerPage() {
     },
   });
 
+  const externalFeeAllocationsQuery = useQuery({
+    queryKey: ["seller-external-fee-allocations", store?.id],
+    enabled: !!store?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("seller_payout_fee_allocations")
+        .select("fee_entry_id,amount_millimes")
+        .eq("store_id", store!.id);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   async function resendSellerConfirmation() {
     if (!user.email) return;
     setConfirmationBusy(true);
@@ -1071,6 +1084,7 @@ function SellerPage() {
                 <p className="text-sm font-semibold">
                   {lang === "ar" ? "إجمالي الرسوم المسجلة" : lang === "en" ? "Total recorded fees" : "Total des frais enregistrés"}: {formatTND(externalFeesQuery.data.reduce((sum, fee) => sum + fee.amount_millimes, 0))}
                 </p>
+                {externalFeeAllocationsQuery.isError && <p role="alert" className="text-xs text-destructive">{m.error}</p>}
                 {externalFeesQuery.data.map((fee) => (
                   <article key={fee.id} className="rounded-lg bg-secondary/60 p-3 text-sm">
                     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1079,6 +1093,11 @@ function SellerPage() {
                     </div>
                     <p className="mt-1">{fee.description}</p>
                     <p className="mt-1 text-xs text-muted-foreground" dir="ltr">{fee.fee_category} · {fee.external_reference}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {lang === "ar" ? "المخصّص للتحويلات" : lang === "en" ? "Allocated to payouts" : "Affecté aux versements"}: {formatTND((externalFeeAllocationsQuery.data ?? []).filter((a) => a.fee_entry_id === fee.id).reduce((sum, a) => sum + a.amount_millimes, 0))}
+                      {" · "}
+                      {lang === "ar" ? "المتبقي" : lang === "en" ? "Outstanding" : "Restant"}: {formatTND(Math.max(0, fee.amount_millimes - (externalFeeAllocationsQuery.data ?? []).filter((a) => a.fee_entry_id === fee.id).reduce((sum, a) => sum + a.amount_millimes, 0)))}
+                    </p>
                   </article>
                 ))}
               </div>

@@ -49,6 +49,7 @@ type Product = Database["public"]["Tables"]["products"]["Row"];
 const productTypes = PRODUCT_TYPES;
 const KONNECT_SELLER_REGISTRATION_URL =
   "https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a";
+const IPAY_SELLER_REGISTRATION_URL = "https://www.ipay.tn/";
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 
 function slugify(value: string) {
@@ -957,6 +958,14 @@ function SellerPage() {
                 className="mt-4 inline-flex rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90"
               >
                 {m.konnectRegister}
+              </a>
+              <a
+                href={IPAY_SELLER_REGISTRATION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex rounded-full border border-border px-5 py-3 text-sm font-semibold hover:bg-muted"
+              >
+                {m.ipayRegister}
               </a>
               <p className="mt-2 text-xs leading-6 text-muted-foreground">{m.konnectEligibility}</p>
             </div>

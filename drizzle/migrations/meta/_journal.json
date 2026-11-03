@@ -190,6 +190,13 @@
       "when": 1793743612511,
       "tag": "0025_shared_seller_fee_proportional_allocation",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1793743700000,
+      "tag": "0026_fee_idempotency_and_mixed_rate_payouts",
+      "breakpoints": true
     }
   ]
 }

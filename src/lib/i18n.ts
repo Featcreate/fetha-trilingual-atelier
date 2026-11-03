@@ -122,7 +122,8 @@ export const dict = {
       editStore: "Modifier le nom du magasin",
       editProduct: "Modifier",
       deleteProduct: "Supprimer",
-      deleteProductConfirmation: "Voulez-vous vraiment supprimer ce produit ? Il sera retiré de la boutique, mais les achats précédents et leurs fichiers resteront conservés.",
+      deleteProductConfirmation:
+        "Voulez-vous vraiment supprimer ce produit ? Il sera retiré de la boutique, mais les achats précédents et leurs fichiers resteront conservés.",
       productDeleted: "Le produit a été retiré de votre boutique.",
       deleteProductFailed: "Impossible de supprimer ce produit. Réessayez. ",
       storeCreated: "Votre boutique est créée.",
@@ -379,7 +380,8 @@ export const dict = {
       editStore: "تعديل اسم المتجر",
       editProduct: "تعديل",
       deleteProduct: "حذف المنتج",
-      deleteProductConfirmation: "هل تريد حذف هذا المنتج؟ سيُزال من متجرك ولن يكون متاحاً للشراء مجدداً، مع الحفاظ على سجلات الطلبات وملفات المشترين السابقين.",
+      deleteProductConfirmation:
+        "هل تريد حذف هذا المنتج؟ سيُزال من متجرك ولن يكون متاحاً للشراء مجدداً، مع الحفاظ على سجلات الطلبات وملفات المشترين السابقين.",
       productDeleted: "تمت إزالة المنتج من متجرك.",
       deleteProductFailed: "تعذر حذف المنتج. حاول مرة أخرى.",
       storeCreated: "تم إنشاء متجرك.",
@@ -628,7 +630,8 @@ export const dict = {
       editStore: "Edit store name",
       editProduct: "Edit",
       deleteProduct: "Delete product",
-      deleteProductConfirmation: "Are you sure you want to delete this product? It will be removed from your store, while previous orders and buyers’ files remain preserved.",
+      deleteProductConfirmation:
+        "Are you sure you want to delete this product? It will be removed from your store, while previous orders and buyers’ files remain preserved.",
       productDeleted: "The product has been removed from your store.",
       deleteProductFailed: "Could not delete this product. Please try again.",
       storeCreated: "Your store has been created.",

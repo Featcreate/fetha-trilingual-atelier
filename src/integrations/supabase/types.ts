@@ -1232,6 +1232,18 @@ export type Database = {
         }
         Returns: string
       }
+      admin_record_shared_seller_fee: {
+        Args: {
+          _amount_millimes: number
+          _description: string
+          _external_reference: string
+          _fee_category: string
+          _idempotency_key: string
+          _order_id: string
+          _source: string
+        }
+        Returns: number
+      }
       admin_renew_entitlement: {
         Args: {
           _entitlement_id: string

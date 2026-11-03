@@ -27,7 +27,7 @@ No payment provider, bank integration, wallet, or intermediary is allowed to spl
 - FX rate snapshots must be immutable. Historical orders are never recalculated using a newer rate.
 - Informational USD/EUR equivalents shown in the catalogue are not checkout quotes and must never be used to settle orders.
 - Commission is calculated against the canonical TND accounting amount. Use integer millimes for TND and deterministic rounding; never use binary floating-point for money.
-- Buyer collection, platform settlement, provider fees, FX differences, platform commission, seller payable, refund, chargeback, and seller payout must remain separate ledger events.
+- Buyer collection, platform settlement, provider fees, FX differences, platform commission, seller payable, refund, chargeback, and seller payout must remain separate ledger events. Provider-fee entries must be attributable to the affected seller/order item or allocated proportionally across sellers using a documented basis.
 
 ## Internal ledger semantics
 

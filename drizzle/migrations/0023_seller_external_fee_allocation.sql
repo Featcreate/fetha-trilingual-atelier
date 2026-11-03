@@ -127,6 +127,13 @@ BEGIN
        OR _item_seller_id IS DISTINCT FROM NEW.seller_id THEN
       RAISE EXCEPTION 'seller_external_fee_order_item_mismatch';
     END IF;
+  ELSIF NEW.order_id IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM public.order_items oi
+    WHERE oi.order_id = NEW.order_id
+      AND oi.store_id = NEW.store_id
+      AND oi.seller_id = NEW.seller_id
+  ) THEN
+    RAISE EXCEPTION 'seller_external_fee_order_scope_mismatch';
   END IF;
   RETURN NEW;
 END;
@@ -383,12 +390,19 @@ BEGIN
     AND NOT EXISTS (SELECT 1 FROM public.seller_payout_items pi WHERE pi.ledger_entry_id = le.id);
 
   FOR _fee IN
-    SELECT f.id, f.amount_millimes - coalesce(sum(a.amount_millimes),0) AS remaining
+    SELECT f.id,
+      f.amount_millimes - coalesce((
+        SELECT sum(a.amount_millimes)
+        FROM public.seller_payout_fee_allocations a
+        WHERE a.fee_entry_id = f.id
+      ),0) AS remaining
     FROM public.seller_external_fee_entries f
-    LEFT JOIN public.seller_payout_fee_allocations a ON a.fee_entry_id = f.id
     WHERE f.store_id = _store_id
-    GROUP BY f.id, f.amount_millimes, f.created_at
-    HAVING f.amount_millimes > coalesce(sum(a.amount_millimes),0)
+      AND f.amount_millimes > coalesce((
+        SELECT sum(a.amount_millimes)
+        FROM public.seller_payout_fee_allocations a
+        WHERE a.fee_entry_id = f.id
+      ),0)
     ORDER BY f.created_at, f.id
     FOR UPDATE OF f
   LOOP

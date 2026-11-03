@@ -82,7 +82,7 @@ function AuthPage() {
         return;
       }
       const fullName = v("full_name").trim();
-      if (!fullNameSchema.safeParse(fullName).success || fullName.split(/\\s+/).length < 2) errs.full_name = a.errName;
+      if (!fullNameSchema.safeParse(fullName).success || fullName.split(/\s+/).length < 2) errs.full_name = a.errName;
     }
     setErrors(errs);
     setFormError("");

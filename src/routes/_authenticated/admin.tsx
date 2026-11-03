@@ -86,6 +86,7 @@ function AdminPage() {
   const [feeAmount, setFeeAmount] = useState("");
   const [feeReference, setFeeReference] = useState("");
   const [feeDescription, setFeeDescription] = useState("");
+  const [sharedFeeOrderId, setSharedFeeOrderId] = useState("");
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
 
   const settings = useQuery({
@@ -207,7 +208,7 @@ function AdminPage() {
 
   async function recordSellerExternalFee(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!payoutStoreId) {
+    if (!payoutStoreId && !sharedFeeOrderId.trim()) {
       setNotice({ ok: false, text: a.payoutStore });
       return;
     }
@@ -218,15 +219,25 @@ function AdminPage() {
     }
     setBusy("external-fee");
     setNotice(null);
-    const { error } = await supabase.rpc("admin_record_seller_external_fee", {
-      _store_id: payoutStoreId,
-      _fee_category: feeCategory,
-      _amount_millimes: amount,
-      _source: "verified_provider_or_bank_statement",
-      _external_reference: feeReference.trim(),
-      _description: feeDescription.trim(),
-      _idempotency_key: `seller-external-fee:${crypto.randomUUID()}`,
-    });
+    const { error } = sharedFeeOrderId.trim()
+      ? await supabase.rpc("admin_record_shared_seller_fee", {
+          _order_id: sharedFeeOrderId.trim(),
+          _fee_category: feeCategory,
+          _amount_millimes: amount,
+          _source: "verified_provider_or_bank_statement",
+          _external_reference: feeReference.trim(),
+          _description: feeDescription.trim(),
+          _idempotency_key: `seller-shared-fee:${crypto.randomUUID()}`,
+        })
+      : await supabase.rpc("admin_record_seller_external_fee", {
+          _store_id: payoutStoreId,
+          _fee_category: feeCategory,
+          _amount_millimes: amount,
+          _source: "verified_provider_or_bank_statement",
+          _external_reference: feeReference.trim(),
+          _description: feeDescription.trim(),
+          _idempotency_key: `seller-external-fee:${crypto.randomUUID()}`,
+        });
     setBusy(null);
     if (error) {
       setNotice({ ok: false, text: a.saveError });
@@ -235,7 +246,8 @@ function AdminPage() {
     setFeeAmount("");
     setFeeReference("");
     setFeeDescription("");
-    setNotice({ ok: true, text: lang === "ar" ? "تم تسجيل الرسوم الفعلية على حساب البائع." : lang === "en" ? "The actual external fee was recorded against the seller." : "Les frais externes réels ont été enregistrés à la charge du vendeur." });
+    setSharedFeeOrderId("");
+    setNotice({ ok: true, text: lang === "ar" ? "تم تسجيل الرسوم الفعلية وتوزيعها على مستحقيها." : lang === "en" ? "The actual external fee was recorded and allocated to the relevant sellers." : "Les frais externes réels ont été enregistrés et répartis entre les vendeurs concernés." });
     await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
   }
 
@@ -452,7 +464,7 @@ function AdminPage() {
         </div>
         <div className="mb-4 rounded-lg border border-border p-4">
           <h3 className="font-semibold">{lang === "ar" ? "تسجيل رسوم خارجية فعلية" : lang === "en" ? "Record an actual external fee" : "Enregistrer des frais externes réels"}</h3>
-          <p className="mt-1 text-xs text-muted-foreground">{lang === "ar" ? "لا تسجل إلا الرسوم المثبتة فعلياً. إذا شملت الرسوم عدة متاجر، احسب حصة كل متجر بالتناسب مع قيمة مبيعاته وسجل حصة كل بائع منفصلة مع توضيح طريقة الحساب." : lang === "en" ? "Record only fees supported by an actual statement or receipt. If a fee covers multiple stores, calculate each store's proportional share by its attributable paid sales and record each seller's share separately, documenting the calculation." : "Enregistrez uniquement les frais justifiés par un relevé ou reçu réel. Si les frais couvrent plusieurs boutiques, calculez la part proportionnelle de chaque boutique selon ses ventes payées et enregistrez chaque part séparément en documentant le calcul."}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{lang === "ar" ? "لا تسجل إلا الرسوم المثبتة فعلياً. للتوزيع التلقائي بالتناسب على البائعين المرتبطين بطلب مدفوع، أدخل رقم الطلب في الحقل الاختياري. وإلا اختر متجر البائع لتسجيل رسومه وحده." : lang === "en" ? "Record only fees supported by an actual statement or receipt. To allocate a fee proportionally across sellers on a verified paid order, enter the optional order ID. Otherwise select one store to record a seller-specific fee." : "Enregistrez uniquement les frais justifiés par un relevé ou reçu réel. Pour répartir automatiquement des frais au prorata entre les vendeurs d’une commande payée et vérifiée, saisissez l’ID de commande facultatif. Sinon, sélectionnez une boutique pour enregistrer les frais d’un seul vendeur."}</p>
           <form onSubmit={recordSellerExternalFee} className="mt-3 grid gap-2 sm:grid-cols-2">
             <select value={feeCategory} onChange={(e) => setFeeCategory(e.target.value)} className="rounded-lg border border-input bg-background px-3 py-2">
               <option value="payment_processing">{lang === "ar" ? "معالجة الدفع" : lang === "en" ? "Payment processing" : "Traitement du paiement"}</option>
@@ -466,8 +478,9 @@ function AdminPage() {
             </select>
             <input value={feeAmount} onChange={(e) => setFeeAmount(e.target.value)} placeholder={lang === "ar" ? "المبلغ بالدينار التونسي" : lang === "en" ? "Amount in TND" : "Montant en TND"} className="rounded-lg border border-input bg-background px-3 py-2" />
             <input value={feeReference} onChange={(e) => setFeeReference(e.target.value)} placeholder={lang === "ar" ? "مرجع الإيصال أو كشف المزود" : lang === "en" ? "Statement / receipt reference" : "Référence du relevé / reçu"} className="rounded-lg border border-input bg-background px-3 py-2" />
+            <input value={sharedFeeOrderId} onChange={(e) => setSharedFeeOrderId(e.target.value)} placeholder={lang === "ar" ? "رقم الطلب (اختياري لتوزيع الرسوم بالتناسب)" : lang === "en" ? "Order ID (optional: allocate proportionally)" : "ID de commande (facultatif : répartition proportionnelle)"} className="rounded-lg border border-input bg-background px-3 py-2 sm:col-span-2" />
             <input value={feeDescription} onChange={(e) => setFeeDescription(e.target.value)} placeholder={lang === "ar" ? "وصف الرسوم" : lang === "en" ? "Fee description" : "Description des frais"} className="rounded-lg border border-input bg-background px-3 py-2" />
-            <button type="submit" disabled={busy === "external-fee" || !payoutStoreId} className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50 sm:col-span-2">
+            <button type="submit" disabled={busy === "external-fee" || (!payoutStoreId && !sharedFeeOrderId.trim())} className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50 sm:col-span-2">
               {busy === "external-fee" ? a.saving : lang === "ar" ? "تسجيل الرسوم على البائع المحدد" : lang === "en" ? "Record fee against selected seller" : "Imputer les frais au vendeur sélectionné"}
             </button>
           </form>

@@ -16,6 +16,11 @@ import { ProductPreview } from "@/components/ProductPreview";
 import { translateProductContent } from "@/lib/product-translations";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
+import {
+  SellerLegalAcceptance,
+  SELLER_PRIVACY_VERSION,
+  SELLER_TERMS_VERSION,
+} from "@/components/SellerLegalAcceptance";
 
 export const Route = createFileRoute("/_authenticated/seller")({
   head: () => ({
@@ -77,6 +82,9 @@ function SellerPage() {
   const [editingStore, setEditingStore] = useState(false);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
+  const [confirmationBusy, setConfirmationBusy] = useState(false);
 
   const storeQuery = useQuery({
     queryKey: ["seller-store", user.id],
@@ -173,6 +181,22 @@ function SellerPage() {
     },
   });
 
+  async function resendSellerConfirmation() {
+    if (!user.email) return;
+    setConfirmationBusy(true);
+    const { error } = await supabase.auth.resend({ type: "signup", email: user.email });
+    setConfirmationBusy(false);
+    setNotice(
+      error
+        ? m.error
+        : lang === "ar"
+          ? "طلبنا إعادة إرسال رسالة تأكيد البريد الإلكتروني."
+          : lang === "en"
+            ? "A new email confirmation message has been requested."
+            : "Un nouvel e-mail de confirmation a été demandé.",
+    );
+  }
+
   async function createStore(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -180,20 +204,42 @@ function SellerPage() {
     const slug = slugify(String(form.get("store_slug") || name));
     if (!name) return setNotice(m.nameRequired);
     if (slug.length < 3) return setNotice(m.slugHint);
+    if (!user.email_confirmed_at) return setNotice(m.emailVerificationRequired);
+    if (!acceptPrivacy || !acceptSellerTerms) {
+      return setNotice(
+        lang === "ar"
+          ? "يجب قراءة الوثيقتين والموافقة على كل واحدة منهما لإنشاء المتجر."
+          : lang === "en"
+            ? "Read and accept each document separately before creating your store."
+            : "Lisez et acceptez séparément chaque document avant de créer votre boutique.",
+      );
+    }
     setBusy(true);
     setNotice("");
-    const { error } = await supabase
-      .from("stores")
-      .insert({ owner_id: user.id, name, slug, status: "active" });
+    const { error } = await supabase.rpc("create_seller_store", {
+      _name: name,
+      _slug: slug,
+      _privacy_version: SELLER_PRIVACY_VERSION,
+      _terms_version: SELLER_TERMS_VERSION,
+      _language: lang,
+    });
     setBusy(false);
-    if (error)
+    if (error) {
+      const detail = error.message.toLowerCase();
       return setNotice(
-        error.message.includes("email_verification_required")
+        detail.includes("email_verification_required")
           ? m.emailVerificationRequired
-          : error.code === "23505"
-            ? m.slugHint
-            : m.error,
+          : detail.includes("legal_documents_outdated")
+            ? lang === "ar"
+              ? "إصدار الوثائق غير صالح. حدّث الصفحة وحاول مجدداً."
+              : lang === "en"
+                ? "The legal document version is outdated. Refresh and try again."
+                : "La version des documents est obsolète. Actualisez la page et réessayez."
+            : error.code === "23505"
+              ? m.slugHint
+              : m.error,
       );
+    }
     setNotice(m.storeCreated);
     await qc.invalidateQueries({ queryKey: ["seller-store", user.id] });
   }
@@ -519,6 +565,25 @@ function SellerPage() {
         <section className="rounded-xl border border-border p-5">
           <h2 className="text-lg font-bold">{m.store}</h2>
           <p className="mt-2 text-sm text-muted-foreground">{m.noStore}</p>
+          {!user.email_confirmed_at && (
+            <div className="mt-4 rounded-xl bg-secondary p-4">
+              <p className="text-sm font-semibold">{m.emailVerificationRequired}</p>
+              <button
+                type="button"
+                onClick={resendSellerConfirmation}
+                disabled={confirmationBusy}
+                className="mt-3 rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-60"
+              >
+                {confirmationBusy
+                  ? m.loading
+                  : lang === "ar"
+                    ? "إعادة إرسال رسالة التأكيد"
+                    : lang === "en"
+                      ? "Resend confirmation email"
+                      : "Renvoyer l’e-mail de confirmation"}
+              </button>
+            </div>
+          )}
           <form onSubmit={createStore} className="mt-5 space-y-4">
             <Field id="store_name" name="store_name" label={m.storeName} required maxLength={120} />
             <Field
@@ -528,6 +593,13 @@ function SellerPage() {
               placeholder="ma-boutique"
             />
             <p className="text-xs text-muted-foreground">{m.slugHint}</p>
+            <SellerLegalAcceptance
+              lang={lang}
+              privacyAccepted={acceptPrivacy}
+              termsAccepted={acceptSellerTerms}
+              onPrivacyChange={setAcceptPrivacy}
+              onTermsChange={setAcceptSellerTerms}
+            />
             <SubmitButton busy={busy} label={m.createStore} busyLabel={m.loading} />
           </form>
         </section>

@@ -796,8 +796,11 @@ export type Database = {
       };
       stores: {
         Row: {
+          avatar_path: string | null;
+          banner_path: string | null;
           created_at: string;
           id: string;
+          logo_path: string | null;
           name: string;
           owner_id: string;
           slug: string;
@@ -805,8 +808,11 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          avatar_path?: string | null;
+          banner_path?: string | null;
           created_at?: string;
           id?: string;
+          logo_path?: string | null;
           name: string;
           owner_id: string;
           slug: string;
@@ -814,8 +820,11 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          avatar_path?: string | null;
+          banner_path?: string | null;
           created_at?: string;
           id?: string;
+          logo_path?: string | null;
           name?: string;
           owner_id?: string;
           slug?: string;

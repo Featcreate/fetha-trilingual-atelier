@@ -20,7 +20,7 @@ function StorefrontPage() {
     queryFn: async () => {
       const { data: store, error } = await supabase
         .from("stores")
-        .select("id,name,slug")
+        .select("id,name,slug,logo_path,avatar_path,banner_path")
         .eq("slug", slug)
         .eq("status", "active")
         .maybeSingle();
@@ -38,6 +38,9 @@ function StorefrontPage() {
       return { store, products: products ?? [] };
     },
   });
+  const assetUrl = (path: string | null) =>
+    path ? supabase.storage.from("store-assets").getPublicUrl(path).data.publicUrl : null;
+
   return (
     <AuthShell lang={lang} setLang={setLang} title={storeQuery.data?.store.name ?? m.store} wide>
       <div className="mb-5 flex items-center justify-between gap-3">
@@ -56,13 +59,45 @@ function StorefrontPage() {
         <p className="rounded-xl bg-secondary p-5">{m.noCatalog}</p>
       ) : (
         <>
-          <div className="mb-6 rounded-xl bg-cream-light p-5">
-            <p className="text-xs text-muted-foreground">{m.store}</p>
-            <h1 className="mt-1 text-2xl font-bold">{storeQuery.data.store.name}</h1>
-            <p className="mt-2 text-sm text-muted-foreground" dir="ltr">
-              algoreabazaar / {storeQuery.data.store.slug}
-            </p>
-          </div>
+          <header className="mb-6 overflow-hidden rounded-xl border border-border bg-cream-light">
+            {assetUrl(storeQuery.data.store.banner_path) && (
+              <img
+                src={assetUrl(storeQuery.data.store.banner_path)!}
+                alt={m.storeBanner}
+                className="h-36 w-full object-cover sm:h-52"
+              />
+            )}
+            <div className="flex flex-wrap items-center gap-4 p-5">
+              {assetUrl(storeQuery.data.store.logo_path) ? (
+                <img
+                  src={assetUrl(storeQuery.data.store.logo_path)!}
+                  alt={m.storeLogo}
+                  className="h-20 w-20 rounded-xl border border-border bg-white object-cover"
+                />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-white text-2xl font-bold text-petrol">
+                  AB
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground">{m.store}</p>
+                <h1 className="mt-1 text-2xl font-bold">{storeQuery.data.store.name}</h1>
+                <p className="mt-2 text-sm text-muted-foreground" dir="ltr">
+                  algoreabazaar / {storeQuery.data.store.slug}
+                </p>
+              </div>
+              {assetUrl(storeQuery.data.store.avatar_path) && (
+                <div className="flex items-center gap-2">
+                  <img
+                    src={assetUrl(storeQuery.data.store.avatar_path)!}
+                    alt={m.sellerAvatar}
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                  <span className="text-xs text-muted-foreground">{m.sellerAvatar}</span>
+                </div>
+              )}
+            </div>
+          </header>
           {!storeQuery.data.products.length ? (
             <p className="py-8 text-center text-muted-foreground">{m.noProducts}</p>
           ) : (
@@ -92,7 +127,7 @@ function StorefrontPage() {
                     params={{ id: p.id }}
                     className="mt-1 block font-bold hover:text-coral"
                   >
-                    {p.name}
+                    {localizedProductText(p.name, p.name_translations, lang)}
                   </Link>
                   <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
                     {localizedProductText(p.description, p.description_translations, lang)}

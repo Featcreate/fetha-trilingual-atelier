@@ -4,22 +4,16 @@ import { useSession } from "@/hooks/use-session";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, X, BookOpen, FileText, LayoutTemplate, BookOpenCheck, Package, Smartphone, Printer, CalendarCheck, GraduationCap, ClipboardList, Layers, Laptop, Headphones, Video, Palette, Sparkles } from "lucide-react";
+import { Menu, X, BookOpen, LayoutTemplate, Printer, CalendarCheck, GraduationCap, Laptop, Headphones, Video, Palette, Sparkles } from "lucide-react";
 import banner from "@/assets/homepage-banner.jpg.asset.json";
 
 const CATEGORIES = [
   ["ebook", BookOpen],
-  ["pdf", FileText],
   ["template", LayoutTemplate],
-  ["educational", BookOpenCheck],
-  ["bundle", Package],
-  ["software", Laptop],
-  ["app", Smartphone],
   ["printable", Printer],
   ["planner", CalendarCheck],
   ["course", GraduationCap],
-  ["worksheets", ClipboardList],
-  ["flashcards", Layers],
+  ["software", Laptop],
   ["audio", Headphones],
   ["video", Video],
   ["graphics", Palette],
@@ -266,6 +260,26 @@ function Index() {
       <main>
         <img src={banner.url} alt="Algorea Bazaar" className="block h-auto w-full" />
 
+        <section aria-labelledby="cats" className="bg-background">
+          <div className="mx-auto max-w-6xl px-4 py-10">
+            <h2 id="cats" className="mb-5 text-center text-xl font-bold text-petrol">{t.marketplace.browseCategories}</h2>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+              {CATEGORIES.map(([id, Icon]) => (
+                <Link key={id} to="/catalog" search={{ type: id }}
+                  className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center text-sm font-semibold transition hover:-translate-y-0.5 hover:border-coral hover:text-coral">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-light text-petrol"><Icon className="h-6 w-6" aria-hidden /></span>
+                  {t.marketplace[id]}
+                </Link>
+              ))}
+            </div>
+            <div className="mt-8 text-center">
+              <Link to="/catalog" className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground">
+                {t.marketplace.viewCatalog}
+              </Link>
+            </div>
+          </div>
+        </section>
+
         <section id="home" className="bg-cream-light">
           <div className="mx-auto max-w-6xl px-4 py-16 text-center md:py-24">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">{t.heroKicker}</p>
@@ -317,7 +331,7 @@ function Index() {
               <p className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">{t.marketplace.noRecentProducts}</p>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {myStoreProductsQuery.data.map((product) => renderProductCard(product, myStoreQuery.data.name, myStoreQuery.data.slug))}
+                {myStoreProductsQuery.data.map((product) => renderProductCard(product, myStoreQuery.data!.name, myStoreQuery.data!.slug))}
               </div>
             )}
           </div>
@@ -342,25 +356,6 @@ function Index() {
           </div>
         </section>
 
-        <section aria-labelledby="cats" className="bg-background">
-          <div className="mx-auto max-w-6xl px-4 py-10">
-            <h2 id="cats" className="mb-5 text-center text-xl font-bold text-petrol">{t.marketplace.browseCategories}</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-              {CATEGORIES.map(([id, Icon]) => (
-                <Link key={id} to="/catalog" search={{ type: id }}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center text-sm font-semibold transition hover:-translate-y-0.5 hover:border-coral hover:text-coral">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-light text-petrol"><Icon className="h-6 w-6" aria-hidden /></span>
-                  {t.marketplace[id]}
-                </Link>
-              ))}
-            </div>
-            <div className="mt-8 text-center">
-              <Link to="/catalog" className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground">
-                {t.marketplace.viewCatalog}
-              </Link>
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer id="contact" className="bg-petrol text-cream">

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { AuthShell } from "@/components/AuthShell";
+import { localizedProductText } from "@/lib/product-translations";
 
 export const Route = createFileRoute("/stores/$slug")({
   head: () => ({ meta: [{ title: "Boutique — Algorea Bazaar" }] }),
@@ -27,7 +28,7 @@ function StorefrontPage() {
       if (!store) return null;
       const { data: products, error: productError } = await supabase
         .from("products")
-        .select("id,name,description,price_millimes,product_type,image_path")
+        .select("id,name,description,name_translations,description_translations,price_millimes,product_type,image_path")
         .eq("store_id", store.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false });
@@ -73,7 +74,7 @@ function StorefrontPage() {
                           supabase.storage.from("product-images").getPublicUrl(p.image_path).data
                             .publicUrl
                         }
-                        alt={p.name}
+                        alt={localizedProductText(p.name, p.name_translations, lang)}
                         loading="lazy"
                         className="h-full w-full object-cover"
                       />
@@ -91,7 +92,7 @@ function StorefrontPage() {
                   >
                     {p.name}
                   </Link>
-                  <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
+                  <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{localizedProductText(p.description, p.description_translations, lang)}</p>
                   <p className="mt-3 text-lg font-extrabold">{formatTND(p.price_millimes)}</p>
                 </article>
               ))}

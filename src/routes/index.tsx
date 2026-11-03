@@ -479,6 +479,7 @@ function Index() {
                 {t.marketplace.viewCatalog}
               </Link>
             </div>
+            <p className="mt-6 text-center text-xs text-muted-foreground">{t.marketplace.tndNote}</p>
           </div>
         </section>
       </main>

@@ -10,11 +10,18 @@ const completedPayment = {
   reachedAmount: 25000,
   orderId: "order-1",
   token: "TND",
+  transactions: [{ status: "success" }],
 };
 
 describe("Konnect payment decisions", () => {
   it("marks paid only when Konnect confirms the full TND amount for the same order", () => {
     expect(decidePaymentOutcome(order, completedPayment)).toBe("paid");
+  });
+
+
+  it("rejects completed payment if no transaction has succeeded", () => {
+    expect(decidePaymentOutcome(order, { ...completedPayment, transactions: [{ status: "failed" }] })).toBe("mismatch");
+    expect(decidePaymentOutcome(order, { ...completedPayment, transactions: [] })).toBe("mismatch");
   });
 
   it("does not pay a pending (failed or unattempted) payment", () => {

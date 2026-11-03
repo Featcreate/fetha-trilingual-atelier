@@ -10,7 +10,7 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 - After verified collection and settlement, the platform records the sale, commission, and seller payable in its internal financial ledger.
 - Seller payout preference defaults to **weekly manual transfer**.
 - During Phase 1, seller payables and transfers are denominated in TND.
-- The platform operator transfers the seller's full recorded payable from the platform's funds to the seller's own account. Any applicable external receiving/transfer/withdrawal fee is shown separately and allocated to the responsible party under the fee policy.
+- The platform operator transfers the seller's final recorded payable from the platform's funds to the seller's own account. The seller bears all verified external fees attributable to payment processing, collection, conversion, settlement, transfer and withdrawal. These fees are shown separately from the 5% commission and deducted from the seller's proceeds only once, using actual provider/bank evidence and a documented allocation method.
 - An administrator records the transfer reference and marks the payout paid only after the real transfer has succeeded.
 - The admin confirmation action is an accounting record only; it does not itself send money.
 - Every payout batch has a unique idempotency key. Each verified sale ledger entry can belong to at most one payout batch. Failed transfers remain recorded and must not be silently released for duplicate payment.
@@ -30,7 +30,9 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 - The provider must settle buyer collections to the platform's own merchant/settlement account.
 - Product prices and seller accounting remain TND during Phase 1. If a buyer is charged in a foreign currency, preserve the exact buyer amount/currency and the provider's actual settlement amount/currency with the FX rate, source, and timestamp.
 - Calculate commission and seller payable from the canonical TND accounting amount. Informational exchange-rate displays are not accounting evidence.
-- Reconcile provider fees and FX differences separately; never hide them inside the commission or seller payable.
+- Reconcile provider fees and FX differences separately. Allocate all verified external fees attributable to the sale to the seller; never hide them inside the 5% commission.
+- For shared order-level fees, allocate proportionally to each seller's attributable paid order amount unless provider evidence identifies the seller-specific amount.
+- Do not finalize or transfer a seller payable until the actual external fee amount and allocation are supported by provider/bank evidence. The seller statement must show gross sales, 5% commission, each fee allocation, and final payable.
 
 ## Payment activation safety
 

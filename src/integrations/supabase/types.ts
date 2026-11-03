@@ -710,6 +710,79 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_external_fee_entries: {
+        Row: {
+          amount_millimes: number
+          created_at: string
+          currency: string
+          description: string
+          external_reference: string
+          fee_category: string
+          id: string
+          idempotency_key: string
+          order_id: string | null
+          order_item_id: string | null
+          recorded_by: string
+          seller_id: string
+          source: string
+          store_id: string
+        }
+        Insert: {
+          amount_millimes: number
+          created_at?: string
+          currency?: string
+          description: string
+          external_reference: string
+          fee_category: string
+          id?: string
+          idempotency_key: string
+          order_id?: string | null
+          order_item_id?: string | null
+          recorded_by: string
+          seller_id: string
+          source: string
+          store_id: string
+        }
+        Update: {
+          amount_millimes?: number
+          created_at?: string
+          currency?: string
+          description?: string
+          external_reference?: string
+          fee_category?: string
+          id?: string
+          idempotency_key?: string
+          order_id?: string | null
+          order_item_id?: string | null
+          recorded_by?: string
+          seller_id?: string
+          source?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_external_fee_entries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_external_fee_entries_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_external_fee_entries_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seller_ledger_entries: {
         Row: {
           amount_millimes: number
@@ -781,6 +854,55 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      seller_payout_fee_allocations: {
+        Row: {
+          amount_millimes: number
+          created_at: string
+          fee_entry_id: string
+          id: string
+          payout_id: string
+          store_id: string
+        }
+        Insert: {
+          amount_millimes: number
+          created_at?: string
+          fee_entry_id: string
+          id?: string
+          payout_id: string
+          store_id: string
+        }
+        Update: {
+          amount_millimes?: number
+          created_at?: string
+          fee_entry_id?: string
+          id?: string
+          payout_id?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_payout_fee_allocations_fee_entry_id_fkey"
+            columns: ["fee_entry_id"]
+            isOneToOne: false
+            referencedRelation: "seller_external_fee_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_payout_fee_allocations_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "seller_payouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_payout_fee_allocations_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seller_payout_items: {
         Row: {
@@ -882,6 +1004,7 @@ export type Database = {
           created_at: string
           currency: string
           discount_millimes: number
+          external_fees_millimes: number
           failure_reason: string | null
           gross_millimes: number
           id: string
@@ -903,6 +1026,7 @@ export type Database = {
           created_at?: string
           currency?: string
           discount_millimes?: number
+          external_fees_millimes?: number
           failure_reason?: string | null
           gross_millimes: number
           id?: string
@@ -924,6 +1048,7 @@ export type Database = {
           created_at?: string
           currency?: string
           discount_millimes?: number
+          external_fees_millimes?: number
           failure_reason?: string | null
           gross_millimes?: number
           id?: string
@@ -1092,6 +1217,20 @@ export type Database = {
       admin_mark_seller_payout_paid: {
         Args: { _payout_id: string; _transfer_reference: string }
         Returns: boolean
+      }
+      admin_record_seller_external_fee: {
+        Args: {
+          _amount_millimes: number
+          _description: string
+          _external_reference: string
+          _fee_category: string
+          _idempotency_key: string
+          _order_id?: string
+          _order_item_id?: string
+          _source: string
+          _store_id: string
+        }
+        Returns: string
       }
       admin_renew_entitlement: {
         Args: {

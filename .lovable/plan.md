@@ -26,13 +26,12 @@
 7. Emails (needs email domain). PAUSE.
 8. Final: choose payment/payout provider, adapt or retire Konnect code, sandbox tests, then live only on explicit approval.
 
-## 4. Financial fee allocation policy — approved 2026-10-31
+## 4. Financial fee allocation policy — updated 2026-11-03
 
 - Algorea Bazaar's platform commission is 5% by default and administrator-configurable, calculated separately from all external payment, transfer, and withdrawal fees. The 5% rate is captured in each order item as an immutable snapshot.
-- The buyer bears the external fee charged for the payment method the buyer selects, provided the provider's terms and applicable law permit the fee to be passed through and the exact fee can be disclosed before confirmation.
-- The seller bears external fees charged for receiving, transferring, or withdrawing the seller's proceeds. Weekly seller payouts remain manual.
+- The seller bears all verified external fees attributable to the sale: payment processing/collection, currency conversion, settlement, transfer, receipt and withdrawal. These fees remain separate from the 5% commission and are itemized and deducted from seller proceeds only once, using actual charges and a documented allocation method. Weekly seller payouts remain manual.
 - Algorea Bazaar must not absorb, reimburse, or record any provider, bank, transfer, or withdrawal fee as a platform expense. Such fees must never reduce the platform commission.
-- External fees must be separately identified, accurately calculated from the selected provider/method, and disclosed to the responsible customer before the relevant transaction. No hidden fees and no guessed or hard-coded fee schedule.
+- External fees must be separately identified, accurately calculated from actual provider/bank evidence, and disclosed in the seller statement. No hidden fees and no guessed or hard-coded fee schedule. Do not add a separate external fee to the buyer's checkout under this allocation rule.
 - If a provider charges the platform account and its fee cannot lawfully and transparently be assigned to the responsible buyer or seller, do not activate that payment/payout method until the commercial and technical arrangement is resolved.
 - Do not assume iPay's quoted rate or cap, any referral program, or any other provider's pricing without current written confirmation. We have confirmed that the referral code is not issued by iPay itself. The platform owner's Konnect referral code and link have been supplied. Offer the same Konnect registration link to every seller regardless of nationality, country, or residence; do not route sellers by country or use iPay as an automatic foreign-seller fallback. Konnect alone decides seller eligibility and verification requirements. Confirm referral attribution, account-linking, and manual transfer procedures before enabling payouts.
 - This policy is a product requirement, not permission to activate live payments. Provider selection, fee mechanics, sandbox verification, and explicit approval remain prerequisites.

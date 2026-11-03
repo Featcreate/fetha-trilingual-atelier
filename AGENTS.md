@@ -19,8 +19,18 @@
 
 ## Seller country and provider eligibility
 
-- Never restrict seller signup, store creation, or product listing by nationality, country, or place of residence.
-- Show every seller two separate provider links: the platform's Konnect referral registration link (https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a) and a direct link to the official iPay Tunisia website (https://www.ipay.tn/) without a referral code. The seller chooses which link to open.
-- Konnect alone decides whether it accepts a seller and what identity, phone, banking, residence, or other verification it requires. Do not duplicate those provider checks as platform eligibility rules or promise acceptance.
-- Do not block store creation or listings while provider onboarding is incomplete. Do not promise or execute a payout unless the seller's provider account and payout route are accepted and verified.
-- Neither provider link is an API integration, wallet-linking mechanism, automatic split-payment feature, or authorization to enable live payments.
+- Worldwide buyers are supported as the product target, subject to the selected buyer-payment provider's confirmed coverage and applicable law.
+- Phase 1 seller onboarding is limited to sellers in Tunisia. Do not advertise or promise worldwide seller onboarding or payout coverage.
+- Seller-facing Konnect, iPay, and WePay buttons are optional external information/account links only. They are not buyer-payment integrations, account-linking mechanisms, or payout execution features.
+- Seller store creation and product listing must not depend on registering with any of these providers.
+- Never collect provider passwords, OTPs, API secrets, or private credentials.
+
+## Authoritative financial model
+
+- Buyer payments are collected for Algorea Bazaar and settled only to the platform's own merchant/settlement account.
+- The payment provider is a collection/settlement rail only. It must never split payments, hold seller balances on the platform's behalf, or distribute seller proceeds directly.
+- Algorea Bazaar's internal financial system is the sole source of truth for collections, actual settlement records, FX snapshots, the configurable 5% default commission, seller payable balances, and payout records.
+- Canonical product accounting, commission, seller payable, and Phase 1 seller payouts are denominated in TND. Foreign buyer charge currency and actual provider settlement currency/amount must be stored separately with immutable FX metadata once the provider-specific checkout flow is approved.
+- Algorea Bazaar alone initiates seller transfers. Weekly manual transfer is the default. No provider API may initiate seller payouts; direct Konnect payout capability must remain disabled.
+- Migration 0022 adds the append-only platform financial ledger and enforces weekly/manual platform-only seller payouts. It is committed to GitHub but is not applied to Supabase unless separately approved after disposable-clone verification.
+- Keep live checkout disabled until a provider confirms worldwide buyer coverage, digital-goods/multi-vendor acceptance, platform-owned collection, settlement currencies, fees, refunds/chargebacks, and server-side payment verification. Live activation requires separate explicit approval.

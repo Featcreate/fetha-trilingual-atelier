@@ -13,6 +13,10 @@
 - [x] Admin dashboard: configurable commission, store/product moderation, and order monitoring
 - [x] Added and applied migration `0022_platform_central_financial_ledger.sql` to the original Supabase project; verified RLS, constraints, triggers and append-only behavior
 
+## Validation checkpoint
+
+- [ ] Run repository CI (Prettier, ESLint, Vitest, and production build) against the seller external-fee implementation now on `main`.
+
 ## Remaining before a safe launch
 
 - [x] Apply migration 0022 to the original Supabase project after a successful transaction-wrapped dry run against its actual schema; verify migration history, ledger RLS, constraints, indexes, triggers, append-only behavior, and payout guards.

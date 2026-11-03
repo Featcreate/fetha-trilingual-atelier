@@ -304,7 +304,7 @@ BEGIN
     RAISE EXCEPTION 'preflight_failed: direct_provider_seller_payout_records_exist';
   END IF;
 END;
-$;
+$$;
 
 UPDATE public.platform_settings
 SET konnect_direct_payouts_enabled = false

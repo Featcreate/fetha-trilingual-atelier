@@ -2,12 +2,13 @@
 
 ## One registration route for every seller
 
-Algorea Bazaar does not restrict seller onboarding by nationality, country, or place of residence. Every seller sees the same platform referral link and may choose to register with Konnect:
+Algorea Bazaar does not restrict seller onboarding by nationality, country, or place of residence. Every seller is offered two separate provider links and may choose either provider:
 
 - Referral code: `31XyM7MR8wy71ga7a`
-- Registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a
+- Konnect registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a
+- iPay website link (direct, without referral): https://www.ipay.tn/
 
-Do not route sellers to different providers based on their country. Do not impose a platform-side country, nationality, residence, Tunisian phone-number, or Tunisian-bank-account eligibility check.
+Keep both provider links visible to every seller; the seller chooses which provider to visit. The iPay button opens the official iPay Tunisia website directly and carries no referral code. Do not impose a platform-side country, nationality, residence, Tunisian phone-number, or Tunisian-bank-account eligibility check.
 
 ## Provider-controlled eligibility
 
@@ -23,7 +24,7 @@ The registration link is an account-registration/referral link only. It does not
 - Seller proceeds: the sale amount less the platform commission; provider/bank/transfer/withdrawal fees remain separate and are charged to the responsible party as disclosed.
 - Weekly manual transfer remains the current payout workflow. The admin dashboard records a transfer only after it has actually been completed; it does not send money.
 - Direct Konnect wallet payouts and automatic split payments remain disabled until Konnect confirms the required API capability, seller-account linking, eligibility, settlement currency, limits, fees, and transfer references, and sandbox tests pass.
-- Do not use iPay as an automatic fallback for sellers outside Tunisia. Any additional provider must be separately evaluated and explicitly configured; no seller-country routing is currently implemented.
+- iPay is an optional seller-selected provider link only; it opens https://www.ipay.tn/ directly. It is not an automatic fallback, payment integration, account-linking mechanism, or payout execution feature.
 - Do not block store creation or product listing because a seller has not registered with Konnect.
 
 ## Launch checks

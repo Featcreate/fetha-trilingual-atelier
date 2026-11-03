@@ -20,7 +20,8 @@
 - [x] Prepare the current Konnect international-card route: hosted API checkout, server-to-server payment verification, bank_card prioritized, TND canonical charge, local methods retained, fail-closed activation.
 - [ ] Obtain written Konnect approval for worldwide international-card acceptance for this exact digital multi-vendor marketplace, with the platform as sole collection beneficiary and no seller splits/payouts.
 - [ ] Confirm the provider permits all verified processing/collection/conversion/settlement fees to be borne by the seller, and verify fee amounts, settlement timing/currency, reserves, refunds/chargebacks, and API/webhook reconciliation in sandbox.
-- [x] Implement evidence-based manual external-fee recording, append-only seller fee entries, central ledger debits, seller statement breakdowns, fee allocation snapshots and once-only payout deductions (migrations 0023–0024 applied to the original Supabase project).
+- [x] Implement evidence-based manual external-fee recording, append-only seller fee entries, central ledger debits, seller statement breakdowns, fee allocation snapshots and once-only payout deductions (migrations 0023–0025 applied to the original Supabase project).
+- [x] Add automatic proportional allocation of an actual shared order-level fee by each seller's discounted paid amount, with exact largest-remainder rounding (migration 0025 applied).
 - [ ] Add automatic provider API fee ingestion only after the provider's statement/webhook contract is verified; retain manual evidence entry as the reconciliation fallback.
 - [ ] Keep current checkout TND-only until a foreign-currency quote/settlement flow is proven. Do not use informational display rates as payment quotes or accounting evidence.
 - [ ] Run CI, lint, tests and production build after the SQL and checkout changes are finalized.

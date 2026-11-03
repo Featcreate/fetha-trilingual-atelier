@@ -14,6 +14,7 @@ export interface KonnectPayment {
   reachedAmount?: number;
   orderId?: string;
   token?: string;
+  transactions?: { status?: string }[];
 }
 
 export type PaymentOutcome = "paid" | "already_paid" | "pending" | "mismatch" | "order_closed";
@@ -26,6 +27,9 @@ export function decidePaymentOutcome(
   if (order.status !== "pending") return "order_closed";
   // Only a completed payment for the full amount, in TND, can settle an order.
   if (payment.status !== "completed") return "pending";
+  // Konnect's API guidance requires checking both the payment and transaction status.
+  if (!payment.transactions?.some((transaction) => transaction.status === "success"))
+    return "mismatch";
   if (payment.orderId !== order.id) return "mismatch";
   if (payment.token !== "TND") return "mismatch";
   if (

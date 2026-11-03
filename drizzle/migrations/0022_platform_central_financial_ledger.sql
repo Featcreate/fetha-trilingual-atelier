@@ -252,7 +252,7 @@ BEGIN
         AND NEW.entry_side = 'debit'
         AND NEW.order_id IS NULL
         AND NEW.order_item_id IS NULL
-        AND NEW.provider_transfer_ref = NEW.external_reference
+        AND p.provider_transfer_ref = NEW.external_reference
     ) THEN
       RAISE EXCEPTION 'platform_ledger_seller_payout_mismatch';
     END IF;

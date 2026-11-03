@@ -147,6 +147,15 @@ CREATE INDEX platform_financial_ledger_seller_idx
   WHERE seller_id IS NOT NULL;
 CREATE INDEX platform_financial_ledger_type_idx
   ON public.platform_financial_ledger_entries(entry_type, created_at DESC);
+CREATE INDEX platform_financial_ledger_order_item_idx
+  ON public.platform_financial_ledger_entries(order_item_id)
+  WHERE order_item_id IS NOT NULL;
+CREATE INDEX platform_financial_ledger_payout_idx
+  ON public.platform_financial_ledger_entries(seller_payout_id)
+  WHERE seller_payout_id IS NOT NULL;
+CREATE INDEX platform_financial_ledger_store_idx
+  ON public.platform_financial_ledger_entries(store_id, created_at DESC)
+  WHERE store_id IS NOT NULL;
 
 ALTER TABLE public.platform_financial_ledger_entries ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.platform_financial_ledger_entries FROM PUBLIC, anon, authenticated;

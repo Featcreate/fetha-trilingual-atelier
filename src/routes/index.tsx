@@ -4,6 +4,8 @@ import { useSession } from "@/hooks/use-session";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { formatTND } from "@/lib/money";
+import { TndEquivalents } from "@/components/TndEquivalents";
 import {
   Menu,
   X,
@@ -108,6 +110,7 @@ function Index() {
     name: string;
     name_translations: unknown;
     product_type: string;
+    price_millimes: number;
     image_path: string | null;
     store_id: string | null;
     store: { name: string; slug: string };
@@ -133,7 +136,7 @@ function Index() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,name,name_translations,product_type,image_path,store_id")
+        .select("id,name,name_translations,product_type,price_millimes,image_path,store_id")
         .eq("store_id", myStoreQuery.data!.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false })
@@ -148,7 +151,7 @@ function Index() {
     queryFn: async () => {
       const { data: products, error } = await supabase
         .from("products")
-        .select("id,name,product_type,image_path,store_id")
+        .select("id,name,product_type,price_millimes,image_path,store_id")
         .eq("is_active", true)
         .not("store_id", "is", null)
         .order("created_at", { ascending: false })
@@ -212,6 +215,10 @@ function Index() {
           >
             {localizedProductText(product.name, product.name_translations, lang)}
           </Link>
+          <p className="mt-2 font-bold">
+            {formatTND(product.price_millimes)}
+            <TndEquivalents millimes={product.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} />
+          </p>
           <Link
             to="/stores/$slug"
             params={{ slug: storeSlug }}

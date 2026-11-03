@@ -112,6 +112,7 @@ function SellerPage() {
         .from("products")
         .select("*")
         .eq("store_id", store!.id)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Product[];
@@ -399,6 +400,25 @@ function SellerPage() {
     if (error) return setNotice(m.error);
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
     await qc.invalidateQueries({ queryKey: ["catalog"] });
+  }
+
+  async function deleteProduct(product: Product) {
+    if (!store || busy) return;
+    if (!window.confirm(m.deleteProductConfirmation)) return;
+    setBusy(true);
+    setNotice("");
+    const { error } = await supabase
+      .from("products")
+      .update({ is_active: false, deleted_at: new Date().toISOString() })
+      .eq("id", product.id)
+      .eq("store_id", store.id)
+      .is("deleted_at", null);
+    setBusy(false);
+    if (error) return setNotice(m.deleteProductFailed);
+    setNotice(m.productDeleted);
+    await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
+    await qc.invalidateQueries({ queryKey: ["catalog"] });
+    await qc.invalidateQueries({ queryKey: ["storefront"] });
   }
 
   async function saveProduct(e: FormEvent<HTMLFormElement>, product: Product) {
@@ -830,6 +850,14 @@ function SellerPage() {
                             className="rounded-full bg-secondary px-3 py-2 text-xs font-semibold"
                           >
                             {product.is_active ? m.pause : m.publish}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => void deleteProduct(product)}
+                            className="rounded-full border border-destructive px-3 py-2 text-xs font-semibold text-destructive disabled:opacity-50"
+                          >
+                            {m.deleteProduct}
                           </button>
                         </div>
                       </div>

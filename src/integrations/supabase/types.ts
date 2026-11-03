@@ -470,6 +470,7 @@ export type Database = {
       products: {
         Row: {
           created_at: string;
+          deleted_at: string | null;
           description: string;
           id: string;
           image_path: string | null;
@@ -484,6 +485,7 @@ export type Database = {
         };
         Insert: {
           created_at?: string;
+          deleted_at?: string | null;
           description?: string;
           id?: string;
           image_path?: string | null;
@@ -498,6 +500,7 @@ export type Database = {
         };
         Update: {
           created_at?: string;
+          deleted_at?: string | null;
           description?: string;
           id?: string;
           image_path?: string | null;

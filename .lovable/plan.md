@@ -130,3 +130,16 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Seller-facing Konnect, iPay, and WePay buttons are external information/account links only. They do not connect seller balances, collect buyer payments, or execute seller payouts.
 - Added migration 0022_platform_central_financial_ledger.sql and the docs/central-financial-accounting.md specification. The migration is committed to GitHub but has not been applied to Supabase. It is additive and does not enable checkout or move money.
 - Provider selection, global buyer currency coverage, sandbox validation, legal review, and separate explicit live-activation approval remain required.
+
+
+## 13. Global buyer payment route and central-ledger review — 2026-11-03
+
+- Buyers are the global target, subject to provider country/card/risk coverage and applicable law. Phase 1 sellers remain Tunisia-only.
+- Konnect is the leading candidate for international card acceptance because its official public material documents international Visa/Mastercard, hosted API checkout, webhooks, payment lookup, sandbox, and TND/EUR/USD API tokens. Its published indicative international-card fee is 2.9%; the merchant contract controls.
+- Current checkout adapter requests TND only, with bank_card listed first and local wallet/e-DINAR methods retained. International card issuers may convert the TND charge into the card's billing currency. Algorea Bazaar does not yet charge every buyer in their local currency.
+- No live checkout is enabled. Konnect must first confirm in writing that it accepts Algorea Bazaar's digital multi-vendor model with the platform as sole collection beneficiary and no provider-side seller split or payouts.
+- Added docs/global-buyer-payment-route.md and clarified currency behavior in the financial policy and buyer-facing TND notes.
+- Reviewed original Supabase project jgjcychkntsokhzeziqs: migration history is 0000–0021, migration 0022 is absent; relevant order, item, payout and payout-preference tables exist; RLS is enabled on existing public tables; current orders, order items, payout batches and payout preferences are all zero rows.
+- Separate test project iblfizhtvzfnfuntnazk is empty (no migrations or public tables), so it is not a ready-made schema clone.
+- Static review found and fixed the malformed DO block in migration 0022, added immutable FX/settlement snapshot enforcement and tightened ledger amount/currency checks. The migration remains GitHub-only and has NOT been applied to Supabase.
+- Before production migration: complete SQL validation on a disposable schema/database, verify the entire chain and security/performance advisors. Do not activate live payments or change provider secrets without separate approval.

@@ -116,3 +116,17 @@ The following UI work is now present on `configurable-commission-and-terms-conse
 - Confirmed the production database is still empty of auth users, products, stores, and Storage objects. No live payments, provider transfers, or seller payouts were activated.
 - Regenerated and committed `src/integrations/supabase/types.ts` from the live original database after migration deployment.
 - Remaining operational checks: create/assign the first administrator through a secure owner-controlled process; run a full app build and end-to-end signup/seller/catalog/download tests against this original project; confirm Lovable/Render runtime environment variables match this project. Security Advisor still reports authenticated SECURITY DEFINER RPCs that are intentionally exposed for app workflows and guarded by their function-level authorization checks; performance Advisor reports RLS plan/index optimization notices to address before scale.
+
+
+## 12. Authoritative financial model — 2026-11-03 (supersedes conflicting historical notes above)
+
+- Algorea Bazaar serves buyers worldwide, subject to payment-provider and legal coverage.
+- Phase 1 seller onboarding is limited to Tunisia. Do not offer or promise global seller payout coverage.
+- Buyer payments are collected for Algorea Bazaar and settled only to the platform's own merchant/settlement account.
+- The payment provider is a collection/settlement rail only. It must never split or distribute seller proceeds.
+- The platform's internal accounting system alone records collections, actual settlement, FX snapshots, 5% default commission, seller payables, and seller payouts.
+- Canonical product accounting, commission, seller payable, and Phase 1 seller payouts remain in TND. Foreign buyer charge currency and actual platform settlement are recorded separately with immutable currency/FX metadata.
+- Algorea Bazaar alone initiates seller transfers; weekly manual transfer is the default. Provider APIs do not pay sellers.
+- Seller-facing Konnect, iPay, and WePay buttons are external information/account links only. They do not connect seller balances, collect buyer payments, or execute seller payouts.
+- Added migration 0022_platform_central_financial_ledger.sql and the docs/central-financial-accounting.md specification. The migration is committed to GitHub but has not been applied to Supabase. It is additive and does not enable checkout or move money.
+- Provider selection, global buyer currency coverage, sandbox validation, legal review, and separate explicit live-activation approval remain required.

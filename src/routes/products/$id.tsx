@@ -62,7 +62,7 @@ function ProductPage() {
             {query.data.gallery.length > 0 && (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {query.data.gallery.map((image: { id: string; image_path: string }, index: number) => (
-                  <img key={image.id} src={supabase.storage.from("product-images").getPublicUrl(image.image_path).data.publicUrl} alt={`${query.data.product.name} — ${index + 1}`} loading="lazy" className="aspect-square w-full rounded-xl object-cover" />
+                  <img key={image.id} src={supabase.storage.from("product-images").getPublicUrl(image.image_path).data.publicUrl} alt={`${query.data!.product.name} — ${index + 1}`} loading="lazy" className="aspect-square w-full rounded-xl object-cover" />
                 ))}
               </div>
             )}

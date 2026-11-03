@@ -317,7 +317,7 @@ function Index() {
               <p className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">{t.marketplace.noRecentProducts}</p>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {myStoreProductsQuery.data.map((product) => renderProductCard(product, myStoreQuery.data.name, myStoreQuery.data.slug))}
+                {myStoreProductsQuery.data.map((product) => renderProductCard(product, myStoreQuery.data!.name, myStoreQuery.data!.slug))}
               </div>
             )}
           </div>

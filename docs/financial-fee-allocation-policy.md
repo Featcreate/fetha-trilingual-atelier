@@ -1,58 +1,51 @@
 # Algorea Bazaar — External Fee Allocation Policy
 
 **Status:** Approved product requirement  
-**Approved:** 2026-10-31  
-**Scope:** Buyers, sellers, payment methods, payouts, transfers, and withdrawals
+**Scope:** Worldwide buyers, Phase 1 Tunisia-based sellers, payment methods, platform accounting, and seller payouts
 
 ## 1. Platform commission
 
-Algorea Bazaar charges a platform commission of **5% by default, configurable by an authorized platform administrator**. This commission is calculated and accounted for separately from all third-party fees.
+Algorea Bazaar charges a platform commission of **5% by default, configurable by an authorized platform administrator**. The commission is calculated and accounted for separately from all third-party fees.
 
-The applicable commission must be disclosed clearly to sellers before a sale and reflected in the transaction breakdown. Any future change must be announced before it applies to new transactions. The rate is stored as a transaction snapshot, so a later change never recalculates completed or existing orders.
+The applicable commission is snapshotted on each order item. A later commission change applies only to new transactions and never recalculates completed or existing orders.
 
-External provider fees must never be absorbed by the platform or deducted from the platform commission.
+External provider fees must never be merged into or silently deducted from the platform commission.
 
-## 2. Buyer-side fees
+## 2. Buyer collection and provider role
 
-The buyer is responsible for the external fee charged by the payment method the buyer chooses.
+- Buyers may be located worldwide, subject to the selected provider's actual supported countries, cards, currencies, fraud controls, and applicable law.
+- The payment provider collects the buyer's payment for Algorea Bazaar and settles the collection to the platform's own merchant/settlement account.
+- The provider is a payment collection and settlement rail only. It must not split payments, create seller balances, hold seller funds on the platform's behalf, or transfer seller proceeds directly.
+- Algorea Bazaar's internal accounting system is the sole authority for recording collections, calculating commission, determining seller payables, and recording seller payouts.
+- A provider is not accepted for production unless it confirms in writing that this platform-owned collection model is supported for a digital multi-vendor marketplace.
 
-Before the buyer confirms payment, the checkout must:
+## 3. Currency and FX accounting
 
-- identify the selected payment provider/method;
-- show the actual external fee separately from the product amount and platform commission;
-- show the total amount the buyer will pay.
+- Product prices and canonical seller accounting remain in TND during Phase 1 because the initial seller cohort is in Tunisia.
+- A buyer may be charged in another currency only when the selected provider confirms that currency and the actual settlement behavior.
+- For every foreign-currency order, retain an immutable snapshot of the buyer charge currency and amount, the platform settlement currency and actual settled amount, the FX rate, its source, and its timestamp.
+- The accounting rate used for the order must be a verified checkout/settlement rate, not an informational rate used to display approximate prices.
+- Calculate the 5% platform commission and seller payable from the canonical TND accounting amount, with a documented rounding rule. Never recalculate historical orders using a newer FX rate.
+- Reconcile the buyer charge, provider settlement, provider fee, platform commission, seller payable, and any FX difference as separate accounting entries.
 
-A buyer-side fee may only be passed through where the provider's contract and applicable law permit it. Never invent, estimate as exact, or hard-code a provider fee without a current, verified fee schedule.
+## 4. Seller proceeds and payouts
 
-## 3. Seller-side fees
+- The seller's payable amount is calculated by Algorea Bazaar after the platform commission.
+- Seller payables are recorded in the platform's internal financial ledger. This ledger is an accounting record, not a bank account, stored-value wallet, or payment instrument.
+- During Phase 1, seller payouts are denominated in TND and initiated only by Algorea Bazaar from the platform's own funds.
+- The default cadence is a weekly manual transfer. An administrator records the transfer reference only after the platform has actually completed the transfer.
+- No payment provider, gateway, or intermediary may distribute, split, or directly pay seller proceeds. No automatic seller payout is enabled.
 
-The seller is responsible for external fees associated with:
+## 5. External fees and transparency
 
-- receiving seller proceeds;
-- transferring seller proceeds to the seller;
-- withdrawing funds from the seller's account.
-
-Seller payouts are planned as **manual weekly transfers**. All sellers, regardless of nationality or residence, are offered the same platform-owned Konnect referral-registration link: https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a. Algorea Bazaar does not apply a seller-country eligibility filter; Konnect alone decides whether it accepts each seller and what verification details it requires. The referral link does not guarantee acceptance, automatically link a seller wallet, or enable automatic payouts. Verify referral attribution, account identification/linking, manual transfer capability, and current payout terms before enabling any payout route. The seller's sale entitlement is calculated after the platform commission and before the seller's own external transfer/withdrawal fees. Those fees are borne by the seller and must not become a platform expense.
-
-Where a provider deducts a fee from the transfer amount, the seller must be informed of the fee and the expected amount received before the payout is initiated, to the extent the provider exposes that information. Any fee recovery or deduction must comply with provider terms and applicable law.
-
-## 4. No platform-paid external fees
-
-Algorea Bazaar must not pay or reimburse fees charged by iPay, another payment gateway, a bank, a transfer service, or a withdrawal service. This includes buyer payment fees and seller receiving, transfer, and withdrawal fees.
-
-If a provider charges fees to the platform's own account and does not support a lawful, transparent way to assign those fees to the responsible buyer or seller, that provider/method must remain disabled until a suitable arrangement is confirmed.
-
-## 5. Transparency and accounting
-
-- Show external fees as separate line items; do not merge them into the platform commission.
-- Disclose the responsible party and fee before the relevant party confirms the transaction.
-- Do not apply hidden fees.
-- Do not book third-party fees as Algorea Bazaar expenses.
-- Keep provider fees separate from seller gross proceeds, platform commission, and seller payout records.
-- Do not assume a particular iPay rate, cap, referral program, or payout capability without current written confirmation from Audasoft.
+- Payment, conversion, settlement, bank-transfer, and withdrawal fees remain separate from the 5% platform commission.
+- Allocate each fee only to the party contractually and legally responsible for it. The responsible party and exact known fee must be disclosed before confirmation where applicable.
+- Never invent, estimate as exact, or hard-code a provider fee without a current verified fee schedule.
+- Do not silently reduce a seller's recorded payable or the platform commission to cover provider charges.
+- If the provider charges fees to the platform account and the fee allocation cannot be lawfully and transparently resolved, keep that provider/method disabled until the commercial arrangement is confirmed.
 
 ## 6. Activation gate
 
-This policy does **not** authorize live payment activation. Before enabling any payment or payout method, confirm its current fee schedule, who is contractually charged, whether fee pass-through is permitted, how the fee is calculated and displayed, and how seller payouts work. Test in sandbox first and obtain explicit approval before live activation.
+This policy does **not** authorize live payment activation. Before enabling a provider, confirm its support for worldwide buyers, foreign-currency charge and TND settlement behavior, marketplace/digital-goods model, actual fee schedule, settlement timing, refunds/chargebacks, and webhook/API verification. Test in sandbox and obtain explicit approval before live activation.
 
-No database migration, payment-provider connection, credential change, or live payment activation is implied by this policy document.
+No production database migration, payment-provider connection, credential change, or live payment activation is implied by this policy.

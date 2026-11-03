@@ -2,27 +2,166 @@
   "version": "7",
   "dialect": "postgresql",
   "entries": [
-    {"idx":0,"version":"7","when":1792811754893,"tag":"0000_migration","breakpoints":true},
-    {"idx":1,"version":"7","when":1792811781201,"tag":"0001_migration","breakpoints":true},
-    {"idx":2,"version":"7","when":1792811814199,"tag":"0002_migration","breakpoints":true},
-    {"idx":3,"version":"7","when":1793145152691,"tag":"0003_sub_batch_1a_marketplace_security","breakpoints":true},
-    {"idx":4,"version":"7","when":1793232326124,"tag":"0004_download_reservation_states_45s","breakpoints":true},
-    {"idx":5,"version":"7","when":1793232369365,"tag":"0005_revoke_client_writes_trusted_tables","breakpoints":true},
-    {"idx":6,"version":"7","when":1793404800000,"tag":"0006_configurable_commission_and_terms_acceptance","breakpoints":true},
-    {"idx":7,"version":"7","when":1793408400000,"tag":"0007_seller_order_visibility","breakpoints":true},
-    {"idx":8,"version":"7","when":1793412000000,"tag":"0008_expand_digital_product_types","breakpoints":true},
-    {"idx":9,"version":"7","when":1793466000000,"tag":"0009_verified_seller_storage_quota","breakpoints":true},
-    {"idx":10,"version":"7","when":1793466600000,"tag":"0010_seller_payouts","breakpoints":true},
-    {"idx":11,"version":"7","when":1793467200000,"tag":"0011_seller_payout_preference_access","breakpoints":true},
-    {"idx":12,"version":"7","when":1793467800000,"tag":"0012_manual_payout_workflow","breakpoints":true},
-    {"idx":13,"version":"7","when":1793468100000,"tag":"0012a_storage_bucket_bootstrap","breakpoints":true},
-    {"idx":14,"version":"7","when":1793468400000,"tag":"0013_storage_bucket_size_limits","breakpoints":true},
-    {"idx":15,"version":"7","when":1793469000000,"tag":"0014_public_product_images","breakpoints":true},
-    {"idx":16,"version":"7","when":1793555400000,"tag":"0015_product_image_gallery","breakpoints":true},
-    {"idx":17,"version":"7","when":1793555401000,"tag":"0016_product_trilingual_content","breakpoints":true},
-    {"idx":18,"version":"7","when":1793555402000,"tag":"0017_store_branding_assets","breakpoints":true},
-    {"idx":19,"version":"7","when":1793555403000,"tag":"0018_product_soft_delete","breakpoints":true},
-    {"idx":20,"version":"7","when":1793555404000,"tag":"0019_seller_legal_acceptance","breakpoints":true},
-    {"idx":21,"version":"7","when":1793555405000,"tag":"0020_secure_rls_auto_enable_function","breakpoints":true}
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792811754893,
+      "tag": "0000_migration",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792811781201,
+      "tag": "0001_migration",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792811814199,
+      "tag": "0002_migration",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793145152691,
+      "tag": "0003_sub_batch_1a_marketplace_security",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793232326124,
+      "tag": "0004_download_reservation_states_45s",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793232369365,
+      "tag": "0005_revoke_client_writes_trusted_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793404800000,
+      "tag": "0006_configurable_commission_and_terms_acceptance",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793408400000,
+      "tag": "0007_seller_order_visibility",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793412000000,
+      "tag": "0008_expand_digital_product_types",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793466000000,
+      "tag": "0009_verified_seller_storage_quota",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793466600000,
+      "tag": "0010_seller_payouts",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793467200000,
+      "tag": "0011_seller_payout_preference_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793467800000,
+      "tag": "0012_manual_payout_workflow",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793468100000,
+      "tag": "0012a_storage_bucket_bootstrap",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793468400000,
+      "tag": "0013_storage_bucket_size_limits",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1793469000000,
+      "tag": "0014_public_product_images",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1793555400000,
+      "tag": "0015_product_image_gallery",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793555401000,
+      "tag": "0016_product_trilingual_content",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793555402000,
+      "tag": "0017_store_branding_assets",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793555403000,
+      "tag": "0018_product_soft_delete",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793555404000,
+      "tag": "0019_seller_legal_acceptance",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793555405000,
+      "tag": "0020_secure_rls_auto_enable_function",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793555405000,
+      "tag": "0021_restrict_trigger_helper_execution",
+      "breakpoints": true
+    }
   ]
 }

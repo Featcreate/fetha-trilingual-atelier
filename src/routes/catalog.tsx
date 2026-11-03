@@ -78,7 +78,7 @@ function CatalogPage() {
         const store = p.store_id ? storeMap.get(p.store_id) : undefined;
         return store ? [{ ...p, store }] : [];
       });
-  }, [catalog.data, search, type]);
+  }, [catalog.data, search, type, lang]);
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.catalog} wide>

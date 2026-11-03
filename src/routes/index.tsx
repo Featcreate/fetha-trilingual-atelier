@@ -11,6 +11,7 @@ import { PRODUCT_TYPES } from "@/lib/product-types";
 const categoryIcons = { ebook: BookOpen, pdf: BookOpen, template: LayoutTemplate, educational: GraduationCap, bundle: Sparkles, software: Laptop, app: Laptop, printable: Printer, planner: CalendarCheck, course: GraduationCap, worksheets: Printer, flashcards: BookOpen, audio: Headphones, video: Video, graphics: Palette, other: Sparkles };
 const CATEGORIES = PRODUCT_TYPES.map((id) => [id, categoryIcons[id]] as const);
 import { BrandLogo } from "@/components/BrandLogo";
+import { ProductPreview } from "@/components/ProductPreview";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
@@ -125,16 +126,7 @@ function Index() {
       <article key={product.id} className="overflow-hidden rounded-xl border border-border bg-card">
         <Link to="/products/$id" params={{ id: product.id }} className="block">
           <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-cream-light p-5">
-            {product.image_path ? (
-              <img
-                src={supabase.storage.from("product-images").getPublicUrl(product.image_path).data.publicUrl}
-                alt={product.name}
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span className="text-3xl font-bold text-petrol/50">AB</span>
-            )}
+            <ProductPreview path={product.image_path} alt={product.name} className="h-full w-full object-cover" />
           </div>
         </Link>
         <div className="space-y-2 p-4">

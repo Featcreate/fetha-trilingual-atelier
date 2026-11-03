@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
-import { formatTND } from "@/lib/money";
+import { formatTND, parseTNDToMillimes } from "@/lib/money";
 import { AuthShell, SubmitButton } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -61,6 +61,7 @@ type PayoutRow = {
   store_id: string;
   status: string;
   seller_amount_millimes: number;
+  external_fees_millimes: number;
   gross_millimes: number;
   commission_millimes: number;
   discount_millimes: number;
@@ -81,6 +82,10 @@ function AdminPage() {
   const [payoutStoreId, setPayoutStoreId] = useState("");
   const [payoutReference, setPayoutReference] = useState("");
   const [payoutFailure, setPayoutFailure] = useState("");
+  const [feeCategory, setFeeCategory] = useState("payment_processing");
+  const [feeAmount, setFeeAmount] = useState("");
+  const [feeReference, setFeeReference] = useState("");
+  const [feeDescription, setFeeDescription] = useState("");
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
 
   const settings = useQuery({
@@ -137,7 +142,7 @@ function AdminPage() {
       const { data, error } = await supabase
         .from("seller_payouts")
         .select(
-          "id,store_id,status,seller_amount_millimes,gross_millimes,commission_millimes,discount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason",
+          "id,store_id,status,seller_amount_millimes,external_fees_millimes,gross_millimes,commission_millimes,discount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason",
         )
         .order("created_at", { ascending: false })
         .limit(100);
@@ -176,25 +181,104 @@ function AdminPage() {
   }
 
   async function createSellerPayout() {
-    // The current database has no manual-payout RPCs. Fail closed until
-    // the separately approved database workflow is available.
-    setNotice({ ok: false, text: a.saveError });
+    if (!payoutStoreId) return;
+    setBusy("payout-create");
+    setNotice(null);
+    const { error } = await supabase.rpc("admin_create_seller_payout", {
+      _store_id: payoutStoreId,
+      _idempotency_key: `seller-payout:${payoutStoreId}:${crypto.randomUUID()}`,
+      _scheduled_for: null,
+    });
+    setBusy(null);
+    if (error) {
+      setNotice({
+        ok: false,
+        text: error.message.includes("external_fees_exceed_available_seller_balance")
+          ? (lang === "ar" ? "الرسوم الخارجية المسجلة تتجاوز المستحقات المتاحة حالياً؛ ستبقى معلقة حتى تتوفر مبيعات كافية." : lang === "en" ? "Recorded external fees exceed the currently available seller balance; they remain outstanding until sufficient sales accrue." : "Les frais externes enregistrés dépassent le solde vendeur disponible ; ils restent en attente jusqu’à ce que les ventes soient suffisantes.")
+          : error.message.includes("no_unpaid_sales")
+            ? (lang === "ar" ? "لا توجد مبيعات مؤكدة غير مدفوعة لهذا المتجر." : lang === "en" ? "No verified unpaid sales are available for this store." : "Aucune vente vérifiée non réglée pour cette boutique.")
+            : a.saveError,
+      });
+      return;
+    }
+    setNotice({ ok: true, text: a.saved });
+    await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
   }
 
-  async function confirmSellerPayout() {
+  async function recordSellerExternalFee(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!payoutStoreId) {
+      setNotice({ ok: false, text: a.payoutStore });
+      return;
+    }
+    const amount = parseTNDToMillimes(feeAmount);
+    if (!amount || feeReference.trim().length < 3 || feeDescription.trim().length < 3) {
+      setNotice({ ok: false, text: lang === "ar" ? "أدخل مبلغاً صحيحاً ومرجعاً ووصفاً يثبت الرسوم الفعلية." : lang === "en" ? "Enter a valid amount, evidence reference and description for the actual fee." : "Saisissez un montant valide, une référence justificative et une description des frais réels." });
+      return;
+    }
+    setBusy("external-fee");
+    setNotice(null);
+    const { error } = await supabase.rpc("admin_record_seller_external_fee", {
+      _store_id: payoutStoreId,
+      _fee_category: feeCategory,
+      _amount_millimes: amount,
+      _source: "verified_provider_or_bank_statement",
+      _external_reference: feeReference.trim(),
+      _description: feeDescription.trim(),
+      _idempotency_key: `seller-external-fee:${crypto.randomUUID()}`,
+    });
+    setBusy(null);
+    if (error) {
+      setNotice({ ok: false, text: a.saveError });
+      return;
+    }
+    setFeeAmount("");
+    setFeeReference("");
+    setFeeDescription("");
+    setNotice({ ok: true, text: lang === "ar" ? "تم تسجيل الرسوم الفعلية على حساب البائع." : lang === "en" ? "The actual external fee was recorded against the seller." : "Les frais externes réels ont été enregistrés à la charge du vendeur." });
+    await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+  }
+
+  async function confirmSellerPayout(payoutId: string) {
     if (payoutReference.trim().length < 3) {
       setNotice({ ok: false, text: a.payoutReferenceRequired });
       return;
     }
-    setNotice({ ok: false, text: a.saveError });
+    setBusy("payout-paid");
+    setNotice(null);
+    const { error } = await supabase.rpc("admin_mark_seller_payout_paid", {
+      _payout_id: payoutId,
+      _transfer_reference: payoutReference.trim(),
+    });
+    setBusy(null);
+    if (error) {
+      setNotice({ ok: false, text: a.saveError });
+      return;
+    }
+    setPayoutReference("");
+    setNotice({ ok: true, text: a.saved });
+    await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
   }
 
-  async function failSellerPayout() {
+  async function failSellerPayout(payoutId: string) {
     if (payoutFailure.trim().length < 3) {
       setNotice({ ok: false, text: a.payoutFailureRequired });
       return;
     }
-    setNotice({ ok: false, text: a.saveError });
+    setBusy(payoutId);
+    setNotice(null);
+    const { error } = await supabase.rpc("admin_mark_seller_payout_failed", {
+      _payout_id: payoutId,
+      _failure_reason: payoutFailure.trim(),
+    });
+    setBusy(null);
+    if (error) {
+      setNotice({ ok: false, text: a.saveError });
+      return;
+    }
+    setPayoutFailure("");
+    setNotice({ ok: true, text: a.payoutFailedNote });
+    await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
   }
 
   async function setStoreStatus(store: StoreRow) {
@@ -344,6 +428,28 @@ function AdminPage() {
           <h2 className="text-lg font-bold">{a.payouts}</h2>
           <span className="text-xs text-muted-foreground">{a.payoutConfirmNote}</span>
         </div>
+        <div className="mb-4 rounded-lg border border-border p-4">
+          <h3 className="font-semibold">{lang === "ar" ? "تسجيل رسوم خارجية فعلية" : lang === "en" ? "Record an actual external fee" : "Enregistrer des frais externes réels"}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">{lang === "ar" ? "لا تسجل إلا الرسوم المثبتة في كشف أو إيصال فعلي. تُخصم من مستحق البائع مرة واحدة عند إعداد التحويل." : lang === "en" ? "Record only fees supported by an actual statement or receipt. They are deducted once when the seller payout is prepared." : "Enregistrez uniquement les frais justifiés par un relevé ou reçu réel. Ils sont déduits une seule fois lors de la préparation du versement."}</p>
+          <form onSubmit={recordSellerExternalFee} className="mt-3 grid gap-2 sm:grid-cols-2">
+            <select value={feeCategory} onChange={(e) => setFeeCategory(e.target.value)} className="rounded-lg border border-input bg-background px-3 py-2">
+              <option value="payment_processing">{lang === "ar" ? "معالجة الدفع" : lang === "en" ? "Payment processing" : "Traitement du paiement"}</option>
+              <option value="payment_collection">{lang === "ar" ? "تحصيل الدفع" : lang === "en" ? "Payment collection" : "Encaissement"}</option>
+              <option value="currency_conversion">{lang === "ar" ? "تحويل العملة" : lang === "en" ? "Currency conversion" : "Conversion de devise"}</option>
+              <option value="provider_settlement">{lang === "ar" ? "تسوية المزود" : lang === "en" ? "Provider settlement" : "Règlement prestataire"}</option>
+              <option value="seller_transfer">{lang === "ar" ? "تحويل مستحقات البائع" : lang === "en" ? "Seller transfer" : "Virement vendeur"}</option>
+              <option value="receiving">{lang === "ar" ? "رسوم الاستلام" : lang === "en" ? "Receiving fee" : "Frais de réception"}</option>
+              <option value="withdrawal">{lang === "ar" ? "السحب" : lang === "en" ? "Withdrawal" : "Retrait"}</option>
+              <option value="other">{lang === "ar" ? "أخرى" : lang === "en" ? "Other" : "Autres"}</option>
+            </select>
+            <input value={feeAmount} onChange={(e) => setFeeAmount(e.target.value)} placeholder={lang === "ar" ? "المبلغ بالدينار التونسي" : lang === "en" ? "Amount in TND" : "Montant en TND"} className="rounded-lg border border-input bg-background px-3 py-2" />
+            <input value={feeReference} onChange={(e) => setFeeReference(e.target.value)} placeholder={lang === "ar" ? "مرجع الإيصال أو كشف المزود" : lang === "en" ? "Statement / receipt reference" : "Référence du relevé / reçu"} className="rounded-lg border border-input bg-background px-3 py-2" />
+            <input value={feeDescription} onChange={(e) => setFeeDescription(e.target.value)} placeholder={lang === "ar" ? "وصف الرسوم" : lang === "en" ? "Fee description" : "Description des frais"} className="rounded-lg border border-input bg-background px-3 py-2" />
+            <button type="submit" disabled={busy === "external-fee" || !payoutStoreId} className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50 sm:col-span-2">
+              {busy === "external-fee" ? a.saving : lang === "ar" ? "تسجيل الرسوم على البائع المحدد" : lang === "en" ? "Record fee against selected seller" : "Imputer les frais au vendeur sélectionné"}
+            </button>
+          </form>
+        </div>
         <div className="flex flex-wrap gap-3">
           <select
             value={payoutStoreId}
@@ -404,6 +510,9 @@ function AdminPage() {
                     <p className="text-xs text-muted-foreground">
                       {a.payoutCommission}: {formatTND(payout.commission_millimes)}
                     </p>
+                    <p className="text-xs text-muted-foreground">
+                      {lang === "ar" ? "الرسوم الخارجية على البائع" : lang === "en" ? "Seller external fees" : "Frais externes vendeur"}: {formatTND(payout.external_fees_millimes)}
+                    </p>
                   </div>
                 </div>
                 {payout.status !== "paid" && payout.status !== "cancelled" && (
@@ -418,7 +527,7 @@ function AdminPage() {
                     <button
                       type="button"
                       disabled={busy === payout.id}
-                      onClick={() => void confirmSellerPayout()}
+                      onClick={() => void confirmSellerPayout(payout.id)}
                       className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50"
                     >
                       {a.markPayoutPaid}
@@ -435,7 +544,7 @@ function AdminPage() {
                         <button
                           type="button"
                           disabled={busy === payout.id}
-                          onClick={() => void failSellerPayout()}
+                          onClick={() => void failSellerPayout(payout.id)}
                           className="rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive disabled:opacity-50"
                         >
                           {a.markPayoutFailed}

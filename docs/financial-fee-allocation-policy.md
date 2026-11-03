@@ -32,7 +32,7 @@ The seller bears **all external fees attributable to the sale and receipt of the
 
 These fees are separate from the 5% platform commission. The platform does not absorb, reimburse, or treat them as a platform operating expense.
 
-A fee may be allocated to a seller only using the actual fee charged and a documented, consistently applied allocation method. For an order containing products from more than one seller, shared order-level fees must be allocated proportionally to each seller's attributable paid order amount unless a verified provider-level attribution is available.
+A fee may be allocated to a seller only using the actual fee charged and a documented, consistently applied allocation method. For a shared order-level fee, the administrator enters the actual total and the paid order ID; Algorea Bazaar allocates the fee proportionally to each seller's discounted paid order-item payable amount, using largest-remainder rounding so the allocated amounts sum exactly to the provider fee. Seller-specific fees are recorded against the relevant store only.
 
 No fee may be guessed, presented as exact without a current verified fee schedule, or deducted twice. The seller-facing statement must show the sale amount, 5% commission, each external fee (or clearly identified allocated share), and final payable amount separately.
 
@@ -59,6 +59,6 @@ No fee may be guessed, presented as exact without a current verified fee schedul
 
 Implementation status: migrations 0023 and 0024 are applied to the original Supabase project. The administrator can record an actual external fee in TND only when a provider/bank statement or receipt reference is supplied. The fee is stored in an append-only seller fee register and the central platform ledger. Seller dashboards show each fee and its outstanding/allocated amounts. The weekly payout preparation function allocates each outstanding fee once, snapshots the fee total, and deducts it from the seller's final transfer amount after the platform commission. If verified fees exceed available seller proceeds, payout preparation is blocked and the fees remain outstanding for a later payout.
 
-Automatic provider API ingestion is **not** implemented; fees must currently be entered by an administrator from actual evidence. No estimates or guessed rates are accepted. The current workflow records TND amounts only; non-TND fees must not be entered until their actual TND settlement conversion is evidenced.
+Automatic provider API ingestion is **not** implemented; fee totals must currently be entered by an administrator from actual evidence. Shared order-level fee splitting is calculated automatically from the verified paid order ID. No estimates or guessed rates are accepted. The current workflow records TND amounts only; non-TND fees must not be entered until their actual TND settlement conversion is evidenced.
 
 This policy does **not** authorize live payment activation. Before enabling a provider, confirm its merchant terms permit the seller-borne fee arrangement, and verify its fee schedule, settlement timing, refunds/chargebacks, currency behavior and API/webhook reconciliation. Checkout remains fail-closed pending provider verification and sandbox reconciliation.

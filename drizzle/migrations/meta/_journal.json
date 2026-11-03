@@ -169,6 +169,13 @@
       "when": 1793737769033,
       "tag": "0022_platform_central_financial_ledger",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793743452708,
+      "tag": "0023_seller_external_fee_allocation",
+      "breakpoints": true
     }
   ]
 }

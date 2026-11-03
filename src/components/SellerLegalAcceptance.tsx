@@ -1,6 +1,6 @@
 import type { Lang } from "@/lib/i18n";
 
-export const SELLER_PRIVACY_VERSION = "2026-11-03-v2";
+export const SELLER_PRIVACY_VERSION = "2026-10-31-v1";
 export const SELLER_TERMS_VERSION = "2026-11-03-v2";
 
 type Props = {
@@ -13,7 +13,7 @@ type Props = {
 
 const copy = {
   fr: {
-    privacyTitle: "Politique de confidentialité — version 2026-11-03-v2",
+    privacyTitle: "Politique de confidentialité — version 2026-10-31-v1",
     termsTitle: "Conditions générales vendeurs — version 2026-11-03-v2",
     privacyCheck: "J’ai lu et j’accepte la politique de confidentialité.",
     termsCheck:
@@ -26,7 +26,7 @@ const copy = {
       "Version de travail approuvée pour intégration ; les coordonnées de l’exploitant et les éléments juridiques manquants doivent être complétés et validés avant le lancement commercial.",
   },
   ar: {
-    privacyTitle: "سياسة الخصوصية — الإصدار 2026-11-03-v2",
+    privacyTitle: "سياسة الخصوصية — الإصدار 2026-10-31-v1",
     termsTitle: "الشروط القانونية للبائعين — الإصدار 2026-11-03-v2",
     privacyCheck: "قرأت سياسة الخصوصية وأوافق عليها.",
     termsCheck: "قرأت الشروط والأحكام والقواعد الخاصة بالبائعين وأوافق عليها.",
@@ -38,7 +38,7 @@ const copy = {
       "هذه هي النسخة المعتمدة للإدماج؛ يجب استكمال بيانات مشغّل المنصة والعناصر القانونية الناقصة ومراجعتها قبل الإطلاق التجاري.",
   },
   en: {
-    privacyTitle: "Privacy Policy — version 2026-11-03-v2",
+    privacyTitle: "Privacy Policy — version 2026-10-31-v1",
     termsTitle: "Seller Terms — version 2026-11-03-v2",
     privacyCheck: "I have read and agree to the Privacy Policy.",
     termsCheck: "I have read and agree to the Terms and Conditions and seller rules.",

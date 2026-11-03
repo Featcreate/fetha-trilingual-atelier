@@ -59,8 +59,17 @@ BEGIN
   )
   SELECT sum(amount) INTO _sum FROM allocations;
 
-  IF _sum <> 2 THEN
-    RAISE EXCEPTION 'test_failed: largest-remainder tie did not preserve total';
+  IF _sum <> 2 OR NOT EXISTS (
+    SELECT 1 FROM allocations
+    WHERE store_id = '00000000-0000-0000-0000-000000000001'::uuid AND amount = 1
+  ) OR NOT EXISTS (
+    SELECT 1 FROM allocations
+    WHERE store_id = '00000000-0000-0000-0000-000000000002'::uuid AND amount = 1
+  ) OR NOT EXISTS (
+    SELECT 1 FROM allocations
+    WHERE store_id = '00000000-0000-0000-0000-000000000003'::uuid AND amount = 0
+  ) THEN
+    RAISE EXCEPTION 'test_failed: largest-remainder tie ordering or total preservation failed';
   END IF;
 
   -- Weighted display rate must summarize mixed 5% and 10% lines without

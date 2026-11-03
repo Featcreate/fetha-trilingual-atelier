@@ -46,7 +46,46 @@ ALTER TABLE public.orders
   ADD CONSTRAINT orders_provider_settlement_snapshot_complete CHECK (
     (platform_settlement_amount_minor IS NULL AND platform_settlement_currency_exponent IS NULL)
     OR (platform_settlement_amount_minor IS NOT NULL AND platform_settlement_currency_exponent IS NOT NULL)
+  ),
+  ADD CONSTRAINT orders_buyer_tnd_amount_consistent CHECK (
+    buyer_currency IS NULL OR buyer_currency <> 'TND'
+    OR (buyer_amount_minor = total_millimes AND buyer_currency_exponent = 3)
   );
+
+-- FX and settlement snapshots may be set once, then are immutable.
+CREATE OR REPLACE FUNCTION public.guard_order_financial_snapshots()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $snapshot$
+BEGIN
+  IF OLD.buyer_currency IS NOT NULL AND (
+    NEW.buyer_currency IS DISTINCT FROM OLD.buyer_currency
+    OR NEW.buyer_amount_minor IS DISTINCT FROM OLD.buyer_amount_minor
+    OR NEW.buyer_currency_exponent IS DISTINCT FROM OLD.buyer_currency_exponent
+    OR NEW.buyer_fx_rate IS DISTINCT FROM OLD.buyer_fx_rate
+    OR NEW.buyer_fx_rate_source IS DISTINCT FROM OLD.buyer_fx_rate_source
+    OR NEW.buyer_fx_quoted_at IS DISTINCT FROM OLD.buyer_fx_quoted_at
+  ) THEN
+    RAISE EXCEPTION 'buyer_currency_snapshot_immutable';
+  END IF;
+
+  IF OLD.platform_settlement_amount_minor IS NOT NULL AND (
+    NEW.platform_settlement_currency IS DISTINCT FROM OLD.platform_settlement_currency
+    OR NEW.platform_settlement_amount_minor IS DISTINCT FROM OLD.platform_settlement_amount_minor
+    OR NEW.platform_settlement_currency_exponent IS DISTINCT FROM OLD.platform_settlement_currency_exponent
+  ) THEN
+    RAISE EXCEPTION 'platform_settlement_snapshot_immutable';
+  END IF;
+  RETURN NEW;
+END;
+$snapshot$;
+
+CREATE TRIGGER orders_financial_snapshot_immutable
+  BEFORE UPDATE ON public.orders
+  FOR EACH ROW EXECUTE FUNCTION public.guard_order_financial_snapshots();
+
+REVOKE ALL ON FUNCTION public.guard_order_financial_snapshots() FROM PUBLIC, anon, authenticated;
 
 CREATE TABLE public.platform_financial_ledger_entries (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -220,7 +259,7 @@ COMMENT ON TABLE public.platform_financial_ledger_entries IS
 
 -- Permanently enforce the approved rule: seller payouts are platform-only.
 -- Abort rather than rewrite any existing direct-provider payout history.
-DO $
+DO $$
 BEGIN
   IF EXISTS (
     SELECT 1 FROM public.seller_payout_preferences

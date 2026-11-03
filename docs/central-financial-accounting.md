@@ -61,7 +61,7 @@ A provider's general Visa/Mastercard logo or claim of international payments is 
 
 ## Non-goals and activation gates
 
-This implementation does not connect a provider, create credentials, activate checkout, make live charges, apply the migration to Supabase, or transfer money. The provider adapter and checkout FX quote flow remain blocked until provider terms and sandbox behavior are verified and the user separately approves live activation.
+This implementation does not connect a provider, create credentials, activate checkout, make live charges, or transfer money. Migrations 0022–0024 have been applied to the original Supabase project. The provider adapter and checkout FX quote flow remain blocked until provider terms and sandbox behavior are verified.
 
 Seller payout APIs are deliberately excluded. The existing weekly manual payout workflow remains the only approved method.
 
@@ -78,3 +78,14 @@ The current checkout code is fail-closed and remains disabled until separate san
 ## Database deployment status — 2026-11-03
 
 Migration 0022 has been applied to the original Supabase project jgjcychkntsokhzeziqs and is recorded in its migration history. A transaction-wrapped dry run against the actual project schema succeeded before application. Post-application checks confirmed the ledger table, RLS, indexes, immutability triggers, currency constraints, and weekly/manual-only payout constraints. The ledger, orders, order items, payout batches and payout preferences remain empty. This database change does not activate checkout or move money.
+
+
+## Seller-borne external fees — implemented, manual evidence entry
+
+- Migration 0023 adds `seller_external_fee_entries` and `seller_payout_fee_allocations`, both append-only and seller/admin readable under RLS.
+- An administrator records an actual fee only with a positive TND amount, category, source, external statement/receipt reference, description, and idempotency key. The RPC validates administrator authorization and seller/store ownership, then records a matching debit in the central platform ledger.
+- Migration 0023 extends payout snapshots with `external_fees_millimes` and updates payout creation so outstanding fees are allocated exactly once and subtracted from the seller's final payable after commission. The existing sale ledger and payout-item records continue to preserve the pre-fee seller sale proceeds.
+- A payout is blocked if recorded external fees exceed the available seller proceeds; those fees remain outstanding until later proceeds are available. Failed payouts retain their allocation and may be retried as the same payout.
+- Sellers can view fee entries, allocated amounts, remaining amounts, and fee deductions on each payout. Administrators can record fees and prepare/confirm manual weekly transfers.
+- Fee amounts are currently entered manually from evidence and recorded in TND. Automatic provider API fee ingestion and non-TND fee conversion are not implemented. Do not record estimates or guessed amounts.
+- Migrations 0023 and 0024 were applied successfully to the original Supabase project after transaction-wrapped dry runs. No fee rows, allocations, orders, payouts or ledger rows were created by deployment.

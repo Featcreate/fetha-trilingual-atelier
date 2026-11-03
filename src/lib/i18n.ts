@@ -156,7 +156,7 @@ export const dict = {
       ipayRegister: "Accéder à iPay",
       wepayRegister: "Accéder à WePay",
       konnectEligibility:
-        "Ce lien est proposé à tous les vendeurs, quel que soit leur pays ou leur lieu de résidence. Konnect vérifie directement l’identité, le téléphone et le moyen de réception du vendeur, puis décide de son éligibilité. Le lien ne garantit pas l’acceptation et n’active pas les virements automatiques.",
+        "En phase 1, l’inscription des vendeurs est réservée aux vendeurs en Tunisie. Ces liens sont informatifs uniquement : ils ne collectent pas les paiements des acheteurs et ne versent pas les sommes dues aux vendeurs. Algorea Bazaar calcule et verse elle-même les montants dus.",
       payoutHistory: "Historique des versements",
       payoutStatus: "Statut du versement",
       transferReference: "Référence du virement",
@@ -413,7 +413,7 @@ export const dict = {
       ipayRegister: "الانتقال إلى iPay",
       wepayRegister: "الانتقال إلى WePay",
       konnectEligibility:
-        "الرابط متاح لجميع البائعين مهما كانت بلدانهم أو أماكن إقامتهم. تتولى Konnect مباشرة التحقق من هوية البائع ورقم هاتفه ووسيلة استلام أمواله وتحديد أهليته. لا يضمن الرابط قبول الحساب ولا يفعّل التحويلات التلقائية.",
+        "في المرحلة الأولى، يقتصر تسجيل البائعين على تونس. هذه الروابط معلوماتية فقط؛ فهي لا تحصّل مدفوعات المشترين ولا تحوّل مستحقات البائعين. تتولى Algorea Bazaar وحدها حساب المستحقات وتحويلها.",
       payoutHistory: "سجل التحويلات",
       payoutStatus: "حالة التحويل",
       transferReference: "مرجع التحويل",
@@ -669,7 +669,7 @@ export const dict = {
       ipayRegister: "Go to iPay",
       wepayRegister: "Go to WePay",
       konnectEligibility:
-        "This link is available to all sellers, regardless of country or residence. Konnect independently verifies each seller’s identity, phone number and receiving method, and decides eligibility. The link does not guarantee acceptance or enable automatic payouts.",
+        "During Phase 1, seller registration is limited to sellers in Tunisia. These links are informational only: they do not collect buyer payments or pay seller proceeds. Algorea Bazaar alone calculates and transfers the amounts owed to sellers.",
       payoutHistory: "Payout history",
       payoutStatus: "Payout status",
       transferReference: "Transfer reference",

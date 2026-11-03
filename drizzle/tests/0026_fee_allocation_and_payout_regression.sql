@@ -93,5 +93,14 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'test_failed: immutable per-line commission rate column is missing';
   END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger
+    WHERE tgrelid = 'public.seller_payout_items'::regclass
+      AND tgname = 'seller_payout_items_guard'
+      AND NOT tgisinternal
+  ) THEN
+    RAISE EXCEPTION 'test_failed: append-only payout item trigger was not restored';
+  END IF;
 END;
 $$;

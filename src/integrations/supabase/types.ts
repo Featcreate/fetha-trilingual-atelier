@@ -961,26 +961,41 @@ export type Database = {
       };
       seller_payout_preferences: {
         Row: {
+          account_holder_name: string | null;
+          account_identifier: string | null;
+          additional_details: string | null;
+          bank_name: string | null;
           created_at: string;
           id: string;
           konnect_wallet_id: string | null;
-          method: Database["public"]["Enums"]["seller_payout_method"];
+          method: string;
+          provider_name: string | null;
           store_id: string;
           updated_at: string;
         };
         Insert: {
+          account_holder_name?: string | null;
+          account_identifier?: string | null;
+          additional_details?: string | null;
+          bank_name?: string | null;
           created_at?: string;
           id?: string;
           konnect_wallet_id?: string | null;
-          method?: Database["public"]["Enums"]["seller_payout_method"];
+          method?: string;
+          provider_name?: string | null;
           store_id: string;
           updated_at?: string;
         };
         Update: {
+          account_holder_name?: string | null;
+          account_identifier?: string | null;
+          additional_details?: string | null;
+          bank_name?: string | null;
           created_at?: string;
           id?: string;
           konnect_wallet_id?: string | null;
-          method?: Database["public"]["Enums"]["seller_payout_method"];
+          method?: string;
+          provider_name?: string | null;
           store_id?: string;
           updated_at?: string;
         };
@@ -1007,6 +1022,12 @@ export type Database = {
           id: string;
           idempotency_key: string;
           initiated_at: string | null;
+          payout_account_holder_name: string | null;
+          payout_account_identifier: string | null;
+          payout_additional_details: string | null;
+          payout_bank_name: string | null;
+          payout_destination_method: string | null;
+          payout_provider_name: string | null;
           method: Database["public"]["Enums"]["seller_payout_method"];
           paid_at: string | null;
           provider: string;
@@ -1029,6 +1050,12 @@ export type Database = {
           id?: string;
           idempotency_key: string;
           initiated_at?: string | null;
+          payout_account_holder_name?: string | null;
+          payout_account_identifier?: string | null;
+          payout_additional_details?: string | null;
+          payout_bank_name?: string | null;
+          payout_destination_method?: string | null;
+          payout_provider_name?: string | null;
           method?: Database["public"]["Enums"]["seller_payout_method"];
           paid_at?: string | null;
           provider?: string;
@@ -1051,6 +1078,12 @@ export type Database = {
           id?: string;
           idempotency_key?: string;
           initiated_at?: string | null;
+          payout_account_holder_name?: string | null;
+          payout_account_identifier?: string | null;
+          payout_additional_details?: string | null;
+          payout_bank_name?: string | null;
+          payout_destination_method?: string | null;
+          payout_provider_name?: string | null;
           method?: Database["public"]["Enums"]["seller_payout_method"];
           paid_at?: string | null;
           provider?: string;

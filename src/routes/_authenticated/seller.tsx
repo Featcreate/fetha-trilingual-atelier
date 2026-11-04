@@ -1214,10 +1214,10 @@ function SellerPage() {
             </h2>
             <p className="text-sm leading-7 text-muted-foreground">
               {lang === "ar"
-                ? "تُسجّل الرسوم الفعلية المثبتة بصورة منفصلة عن عمولة المنصة 5%، وتُخصم مرة واحدة عند إعداد التحويل الأسبوعي. لا تُحتسب أي رسوم تقديرية."
+                ? "تُسجّل الرسوم الفعلية المثبتة بصورة منفصلة عن عمولة المنصة، وتُخصم مرة واحدة عند إعداد التسوية الأسبوعية. لا تُحتسب أي رسوم تقديرية."
                 : lang === "en"
-                  ? "Verified actual fees are itemized separately from the 5% platform commission and deducted once when the weekly transfer is prepared. Estimated fees are never charged."
-                  : "Les frais réels justifiés sont détaillés séparément de la commission de 5 % et déduits une seule fois lors de la préparation du virement hebdomadaire. Aucun frais estimé n’est imputé."}
+                  ? "Verified actual fees are itemized separately from the platform commission and deducted once when the weekly settlement is prepared. Estimated fees are never charged."
+                  : "Les frais réels justifiés sont détaillés séparément de la commission de la plateforme et déduits une seule fois lors de la préparation de la régularisation hebdomadaire. Aucun frais estimé n’est imputé."}
             </p>
             {externalFeesQuery.isPending ? (
               <p className="text-sm">{m.loading}</p>

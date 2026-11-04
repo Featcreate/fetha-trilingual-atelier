@@ -1,8 +1,30 @@
+import { useState } from "react";
 import logoAsset from "@/assets/algorea-bazaar-logo.png.asset.json";
 
 /** Official Algorea Bazaar logo, shown unmodified with object-contain. */
 export const LOGO_SRC = logoAsset.url;
 
 export function BrandLogo({ className = "" }: { slotLabel?: string; className?: string }) {
-  return <img src={LOGO_SRC} alt="Algorea Bazaar" className={`object-contain ${className}`} />;
+  const [imageFailed, setImageFailed] = useState(false);
+
+  if (imageFailed) {
+    return (
+      <span
+        role="img"
+        aria-label="Algorea Bazaar"
+        className={`flex items-center justify-center text-center font-bold leading-tight text-petrol ${className}`}
+      >
+        Algorea Bazaar
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={LOGO_SRC}
+      alt="Algorea Bazaar"
+      className={`object-contain ${className}`}
+      onError={() => setImageFailed(true)}
+    />
+  );
 }

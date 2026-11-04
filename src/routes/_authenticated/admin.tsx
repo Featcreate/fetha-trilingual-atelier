@@ -76,6 +76,12 @@ type PayoutRow = {
   paid_at: string | null;
   provider_transfer_ref: string | null;
   failure_reason: string | null;
+  payout_destination_method: string | null;
+  payout_account_holder_name: string | null;
+  payout_provider_name: string | null;
+  payout_account_identifier: string | null;
+  payout_bank_name: string | null;
+  payout_additional_details: string | null;
 };
 
 function AdminPage() {
@@ -149,7 +155,7 @@ function AdminPage() {
       const { data, error } = await supabase
         .from("seller_payouts")
         .select(
-          "id,store_id,status,seller_amount_millimes,external_fees_millimes,gross_millimes,commission_millimes,discount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason",
+          "id,store_id,status,seller_amount_millimes,external_fees_millimes,gross_millimes,commission_millimes,discount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason,payout_destination_method,payout_account_holder_name,payout_provider_name,payout_account_identifier,payout_bank_name,payout_additional_details",
         )
         .order("created_at", { ascending: false })
         .limit(100);
@@ -199,7 +205,13 @@ function AdminPage() {
     if (error) {
       setNotice({
         ok: false,
-        text: error.message.includes("external_fees_exceed_available_seller_balance")
+        text: error.message.includes("payout_destination_required")
+          ? lang === "ar"
+            ? "على البائع حفظ وسيلة الاستلام وبيانات الحساب قبل إنشاء الدفعة."
+            : lang === "en"
+              ? "The seller must save a receiving method and account details before a payout can be created."
+              : "Le vendeur doit enregistrer un moyen de réception et ses coordonnées avant la création du versement."
+          : error.message.includes("external_fees_exceed_available_seller_balance")
           ? lang === "ar"
             ? "الرسوم الخارجية المسجلة تتجاوز المستحقات المتاحة حالياً؛ ستبقى معلقة حتى تتوفر مبيعات كافية."
             : lang === "en"
@@ -694,6 +706,18 @@ function AdminPage() {
                       <p className="text-xs text-muted-foreground" dir="ltr">
                         {payout.provider_transfer_ref}
                       </p>
+                    )}
+                    {payout.payout_destination_method && (
+                      <div className="mt-2 rounded-lg bg-secondary/60 p-3 text-xs leading-6">
+                        <p className="font-semibold">
+                          {lang === "ar" ? "وجهة التحويل المحفوظة لهذه الدفعة" : lang === "en" ? "Destination saved for this payout" : "Destination enregistrée pour ce versement"}
+                        </p>
+                        <p>{payout.payout_destination_method} · {payout.payout_account_holder_name}</p>
+                        {payout.payout_provider_name && <p>{payout.payout_provider_name}</p>}
+                        <p dir="ltr">{payout.payout_account_identifier}</p>
+                        {payout.payout_bank_name && <p>{payout.payout_bank_name}</p>}
+                        {payout.payout_additional_details && <p>{payout.payout_additional_details}</p>}
+                      </div>
                     )}
                     {payout.failure_reason && (
                       <p className="text-xs text-destructive">{payout.failure_reason}</p>

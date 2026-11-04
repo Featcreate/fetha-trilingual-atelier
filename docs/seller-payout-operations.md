@@ -8,7 +8,7 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 - Seller registration, store creation, and product listings remain free. No registration, store-opening, listing, or mandatory seller subscription fee is charged.
 - The platform commission is 5% by default and administrator-configurable. Each order item snapshots its commission rate and amounts; historical snapshots are never recalculated.
 - After verified collection and settlement, the platform records the sale, commission, and seller payable in its internal financial ledger.
-- Sellers select their own receiving destination (iPay, WePay, bank transfer, or another supported method). Weekly manual transfer is the platform's settlement cadence, not a seller receiving destination.
+- Sellers independently select their own manual receiving destination: Konnect, iPay, WePay, bank transfer, or another supported method. A seller does not need an account with the buyer-collection provider. Weekly manual transfer is the platform's settlement cadence, not a seller receiving destination.
 - The seller's name, account identifier, provider/bank and optional routing notes are stored as private payout details. Passwords, PINs, OTPs and API secrets must never be collected.
 - Each payout batch snapshots the selected destination. Editing the seller's preference affects future batches only; it cannot redirect an existing batch.
 - During Phase 1, seller payables and transfers are denominated in TND.
@@ -22,7 +22,7 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 
 - No provider may split a buyer payment or send seller proceeds directly.
 - No provider API is used to initiate seller payouts.
-- Konnect is the buyer-collection provider only. Seller receiving destinations such as iPay, WePay, a bank account or another supported route are independent of buyer collection and do not authorize providers to control seller balances or distribute marketplace proceeds.
+- Buyer collection provider selection is independent from seller receiving destinations. A seller may select Konnect, iPay, WePay, a bank account or another supported route even when a different provider collects buyer payments. A Konnect seller destination is recorded for an administrator to pay manually; it does not call Konnect's payout API or authorize provider-side distribution.
 - Do not collect or store seller payment-provider passwords, OTPs, or private credentials.
 - Do not promise a seller payout route until the platform has verified the seller's destination details and lawful transfer method.
 
@@ -57,6 +57,6 @@ Migrations 0022, 0023 and 0024 have been applied to the original Supabase projec
 
 ## Seller destination and batch snapshots
 
-Migration 0030 introduces seller-selected receiving destinations independently from the weekly manual settlement rail. It changes the preference method to a constrained destination value (iPay, WePay, bank transfer, or other), stores the account holder and receiving identifier under the existing seller/admin RLS boundary, and snapshots the destination into each payout batch. The payout-creation RPC refuses to create a batch until the seller has saved the required destination details. The snapshot is immutable and the administrator dashboard displays it for the manual transfer.
+Migration 0030 introduced seller-selected receiving destinations independently from the weekly manual settlement rail. Migration 0034 adds Konnect as another manual destination (alongside iPay, WePay, bank transfer, or other), stores the account holder and receiving identifier under the existing seller/admin RLS boundary, and snapshots the destination into each payout batch. The payout-creation RPC refuses to create a batch until the seller has saved the required destination details. The snapshot is immutable and the administrator dashboard displays it for the manual transfer.
 
-Migration 0030 is present in the GitHub implementation branch for review. It has **not** been applied to the test or production Supabase projects. No payment, payout, or deployment has been activated by this change.
+Migrations 0030 and 0034 are source-controlled only. Migration 0034 has **not** been applied to any Supabase project. No buyer payment, seller transfer, or deployment is activated by this change.

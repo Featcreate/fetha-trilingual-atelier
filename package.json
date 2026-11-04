@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "start": "node .output/server/index.mjs",
+    "start": "bun run build && node .output/server/index.mjs",
     "check:migrations": "node scripts/check-migration-journal.mjs"
   },
   "overrides": {

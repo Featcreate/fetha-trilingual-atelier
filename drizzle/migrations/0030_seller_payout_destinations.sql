@@ -8,6 +8,8 @@ ALTER TABLE public.seller_payout_preferences
 ALTER TABLE public.seller_payout_preferences
   DROP CONSTRAINT IF EXISTS seller_payout_preferences_wallet_check;
 ALTER TABLE public.seller_payout_preferences
+  DROP CONSTRAINT IF EXISTS seller_payout_preferences_platform_only;
+ALTER TABLE public.seller_payout_preferences
   ALTER COLUMN method TYPE text USING method::text;
 UPDATE public.seller_payout_preferences
 SET method = 'other',

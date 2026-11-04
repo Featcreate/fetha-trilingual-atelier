@@ -32,13 +32,16 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Check migration journal
+        run: bun run check:migrations
+
       - name: Typecheck
         run: bun run typecheck
       - name: Format changed files
         shell: bash
         run: |
           git fetch origin main --depth=1
-          mapfile -t files < <(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.md' '*.css' '*.html' '*.yml' '*.yaml')
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx' '*.json' '*.md' '*.css' '*.html' '*.yml' '*.yaml')
           if (( ${#files[@]} )); then
             bunx prettier --write "${files[@]}"
             bunx prettier --check "${files[@]}"
@@ -56,7 +59,7 @@ jobs:
         shell: bash
         run: |
           git fetch origin main --depth=1
-          mapfile -t files < <(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx')
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx')
           if (( ${#files[@]} )); then
             bunx eslint "${files[@]}"
           else

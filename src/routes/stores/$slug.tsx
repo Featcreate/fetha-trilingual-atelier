@@ -6,6 +6,7 @@ import { formatTND } from "@/lib/money";
 import { TndEquivalents } from "@/components/TndEquivalents";
 import { AuthShell } from "@/components/AuthShell";
 import { localizedProductText } from "@/lib/product-translations";
+import { ProductPreview } from "@/components/ProductPreview";
 
 export const Route = createFileRoute("/stores/$slug")({
   head: () => ({ meta: [{ title: "Boutique — Algorea Bazaar" }] }),
@@ -106,19 +107,11 @@ function StorefrontPage() {
               {storeQuery.data.products.map((p) => (
                 <article key={p.id} className="rounded-xl border border-border bg-card p-4">
                   <div className="mb-3 flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg bg-cream-light text-3xl font-bold text-petrol/50">
-                    {p.image_path ? (
-                      <img
-                        src={
-                          supabase.storage.from("product-images").getPublicUrl(p.image_path).data
-                            .publicUrl
-                        }
-                        alt={localizedProductText(p.name, p.name_translations, lang)}
-                        loading="lazy"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      "AB"
-                    )}
+                    <ProductPreview
+                      path={p.image_path}
+                      alt={localizedProductText(p.name, p.name_translations, lang)}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {m[p.product_type as keyof typeof m] ?? p.product_type}

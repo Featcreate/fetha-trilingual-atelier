@@ -47,8 +47,8 @@ function loadTndRates(): Promise<TndRates | null> {
       return response.json() as Promise<{ result?: string; rates?: Record<string, number> }>;
     })
     .then((data) => {
-      const USD = data.rates?.USD;
-      const EUR = data.rates?.EUR;
+      const USD = data.rates?.["USD"];
+      const EUR = data.rates?.["EUR"];
       if (
         data.result !== "success" ||
         !Number.isFinite(USD) ||

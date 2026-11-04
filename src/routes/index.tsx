@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTND } from "@/lib/money";
 import { TndEquivalents } from "@/components/TndEquivalents";
+import { ProductPreview } from "@/components/ProductPreview";
 import {
   Menu,
   X,
@@ -25,7 +26,6 @@ import {
   Headphones,
   Video,
   Palette,
-  Sparkles,
 } from "lucide-react";
 import banner from "@/assets/homepage-banner.jpg.asset.json";
 
@@ -97,6 +97,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const { lang, setLang, t } = useLang();
   const [open, setOpen] = useState(false);
+  const [bannerFailed, setBannerFailed] = useState(false);
   const { session } = useSession();
   const adminRole = useQuery({
     queryKey: ["current-user-admin", session?.user.id],
@@ -195,19 +196,11 @@ function Index() {
       <article key={product.id} className="overflow-hidden rounded-xl border border-border bg-card">
         <Link to="/products/$id" params={{ id: product.id }} className="block">
           <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-cream-light p-5">
-            {product.image_path ? (
-              <img
-                src={
-                  supabase.storage.from("product-images").getPublicUrl(product.image_path).data
-                    .publicUrl
-                }
-                alt={localizedProductText(product.name, product.name_translations, lang)}
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span className="text-3xl font-bold text-petrol/50">AB</span>
-            )}
+            <ProductPreview
+              path={product.image_path}
+              alt={localizedProductText(product.name, product.name_translations, lang)}
+              className="h-full w-full object-cover"
+            />
           </div>
         </Link>
         <div className="space-y-2 p-4">
@@ -340,7 +333,22 @@ function Index() {
       </header>
 
       <main>
-        <img src={banner.url} alt="Algorea Bazaar" className="block h-auto w-full" />
+        {!bannerFailed ? (
+          <img
+            src={banner.url}
+            alt="Algorea Bazaar"
+            className="block h-auto w-full"
+            onError={() => setBannerFailed(true)}
+          />
+        ) : (
+          <div
+            role="img"
+            aria-label="Algorea Bazaar"
+            className="flex min-h-40 items-center justify-center bg-petrol px-6 py-12 text-center text-3xl font-bold text-cream md:min-h-56 md:text-5xl"
+          >
+            Algorea Bazaar
+          </div>
+        )}
 
         <section id="home" className="bg-cream-light">
           <div className="mx-auto max-w-6xl px-4 py-16 text-center md:py-24">

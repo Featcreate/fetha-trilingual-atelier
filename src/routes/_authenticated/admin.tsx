@@ -84,6 +84,22 @@ type PayoutRow = {
   payout_additional_details: string | null;
 };
 
+function payoutDestinationLabel(method: string | null, lang: string) {
+  const labels: Record<string, { ar: string; fr: string; en: string }> = {
+    konnect: { ar: "Konnect", fr: "Konnect", en: "Konnect" },
+    ipay: { ar: "iPay", fr: "iPay", en: "iPay" },
+    wepay: { ar: "WePay", fr: "WePay", en: "WePay" },
+    bank_transfer: {
+      ar: "تحويل بنكي",
+      fr: "Virement bancaire",
+      en: "Bank transfer",
+    },
+    other: { ar: "وسيلة أخرى", fr: "Autre moyen", en: "Other method" },
+  };
+  const key = lang === "ar" ? "ar" : lang === "en" ? "en" : "fr";
+  return (method && labels[method]?.[key]) || method || "—";
+}
+
 function AdminPage() {
   const { lang, setLang, t } = useLang();
   const a = t.admin;
@@ -717,7 +733,8 @@ function AdminPage() {
                               : "Destination enregistrée pour ce versement"}
                         </p>
                         <p>
-                          {payout.payout_destination_method} · {payout.payout_account_holder_name}
+                          {payoutDestinationLabel(payout.payout_destination_method, lang)} ·
+                          {payout.payout_account_holder_name}
                         </p>
                         {payout.payout_provider_name && <p>{payout.payout_provider_name}</p>}
                         <p dir="ltr">{payout.payout_account_identifier}</p>

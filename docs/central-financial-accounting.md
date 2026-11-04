@@ -13,10 +13,10 @@ The platform owns the complete financial accounting and seller-payout workflow. 
 3. Algorea Bazaar verifies the payment server-to-server and records the collection and actual provider settlement.
 4. The platform's internal financial system records the order and immutable currency/FX details where applicable.
 5. The system calculates the platform commission (5% default, configurable for future orders) and each seller's payable amount.
-6. The platform alone holds the seller-payable accounting balance and initiates the seller transfer. The default cadence is weekly and manual.
+6. The platform alone holds the seller-payable accounting balance and initiates the seller transfer. The default cadence is weekly and manual. Sellers independently select a receiving destination (Konnect, iPay, WePay, bank transfer, or another supported method); the selected destination is snapshotted into the payout batch and never triggers an API payout.
 7. After the transfer has actually succeeded, the platform records the transfer reference and closes the payout batch.
 
-No payment provider, bank integration, wallet, or intermediary is allowed to split the buyer's payment or distribute seller proceeds directly.
+No payment provider, bank integration, wallet, or intermediary is allowed to split the buyer's payment or distribute seller proceeds directly. Seller receiving details are independent of the buyer collection provider and are used only for administrator-executed manual transfers.
 
 ## Accounting currency and FX
 

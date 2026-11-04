@@ -655,26 +655,41 @@ export type Database = {
       }
       seller_payout_preferences: {
         Row: {
+          account_holder_name: string | null
+          account_identifier: string | null
+          additional_details: string | null
+          bank_name: string | null
           created_at: string
           id: string
           konnect_wallet_id: string | null
-          method: Database["public"]["Enums"]["seller_payout_method"]
+          method: string
+          provider_name: string | null
           store_id: string
           updated_at: string
         }
         Insert: {
+          account_holder_name?: string | null
+          account_identifier?: string | null
+          additional_details?: string | null
+          bank_name?: string | null
           created_at?: string
           id?: string
           konnect_wallet_id?: string | null
-          method?: Database["public"]["Enums"]["seller_payout_method"]
+          method?: string
+          provider_name?: string | null
           store_id: string
           updated_at?: string
         }
         Update: {
+          account_holder_name?: string | null
+          account_identifier?: string | null
+          additional_details?: string | null
+          bank_name?: string | null
           created_at?: string
           id?: string
           konnect_wallet_id?: string | null
-          method?: Database["public"]["Enums"]["seller_payout_method"]
+          method?: string
+          provider_name?: string | null
           store_id?: string
           updated_at?: string
         }
@@ -695,6 +710,7 @@ export type Database = {
           created_at: string
           currency: string
           discount_millimes: number
+          external_fees_millimes: number
           failure_reason: string | null
           gross_millimes: number
           id: string
@@ -702,6 +718,12 @@ export type Database = {
           initiated_at: string | null
           method: Database["public"]["Enums"]["seller_payout_method"]
           paid_at: string | null
+          payout_account_holder_name: string | null
+          payout_account_identifier: string | null
+          payout_additional_details: string | null
+          payout_bank_name: string | null
+          payout_destination_method: string | null
+          payout_provider_name: string | null
           provider: string
           provider_transfer_ref: string | null
           scheduled_for: string | null
@@ -716,6 +738,7 @@ export type Database = {
           created_at?: string
           currency?: string
           discount_millimes?: number
+          external_fees_millimes?: number
           failure_reason?: string | null
           gross_millimes: number
           id?: string
@@ -723,6 +746,12 @@ export type Database = {
           initiated_at?: string | null
           method?: Database["public"]["Enums"]["seller_payout_method"]
           paid_at?: string | null
+          payout_account_holder_name?: string | null
+          payout_account_identifier?: string | null
+          payout_additional_details?: string | null
+          payout_bank_name?: string | null
+          payout_destination_method?: string | null
+          payout_provider_name?: string | null
           provider?: string
           provider_transfer_ref?: string | null
           scheduled_for?: string | null
@@ -737,6 +766,7 @@ export type Database = {
           created_at?: string
           currency?: string
           discount_millimes?: number
+          external_fees_millimes?: number
           failure_reason?: string | null
           gross_millimes?: number
           id?: string
@@ -744,6 +774,12 @@ export type Database = {
           initiated_at?: string | null
           method?: Database["public"]["Enums"]["seller_payout_method"]
           paid_at?: string | null
+          payout_account_holder_name?: string | null
+          payout_account_identifier?: string | null
+          payout_additional_details?: string | null
+          payout_bank_name?: string | null
+          payout_destination_method?: string | null
+          payout_provider_name?: string | null
           provider?: string
           provider_transfer_ref?: string | null
           scheduled_for?: string | null

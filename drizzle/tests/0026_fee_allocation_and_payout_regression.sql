@@ -88,7 +88,7 @@ BEGIN
   ) INTO _seller_fee_function;
 
   IF position('order_id IS NOT DISTINCT FROM _order_id' IN _seller_fee_function) = 0
-     OR position('order_item_id IS NOT DISTINCT FROM _order_item_id' IN _seller_fee_function) = 0
+     OR position('order_item_id IS DISTINCT FROM _order_item_id' IN _seller_fee_function) = 0
      OR position('external_fee_business_reference_conflict' IN _seller_fee_function) = 0 THEN
     RAISE EXCEPTION 'test_failed: seller fee evidence reference is not fully idempotent';
   END IF;

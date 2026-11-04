@@ -7,7 +7,8 @@
 - Buyers may shop worldwide, subject to provider country/card coverage, sanctions controls, fraud rules and applicable law.
 - Phase 1 sellers are based in Tunisia. This does not imply global seller onboarding or international seller payouts.
 - Algorea Bazaar is the merchant-facing collection beneficiary. All seller balances, commission calculations and payouts remain inside the platform's own accounting and admin workflow.
-- No provider-side split, submerchant wallet, direct seller payout or automatic payout is allowed. Seller payout destinations are stored separately and paid manually by Algorea Bazaar.
+- No provider-side split, submerchant wallet, direct seller payout or automatic payout is allowed.
+  Seller payout destinations are stored separately and paid manually by Algorea Bazaar.
 
 ## Leading provider candidate: Konnect
 
@@ -26,7 +27,9 @@ Official references:
 
 ## Current technical behavior
 
-- The existing server-side Konnect adapter is retained as the primary buyer-collection candidate. Paymee may be evaluated as an alternative only after its merchant terms, marketplace eligibility, settlement route, fees, coverage and API behavior are verified.
+- The existing server-side Konnect adapter is retained as the primary buyer-collection candidate.
+  Paymee may be evaluated as an alternative only after its merchant terms, marketplace eligibility,
+  settlement route, fees, coverage and API behavior are verified.
 - Hosted checkout requests use the platform's Konnect receiver wallet ID from server-side environment configuration; no secret is stored in the browser or committed to GitHub.
 - The canonical order and seller accounting currency is TND.
 - The current request sends TND. International Visa/Mastercard cardholders may see a conversion by their card issuer into their card billing currency. Algorea Bazaar does not yet charge the buyer in their local currency.

@@ -246,6 +246,13 @@
       "when": 1793804024009,
       "tag": "0033_align_legal_document_versions",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793804300000,
+      "tag": "0034_add_konnect_manual_payout_destination",
+      "breakpoints": true
     }
   ]
 }

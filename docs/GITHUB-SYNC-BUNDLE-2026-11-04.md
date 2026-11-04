@@ -7,7 +7,7 @@ Purpose: prepare the repository source for a later manual Lovable synchronizatio
 
 ## Current source baseline
 
-The latest main commit is the squash merge of PR #32, `fix: finalize Algorea Bazaar sync readiness`. PR #32's CI run #192 succeeded for formatting, lint, tests, and build before merge.
+The application-source baseline described here is the squash merge of PR #32, `fix: finalize Algorea Bazaar sync readiness`. The documentation-only PR #33 was subsequently squash-merged into `main` after GitHub Actions CI run #194 completed successfully (run attempt 2). Its `Format, lint, test, and build` job passed all validation steps, including the migration journal check, typecheck, formatting, lint, tests, and build.
 
 The source already contains:
 
@@ -71,8 +71,8 @@ They are intentionally retained for this source-sync phase. Removing the build c
 3. The `translate-product` Edge Function source exists, but its deployment/reachability and authenticated smoke test were not verified in this source-only pass.
 4. Seller asset upload/replace/delete and anonymous storefront display still need an end-to-end test with disposable accounts.
 5. Render environment variables and deployment state were not inspected or changed.
-6. The latest main merge commit has no workflow run/status returned by the GitHub commit-run/status endpoints in this audit. PR #32's pre-merge CI run #192 is the verified successful CI evidence. Run CI again on this documentation PR before treating the combined sync bundle as checked.
+6. CI validation for the documentation bundle is complete: PR #33's run #194 succeeded in full before merge. A separate workflow run on the resulting squash-merge commit was not independently verified; this does not change the successful PR validation result.
 
 ## Scope of this PR
 
-This PR adds only this audit/manifest document. It does not modify application code, SQL migrations, database state, secrets, provider configuration, or deployment settings. It does not perform the Lovable synchronization. Once this PR's CI passes and the documentation is merged, the repository will have a single current sync manifest; the user can then perform the actual source synchronization in Lovable separately.
+This document was added as the sole file in PR #33 and merged into `main` using a squash merge. The change adds documentation only; it does not modify application code, SQL migrations, database state, secrets, provider configuration, or deployment settings. It does not perform the Lovable synchronization. The repository now has a consolidated sync manifest; any later Lovable synchronization remains a separate, user-controlled step.

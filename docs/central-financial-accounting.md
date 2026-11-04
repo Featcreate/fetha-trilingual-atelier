@@ -89,3 +89,11 @@ Migration 0022 has been applied to the original Supabase project jgjcychkntsokhz
 - Sellers can view fee entries, allocated amounts, remaining amounts, and fee deductions on each payout. Administrators can record fees and prepare/confirm manual weekly transfers.
 - Fee totals are currently entered manually from evidence and recorded in TND. Shared order-level fee allocation is automatic once the verified paid order ID is supplied. Automatic provider API fee ingestion and non-TND fee conversion are not implemented. Do not record estimates or guessed amounts.
 - Migrations 0023 and 0024 were applied successfully to the original Supabase project after transaction-wrapped dry runs. No fee rows, allocations, orders, payouts or ledger rows were created by deployment.
+
+## Migration verification boundary — 2026-11-04
+
+- GitHub contains the financial migration sequence through 0027. The deployment notes above record migrations 0022–0024 as applied to the original project at the time they were checked.
+- The current maintenance session has no direct connection to the original project `jgjcychkntsokhzeziqs`. Therefore, the live application status of migrations 0025, 0026 and 0027 is **not independently verified here**. Do not infer their status from the separate Lovable-connected project `vjqeuvvnavsdjzdqfyrs`.
+- Before any production migration, inspect the original project's own migration history and schema, compare them with the Drizzle journal, and test the remaining sequence on a disposable clone. Do not apply a later migration in isolation.
+- Migration 0027 fixes an idempotency gap in `admin_record_seller_external_fee`: retries using the same store, optional order/item scope and external evidence reference now return the original fee record when its financial details match, and reject conflicting reuse. It does not rewrite financial rows, initiate payments, or transfer money.
+- The SQL regression script includes a catalog-level assertion for this RPC contract. It still requires execution on a disposable database after migrations through 0027; a source commit or successful application build is not evidence that the SQL regression has passed.

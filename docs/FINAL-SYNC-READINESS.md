@@ -8,7 +8,8 @@ Working branch: `fix/final-sync-readiness`
 
 - Removes the homepage's dependency on the missing Lovable-hosted banner asset. The existing responsive, trilingual homepage hero is now the first visual hero section and no longer waits for a remote image or renders a broken-image placeholder.
 - Changes the official brand logo source to the repository-owned `/brand/algorea-bazaar-logo.png` asset.
-- Deletes the two obsolete `.asset.json` proxy pointers that referred to the Lovable asset proxy. No Lovable asset URL is required by the homepage or brand-logo component after this change.
+- Removes six obsolete Lovable asset-proxy pointer files in total: the logo, homepage banner, and four unused sample/product image pointers. A repository search found no source-code references to the four remaining sample image pointers before they were removed.
+- No Lovable asset URL is required by the homepage or brand-logo component after these changes. The deferred homepage banner design is intentionally not included.
 
 ## Verified implementation already present on main
 
@@ -45,7 +46,7 @@ Working branch: `fix/final-sync-readiness`
 3. **Seller asset end-to-end test:** test uploads and storefront rendering with disposable test accounts.
 4. **Render:** inspect the deployed commit and environment variables. This audit did not change Render settings or deploy.
 5. **Payment safety:** the code has explicit sandbox/live switches, but Render environment values were not inspected. Do not infer production payment status from source code alone. Do not activate live payments without separate approval.
-6. **Portability:** `vite.config.ts` still imports `@lovable.dev/vite-tanstack-config`, and `package.json` retains Lovable packages. Do not remove these dependencies without a controlled build test; this PR intentionally leaves them untouched.
+6. **Remaining Lovable integration:** `vite.config.ts` still imports `@lovable.dev/vite-tanstack-config`, and `package.json` retains Lovable packages. The auth adapter and error-reporting helper also remain in source. They were not removed because OAuth and build behavior require a controlled replacement and test; deleting them blindly could break sign-in or the build.
 7. **Full acceptance:** run the full buyer/seller/admin, private download, payout snapshot, security, responsive UI, and translation regression suite before public release.
 
 ## Financial and product invariants retained
@@ -61,7 +62,7 @@ Working branch: `fix/final-sync-readiness`
 
 ## Validation status for this branch
 
-- Source-level checks: the logo component no longer imports the proxy JSON; homepage no longer imports or renders the missing banner URL; the local logo path exists on `main`; existing hero content remains in place.
-- CI: pending GitHub Actions run for this branch/PR.
+- Source-level checks: the logo component no longer imports the proxy JSON; homepage no longer imports or renders the missing banner URL; the local logo path exists; existing hero content remains in place; six Lovable asset-proxy pointer files have been removed.
+- CI: the latest workflow run on the previous branch head was blocked in `action_required` before jobs started. The new cleanup commits need their own CI run and GitHub may again require approval to run it.
 - No database schema, production data, secrets, provider credentials, or Render settings were changed.
 - No Lovable project was opened or synchronized by this work.

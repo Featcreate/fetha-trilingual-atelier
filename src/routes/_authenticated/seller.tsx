@@ -155,7 +155,9 @@ function SellerPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("seller_payout_preferences")
-        .select("id,method,account_holder_name,provider_name,account_identifier,bank_name,additional_details,updated_at")
+        .select(
+          "id,method,account_holder_name,provider_name,account_identifier,bank_name,additional_details,updated_at",
+        )
         .eq("store_id", store!.id)
         .maybeSingle();
       if (error) throw error;
@@ -186,7 +188,9 @@ function SellerPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("seller_external_fee_entries")
-        .select("id,fee_category,amount_millimes,currency,source,external_reference,description,created_at")
+        .select(
+          "id,fee_category,amount_millimes,currency,source,external_reference,description,created_at",
+        )
         .eq("store_id", store!.id)
         .order("created_at", { ascending: false })
         .limit(100);
@@ -279,23 +283,41 @@ function SellerPage() {
     const accountHolderName = String(values.get("account_holder_name") ?? "").trim();
     const accountIdentifier = String(values.get("account_identifier") ?? "").trim();
     if (!accountHolderName || !accountIdentifier) {
-      setNotice(lang === "ar" ? "أدخل اسم صاحب الحساب ومعرّف الحساب." : lang === "en" ? "Enter the account holder name and account identifier." : "Saisissez le titulaire et l’identifiant du compte.");
+      setNotice(
+        lang === "ar"
+          ? "أدخل اسم صاحب الحساب ومعرّف الحساب."
+          : lang === "en"
+            ? "Enter the account holder name and account identifier."
+            : "Saisissez le titulaire et l’identifiant du compte.",
+      );
       return;
     }
     setBusy(true);
     setNotice("");
-    const { error } = await supabase.from("seller_payout_preferences").upsert({
-      store_id: store.id,
-      method,
-      account_holder_name: accountHolderName,
-      account_identifier: accountIdentifier,
-      provider_name: String(values.get("provider_name") ?? "").trim() || null,
-      bank_name: String(values.get("bank_name") ?? "").trim() || null,
-      additional_details: String(values.get("additional_details") ?? "").trim() || null,
-      konnect_wallet_id: null,
-    }, { onConflict: "store_id" });
+    const { error } = await supabase.from("seller_payout_preferences").upsert(
+      {
+        store_id: store.id,
+        method,
+        account_holder_name: accountHolderName,
+        account_identifier: accountIdentifier,
+        provider_name: String(values.get("provider_name") ?? "").trim() || null,
+        bank_name: String(values.get("bank_name") ?? "").trim() || null,
+        additional_details: String(values.get("additional_details") ?? "").trim() || null,
+        konnect_wallet_id: null,
+      },
+      { onConflict: "store_id" },
+    );
     setBusy(false);
-    if (error) return setNotice(error.message.includes("payout_destination_details_required") ? (lang === "ar" ? "بيانات الاستلام الأساسية مطلوبة." : lang === "en" ? "Required payout details are missing." : "Les informations de réception obligatoires sont manquantes.") : m.error);
+    if (error)
+      return setNotice(
+        error.message.includes("payout_destination_details_required")
+          ? lang === "ar"
+            ? "بيانات الاستلام الأساسية مطلوبة."
+            : lang === "en"
+              ? "Required payout details are missing."
+              : "Les informations de réception obligatoires sont manquantes."
+          : m.error,
+      );
     setNotice(m.productUpdated);
     await qc.invalidateQueries({ queryKey: ["seller-payout-preference", store.id] });
   }
@@ -992,42 +1014,128 @@ function SellerPage() {
               <h2 className="text-xl font-bold">{m.payoutMethod}</h2>
               <p className="mt-2 font-semibold">{m.weeklyManual}</p>
               <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                {lang === "ar" ? "تختار وسيلة استلام مستحقاتك. تُحوّل Algorea Bazaar مستحقاتك أسبوعياً يدوياً إلى هذه البيانات. لا تضع كلمة مرور أو رمز تحقق أو مفتاحاً سرياً." : lang === "en" ? "Choose how you receive your seller proceeds. Algorea Bazaar sends weekly manual transfers to these details. Never enter a password, OTP, or secret key." : "Choisissez votre moyen de réception. Algorea Bazaar effectue un virement manuel chaque semaine vers ces coordonnées. Ne saisissez jamais de mot de passe, code OTP ou clé secrète."}
+                {lang === "ar"
+                  ? "تختار وسيلة استلام مستحقاتك. تُحوّل Algorea Bazaar مستحقاتك أسبوعياً يدوياً إلى هذه البيانات. لا تضع كلمة مرور أو رمز تحقق أو مفتاحاً سرياً."
+                  : lang === "en"
+                    ? "Choose how you receive your seller proceeds. Algorea Bazaar sends weekly manual transfers to these details. Never enter a password, OTP, or secret key."
+                    : "Choisissez votre moyen de réception. Algorea Bazaar effectue un virement manuel chaque semaine vers ces coordonnées. Ne saisissez jamais de mot de passe, code OTP ou clé secrète."}
               </p>
-              <form key={payoutPreferenceQuery.data?.updated_at ?? "new-payout-preference"} onSubmit={(e) => void savePayoutPreference(e)} className="mt-4 space-y-3">
+              <form
+                key={payoutPreferenceQuery.data?.updated_at ?? "new-payout-preference"}
+                onSubmit={(e) => void savePayoutPreference(e)}
+                className="mt-4 space-y-3"
+              >
                 <label className="block text-sm font-medium">
-                  {lang === "ar" ? "وسيلة الاستلام" : lang === "en" ? "Receiving method" : "Moyen de réception"}
-                  <select name="payout_method" defaultValue={payoutPreferenceQuery.data?.method ?? "other"} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2">
+                  {lang === "ar"
+                    ? "وسيلة الاستلام"
+                    : lang === "en"
+                      ? "Receiving method"
+                      : "Moyen de réception"}
+                  <select
+                    name="payout_method"
+                    defaultValue={payoutPreferenceQuery.data?.method ?? "other"}
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
+                  >
                     <option value="ipay">iPay</option>
                     <option value="wepay">WePay</option>
-                    <option value="bank_transfer">{lang === "ar" ? "تحويل بنكي" : lang === "en" ? "Bank transfer" : "Virement bancaire"}</option>
-                    <option value="other">{lang === "ar" ? "وسيلة أخرى" : lang === "en" ? "Other method" : "Autre moyen"}</option>
+                    <option value="bank_transfer">
+                      {lang === "ar"
+                        ? "تحويل بنكي"
+                        : lang === "en"
+                          ? "Bank transfer"
+                          : "Virement bancaire"}
+                    </option>
+                    <option value="other">
+                      {lang === "ar"
+                        ? "وسيلة أخرى"
+                        : lang === "en"
+                          ? "Other method"
+                          : "Autre moyen"}
+                    </option>
                   </select>
                 </label>
                 <label className="block text-sm font-medium">
-                  {lang === "ar" ? "اسم صاحب الحساب" : lang === "en" ? "Account holder name" : "Titulaire du compte"}
-                  <input name="account_holder_name" required maxLength={160} defaultValue={payoutPreferenceQuery.data?.account_holder_name ?? ""} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2" />
+                  {lang === "ar"
+                    ? "اسم صاحب الحساب"
+                    : lang === "en"
+                      ? "Account holder name"
+                      : "Titulaire du compte"}
+                  <input
+                    name="account_holder_name"
+                    required
+                    maxLength={160}
+                    defaultValue={payoutPreferenceQuery.data?.account_holder_name ?? ""}
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
+                  />
                 </label>
                 <label className="block text-sm font-medium">
-                  {lang === "ar" ? "معرّف الحساب / رقم المحفظة أو الحساب" : lang === "en" ? "Account identifier / wallet or account number" : "Identifiant / numéro de portefeuille ou de compte"}
-                  <input name="account_identifier" required maxLength={200} defaultValue={payoutPreferenceQuery.data?.account_identifier ?? ""} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2" />
+                  {lang === "ar"
+                    ? "معرّف الحساب / رقم المحفظة أو الحساب"
+                    : lang === "en"
+                      ? "Account identifier / wallet or account number"
+                      : "Identifiant / numéro de portefeuille ou de compte"}
+                  <input
+                    name="account_identifier"
+                    required
+                    maxLength={200}
+                    defaultValue={payoutPreferenceQuery.data?.account_identifier ?? ""}
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
+                  />
                 </label>
                 <label className="block text-sm font-medium">
-                  {lang === "ar" ? "اسم مزود الخدمة (اختياري)" : lang === "en" ? "Provider name (optional)" : "Nom du prestataire (facultatif)"}
-                  <input name="provider_name" maxLength={120} defaultValue={payoutPreferenceQuery.data?.provider_name ?? ""} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2" />
+                  {lang === "ar"
+                    ? "اسم مزود الخدمة (اختياري)"
+                    : lang === "en"
+                      ? "Provider name (optional)"
+                      : "Nom du prestataire (facultatif)"}
+                  <input
+                    name="provider_name"
+                    maxLength={120}
+                    defaultValue={payoutPreferenceQuery.data?.provider_name ?? ""}
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
+                  />
                 </label>
                 <label className="block text-sm font-medium">
-                  {lang === "ar" ? "اسم البنك (اختياري)" : lang === "en" ? "Bank name (optional)" : "Nom de la banque (facultatif)"}
-                  <input name="bank_name" maxLength={160} defaultValue={payoutPreferenceQuery.data?.bank_name ?? ""} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2" />
+                  {lang === "ar"
+                    ? "اسم البنك (اختياري)"
+                    : lang === "en"
+                      ? "Bank name (optional)"
+                      : "Nom de la banque (facultatif)"}
+                  <input
+                    name="bank_name"
+                    maxLength={160}
+                    defaultValue={payoutPreferenceQuery.data?.bank_name ?? ""}
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
+                  />
                 </label>
                 <label className="block text-sm font-medium">
-                  {lang === "ar" ? "معلومات إضافية (اختياري)" : lang === "en" ? "Additional details (optional)" : "Informations complémentaires (facultatif)"}
-                  <textarea name="additional_details" maxLength={500} rows={2} defaultValue={payoutPreferenceQuery.data?.additional_details ?? ""} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2" />
+                  {lang === "ar"
+                    ? "معلومات إضافية (اختياري)"
+                    : lang === "en"
+                      ? "Additional details (optional)"
+                      : "Informations complémentaires (facultatif)"}
+                  <textarea
+                    name="additional_details"
+                    maxLength={500}
+                    rows={2}
+                    defaultValue={payoutPreferenceQuery.data?.additional_details ?? ""}
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
+                  />
                 </label>
-                <button type="submit" disabled={busy} className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">{m.save}</button>
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                >
+                  {m.save}
+                </button>
               </form>
               <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                {lang === "ar" ? "تظل وسيلة الاستلام قابلة للتعديل للمستقبل؛ أما الدفعات التي أُنشئت فتحفظ نسخة ثابتة من بياناتها." : lang === "en" ? "You can update your method for future payouts; each created payout keeps its own fixed destination snapshot." : "Vous pouvez modifier le moyen pour les prochains versements ; chaque versement créé conserve son propre instantané de destination."}
+                {lang === "ar"
+                  ? "تظل وسيلة الاستلام قابلة للتعديل للمستقبل؛ أما الدفعات التي أُنشئت فتحفظ نسخة ثابتة من بياناتها."
+                  : lang === "en"
+                    ? "You can update your method for future payouts; each created payout keeps its own fixed destination snapshot."
+                    : "Vous pouvez modifier le moyen pour les prochains versements ; chaque versement créé conserve son propre instantané de destination."}
               </p>
             </div>
             <div className="border-t border-border pt-4">
@@ -1069,14 +1177,24 @@ function SellerPage() {
                         )}
                         {p.payout_destination_method && (
                           <p className="text-xs text-muted-foreground">
-                            {lang === "ar" ? "وسيلة الاستلام" : lang === "en" ? "Receiving method" : "Moyen de réception"}: {p.payout_destination_method}
+                            {lang === "ar"
+                              ? "وسيلة الاستلام"
+                              : lang === "en"
+                                ? "Receiving method"
+                                : "Moyen de réception"}
+                            : {p.payout_destination_method}
                           </p>
                         )}
                       </div>
                       <div className="text-end">
                         <strong>{formatTND(p.seller_amount_millimes)}</strong>
                         <p className="text-xs text-muted-foreground">
-                          {lang === "ar" ? "رسوم خارجية مخصومة" : lang === "en" ? "External fees deducted" : "Frais externes déduits"}: {formatTND(p.external_fees_millimes)}
+                          {lang === "ar"
+                            ? "رسوم خارجية مخصومة"
+                            : lang === "en"
+                              ? "External fees deducted"
+                              : "Frais externes déduits"}
+                          : {formatTND(p.external_fees_millimes)}
                         </p>
                       </div>
                     </article>
@@ -1087,34 +1205,87 @@ function SellerPage() {
           </section>
 
           <section className="space-y-4 rounded-xl border border-border p-5">
-            <h2 className="text-xl font-bold">{lang === "ar" ? "الرسوم الخارجية على حسابك" : lang === "en" ? "External fees charged to your account" : "Frais externes à votre charge"}</h2>
+            <h2 className="text-xl font-bold">
+              {lang === "ar"
+                ? "الرسوم الخارجية على حسابك"
+                : lang === "en"
+                  ? "External fees charged to your account"
+                  : "Frais externes à votre charge"}
+            </h2>
             <p className="text-sm leading-7 text-muted-foreground">
-              {lang === "ar" ? "تُسجّل الرسوم الفعلية المثبتة بصورة منفصلة عن عمولة المنصة 5%، وتُخصم مرة واحدة عند إعداد التحويل الأسبوعي. لا تُحتسب أي رسوم تقديرية." : lang === "en" ? "Verified actual fees are itemized separately from the 5% platform commission and deducted once when the weekly transfer is prepared. Estimated fees are never charged." : "Les frais réels justifiés sont détaillés séparément de la commission de 5 % et déduits une seule fois lors de la préparation du virement hebdomadaire. Aucun frais estimé n’est imputé."}
+              {lang === "ar"
+                ? "تُسجّل الرسوم الفعلية المثبتة بصورة منفصلة عن عمولة المنصة 5%، وتُخصم مرة واحدة عند إعداد التحويل الأسبوعي. لا تُحتسب أي رسوم تقديرية."
+                : lang === "en"
+                  ? "Verified actual fees are itemized separately from the 5% platform commission and deducted once when the weekly transfer is prepared. Estimated fees are never charged."
+                  : "Les frais réels justifiés sont détaillés séparément de la commission de 5 % et déduits une seule fois lors de la préparation du virement hebdomadaire. Aucun frais estimé n’est imputé."}
             </p>
             {externalFeesQuery.isPending ? (
               <p className="text-sm">{m.loading}</p>
             ) : externalFeesQuery.isError ? (
-              <p role="alert" className="text-sm text-destructive">{m.error}</p>
+              <p role="alert" className="text-sm text-destructive">
+                {m.error}
+              </p>
             ) : !externalFeesQuery.data?.length ? (
-              <p className="rounded-lg bg-secondary p-3 text-sm">{lang === "ar" ? "لا توجد رسوم خارجية مسجلة." : lang === "en" ? "No external fees have been recorded." : "Aucun frais externe enregistré."}</p>
+              <p className="rounded-lg bg-secondary p-3 text-sm">
+                {lang === "ar"
+                  ? "لا توجد رسوم خارجية مسجلة."
+                  : lang === "en"
+                    ? "No external fees have been recorded."
+                    : "Aucun frais externe enregistré."}
+              </p>
             ) : (
               <div className="space-y-2">
                 <p className="text-sm font-semibold">
-                  {lang === "ar" ? "إجمالي الرسوم المسجلة" : lang === "en" ? "Total recorded fees" : "Total des frais enregistrés"}: {formatTND(externalFeesQuery.data.reduce((sum, fee) => sum + fee.amount_millimes, 0))}
+                  {lang === "ar"
+                    ? "إجمالي الرسوم المسجلة"
+                    : lang === "en"
+                      ? "Total recorded fees"
+                      : "Total des frais enregistrés"}
+                  :{" "}
+                  {formatTND(
+                    externalFeesQuery.data.reduce((sum, fee) => sum + fee.amount_millimes, 0),
+                  )}
                 </p>
-                {externalFeeAllocationsQuery.isError && <p role="alert" className="text-xs text-destructive">{m.error}</p>}
+                {externalFeeAllocationsQuery.isError && (
+                  <p role="alert" className="text-xs text-destructive">
+                    {m.error}
+                  </p>
+                )}
                 {externalFeesQuery.data.map((fee) => (
                   <article key={fee.id} className="rounded-lg bg-secondary/60 p-3 text-sm">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <strong>{formatTND(fee.amount_millimes)}</strong>
-                      <span className="text-xs text-muted-foreground">{new Date(fee.created_at).toLocaleDateString(locale)}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(fee.created_at).toLocaleDateString(locale)}
+                      </span>
                     </div>
                     <p className="mt-1">{fee.description}</p>
-                    <p className="mt-1 text-xs text-muted-foreground" dir="ltr">{fee.fee_category} · {fee.external_reference}</p>
+                    <p className="mt-1 text-xs text-muted-foreground" dir="ltr">
+                      {fee.fee_category} · {fee.external_reference}
+                    </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {lang === "ar" ? "المخصّص للتحويلات" : lang === "en" ? "Allocated to payouts" : "Affecté aux versements"}: {formatTND((externalFeeAllocationsQuery.data ?? []).filter((a) => a.fee_entry_id === fee.id).reduce((sum, a) => sum + a.amount_millimes, 0))}
+                      {lang === "ar"
+                        ? "المخصّص للتحويلات"
+                        : lang === "en"
+                          ? "Allocated to payouts"
+                          : "Affecté aux versements"}
+                      :{" "}
+                      {formatTND(
+                        (externalFeeAllocationsQuery.data ?? [])
+                          .filter((a) => a.fee_entry_id === fee.id)
+                          .reduce((sum, a) => sum + a.amount_millimes, 0),
+                      )}
                       {" · "}
-                      {lang === "ar" ? "المتبقي" : lang === "en" ? "Outstanding" : "Restant"}: {formatTND(Math.max(0, fee.amount_millimes - (externalFeeAllocationsQuery.data ?? []).filter((a) => a.fee_entry_id === fee.id).reduce((sum, a) => sum + a.amount_millimes, 0)))}
+                      {lang === "ar" ? "المتبقي" : lang === "en" ? "Outstanding" : "Restant"}:{" "}
+                      {formatTND(
+                        Math.max(
+                          0,
+                          fee.amount_millimes -
+                            (externalFeeAllocationsQuery.data ?? [])
+                              .filter((a) => a.fee_entry_id === fee.id)
+                              .reduce((sum, a) => sum + a.amount_millimes, 0),
+                        ),
+                      )}
                     </p>
                   </article>
                 ))}

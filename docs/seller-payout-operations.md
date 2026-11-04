@@ -55,7 +55,6 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 
 Migrations 0022, 0023 and 0024 have been applied to the original Supabase project. Migration 0023 adds the append-only seller external-fee register, fee-allocation records, administrator-only fee recording, and fee-aware payout snapshots. Migration 0024 adds indexes for the remaining fee-table foreign keys. Migration 0025 adds automatic proportional allocation for shared order-level fees with exact largest-remainder rounding. The database currently contains zero orders, seller fee records, fee allocations, payouts, or platform ledger entries. Checkout and live payment activation remain disabled.
 
-
 ## Seller destination and batch snapshots
 
 Migration 0030 introduces seller-selected receiving destinations independently from the weekly manual settlement rail. It changes the preference method to a constrained destination value (iPay, WePay, bank transfer, or other), stores the account holder and receiving identifier under the existing seller/admin RLS boundary, and snapshots the destination into each payout batch. The payout-creation RPC refuses to create a batch until the seller has saved the required destination details. The snapshot is immutable and the administrator dashboard displays it for the manual transfer.

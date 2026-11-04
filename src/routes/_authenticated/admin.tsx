@@ -212,18 +212,18 @@ function AdminPage() {
               ? "The seller must save a receiving method and account details before a payout can be created."
               : "Le vendeur doit enregistrer un moyen de réception et ses coordonnées avant la création du versement."
           : error.message.includes("external_fees_exceed_available_seller_balance")
-          ? lang === "ar"
-            ? "الرسوم الخارجية المسجلة تتجاوز المستحقات المتاحة حالياً؛ ستبقى معلقة حتى تتوفر مبيعات كافية."
-            : lang === "en"
-              ? "Recorded external fees exceed the currently available seller balance; they remain outstanding until sufficient sales accrue."
-              : "Les frais externes enregistrés dépassent le solde vendeur disponible ; ils restent en attente jusqu’à ce que les ventes soient suffisantes."
-          : error.message.includes("no_unpaid_sales")
             ? lang === "ar"
-              ? "لا توجد مبيعات مؤكدة غير مدفوعة لهذا المتجر."
+              ? "الرسوم الخارجية المسجلة تتجاوز المستحقات المتاحة حالياً؛ ستبقى معلقة حتى تتوفر مبيعات كافية."
               : lang === "en"
-                ? "No verified unpaid sales are available for this store."
-                : "Aucune vente vérifiée non réglée pour cette boutique."
-            : a.saveError,
+                ? "Recorded external fees exceed the currently available seller balance; they remain outstanding until sufficient sales accrue."
+                : "Les frais externes enregistrés dépassent le solde vendeur disponible ; ils restent en attente jusqu’à ce que les ventes soient suffisantes."
+            : error.message.includes("no_unpaid_sales")
+              ? lang === "ar"
+                ? "لا توجد مبيعات مؤكدة غير مدفوعة لهذا المتجر."
+                : lang === "en"
+                  ? "No verified unpaid sales are available for this store."
+                  : "Aucune vente vérifiée non réglée pour cette boutique."
+              : a.saveError,
       });
       return;
     }
@@ -710,13 +710,21 @@ function AdminPage() {
                     {payout.payout_destination_method && (
                       <div className="mt-2 rounded-lg bg-secondary/60 p-3 text-xs leading-6">
                         <p className="font-semibold">
-                          {lang === "ar" ? "وجهة التحويل المحفوظة لهذه الدفعة" : lang === "en" ? "Destination saved for this payout" : "Destination enregistrée pour ce versement"}
+                          {lang === "ar"
+                            ? "وجهة التحويل المحفوظة لهذه الدفعة"
+                            : lang === "en"
+                              ? "Destination saved for this payout"
+                              : "Destination enregistrée pour ce versement"}
                         </p>
-                        <p>{payout.payout_destination_method} · {payout.payout_account_holder_name}</p>
+                        <p>
+                          {payout.payout_destination_method} · {payout.payout_account_holder_name}
+                        </p>
                         {payout.payout_provider_name && <p>{payout.payout_provider_name}</p>}
                         <p dir="ltr">{payout.payout_account_identifier}</p>
                         {payout.payout_bank_name && <p>{payout.payout_bank_name}</p>}
-                        {payout.payout_additional_details && <p>{payout.payout_additional_details}</p>}
+                        {payout.payout_additional_details && (
+                          <p>{payout.payout_additional_details}</p>
+                        )}
                       </div>
                     )}
                     {payout.failure_reason && (

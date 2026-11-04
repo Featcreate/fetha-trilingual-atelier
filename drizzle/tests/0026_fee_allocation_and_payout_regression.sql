@@ -1,4 +1,4 @@
--- Run after applying migrations through 0027 on a disposable/test database.
+-- Run after applying migrations through 0028 on a disposable/test database.
 -- These assertions are data-free: they validate the rounding contract and schema.
 DO $$
 DECLARE
@@ -88,8 +88,14 @@ BEGIN
   ) INTO _seller_fee_function;
 
   IF position('WHERE idempotency_key = trim(_idempotency_key)' IN _seller_fee_function)
+       = 0
+     OR position('WHERE idempotency_key = trim(_idempotency_key)' IN _seller_fee_function)
        > position('AND order_id IS NOT DISTINCT FROM _order_id' IN _seller_fee_function) THEN
-    RAISE EXCEPTION 'test_failed: business reference lookup precedes idempotency-key conflict validation';
+    RAISE EXCEPTION 'test_failed: idempotency-key conflict validation must precede evidence-reference retry lookup';
+  END IF;
+
+  IF position('external_fee_idempotency_conflict' IN _seller_fee_function) = 0 THEN
+    RAISE EXCEPTION 'test_failed: conflicting idempotency-key reuse is not rejected';
   END IF;
 
   IF position('order_id IS NOT DISTINCT FROM _order_id' IN _seller_fee_function) = 0

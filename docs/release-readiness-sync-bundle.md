@@ -30,14 +30,14 @@ This document records verified repository/database facts and explicitly separate
 
 ## 3. Verified work already present on `main`
 
-| Area | Verified state |
-|---|---|
-| Homepage categories | PR #27 merged. The current homepage mapping contains 16 distinct category icons. |
-| Product image fallback | PR #30 merged. `ProductPreview` uses the public `product-images` bucket and displays an `AB` fallback if the image is absent or fails. |
-| Seller payout destinations | PR #28 merged. Seller destination values are separated from the platform's weekly manual payout mechanism. |
-| Database migration 0030 | Recorded as applied in both test and production Supabase projects. Production verification is detailed below. |
-| CI for PR #28 | GitHub Actions run #185 completed successfully on the PR head: migration-journal check, typecheck, formatting, lint, tests, and build. |
-| CI for PR #30 | GitHub Actions run #184 completed successfully on the PR head: typecheck, formatting, lint, tests, and build. |
+| Area                       | Verified state                                                                                                                         |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Homepage categories        | PR #27 merged. The current homepage mapping contains 16 distinct category icons.                                                       |
+| Product image fallback     | PR #30 merged. `ProductPreview` uses the public `product-images` bucket and displays an `AB` fallback if the image is absent or fails. |
+| Seller payout destinations | PR #28 merged. Seller destination values are separated from the platform's weekly manual payout mechanism.                             |
+| Database migration 0030    | Recorded as applied in both test and production Supabase projects. Production verification is detailed below.                          |
+| CI for PR #28              | GitHub Actions run #185 completed successfully on the PR head: migration-journal check, typecheck, formatting, lint, tests, and build. |
+| CI for PR #30              | GitHub Actions run #184 completed successfully on the PR head: typecheck, formatting, lint, tests, and build.                          |
 
 Successful PR-head CI runs do not constitute a post-deployment visual or end-to-end test of the current Render service.
 
@@ -82,6 +82,7 @@ Successful PR-head CI runs do not constitute a post-deployment visual or end-to-
 ### F. End-to-end acceptance tests — outstanding
 
 Run controlled tests using disposable test accounts and test products for:
+
 - seller registration, email verification, free store creation, and seller branding uploads;
 - product creation/editing, all supported digital product types, multiple private download files, and image previews;
 - automatic trilingual translation and language/RTL behavior;
@@ -96,6 +97,7 @@ Do not use real buyer charges or real seller transfers in acceptance testing.
 Production project checked: `jgjcychkntsokhzeziqs`.
 
 Verified read-only after the migration:
+
 - Migration `0030_seller_payout_destinations` is present in migration history.
 - All five seller destination columns exist; `method` is `text` with default `'other'`.
 - All six payout destination snapshot columns exist.
@@ -132,6 +134,7 @@ bun run build
 ```
 
 Then perform:
+
 1. Disposable-database migration and RLS regression tests.
 2. Authenticated seller/admin and anonymous storefront tests.
 3. Desktop/mobile visual acceptance with the final approved assets.
@@ -141,6 +144,7 @@ Then perform:
 ## 8. Explicit exclusions
 
 This bundle does not authorize:
+
 - use of Lovable or consumption of Lovable credits;
 - changes to production database schema or data beyond the already-applied migration 0030;
 - live payment activation, real charges, refunds, or seller transfers;

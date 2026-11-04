@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { authErrorMessage, useLang } from "@/lib/i18n";
 import { emailSchema, fullNameSchema, passwordSchema, safeRedirect } from "@/lib/account-rules";
+import { authRedirectUrl } from "@/lib/auth-redirect";
 
 type Mode = "signin" | "signup" | "forgot";
 
@@ -100,7 +101,7 @@ function AuthPage() {
           email,
           password: v("password"),
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: authRedirectUrl("/account"),
             data: {
               full_name: v("full_name").trim(),
               phone: v("phone").trim(),
@@ -115,9 +116,10 @@ function AuthPage() {
         else setNotice(a.checkEmail);
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
+          redirectTo: authRedirectUrl("/reset-password"),
         });
-        if (error && error.status === 429) return setFormError(a.errRate);
+        if (error && (error.status === 429 || error.code === "over_email_send_rate_limit"))
+          return setFormError(a.errRate);
         setNotice(a.resetSent);
       }
     } catch {

@@ -32,13 +32,14 @@ function ResetPasswordPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY" || session) setReady("ok");
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      // A pre-existing login session is not proof that the recovery link is valid.
+      // Only the recovery event emitted after Supabase validates the link unlocks this form.
+      if (event === "PASSWORD_RECOVERY") setReady("ok");
     });
-    const timer = setTimeout(async () => {
-      const { data: s } = await supabase.auth.getSession();
-      setReady((r) => (r === "ok" || s.session ? "ok" : "invalid"));
-    }, 1500);
+    const timer = setTimeout(() => {
+      setReady((current) => (current === "ok" ? "ok" : "invalid"));
+    }, 5000);
     return () => {
       clearTimeout(timer);
       data.subscription.unsubscribe();
@@ -51,10 +52,15 @@ function ResetPasswordPage() {
     if (!passwordSchema.safeParse(pw).success) return setError(a.errPassword);
     setBusy(true);
     setError("");
-    const { error } = await supabase.auth.updateUser({ password: pw });
-    setBusy(false);
-    if (error) return setError(authErrorMessage(a, error));
-    navigate({ to: "/account", replace: true });
+    try {
+      const { error } = await supabase.auth.updateUser({ password: pw });
+      if (error) return setError(authErrorMessage(a, error));
+      navigate({ to: "/account", replace: true });
+    } catch {
+      setError(a.errGeneric);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (

@@ -1,7 +1,7 @@
-const PRODUCTION_APP_ORIGIN = "https://fetha-trilingual-atelier-2.onrender.com";
+const PRODUCTION_APP_ORIGIN = "https://algorea-bazaar.onrender.com";
 
 /**
- * Keep authentication emails pointed at the deployed app in production builds.
+ * Keep authentication emails pointed at the active Algorea Bazaar deployment.
  * Local development remains local so developers can test the full auth flow.
  */
 export function authRedirectUrl(path: string): string {

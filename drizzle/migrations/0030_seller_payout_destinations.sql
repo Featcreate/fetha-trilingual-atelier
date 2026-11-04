@@ -143,6 +143,14 @@ $$;
 
 REVOKE ALL ON FUNCTION public.guard_seller_payout_preference() FROM PUBLIC, anon, authenticated;
 
+-- Attach the validation/ownership guard to every seller preference write.
+DROP TRIGGER IF EXISTS seller_payout_preferences_guard
+  ON public.seller_payout_preferences;
+CREATE TRIGGER seller_payout_preferences_guard
+  BEFORE INSERT OR UPDATE ON public.seller_payout_preferences
+  FOR EACH ROW
+  EXECUTE FUNCTION public.guard_seller_payout_preference();
+
 -- Build the weekly batch from verified sales, allocate only evidenced external
 -- fees once, and snapshot the current seller-selected destination.
 CREATE OR REPLACE FUNCTION public.admin_create_seller_payout(

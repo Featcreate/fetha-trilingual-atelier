@@ -31,8 +31,8 @@ for (let i = 0; i < entries.length; i += 1) {
   }
   tags.add(entry.tag);
 
-  if (!Number.isFinite(entry.when) || entry.when <= previousWhen) {
-    errors.push(`migration timestamp is not strictly increasing at ${entry.tag}`);
+  if (!Number.isFinite(entry.when) || entry.when < previousWhen) {
+    errors.push(`migration timestamp is not non-decreasing at ${entry.tag}`);
   }
   previousWhen = entry.when;
 

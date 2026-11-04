@@ -10,6 +10,7 @@ import {
   Menu,
   X,
   BookOpen,
+  FileText,
   LayoutTemplate,
   Printer,
   CalendarCheck,
@@ -25,7 +26,7 @@ import banner from "@/assets/homepage-banner.jpg.asset.json";
 import { PRODUCT_TYPES } from "@/lib/product-types";
 const categoryIcons = {
   ebook: BookOpen,
-  pdf: BookOpen,
+  pdf: FileText,
   template: LayoutTemplate,
   educational: GraduationCap,
   bundle: Sparkles,

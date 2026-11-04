@@ -5,6 +5,8 @@
 -- The preference method is a destination, not a transfer mechanism.
 ALTER TABLE public.seller_payout_preferences
   ALTER COLUMN method DROP DEFAULT;
+-- Drop the legacy enum-valued RLS expression before changing the column type.
+DROP POLICY IF EXISTS "Sellers manage own payout preference" ON public.seller_payout_preferences;
 ALTER TABLE public.seller_payout_preferences
   DROP CONSTRAINT IF EXISTS seller_payout_preferences_wallet_check;
 ALTER TABLE public.seller_payout_preferences

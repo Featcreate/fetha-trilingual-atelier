@@ -10,6 +10,7 @@ Purpose: prepare the repository source for a later manual Lovable synchronizatio
 The latest main commit is the squash merge of PR #32, `fix: finalize Algorea Bazaar sync readiness`. PR #32's CI run #192 succeeded for formatting, lint, tests, and build before merge.
 
 The source already contains:
+
 - the Algorea Bazaar local brand-logo path and a homepage hero that does not depend on the missing remote Lovable banner;
 - fallback handling for product preview images;
 - all 16 digital product types and category shortcuts;
@@ -23,15 +24,15 @@ The source already contains:
 
 The following open PRs were audited against the current main tree and the approved project rules. They are stale, duplicated, or incompatible with the current migration history and should not be merged:
 
-| PR | Disposition | Reason |
-|---|---|---|
-| #5 | Close as superseded | Adds a second migration numbered/tagged 0015 (`0015_configurable_financial_routing`) even though main already uses 0015 for the product image gallery and has later migrations through 0030. Its configurable provider-routing panel also adds unnecessary provider configuration surface not required for source sync. |
-| #7 | Close as already integrated | The current homepage already queries and renders up to six latest active products from the signed-in seller's own store. |
-| #8 | Close as already integrated | Main already exposes the 16 supported product types in homepage categories and catalogue filtering. |
-| #10 | Close as superseded by current policy | Its older policy text conflicts with the current evidence-based fee register and seller fee-allocation implementation. Current policy keeps the 5% commission separate and records only actual, evidenced external fees, allocated once to seller proceeds. |
-| #11 | Close as incompatible/duplicate | Adds another migration numbered/tagged 0015 (`0015_seller_payment_provider_choice`), conflicts with the existing migration journal, and hardwires a seller provider choice UI not needed for the approved flexible seller receiving-destination model. |
-| #19 | Close as already integrated/stale | Main already includes the TND equivalent component and its usage across relevant marketplace/seller views. Its branch diverged substantially from current main and must not be merged wholesale. |
-| #22 | Close as redundant validation-only PR | It only changes a roadmap validation note; the fee-accounting implementation is already represented on main and has passed CI in its feature history. |
+| PR  | Disposition                           | Reason                                                                                                                                                                                                                                                                                                                  |
+| --- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #5  | Close as superseded                   | Adds a second migration numbered/tagged 0015 (`0015_configurable_financial_routing`) even though main already uses 0015 for the product image gallery and has later migrations through 0030. Its configurable provider-routing panel also adds unnecessary provider configuration surface not required for source sync. |
+| #7  | Close as already integrated           | The current homepage already queries and renders up to six latest active products from the signed-in seller's own store.                                                                                                                                                                                                |
+| #8  | Close as already integrated           | Main already exposes the 16 supported product types in homepage categories and catalogue filtering.                                                                                                                                                                                                                     |
+| #10 | Close as superseded by current policy | Its older policy text conflicts with the current evidence-based fee register and seller fee-allocation implementation. Current policy keeps the 5% commission separate and records only actual, evidenced external fees, allocated once to seller proceeds.                                                             |
+| #11 | Close as incompatible/duplicate       | Adds another migration numbered/tagged 0015 (`0015_seller_payment_provider_choice`), conflicts with the existing migration journal, and hardwires a seller provider choice UI not needed for the approved flexible seller receiving-destination model.                                                                  |
+| #19 | Close as already integrated/stale     | Main already includes the TND equivalent component and its usage across relevant marketplace/seller views. Its branch diverged substantially from current main and must not be merged wholesale.                                                                                                                        |
+| #22 | Close as redundant validation-only PR | It only changes a roadmap validation note; the fee-accounting implementation is already represented on main and has passed CI in its feature history.                                                                                                                                                                   |
 
 Do not merge any of these stale branches. Their historical commits are retained in GitHub for reference.
 
@@ -56,6 +57,7 @@ Migration 0030 was applied and verified separately on the designated test and pr
 ## Lovable-related dependencies
 
 The following Lovable integration pieces remain in source:
+
 - `@lovable.dev/vite-tanstack-config` in `vite.config.ts` and `package.json`;
 - `@lovable.dev/cloud-auth-js` and `src/integrations/lovable/index.ts`;
 - `src/lib/lovable-error-reporting.ts`, referenced by the root route.

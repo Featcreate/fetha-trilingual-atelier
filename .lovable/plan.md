@@ -39,11 +39,10 @@ No files, database, secrets, integrations, deployment or payments were changed. 
 - Arabic RTL layout on the seller and admin pages.
 - Konnect sandbox, only after written approval. Weekly manual payouts, with the seller choosing the payout method, once an admin exists.
 
-## 4. Staged backlog
-1. Agree which backend is the real one and reconnect it. Re-run the read-only schema and migration diff.
-2. Apply the missing migrations in order on a disposable or confirmed copy first. Then run the Category A rollback tests.
-3. Create the first admin through a protected role assignment, then check the admin and seller financial screens.
-4. Images: make the preview bucket public and apply 0014/0015, then check covers and galleries.
-5. Run a fresh typecheck and fix any errors. Translate the 404/error pages and literal placeholders.
-6. UI cleanup: categories, favicon, Render host.
-7. Payment provider decision and sandbox, only with explicit approval. Live payments and publishing stay off.
+## 4. Staged backlog (revised order)
+1. Visual and translation fixes, front end only with no database risk: run a fresh typecheck and fix any errors, translate the 404/error pages and literal placeholders into FR/AR/EN, reconcile the categories, improve the favicon, and fix the Render host.
+2. Agree which backend is the real one and reconnect it. Re-run the read-only schema and migration diff.
+3. Apply the missing migrations in order on a disposable or confirmed copy first. Then run the Category A rollback tests.
+4. Create the first admin through a protected role assignment, then check the admin and seller financial screens.
+5. Images: make the preview bucket public and apply 0014/0015, then check covers and galleries.
+6. Payment provider decision and sandbox, kept last, only with explicit approval. Live payments and publishing stay off.

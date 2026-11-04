@@ -1,8 +1,7 @@
 import { useState } from "react";
-import logoAsset from "@/assets/algorea-bazaar-logo.png.asset.json";
 
 /** Official Algorea Bazaar logo, shown unmodified with object-contain. */
-export const LOGO_SRC = logoAsset.url;
+export const LOGO_SRC = "/brand/algorea-bazaar-logo.png";
 
 export function BrandLogo({ className = "" }: { slotLabel?: string; className?: string }) {
   const [imageFailed, setImageFailed] = useState(false);

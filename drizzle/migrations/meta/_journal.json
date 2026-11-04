@@ -232,6 +232,13 @@
       "when": 1793803440439,
       "tag": "0031_rls_initplan_and_foreign_key_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793803900000,
+      "tag": "0032_restrict_email_verification_helper",
+      "breakpoints": true
     }
   ]
 }

@@ -88,7 +88,7 @@ BEGIN
   ) INTO _seller_fee_function;
 
   IF position('WHERE idempotency_key = trim(_idempotency_key)' IN _seller_fee_function)
-       > position('WHERE store_id = _store_id' IN _seller_fee_function) THEN
+       > position('AND order_id IS NOT DISTINCT FROM _order_id' IN _seller_fee_function) THEN
     RAISE EXCEPTION 'test_failed: business reference lookup precedes idempotency-key conflict validation';
   END IF;
 

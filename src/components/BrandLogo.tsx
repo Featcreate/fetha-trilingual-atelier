@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-
 /** Official Algorea Bazaar logo, shown unmodified with object-contain. */
 export const LOGO_SRC = "/brand/algorea-bazaar-logo.png";
 

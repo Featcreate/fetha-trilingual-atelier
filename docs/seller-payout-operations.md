@@ -8,19 +8,21 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 - Seller registration, store creation, and product listings remain free. No registration, store-opening, listing, or mandatory seller subscription fee is charged.
 - The platform commission is 5% by default and administrator-configurable. Each order item snapshots its commission rate and amounts; historical snapshots are never recalculated.
 - After verified collection and settlement, the platform records the sale, commission, and seller payable in its internal financial ledger.
-- Seller payout preference defaults to **weekly manual transfer**.
+- Sellers select their own receiving destination (iPay, WePay, bank transfer, or another supported method). Weekly manual transfer is the platform's settlement cadence, not a seller receiving destination.
+- The seller's name, account identifier, provider/bank and optional routing notes are stored as private payout details. Passwords, PINs, OTPs and API secrets must never be collected.
+- Each payout batch snapshots the selected destination. Editing the seller's preference affects future batches only; it cannot redirect an existing batch.
 - During Phase 1, seller payables and transfers are denominated in TND.
 - The platform operator transfers the seller's final recorded payable from the platform's funds to the seller's own account. The seller bears all verified external fees attributable to payment processing, collection, conversion, settlement, transfer and withdrawal. These fees are shown separately from the 5% commission and deducted from the seller's proceeds only once, using actual provider/bank evidence and a documented allocation method.
 - An administrator records the transfer reference and marks the payout paid only after the real transfer has succeeded.
 - The admin confirmation action is an accounting record only; it does not itself send money.
 - Every payout batch has a unique idempotency key. Each verified sale ledger entry can belong to at most one payout batch. Failed transfers remain recorded and must not be silently released for duplicate payment.
-- Sellers can view their payout history and recorded transfer references.
+- Sellers can view their payout history, recorded transfer references, the receiving method used for each batch, and their itemized external-fee deductions. Administrators can view the destination snapshot needed to complete each manual transfer.
 
 ## Provider restrictions
 
 - No provider may split a buyer payment or send seller proceeds directly.
 - No provider API is used to initiate seller payouts.
-- Seller registration links to Konnect, iPay, and WePay (where shown in the seller workspace) are external account-information links only. They do not authorize those providers to control seller balances or distribute marketplace proceeds.
+- Konnect is the buyer-collection provider only. Seller receiving destinations such as iPay, WePay, a bank account or another supported route are independent of buyer collection and do not authorize providers to control seller balances or distribute marketplace proceeds.
 - Do not collect or store seller payment-provider passwords, OTPs, or private credentials.
 - Do not promise a seller payout route until the platform has verified the seller's destination details and lawful transfer method.
 
@@ -52,3 +54,10 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 ## Database rollout
 
 Migrations 0022, 0023 and 0024 have been applied to the original Supabase project. Migration 0023 adds the append-only seller external-fee register, fee-allocation records, administrator-only fee recording, and fee-aware payout snapshots. Migration 0024 adds indexes for the remaining fee-table foreign keys. Migration 0025 adds automatic proportional allocation for shared order-level fees with exact largest-remainder rounding. The database currently contains zero orders, seller fee records, fee allocations, payouts, or platform ledger entries. Checkout and live payment activation remain disabled.
+
+
+## Seller destination and batch snapshots
+
+Migration 0030 introduces seller-selected receiving destinations independently from the weekly manual settlement rail. It changes the preference method to a constrained destination value (iPay, WePay, bank transfer, or other), stores the account holder and receiving identifier under the existing seller/admin RLS boundary, and snapshots the destination into each payout batch. The payout-creation RPC refuses to create a batch until the seller has saved the required destination details. The snapshot is immutable and the administrator dashboard displays it for the manual transfer.
+
+Migration 0030 is present in the GitHub implementation branch for review. It has **not** been applied to the test or production Supabase projects. No payment, payout, or deployment has been activated by this change.

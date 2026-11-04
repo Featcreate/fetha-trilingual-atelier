@@ -36,8 +36,8 @@
 - Platform commission starts at 5% and remains administrator-configurable. Existing order commission snapshots are immutable.
 - Sellers bear all verified external fees attributable to sales, separately from the 5% commission. Actual fees must be itemized, allocated once, recorded in the ledger, and deducted from final seller payables; no separate external checkout fee is added to buyers under this rule.
 - Seller payouts are initiated only by Algorea Bazaar, weekly by default and manually. Sellers may
-  select Konnect, iPay, WePay, bank transfer, or another supported receiving destination independently
-  of buyer collection. Provider APIs do not initiate seller payouts.
+  select Konnect, iPay, WePay, bank transfer, or another supported receiving destination
+  independently of buyer collection. Provider APIs do not initiate seller payouts.
 - Digital products only; no shipping or physical inventory. Seller registration, store creation and listings remain free.
 - Keep product files private; use short-lived signed downloads and preserve immutable order/file snapshots.
 
@@ -50,8 +50,8 @@
 
 - [x] Keep the central financial ledger, commission snapshots, fee evidence/allocation and weekly
   manual payout workflow as the source of truth.
-- [x] Add Konnect to seller-selected manual receiving destinations alongside iPay, WePay, bank transfer
-  and other supported methods.
+- [x] Add Konnect to seller-selected manual receiving destinations alongside iPay, WePay, bank
+  transfer and other supported methods.
 - [x] Snapshot the seller-selected destination into each payout batch; changing a seller preference
   cannot redirect an existing batch.
 - [ ] Apply migration 0034 only after the normal schema review and explicit database approval. No

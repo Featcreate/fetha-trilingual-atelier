@@ -5,9 +5,7 @@ const migrationsDir = join(process.cwd(), "drizzle/migrations");
 const journalPath = join(migrationsDir, "meta/_journal.json");
 
 const journal = JSON.parse(await readFile(journalPath, "utf8"));
-const sqlFiles = (await readdir(migrationsDir))
-  .filter((name) => name.endsWith(".sql"))
-  .sort();
+const sqlFiles = (await readdir(migrationsDir)).filter((name) => name.endsWith(".sql")).sort();
 const entries = journal.entries;
 
 const errors = [];

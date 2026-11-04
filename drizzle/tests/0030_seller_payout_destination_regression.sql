@@ -104,12 +104,38 @@ BEGIN
   END IF;
 
   IF NOT EXISTS (
-    SELECT 1 FROM pg_trigger
-    WHERE tgrelid = 'public.seller_payout_preferences'::regclass
-      AND tgname = 'seller_payout_preferences_guard'
-      AND NOT tgisinternal
+    SELECT 1
+    FROM pg_trigger t
+    WHERE t.tgrelid = 'public.seller_payout_preferences'::regclass
+      AND t.tgname = 'seller_payout_preferences_guard'
+      AND NOT t.tgisinternal
+      AND t.tgenabled = 'O'
+      AND (t.tgtype & 2) = 2 -- BEFORE
+      AND (t.tgtype & 4) = 4 -- INSERT
+      AND (t.tgtype & 16) = 16 -- UPDATE
+      AND t.tgfoid = 'public.guard_seller_payout_preference()'::regprocedure
   ) THEN
-    RAISE EXCEPTION 'test_failed: seller payout preference validation trigger is missing';
+    RAISE EXCEPTION 'test_failed: enabled BEFORE INSERT/UPDATE payout preference guard trigger is missing';
+  END IF;
+
+  IF NOT (
+    SELECT prosecdef
+    FROM pg_proc
+    WHERE oid = 'public.guard_seller_payout_preference()'::regprocedure
+  ) THEN
+    RAISE EXCEPTION 'test_failed: payout preference guard must retain its SECURITY DEFINER ownership check';
+  END IF;
+
+  IF has_function_privilege(
+    'anon',
+    'public.guard_seller_payout_preference()'::regprocedure,
+    'EXECUTE'
+  ) OR has_function_privilege(
+    'authenticated',
+    'public.guard_seller_payout_preference()'::regprocedure,
+    'EXECUTE'
+  ) THEN
+    RAISE EXCEPTION 'test_failed: trigger guard must not be directly executable by API roles';
   END IF;
 END;
 $$;

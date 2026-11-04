@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { authErrorMessage, useLang } from "@/lib/i18n";
 import { passwordSchema } from "@/lib/account-rules";
+import { clearPasswordRecovery, hasPasswordRecovery } from "@/lib/password-recovery";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -35,17 +36,29 @@ function ResetPasswordPage() {
     let active = true;
     const currentUrl = new URL(window.location.href);
     const hashParams = new URLSearchParams(currentUrl.hash.replace(/^#/, ""));
-    // Supabase may finish processing the recovery URL before this route mounts.
-    // In that case, recover the PASSWORD_RECOVERY state from the validated session
-    // plus the one-time recovery marker still present in the URL.
-    const recoveryMarker =
-      currentUrl.searchParams.has("code") ||
-      currentUrl.searchParams.get("type") === "recovery" ||
-      hashParams.get("type") === "recovery";
+    const providerError =
+      currentUrl.searchParams.get("error_code") ??
+      hashParams.get("error_code") ??
+      currentUrl.searchParams.get("error");
 
     const clearAuthParams = () => {
       window.history.replaceState({}, document.title, window.location.pathname);
     };
+
+    // An expired/consumed OTP cannot establish a recovery session. Show the
+    // invalid-link state immediately instead of leaving the user on a spinner.
+    if (providerError) {
+      setReady("invalid");
+      clearAuthParams();
+      return () => {
+        active = false;
+      };
+    }
+
+    const recoveryMarker =
+      currentUrl.searchParams.has("code") ||
+      currentUrl.searchParams.get("type") === "recovery" ||
+      hashParams.get("type") === "recovery";
 
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" && active) {
@@ -59,20 +72,20 @@ function ResetPasswordPage() {
         active &&
         !sessionError &&
         sessionData.session &&
-        recoveryMarker
+        (recoveryMarker || hasPasswordRecovery())
       ) {
         setReady("ok");
         clearAuthParams();
       }
     });
 
-    const timer = setTimeout(() => {
+    const timer = window.setTimeout(() => {
       if (active) setReady((current) => (current === "ok" ? "ok" : "invalid"));
-    }, 8000);
+    }, 12000);
 
     return () => {
       active = false;
-      clearTimeout(timer);
+      window.clearTimeout(timer);
       data.subscription.unsubscribe();
     };
   }, []);
@@ -86,6 +99,7 @@ function ResetPasswordPage() {
     try {
       const { error } = await supabase.auth.updateUser({ password: pw });
       if (error) return setError(authErrorMessage(a, error));
+      clearPasswordRecovery();
       navigate({ to: "/account", replace: true });
     } catch {
       setError(a.errGeneric);
@@ -98,8 +112,8 @@ function ResetPasswordPage() {
     <AuthShell lang={lang} setLang={setLang} title={a.resetTitle}>
       {ready === "wait" && <p className="text-muted-foreground">{a.loading}</p>}
       {ready === "invalid" && (
-        <p className="text-sm">
-          {a.resetInvalid}{" "}
+        <div className="space-y-3 text-sm">
+          <p>{a.resetInvalid}</p>
           <Link
             to="/auth"
             search={{ mode: "forgot" }}
@@ -107,7 +121,7 @@ function ResetPasswordPage() {
           >
             {a.forgot}
           </Link>
-        </p>
+        </div>
       )}
       {ready === "ok" && (
         <form onSubmit={onSubmit} noValidate className="space-y-4">

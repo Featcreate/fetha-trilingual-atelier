@@ -59,23 +59,11 @@ BEGIN
 END;
 $$;
 
+-- Store creation is intentionally available only through the validated RPC.
+-- The SECURITY DEFINER RPC records consent and verifies the email before inserting.
 DROP POLICY IF EXISTS "Verified users with current seller legal acceptance open store"
   ON public.stores;
-
-CREATE POLICY "Verified users with current seller legal acceptance open store"
-  ON public.stores FOR INSERT TO authenticated
-  WITH CHECK (
-    owner_id = (SELECT auth.uid())
-    AND status = 'active'
-    AND public.is_email_verified((SELECT auth.uid()))
-    AND EXISTS (
-      SELECT 1
-      FROM public.seller_legal_acceptances a
-      WHERE a.user_id = (SELECT auth.uid())
-        AND a.privacy_policy_version = '2026-10-31-v1'
-        AND a.seller_terms_version = '2026-11-03-v2'
-    )
-  );
+REVOKE INSERT ON public.stores FROM authenticated;
 
 CREATE OR REPLACE FUNCTION public.require_terms_acceptance_on_signup()
 RETURNS trigger

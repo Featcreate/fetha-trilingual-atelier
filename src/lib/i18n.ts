@@ -151,7 +151,7 @@ export const dict = {
       payoutMethod: "Versement de vos revenus",
       weeklyManual: "Virement hebdomadaire manuel par Algorea Bazaar",
       payoutHelp:
-        "Algorea Bazaar calcule votre montant après déduction de sa commission (5 % par défaut) et des frais externes réels justifiés qui sont à votre charge, puis vous le transfère manuellement chaque semaine. Les frais sont détaillés séparément et déduits une seule fois. Les liens de prestataires ci-dessous sont informatifs et ne gèrent pas vos versements.",
+        "Algorea Bazaar calcule votre montant après déduction de la commission applicable et des frais externes réels justifiés qui sont à votre charge, puis le règle manuellement chaque semaine. Les frais sont détaillés séparément et déduits une seule fois. Les liens de prestataires ci-dessous sont informatifs et ne gèrent pas vos versements.",
       konnectRegister: "S’inscrire sur Konnect via le lien de la plateforme",
       ipayRegister: "Accéder à iPay",
       wepayRegister: "Accéder à WePay",
@@ -408,7 +408,7 @@ export const dict = {
       payoutMethod: "تحويل مستحقاتك",
       weeklyManual: "تحويل أسبوعي يدوي من Algorea Bazaar",
       payoutHelp:
-        "تحتسب Algorea Bazaar مستحقاتك بعد خصم عمولتها (5% افتراضياً) والرسوم الخارجية الفعلية المثبتة التي تتحملها، ثم تحوّلها إليك يدوياً كل أسبوع. تُعرض الرسوم منفصلة وتُخصم مرة واحدة فقط. روابط مزودي الخدمات أدناه معلوماتية فقط ولا تتولى تحويل مستحقاتك.",
+        "تحتسب Algorea Bazaar مستحقاتك بعد خصم العمولة المعمول بها والرسوم الخارجية الفعلية المثبتة التي تتحملها، ثم تسويها يدوياً كل أسبوع. تُعرض الرسوم منفصلة وتُخصم مرة واحدة فقط. روابط مزودي الخدمات أدناه معلوماتية فقط ولا تتولى تحويل مستحقاتك.",
       konnectRegister: "التسجيل في Konnect عبر رابط المنصة",
       ipayRegister: "الانتقال إلى iPay",
       wepayRegister: "الانتقال إلى WePay",
@@ -664,7 +664,7 @@ export const dict = {
       payoutMethod: "Seller payouts",
       weeklyManual: "Weekly manual transfer by Algorea Bazaar",
       payoutHelp:
-        "Algorea Bazaar calculates your proceeds after its commission (5% by default) and verified actual external fees borne by you, then transfers them manually each week. Fees are itemized separately and deducted only once. The provider links below are informational and do not manage your payout.",
+        "Algorea Bazaar calculates your proceeds after the applicable commission and verified actual external fees borne by you, then settles them manually each week. Fees are itemized separately and deducted only once. The provider links below are informational and do not manage your payout.",
       konnectRegister: "Register with Konnect using the platform link",
       ipayRegister: "Go to iPay",
       wepayRegister: "Go to WePay",

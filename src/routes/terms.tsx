@@ -23,7 +23,7 @@ const copy: Record<
   ar: {
     title: "شروط وأحكام استخدام منصة Algorea Bazaar",
     back: "العودة إلى Algorea Bazaar",
-    version: "الإصدار 2026-11-03-v3",
+    version: "الإصدار 2026-11-04-v4",
     updated: "آخر تحديث: 31 أكتوبر 2026",
     notice:
       "هذه ترجمة موحدة للشروط بثلاث لغات. يجب استكمال بيانات الجهة المشغلة ومراجعة النصوص قانونياً قبل الإطلاق التجاري أو الدولي.",
@@ -59,11 +59,11 @@ const copy: Record<
       ],
       [
         "8. عمولة المنصة ومستحقات البائع",
-        "تقتطع المنصة عمولة عن كل عملية بيع ناجحة، وتُحدد قيمتها وفق السياسة المعمول بها والمعلنة على المنصة وقت إجراء العملية. يُحسب مستحق البائع بعد اقتطاع عمولة المنصة البالغة 5% والرسوم الخارجية الفعلية التي يتحملها البائع وفق البند التالي، وتُعرض جميع المبالغ بصورة منفصلة.",
+        "تقتطع المنصة عمولة عن كل عملية بيع ناجحة، وتُحدد قيمتها وفق السياسة المعمول بها والمعلنة على المنصة وقت إجراء العملية. يُحسب مستحق البائع بعد اقتطاع عمولة المنصة المعمول بها والرسوم الخارجية الفعلية التي يتحملها البائع وفق البند التالي، وتُعرض جميع المبالغ بصورة منفصلة.",
       ],
       [
         "9. الرسوم الخارجية",
-        "يتحمل البائع جميع الرسوم الخارجية الفعلية المرتبطة بعملية البيع، بما فيها رسوم معالجة الدفع وتحصيله وتحويل العملة والتسوية والتحويل والاستلام والسحب. تبقى هذه الرسوم منفصلة عن عمولة المنصة البالغة 5%، وتُخصم من مستحقات البائع مرة واحدة فقط وفق الرسوم الفعلية وطريقة توزيع موثقة، مع عرض تفاصيلها بوضوح في كشف حسابه. لا تُضاف بموجب هذه القاعدة رسوم خارجية منفصلة على المشتري. ويظل تطبيق ذلك خاضعاً لشروط مزود الخدمة والقانون.",
+        "يتحمل البائع جميع الرسوم الخارجية الفعلية المرتبطة بعملية البيع، بما فيها رسوم معالجة الدفع وتحصيله وتحويل العملة والتسوية والتحويل والاستلام والسحب. تبقى هذه الرسوم منفصلة عن عمولة المنصة، وتُخصم من مستحقات البائع مرة واحدة فقط وفق الرسوم الفعلية وطريقة توزيع موثقة، مع عرض تفاصيلها بوضوح في كشف حسابه. لا تُضاف بموجب هذه القاعدة رسوم خارجية منفصلة على المشتري. ويظل تطبيق ذلك خاضعاً لشروط مزود الخدمة والقانون.",
       ],
       [
         "10. التنزيل والاسترجاع",
@@ -102,7 +102,7 @@ const copy: Record<
   fr: {
     title: "Conditions générales d’utilisation d’Algorea Bazaar",
     back: "Retour à Algorea Bazaar",
-    version: "Version 2026-11-03-v3",
+    version: "Version 2026-11-04-v4",
     updated: "Dernière mise à jour : 31 octobre 2026",
     notice:
       "Cette version harmonise les conditions en trois langues. Les informations sur l’exploitant doivent être complétées et le texte doit faire l’objet d’une vérification juridique avant tout lancement commercial ou international.",
@@ -142,7 +142,7 @@ const copy: Record<
       ],
       [
         "9. Frais externes",
-        "Le vendeur supporte tous les frais externes réels liés à la vente, notamment les frais de traitement et d’encaissement du paiement, de conversion de devise, de règlement, de transfert, de réception et de retrait. Ces frais restent distincts de la commission de 5 % de la plateforme et sont déduits une seule fois des sommes dues au vendeur, sur la base des frais réellement facturés et d’une méthode de répartition documentée. Ils sont détaillés dans son relevé. Aucun frais externe distinct n’est ajouté au paiement de l’acheteur au titre de cette règle. Cette répartition reste soumise aux conditions du prestataire et au droit applicable.",
+        "Le vendeur supporte tous les frais externes réels liés à la vente, notamment les frais de traitement et d’encaissement du paiement, de conversion de devise, de règlement, de transfert, de réception et de retrait. Ces frais restent distincts de la commission de la plateforme et sont déduits une seule fois des sommes dues au vendeur, sur la base des frais réellement facturés et d’une méthode de répartition documentée. Ils sont détaillés dans son relevé. Aucun frais externe distinct n’est ajouté au paiement de l’acheteur au titre de cette règle. Cette répartition reste soumise aux conditions du prestataire et au droit applicable.",
       ],
       [
         "10. Téléchargement et remboursements",
@@ -181,7 +181,7 @@ const copy: Record<
   en: {
     title: "Algorea Bazaar Terms of Use",
     back: "Back to Algorea Bazaar",
-    version: "Version 2026-11-03-v3",
+    version: "Version 2026-11-04-v4",
     updated: "Last updated: 31 October 2026",
     notice:
       "This version harmonizes the Terms in three languages. The operator’s legal details must be completed and the text reviewed by qualified counsel before commercial or international launch.",
@@ -217,11 +217,11 @@ const copy: Record<
       ],
       [
         "8. Platform commission and seller proceeds",
-        "The platform deducts a commission from each successful sale. The applicable rate is the policy displayed on the platform when the transaction takes place. The seller's payable amount is calculated after deducting the 5% platform commission and the actual external fees borne by the seller under the following section; each amount is shown separately.",
+        "The platform deducts a commission from each successful sale. The applicable rate is the policy displayed on the platform when the transaction takes place. The seller's payable amount is calculated after deducting the applicable platform commission and the actual external fees borne by the seller under the following section; each amount is shown separately.",
       ],
       [
         "9. External fees",
-        "The seller bears all actual external fees attributable to the sale, including payment processing and collection, currency conversion, settlement, transfer, receipt and withdrawal fees. These fees remain separate from the platform's 5% commission and are deducted from the seller's proceeds only once, based on actual charges and a documented allocation method. They are itemized in the seller's statement. No separate external fee is added to the buyer's checkout under this rule. This allocation remains subject to the provider's terms and applicable law.",
+        "The seller bears all actual external fees attributable to the sale, including payment processing and collection, currency conversion, settlement, transfer, receipt and withdrawal fees. These fees remain separate from the platform commission and are deducted from the seller's proceeds only once, based on actual charges and a documented allocation method. They are itemized in the seller's statement. No separate external fee is added to the buyer's checkout under this rule. This allocation remains subject to the provider's terms and applicable law.",
       ],
       [
         "10. Downloads and refunds",

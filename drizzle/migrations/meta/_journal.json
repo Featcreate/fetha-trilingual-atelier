@@ -239,6 +239,13 @@
       "when": 1793803900000,
       "tag": "0032_restrict_email_verification_helper",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793804024009,
+      "tag": "0033_align_legal_document_versions",
+      "breakpoints": true
     }
   ]
 }

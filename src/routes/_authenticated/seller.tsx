@@ -47,8 +47,6 @@ export const Route = createFileRoute("/_authenticated/seller")({
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
 const productTypes = PRODUCT_TYPES;
-const IPAY_SELLER_REGISTRATION_URL = "https://www.ipay.tn/";
-const WEPAY_SELLER_REGISTRATION_URL = "https://we-pay.io/en/home/";
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 
 function slugify(value: string) {
@@ -1067,6 +1065,11 @@ function SellerPage() {
                         {p.provider_transfer_ref && (
                           <p className="text-xs text-muted-foreground" dir="ltr">
                             {m.transferReference}: {p.provider_transfer_ref}
+                          </p>
+                        )}
+                        {p.payout_destination_method && (
+                          <p className="text-xs text-muted-foreground">
+                            {lang === "ar" ? "وسيلة الاستلام" : lang === "en" ? "Receiving method" : "Moyen de réception"}: {p.payout_destination_method}
                           </p>
                         )}
                       </div>

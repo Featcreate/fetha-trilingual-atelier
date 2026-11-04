@@ -194,7 +194,6 @@ function AdminPage() {
     const { error } = await supabase.rpc("admin_create_seller_payout", {
       _store_id: payoutStoreId,
       _idempotency_key: `seller-payout:${payoutStoreId}:${crypto.randomUUID()}`,
-      _scheduled_for: null,
     });
     setBusy(null);
     if (error) {

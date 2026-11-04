@@ -11,7 +11,10 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "start": "node .output/server/index.mjs",
+    "check:migrations": "node scripts/check-migration-journal.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
@@ -97,5 +100,8 @@
     "typescript-eslint": "^8.56.1",
     "vite": "8.1.5",
     "vitest": "^4.1.10"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

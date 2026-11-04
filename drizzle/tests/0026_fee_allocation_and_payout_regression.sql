@@ -1,4 +1,4 @@
--- Run after applying migrations through 0026 on a disposable/test database.
+-- Run after applying migrations through 0028 on a disposable/test database.
 -- These assertions are data-free: they validate the rounding contract and schema.
 DO $$
 DECLARE
@@ -7,6 +7,7 @@ DECLARE
   _second bigint;
   _third bigint;
   _effective_bps integer;
+  _seller_fee_function text;
 BEGIN
   -- Exact proportional allocation: 10,000 millimes across weights 2:3:5.
   WITH weights(store_id, weight) AS (
@@ -77,6 +78,30 @@ BEGIN
   _effective_bps := round((500 + 2000)::numeric * 10000 / (10000 + 20000))::integer;
   IF _effective_bps <> 833 THEN
     RAISE EXCEPTION 'test_failed: mixed-rate weighted summary expected 833 bps, got %', _effective_bps;
+  END IF;
+
+
+  -- The installed seller-fee RPC must deduplicate order-scoped and
+  -- store-scoped evidence references before inserting a new ledger debit.
+  SELECT pg_get_functiondef(
+    'public.admin_record_seller_external_fee(uuid,text,bigint,text,text,text,text,uuid,uuid)'::regprocedure
+  ) INTO _seller_fee_function;
+
+  IF position('WHERE idempotency_key = trim(_idempotency_key)' IN _seller_fee_function)
+       = 0
+     OR position('WHERE idempotency_key = trim(_idempotency_key)' IN _seller_fee_function)
+       > position('AND order_id IS NOT DISTINCT FROM _order_id' IN _seller_fee_function) THEN
+    RAISE EXCEPTION 'test_failed: idempotency-key conflict validation must precede evidence-reference retry lookup';
+  END IF;
+
+  IF position('external_fee_idempotency_conflict' IN _seller_fee_function) = 0 THEN
+    RAISE EXCEPTION 'test_failed: conflicting idempotency-key reuse is not rejected';
+  END IF;
+
+  IF position('order_id IS NOT DISTINCT FROM _order_id' IN _seller_fee_function) = 0
+     OR position('order_item_id IS DISTINCT FROM _order_item_id' IN _seller_fee_function) = 0
+     OR position('external_fee_business_reference_conflict' IN _seller_fee_function) = 0 THEN
+    RAISE EXCEPTION 'test_failed: seller fee evidence reference is not fully idempotent';
   END IF;
 
   IF to_regclass('public.seller_external_fee_order_reference_uidx') IS NULL

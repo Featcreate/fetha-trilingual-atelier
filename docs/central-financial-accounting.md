@@ -34,6 +34,7 @@ No payment provider, bank integration, wallet, or intermediary is allowed to spl
 The platform ledger is an append-only accounting record. It is not a bank account, stored-value wallet, escrow license, or payment instrument. Actual funds remain in the platform's external merchant/bank account; the ledger records how those funds and obligations are attributed.
 
 The ledger migration:
+
 - records transaction currency/amount separately from canonical TND accounting amount;
 - posts verified TND buyer collections, platform commission, and seller payables inside the same trusted order-settlement transaction;
 - posts a seller-payout debit only when an administrator records a completed weekly/manual transfer;
@@ -50,6 +51,7 @@ The ledger migration:
 ## Provider acceptance checklist
 
 A provider is suitable only if it confirms in writing:
+
 - worldwide buyer acceptance for the countries we intend to serve;
 - support for digital goods and a multi-vendor marketplace where the platform is the sole merchant/collection beneficiary;
 - settlement to the platform's own account;
@@ -65,7 +67,6 @@ This implementation does not connect a provider, create credentials, activate ch
 
 Provider-side seller payout APIs are deliberately excluded. The administrator-controlled weekly manual payout functions are the only approved method; they prepare accounting records and confirm transfers only after an operator has sent the money.
 
-
 ## Current international card route — Konnect (not live)
 
 Konnect publicly documents acceptance of international Visa and Mastercard cards and API support for TND, EUR and USD. Its published indicative fee for international cards is 2.9%, subject to the actual merchant agreement. The current Algorea Bazaar adapter uses the platform's Konnect receiver wallet and charges in TND, while the provider handles card processing and the buyer's issuer may convert the charge into the buyer's card currency.
@@ -74,11 +75,9 @@ This makes Konnect the leading candidate for the initial worldwide-buyer card ro
 
 The current checkout code is fail-closed and remains disabled until separate sandbox and live activation controls are configured and approved. No API credentials, live charges, or transfers are activated by the repository changes.
 
-
 ## Database deployment status — 2026-11-03
 
 Migration 0022 has been applied to the original Supabase project jgjcychkntsokhzeziqs and is recorded in its migration history. A transaction-wrapped dry run against the actual project schema succeeded before application. Post-application checks confirmed the ledger table, RLS, indexes, immutability triggers, currency constraints, and weekly/manual-only payout constraints. The ledger, orders, order items, payout batches and payout preferences remain empty. This database change does not activate checkout or move money.
-
 
 ## Seller-borne external fees — implemented, manual evidence entry
 
@@ -89,3 +88,13 @@ Migration 0022 has been applied to the original Supabase project jgjcychkntsokhz
 - Sellers can view fee entries, allocated amounts, remaining amounts, and fee deductions on each payout. Administrators can record fees and prepare/confirm manual weekly transfers.
 - Fee totals are currently entered manually from evidence and recorded in TND. Shared order-level fee allocation is automatic once the verified paid order ID is supplied. Automatic provider API fee ingestion and non-TND fee conversion are not implemented. Do not record estimates or guessed amounts.
 - Migrations 0023 and 0024 were applied successfully to the original Supabase project after transaction-wrapped dry runs. No fee rows, allocations, orders, payouts or ledger rows were created by deployment.
+
+## Migration verification boundary — 2026-11-04
+
+- GitHub contains the financial migration sequence through 0028. The original production project's migration history was checked directly before deployment: it contained migrations through 0025, with no rows in orders, order items, seller ledger, payouts, external fee entries or central financial ledger.
+- The dedicated Supabase test project `algorea-bazaar-test` (`iblfizhtvzfnfuntnazk`) was empty before testing. Migrations 0000–0028 were applied there in order; the fee-allocation/idempotency SQL regression passed, and a transactional RPC test verified exact retries, conflicting idempotency-key rejection, conflicting evidence-reference rejection, and exactly one resulting fee/ledger debit. The test transaction was rolled back; business and financial tables remained empty.
+- After the clone test and production preflight (including duplicate-reference and payout commission-backfill checks), migrations 0026, 0027 and 0028 were applied in order to the original production project `jgjcychkntsokhzeziqs` on 2026-11-04. The live migration history now records all migrations through 0028. The SQL regression script was then run against production and passed; financial tables remain empty. No checkout, live payment, refund or seller transfer was activated.
+- Do not infer production status from the separate Lovable-connected project `vjqeuvvnavsdjzdqfyrs`. Future production migrations must still be tested on a disposable clone and checked against the original project's own migration history and schema.
+- Migration 0027 fixes an idempotency gap in `admin_record_seller_external_fee`: retries using the same store, optional order/item scope and external evidence reference now return the original fee record when its financial details match, and reject conflicting reuse.
+- Migration 0028 makes client idempotency-key validation take precedence over evidence-reference retry lookup. Reusing a key for different financial data is rejected even when the supplied evidence reference identifies an existing fee. An unused key may still safely retry an exact existing evidence reference. Neither migration rewrites existing financial rows, initiates payments, or transfers money.
+- The SQL regression script includes catalog-level assertions for the 0027/0028 RPC contract, including lookup order and explicit rejection of conflicting idempotency-key reuse. It passed on the disposable test project and on the production schema after migration deployment. The behavioral RPC test was run only on the disposable test project.

@@ -197,6 +197,20 @@
       "when": 1793743700000,
       "tag": "0026_fee_idempotency_and_mixed_rate_payouts",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1793752581651,
+      "tag": "0027_order_scoped_seller_fee_idempotency",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1793752581652,
+      "tag": "0028_seller_fee_idempotency_key_precedence",
+      "breakpoints": true
     }
   ]
 }

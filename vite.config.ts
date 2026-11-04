@@ -6,7 +6,7 @@ export default defineConfig({
   },
   vite: {
     server: {
-      allowedHosts: ["fetha-trilingual-atelier-5.onrender.com"],
+      allowedHosts: ["fetha-trilingual-atelier-2.onrender.com"],
     },
   },
 });

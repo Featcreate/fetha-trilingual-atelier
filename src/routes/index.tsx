@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTND } from "@/lib/money";
 import { TndEquivalents } from "@/components/TndEquivalents";
+import { ProductPreview } from "@/components/ProductPreview";
 import {
   Menu,
   X,
@@ -188,19 +189,11 @@ function Index() {
       <article key={product.id} className="overflow-hidden rounded-xl border border-border bg-card">
         <Link to="/products/$id" params={{ id: product.id }} className="block">
           <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-cream-light p-5">
-            {product.image_path ? (
-              <img
-                src={
-                  supabase.storage.from("product-images").getPublicUrl(product.image_path).data
-                    .publicUrl
-                }
-                alt={localizedProductText(product.name, product.name_translations, lang)}
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span className="text-3xl font-bold text-petrol/50">AB</span>
-            )}
+            <ProductPreview
+              path={product.image_path}
+              alt={localizedProductText(product.name, product.name_translations, lang)}
+              className="h-full w-full object-cover"
+            />
           </div>
         </Link>
         <div className="space-y-2 p-4">

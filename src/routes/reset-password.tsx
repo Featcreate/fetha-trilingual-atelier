@@ -28,7 +28,7 @@ function ResetPasswordPage() {
   const { lang, setLang, t } = useLang();
   const a = t.auth;
   const navigate = useNavigate();
-  const [ready, setReady] = useState<"wait" | "ok" | "invalid">("wait");
+  const [ready, setReady] = useState<"wait" | "confirm" | "ok" | "invalid">("wait");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -45,8 +45,17 @@ function ResetPasswordPage() {
       window.history.replaceState({}, document.title, window.location.pathname);
     };
 
-    // An expired/consumed OTP cannot establish a recovery session. Show the
-    // invalid-link state immediately instead of leaving the user on a spinner.
+    // The custom recovery email link lands here without consuming its OTP.
+    // Only the user's explicit button click below calls verifyOtp.
+    const tokenHash = currentUrl.searchParams.get("token_hash");
+    if (tokenHash && currentUrl.searchParams.get("type") === "recovery") {
+      setReady("confirm");
+      return () => {
+        active = false;
+      };
+    }
+
+    // An expired/consumed OTP cannot establish a recovery session.
     if (providerError) {
       setReady("invalid");
       clearAuthParams();
@@ -90,6 +99,36 @@ function ResetPasswordPage() {
     };
   }, []);
 
+  async function confirmRecovery() {
+    const currentUrl = new URL(window.location.href);
+    const tokenHash = currentUrl.searchParams.get("token_hash");
+    if (!tokenHash || currentUrl.searchParams.get("type") !== "recovery") {
+      setReady("invalid");
+      return;
+    }
+
+    setBusy(true);
+    setError("");
+    try {
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: "recovery",
+      });
+      if (verifyError) {
+        setError(authErrorMessage(a, verifyError));
+        setReady("invalid");
+        return;
+      }
+      setReady("ok");
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch {
+      setError(a.errGeneric);
+      setReady("invalid");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -111,12 +150,38 @@ function ResetPasswordPage() {
     }
   }
 
+  const confirmLabel =
+    lang === "ar"
+      ? "متابعة إعادة تعيين كلمة المرور"
+      : lang === "fr"
+        ? "Continuer la réinitialisation"
+        : "Continue password reset";
+
   return (
     <AuthShell lang={lang} setLang={setLang} title={a.resetTitle}>
       {ready === "wait" && <p className="text-muted-foreground">{a.loading}</p>}
+      {ready === "confirm" && (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {lang === "ar"
+              ? "اضغط للمتابعة والتحقق من رابط الاستعادة."
+              : lang === "fr"
+                ? "Cliquez pour continuer et vérifier le lien de réinitialisation."
+                : "Continue to verify your password reset link."}
+          </p>
+          <button
+            type="button"
+            onClick={() => void confirmRecovery()}
+            disabled={busy}
+            className="inline-flex w-full items-center justify-center rounded-lg bg-coral px-4 py-3 font-semibold text-white disabled:opacity-60"
+          >
+            {busy ? a.loading : confirmLabel}
+          </button>
+        </div>
+      )}
       {ready === "invalid" && (
         <div className="space-y-3 text-sm">
-          <p>{a.resetInvalid}</p>
+          <p>{error || a.resetInvalid}</p>
           <Link
             to="/auth"
             search={{ mode: "forgot" }}

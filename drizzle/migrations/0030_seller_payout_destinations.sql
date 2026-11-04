@@ -57,6 +57,29 @@ ALTER TABLE public.seller_payouts
       AND payout_account_identifier IS NOT NULL)
   );
 
+-- Replace the legacy policy that allowed only the weekly_manual enum value.
+-- Sellers may edit only their own active store's receiving destination.
+DROP POLICY IF EXISTS "Sellers manage own payout preference" ON public.seller_payout_preferences;
+CREATE POLICY "Sellers manage own payout preference"
+  ON public.seller_payout_preferences FOR ALL TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.stores s
+      WHERE s.id = seller_payout_preferences.store_id
+        AND s.owner_id = (SELECT auth.uid())
+        AND s.status = 'active'
+    )
+  )
+  WITH CHECK (
+    method IN ('ipay', 'wepay', 'bank_transfer', 'other')
+    AND EXISTS (
+      SELECT 1 FROM public.stores s
+      WHERE s.id = seller_payout_preferences.store_id
+        AND s.owner_id = (SELECT auth.uid())
+        AND s.status = 'active'
+    )
+  );
+
 COMMENT ON COLUMN public.seller_payout_preferences.method IS
   'Seller-selected receiving destination: iPay, WePay, bank transfer, or another supported method. Weekly manual is the platform settlement cadence, not a destination.';
 COMMENT ON COLUMN public.seller_payouts.payout_destination_method IS

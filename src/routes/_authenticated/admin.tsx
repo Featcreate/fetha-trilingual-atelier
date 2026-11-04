@@ -733,7 +733,8 @@ function AdminPage() {
                               : "Destination enregistrée pour ce versement"}
                         </p>
                         <p>
-                          {payoutDestinationLabel(payout.payout_destination_method, lang)} · {payout.payout_account_holder_name}
+                          {payoutDestinationLabel(payout.payout_destination_method, lang)} ·
+                          {payout.payout_account_holder_name}
                         </p>
                         {payout.payout_provider_name && <p>{payout.payout_provider_name}</p>}
                         <p dir="ltr">{payout.payout_account_identifier}</p>

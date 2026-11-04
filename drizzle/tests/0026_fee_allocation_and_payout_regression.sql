@@ -1,4 +1,4 @@
--- Run after applying migrations through 0028 on a disposable/test database.
+-- Run after applying migrations through 0029 on a disposable/test database.
 -- These assertions are data-free: they validate the rounding contract and schema.
 DO $$
 DECLARE
@@ -8,6 +8,7 @@ DECLARE
   _third bigint;
   _effective_bps integer;
   _seller_fee_function text;
+  _has_role_security_definer boolean;
 BEGIN
   -- Exact proportional allocation: 10,000 millimes across weights 2:3:5.
   WITH weights(store_id, weight) AS (
@@ -102,6 +103,14 @@ BEGIN
      OR position('order_item_id IS DISTINCT FROM _order_item_id' IN _seller_fee_function) = 0
      OR position('external_fee_business_reference_conflict' IN _seller_fee_function) = 0 THEN
     RAISE EXCEPTION 'test_failed: seller fee evidence reference is not fully idempotent';
+  END IF;
+
+  SELECT p.prosecdef INTO _has_role_security_definer
+  FROM pg_proc p
+  WHERE p.oid = 'public.has_role(uuid,public.app_role)'::regprocedure;
+
+  IF _has_role_security_definer IS DISTINCT FROM false THEN
+    RAISE EXCEPTION 'test_failed: has_role must run as SECURITY INVOKER';
   END IF;
 
   IF to_regclass('public.seller_external_fee_order_reference_uidx') IS NULL

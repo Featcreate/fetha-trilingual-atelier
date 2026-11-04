@@ -225,6 +225,13 @@
       "when": 1793755000000,
       "tag": "0030_seller_payout_destinations",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793803440439,
+      "tag": "0031_rls_initplan_and_foreign_key_indexes",
+      "breakpoints": true
     }
   ]
 }

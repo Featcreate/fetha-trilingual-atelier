@@ -221,7 +221,7 @@ const copy: Record<
       ],
       [
         "9. External fees",
-        "The seller bears all actual external fees attributable to the sale, including payment processing and collection, currency conversion, settlement, transfer, receipt and withdrawal fees. These fees remain separate from the platform's 5% commission and are deducted from the seller's proceeds only once, based on actual charges and a documented allocation method. They are itemized in the seller's statement. No separate external fee is added to the buyer's checkout under this rule. This allocation remains subject to the provider's terms and applicable law.",
+        "The seller bears all actual external fees attributable to the sale, including payment processing and collection, currency conversion, settlement, transfer, receipt and withdrawal fees. These fees remain separate from the platform commission and are deducted from the seller's proceeds only once, based on actual charges and a documented allocation method. They are itemized in the seller's statement. No separate external fee is added to the buyer's checkout under this rule. This allocation remains subject to the provider's terms and applicable law.",
       ],
       [
         "10. Downloads and refunds",

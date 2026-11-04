@@ -87,6 +87,11 @@ BEGIN
     'public.admin_record_seller_external_fee(uuid,text,bigint,text,text,text,text,uuid,uuid)'::regprocedure
   ) INTO _seller_fee_function;
 
+  IF position('WHERE idempotency_key = trim(_idempotency_key)' IN _seller_fee_function)
+       > position('WHERE store_id = _store_id' IN _seller_fee_function) THEN
+    RAISE EXCEPTION 'test_failed: business reference lookup precedes idempotency-key conflict validation';
+  END IF;
+
   IF position('order_id IS NOT DISTINCT FROM _order_id' IN _seller_fee_function) = 0
      OR position('order_item_id IS DISTINCT FROM _order_item_id' IN _seller_fee_function) = 0
      OR position('external_fee_business_reference_conflict' IN _seller_fee_function) = 0 THEN

@@ -5,11 +5,30 @@ import { useLang } from "@/lib/i18n";
 
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Kind = "logo" | "avatar" | "banner";
-const fields = {
-  logo: "logo_path",
-  avatar: "avatar_path",
-  banner: "banner_path",
-} as const;
+function getBrandingPath(store: Store, kind: Kind): string | null {
+  switch (kind) {
+    case "logo":
+      return store.logo_path;
+    case "avatar":
+      return store.avatar_path;
+    case "banner":
+      return store.banner_path;
+  }
+}
+
+function getBrandingUpdate(
+  kind: Kind,
+  path: string | null,
+): Database["public"]["Tables"]["stores"]["Update"] {
+  switch (kind) {
+    case "logo":
+      return { logo_path: path };
+    case "avatar":
+      return { avatar_path: path };
+    case "banner":
+      return { banner_path: path };
+  }
+}
 const labels = {
   logo: "storeLogo",
   avatar: "sellerAvatar",
@@ -35,7 +54,6 @@ export function StoreBrandingEditor({
       setNotice(m.storeImageInvalid);
       return;
     }
-    const field = fields[kind];
     const ext = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
     const path = store.id + "/" + kind + "-" + crypto.randomUUID() + "." + ext;
     setBusy(kind);
@@ -52,7 +70,7 @@ export function StoreBrandingEditor({
     }
     const { error } = await supabase
       .from("stores")
-      .update({ [field]: path })
+      .update(getBrandingUpdate(kind, path))
       .eq("id", store.id)
       .eq("owner_id", store.owner_id);
     if (error) {
@@ -61,7 +79,7 @@ export function StoreBrandingEditor({
       setNotice(m.storeImageSaveFailed);
       return;
     }
-    const oldPath = store[field];
+    const oldPath = getBrandingPath(store, kind);
     if (oldPath) await supabase.storage.from("store-assets").remove([oldPath]);
     setBusy(null);
     setNotice(m.storeImageSaved);
@@ -69,14 +87,13 @@ export function StoreBrandingEditor({
   }
 
   async function remove(kind: Kind) {
-    const field = fields[kind];
-    const oldPath = store[field];
+    const oldPath = getBrandingPath(store, kind);
     if (!oldPath) return;
     setBusy(kind);
     setNotice("");
     const { error } = await supabase
       .from("stores")
-      .update({ [field]: null })
+      .update(getBrandingUpdate(kind, null))
       .eq("id", store.id)
       .eq("owner_id", store.owner_id);
     if (error) {
@@ -96,7 +113,7 @@ export function StoreBrandingEditor({
       <p className="mt-1 text-sm text-muted-foreground">{m.storeImageHelp}</p>
       <div className="mt-4 grid gap-4 md:grid-cols-3">
         {(["logo", "avatar", "banner"] as Kind[]).map((kind) => {
-          const path = store[fields[kind]];
+          const path = getBrandingPath(store, kind);
           const url = path
             ? supabase.storage.from("store-assets").getPublicUrl(path).data.publicUrl
             : null;

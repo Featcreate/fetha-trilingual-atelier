@@ -60,12 +60,12 @@ BEGIN
   FROM public.seller_external_fee_entries
   WHERE store_id = _store_id
     AND order_id IS NOT DISTINCT FROM _order_id
-    AND order_item_id IS NOT DISTINCT FROM _order_item_id
     AND external_reference = trim(_external_reference)
   FOR UPDATE;
 
   IF FOUND THEN
     IF _existing.seller_id IS DISTINCT FROM _seller_id
+       OR _existing.order_item_id IS DISTINCT FROM _order_item_id
        OR _existing.amount_millimes <> _amount_millimes
        OR _existing.fee_category <> _fee_category
        OR _existing.source <> trim(_source)

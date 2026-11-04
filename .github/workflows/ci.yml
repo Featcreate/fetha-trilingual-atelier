@@ -46,14 +46,18 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             git fetch origin main --depth=1
-            mapfile -t files < <(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx' '*.json' '*.md' '*.css' '*.html' '*.yml' '*.yaml')
-            if (( ${#files[@]} )); then
-              bunx prettier --check "${files[@]}"
-            else
-              echo "No changed files require formatting."
-            fi
+            BASE="origin/main"
           else
-            bunx prettier --check .
+            BASE="${{ github.event.before }}"
+            if [[ "$BASE" =~ ^0+$ ]]; then
+              BASE="HEAD^"
+            fi
+          fi
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$BASE"...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx' '*.json' '*.md' '*.css' '*.html' '*.yml' '*.yaml')
+          if (( ${#files[@]} )); then
+            bunx prettier --check "${files[@]}"
+          else
+            echo "No changed files require formatting."
           fi
 
       - name: Lint
@@ -61,14 +65,18 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             git fetch origin main --depth=1
-            mapfile -t files < <(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx')
-            if (( ${#files[@]} )); then
-              bunx eslint "${files[@]}"
-            else
-              echo "No changed source files require linting."
-            fi
+            BASE="origin/main"
           else
-            bun run lint
+            BASE="${{ github.event.before }}"
+            if [[ "$BASE" =~ ^0+$ ]]; then
+              BASE="HEAD^"
+            fi
+          fi
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$BASE"...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx')
+          if (( ${#files[@]} )); then
+            bunx eslint "${files[@]}"
+          else
+            echo "No changed source files require linting."
           fi
 
       - name: Run tests

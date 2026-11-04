@@ -92,8 +92,11 @@ function ResetPasswordPage() {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const pw = String(new FormData(e.currentTarget).get("password") ?? "");
+    const form = new FormData(e.currentTarget);
+    const pw = String(form.get("password") ?? "");
+    const confirmation = String(form.get("confirm_password") ?? "");
     if (!passwordSchema.safeParse(pw).success) return setError(a.errPassword);
+    if (pw !== confirmation) return setError(a.errPasswordMismatch);
     setBusy(true);
     setError("");
     try {
@@ -131,8 +134,20 @@ function ResetPasswordPage() {
             type="password"
             dir="ltr"
             autoComplete="new-password"
+            minLength={8}
             maxLength={72}
+            required
             error={error}
+          />
+          <Field
+            id="confirm_password"
+            label={a.confirmPassword}
+            type="password"
+            dir="ltr"
+            autoComplete="new-password"
+            minLength={8}
+            maxLength={72}
+            required
           />
           <SubmitButton busy={busy} label={a.resetSave} busyLabel={a.loading} />
         </form>

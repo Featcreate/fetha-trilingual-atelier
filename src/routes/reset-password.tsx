@@ -32,15 +32,46 @@ function ResetPasswordPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    let active = true;
+    const currentUrl = new URL(window.location.href);
+    const hashParams = new URLSearchParams(currentUrl.hash.replace(/^#/, ""));
+    // Supabase may finish processing the recovery URL before this route mounts.
+    // In that case, recover the PASSWORD_RECOVERY state from the validated session
+    // plus the one-time recovery marker still present in the URL.
+    const recoveryMarker =
+      currentUrl.searchParams.has("code") ||
+      currentUrl.searchParams.get("type") === "recovery" ||
+      hashParams.get("type") === "recovery";
+
+    const clearAuthParams = () => {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    };
+
     const { data } = supabase.auth.onAuthStateChange((event) => {
-      // A pre-existing login session is not proof that the recovery link is valid.
-      // Only the recovery event emitted after Supabase validates the link unlocks this form.
-      if (event === "PASSWORD_RECOVERY") setReady("ok");
+      if (event === "PASSWORD_RECOVERY" && active) {
+        setReady("ok");
+        clearAuthParams();
+      }
     });
+
+    void supabase.auth.getSession().then(({ data: sessionData, error: sessionError }) => {
+      if (
+        active &&
+        !sessionError &&
+        sessionData.session &&
+        recoveryMarker
+      ) {
+        setReady("ok");
+        clearAuthParams();
+      }
+    });
+
     const timer = setTimeout(() => {
-      setReady((current) => (current === "ok" ? "ok" : "invalid"));
-    }, 5000);
+      if (active) setReady((current) => (current === "ok" ? "ok" : "invalid"));
+    }, 8000);
+
     return () => {
+      active = false;
       clearTimeout(timer);
       data.subscription.unsubscribe();
     };

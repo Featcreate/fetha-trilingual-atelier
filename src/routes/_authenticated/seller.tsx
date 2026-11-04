@@ -47,8 +47,6 @@ export const Route = createFileRoute("/_authenticated/seller")({
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
 const productTypes = PRODUCT_TYPES;
-const KONNECT_SELLER_REGISTRATION_URL =
-  "https://dashboard.konnect.network/auth/register?referrerCode=31XyM7MR8wy71ga7a";
 const IPAY_SELLER_REGISTRATION_URL = "https://www.ipay.tn/";
 const WEPAY_SELLER_REGISTRATION_URL = "https://we-pay.io/en/home/";
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
@@ -159,7 +157,7 @@ function SellerPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("seller_payout_preferences")
-        .select("id,method,konnect_wallet_id")
+        .select("id,method,account_holder_name,provider_name,account_identifier,bank_name,additional_details,updated_at")
         .eq("store_id", store!.id)
         .maybeSingle();
       if (error) throw error;
@@ -174,7 +172,7 @@ function SellerPage() {
       const { data, error } = await supabase
         .from("seller_payouts")
         .select(
-          "id,status,seller_amount_millimes,external_fees_millimes,currency,created_at,paid_at,provider_transfer_ref",
+          "id,status,seller_amount_millimes,external_fees_millimes,currency,created_at,paid_at,provider_transfer_ref,payout_destination_method",
         )
         .eq("store_id", store!.id)
         .order("created_at", { ascending: false })
@@ -275,15 +273,31 @@ function SellerPage() {
     await qc.invalidateQueries({ queryKey: ["seller-store", user.id] });
   }
 
-  async function savePayoutPreference() {
+  async function savePayoutPreference(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     if (!store) return;
+    const values = new FormData(e.currentTarget);
+    const method = String(values.get("payout_method") ?? "other");
+    const accountHolderName = String(values.get("account_holder_name") ?? "").trim();
+    const accountIdentifier = String(values.get("account_identifier") ?? "").trim();
+    if (!accountHolderName || !accountIdentifier) {
+      setNotice(lang === "ar" ? "أدخل اسم صاحب الحساب ومعرّف الحساب." : lang === "en" ? "Enter the account holder name and account identifier." : "Saisissez le titulaire et l’identifiant du compte.");
+      return;
+    }
     setBusy(true);
     setNotice("");
-    const { error } = await supabase
-      .from("seller_payout_preferences")
-      .upsert({ store_id: store.id, method: "weekly_manual" }, { onConflict: "store_id" });
+    const { error } = await supabase.from("seller_payout_preferences").upsert({
+      store_id: store.id,
+      method,
+      account_holder_name: accountHolderName,
+      account_identifier: accountIdentifier,
+      provider_name: String(values.get("provider_name") ?? "").trim() || null,
+      bank_name: String(values.get("bank_name") ?? "").trim() || null,
+      additional_details: String(values.get("additional_details") ?? "").trim() || null,
+      konnect_wallet_id: null,
+    }, { onConflict: "store_id" });
     setBusy(false);
-    if (error) return setNotice(m.error);
+    if (error) return setNotice(error.message.includes("payout_destination_details_required") ? (lang === "ar" ? "بيانات الاستلام الأساسية مطلوبة." : lang === "en" ? "Required payout details are missing." : "Les informations de réception obligatoires sont manquantes.") : m.error);
     setNotice(m.productUpdated);
     await qc.invalidateQueries({ queryKey: ["seller-payout-preference", store.id] });
   }
@@ -979,44 +993,45 @@ function SellerPage() {
             <div>
               <h2 className="text-xl font-bold">{m.payoutMethod}</h2>
               <p className="mt-2 font-semibold">{m.weeklyManual}</p>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">{m.payoutHelp}</p>
-              <a
-                href={KONNECT_SELLER_REGISTRATION_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90"
-              >
-                {m.konnectRegister}
-              </a>
-              <a
-                href={IPAY_SELLER_REGISTRATION_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex rounded-full border border-border px-5 py-3 text-sm font-semibold hover:bg-muted"
-              >
-                {m.ipayRegister}
-              </a>
-              <a
-                href={WEPAY_SELLER_REGISTRATION_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex rounded-full border border-border px-5 py-3 text-sm font-semibold hover:bg-muted"
-              >
-                {m.wepayRegister}
-              </a>
-              <p className="mt-2 text-xs leading-6 text-muted-foreground">{m.konnectEligibility}</p>
+              <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                {lang === "ar" ? "تختار وسيلة استلام مستحقاتك. تُحوّل Algorea Bazaar مستحقاتك أسبوعياً يدوياً إلى هذه البيانات. لا تضع كلمة مرور أو رمز تحقق أو مفتاحاً سرياً." : lang === "en" ? "Choose how you receive your seller proceeds. Algorea Bazaar sends weekly manual transfers to these details. Never enter a password, OTP, or secret key." : "Choisissez votre moyen de réception. Algorea Bazaar effectue un virement manuel chaque semaine vers ces coordonnées. Ne saisissez jamais de mot de passe, code OTP ou clé secrète."}
+              </p>
+              <form key={payoutPreferenceQuery.data?.updated_at ?? "new-payout-preference"} onSubmit={(e) => void savePayoutPreference(e)} className="mt-4 space-y-3">
+                <label className="block text-sm font-medium">
+                  {lang === "ar" ? "وسيلة الاستلام" : lang === "en" ? "Receiving method" : "Moyen de réception"}
+                  <select name="payout_method" defaultValue={payoutPreferenceQuery.data?.method ?? "other"} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2">
+                    <option value="ipay">iPay</option>
+                    <option value="wepay">WePay</option>
+                    <option value="bank_transfer">{lang === "ar" ? "تحويل بنكي" : lang === "en" ? "Bank transfer" : "Virement bancaire"}</option>
+                    <option value="other">{lang === "ar" ? "وسيلة أخرى" : lang === "en" ? "Other method" : "Autre moyen"}</option>
+                  </select>
+                </label>
+                <label className="block text-sm font-medium">
+                  {lang === "ar" ? "اسم صاحب الحساب" : lang === "en" ? "Account holder name" : "Titulaire du compte"}
+                  <input name="account_holder_name" required maxLength={160} defaultValue={payoutPreferenceQuery.data?.account_holder_name ?? ""} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2" />
+                </label>
+                <label className="block text-sm font-medium">
+                  {lang === "ar" ? "معرّف الحساب / رقم المحفظة أو الحساب" : lang === "en" ? "Account identifier / wallet or account number" : "Identifiant / numéro de portefeuille ou de compte"}
+                  <input name="account_identifier" required maxLength={200} defaultValue={payoutPreferenceQuery.data?.account_identifier ?? ""} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2" />
+                </label>
+                <label className="block text-sm font-medium">
+                  {lang === "ar" ? "اسم مزود الخدمة (اختياري)" : lang === "en" ? "Provider name (optional)" : "Nom du prestataire (facultatif)"}
+                  <input name="provider_name" maxLength={120} defaultValue={payoutPreferenceQuery.data?.provider_name ?? ""} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2" />
+                </label>
+                <label className="block text-sm font-medium">
+                  {lang === "ar" ? "اسم البنك (اختياري)" : lang === "en" ? "Bank name (optional)" : "Nom de la banque (facultatif)"}
+                  <input name="bank_name" maxLength={160} defaultValue={payoutPreferenceQuery.data?.bank_name ?? ""} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2" />
+                </label>
+                <label className="block text-sm font-medium">
+                  {lang === "ar" ? "معلومات إضافية (اختياري)" : lang === "en" ? "Additional details (optional)" : "Informations complémentaires (facultatif)"}
+                  <textarea name="additional_details" maxLength={500} rows={2} defaultValue={payoutPreferenceQuery.data?.additional_details ?? ""} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2" />
+                </label>
+                <button type="submit" disabled={busy} className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">{m.save}</button>
+              </form>
+              <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                {lang === "ar" ? "تظل وسيلة الاستلام قابلة للتعديل للمستقبل؛ أما الدفعات التي أُنشئت فتحفظ نسخة ثابتة من بياناتها." : lang === "en" ? "You can update your method for future payouts; each created payout keeps its own fixed destination snapshot." : "Vous pouvez modifier le moyen pour les prochains versements ; chaque versement créé conserve son propre instantané de destination."}
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={() => void savePayoutPreference()}
-              disabled={busy}
-              className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50"
-            >
-              {m.save}
-            </button>
-            <p className="text-xs text-muted-foreground">
-              {payoutPreferenceQuery.data?.method ?? "weekly_manual"}
-            </p>
             <div className="border-t border-border pt-4">
               <h3 className="font-semibold">{m.payoutHistory}</h3>
               {payoutHistoryQuery.isPending ? (

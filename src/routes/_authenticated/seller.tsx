@@ -1036,6 +1036,7 @@ function SellerPage() {
                     defaultValue={payoutPreferenceQuery.data?.method ?? "other"}
                     className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
                   >
+                    <option value="konnect">Konnect</option>
                     <option value="ipay">iPay</option>
                     <option value="wepay">WePay</option>
                     <option value="bank_transfer">

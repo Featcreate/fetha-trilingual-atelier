@@ -27,7 +27,6 @@ import {
   Video,
   Palette,
 } from "lucide-react";
-import banner from "@/assets/homepage-banner.jpg.asset.json";
 
 import { PRODUCT_TYPES } from "@/lib/product-types";
 const categoryIcons = {
@@ -97,7 +96,6 @@ export const Route = createFileRoute("/")({
 function Index() {
   const { lang, setLang, t } = useLang();
   const [open, setOpen] = useState(false);
-  const [bannerFailed, setBannerFailed] = useState(false);
   const { session } = useSession();
   const adminRole = useQuery({
     queryKey: ["current-user-admin", session?.user.id],
@@ -333,23 +331,6 @@ function Index() {
       </header>
 
       <main>
-        {!bannerFailed ? (
-          <img
-            src={banner.url}
-            alt="Algorea Bazaar"
-            className="block h-auto w-full"
-            onError={() => setBannerFailed(true)}
-          />
-        ) : (
-          <div
-            role="img"
-            aria-label="Algorea Bazaar"
-            className="flex min-h-40 items-center justify-center bg-petrol px-6 py-12 text-center text-3xl font-bold text-cream md:min-h-56 md:text-5xl"
-          >
-            Algorea Bazaar
-          </div>
-        )}
-
         <section id="home" className="bg-cream-light">
           <div className="mx-auto max-w-6xl px-4 py-16 text-center md:py-24">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">{t.heroKicker}</p>

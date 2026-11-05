@@ -139,6 +139,8 @@ export const dict = {
         "Le titre et la description seront automatiquement traduits en arabe, français et anglais.",
       translationFailed:
         "La traduction automatique est momentanément indisponible. Réessayez avant de publier le produit.",
+      translationSavedWithoutTranslation:
+        "Produit enregistré dans sa langue d’origine. Les traductions automatiques sont temporairement indisponibles.",
       noCommission:
         "Les commandes sont temporairement indisponibles tant que la commission de la plateforme n'est pas configurée.",
       myOrders: "Mes commandes",
@@ -399,6 +401,7 @@ export const dict = {
       automaticTranslation:
         "ستُترجم تسمية المنتج ووصفه تلقائياً إلى العربية والفرنسية والإنجليزية.",
       translationFailed: "الترجمة التلقائية غير متاحة مؤقتاً. أعد المحاولة قبل نشر المنتج.",
+      translationSavedWithoutTranslation: "حُفظ المنتج بلغته الأصلية؛ الترجمة التلقائية غير متاحة مؤقتاً.",
       noCommission: "الطلبات متوقفة مؤقتاً إلى أن يتم ضبط عمولة المنصة.",
       myOrders: "طلباتي",
       download: "تنزيل",
@@ -656,6 +659,8 @@ export const dict = {
         "The product title and description are translated automatically into Arabic, French, and English.",
       translationFailed:
         "Automatic translation is temporarily unavailable. Please retry before publishing the product.",
+      translationSavedWithoutTranslation:
+        "Product saved in its original language. Automatic translations are temporarily unavailable.",
       noCommission:
         "Orders are temporarily unavailable until the platform commission is configured.",
       myOrders: "My orders",

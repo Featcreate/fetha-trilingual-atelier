@@ -69,6 +69,7 @@ const CATEGORIES = PRODUCT_TYPES.map(
   (id, index) => [id, categoryIcons[id], categoryColors[index % categoryColors.length]] as const,
 );
 import { BrandLogo } from "@/components/BrandLogo";
+import heroBanner from "@/assets/hero-banner.jpg";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 import { localizedProductText } from "@/lib/product-translations";
 

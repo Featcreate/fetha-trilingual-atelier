@@ -445,11 +445,7 @@ function SellerPage() {
     form.reset();
     setCoverPreview(null);
     setGalleryPreviews([]);
-    setNotice(
-      translatedContent
-        ? m.productCreated
-        : m.translationSavedWithoutTranslation,
-    );
+    setNotice(translatedContent ? m.productCreated : m.translationSavedWithoutTranslation);
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
     await qc.invalidateQueries({ queryKey: ["catalog"] });
   }
@@ -592,11 +588,7 @@ function SellerPage() {
     }
     await qc.invalidateQueries({ queryKey: ["seller-product-gallery", product.id] });
     setEditing(null);
-    setNotice(
-      translatedContent
-        ? m.productUpdated
-        : m.translationSavedWithoutTranslation,
-    );
+    setNotice(translatedContent ? m.productUpdated : m.translationSavedWithoutTranslation);
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
     await qc.invalidateQueries({ queryKey: ["catalog"] });
   }

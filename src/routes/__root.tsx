@@ -12,7 +12,6 @@ import { useEffect, type ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { hasPasswordRecovery } from "@/lib/password-recovery";
-import "@/lib/password-recovery";
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";

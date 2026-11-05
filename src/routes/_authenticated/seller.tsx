@@ -386,12 +386,11 @@ function SellerPage() {
     if (!productTypes.includes(productType)) return setNotice(m.error);
     setBusy(true);
     setNotice("");
-    let translatedContent: Awaited<ReturnType<typeof translateProductContent>>;
+    let translatedContent: Awaited<ReturnType<typeof translateProductContent>> | null = null;
     try {
       translatedContent = await translateProductContent(name, description);
     } catch {
-      setBusy(false);
-      return setNotice(m.translationFailed);
+      // Translation is optional: preserve the seller's original content and allow upload.
     }
     const { data: product, error: productError } = await supabase
       .from("products")
@@ -399,8 +398,8 @@ function SellerPage() {
         store_id: store.id,
         name,
         description,
-        name_translations: translatedContent.nameTranslations,
-        description_translations: translatedContent.descriptionTranslations,
+        name_translations: translatedContent?.nameTranslations ?? {},
+        description_translations: translatedContent?.descriptionTranslations ?? {},
         price_millimes: price,
         product_type: productType,
         is_active: false,
@@ -446,7 +445,7 @@ function SellerPage() {
     form.reset();
     setCoverPreview(null);
     setGalleryPreviews([]);
-    setNotice(m.productCreated);
+    setNotice(translatedContent ? m.productCreated : m.translationSavedWithoutTranslation);
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
     await qc.invalidateQueries({ queryKey: ["catalog"] });
   }
@@ -553,16 +552,21 @@ function SellerPage() {
     if ([...(cover ? [cover] : []), ...gallery].some((file) => !validPreviewImage(file)))
       return setNotice(m.invalidFile);
     setBusy(true);
+    let translatedContent: Awaited<ReturnType<typeof translateProductContent>> | null = null;
     try {
-      const translatedContent = await translateProductContent(name, description);
+      translatedContent = await translateProductContent(name, description);
+    } catch {
+      // Clear stale translations below; the original seller content remains authoritative.
+    }
+    try {
       await saveProductPreviews(store.id, product.id, cover, gallery);
       const { error } = await supabase
         .from("products")
         .update({
           name,
           description,
-          name_translations: translatedContent.nameTranslations,
-          description_translations: translatedContent.descriptionTranslations,
+          name_translations: translatedContent?.nameTranslations ?? {},
+          description_translations: translatedContent?.descriptionTranslations ?? {},
           price_millimes: price,
           product_type: productType,
         })
@@ -584,7 +588,7 @@ function SellerPage() {
     }
     await qc.invalidateQueries({ queryKey: ["seller-product-gallery", product.id] });
     setEditing(null);
-    setNotice(m.productUpdated);
+    setNotice(translatedContent ? m.productUpdated : m.translationSavedWithoutTranslation);
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
     await qc.invalidateQueries({ queryKey: ["catalog"] });
   }

@@ -333,14 +333,13 @@ function Index() {
 
       <main>
         <section id="home" className="bg-cream-light">
-          {/* Keep the brand logo above the hero banner, aligned to the physical left. */}
-          <div dir="ltr" className="mx-auto flex max-w-6xl items-center px-4 py-3 md:py-4">
-            <BrandLogo className="h-16 w-16 md:h-20 md:w-20" />
-          </div>
-          {/* Desktop: banner image immediately follows the logo row. */}
+          {/* Desktop: place the brand logo directly on the banner, at the upper left. */}
           <div className="relative hidden md:block">
             <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
             <div className="absolute inset-0 bg-gradient-to-r from-cream-light/90 via-cream-light/40 to-transparent" />
+            <div dir="ltr" className="pointer-events-none absolute inset-x-0 top-4 z-10 mx-auto max-w-6xl px-4">
+              <BrandLogo className="h-16 w-16 md:h-20 md:w-20" />
+            </div>
             <div dir="ltr" className="absolute inset-0 mx-auto flex max-w-6xl items-center px-4">
               <div className="max-w-md text-left lg:max-w-xl">
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
@@ -359,7 +358,7 @@ function Index() {
               </div>
             </div>
           </div>
-          {/* Mobile: text above the banner image so nothing overlaps the artwork. */}
+          {/* Mobile: keep the text readable and place the logo directly on the banner. */}
           <div className="md:hidden">
             <div dir="ltr" className="px-4 pb-6 pt-2 text-left">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
@@ -374,7 +373,12 @@ function Index() {
                 {t.marketplace.viewCatalog}
               </a>
             </div>
-            <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
+            <div className="relative">
+              <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
+              <div dir="ltr" className="absolute left-4 top-4 z-10">
+                <BrandLogo className="h-14 w-14" />
+              </div>
+            </div>
           </div>
         </section>
 

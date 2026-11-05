@@ -338,8 +338,8 @@ function Index() {
           <div className="relative hidden md:block">
             <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
             <div className="absolute inset-0 bg-gradient-to-r from-cream-light/90 via-cream-light/40 to-transparent" />
-            <div className="absolute inset-0 mx-auto flex max-w-6xl items-center px-4">
-              <div dir="ltr" className="max-w-md text-left lg:max-w-xl">
+            <div dir="ltr" className="absolute inset-0 mx-auto flex max-w-6xl items-center px-4">
+              <div className="max-w-md text-left lg:max-w-xl">
                 <BrandLogo className="mb-4 h-20 w-20 lg:mb-6 lg:h-28 lg:w-28" />
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
                   {t.heroKicker}

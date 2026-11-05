@@ -11,7 +11,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import "@/lib/password-recovery";
+import { hasPasswordRecovery } from "@/lib/password-recovery";
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -125,12 +125,37 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
+    let active = true;
+
+    const openRecoveryPage = () => {
+      if (active && router.state.location.pathname !== "/reset-password") {
+        void router.navigate({ to: "/reset-password", replace: true });
+      }
+    };
+
+    // The recovery listener in password-recovery.ts may run before this
+    // component mounts. Check its marker as well as handling future events.
     const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        openRecoveryPage();
+        return;
+      }
+
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });
-    return () => data.subscription.unsubscribe();
+
+    if (hasPasswordRecovery()) {
+      void supabase.auth.getSession().then(({ data: sessionData, error }) => {
+        if (active && !error && sessionData.session) openRecoveryPage();
+      });
+    }
+
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
   }, [router, queryClient]);
 
   return (

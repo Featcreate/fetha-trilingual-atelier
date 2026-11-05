@@ -45,8 +45,7 @@ function ResetPasswordPage() {
       window.history.replaceState({}, document.title, window.location.pathname);
     };
 
-    // The custom recovery email link lands here without consuming its OTP.
-    // Only the user's explicit button click below calls verifyOtp.
+    // A token-hash recovery link is verified only after the user continues.
     const tokenHash = currentUrl.searchParams.get("token_hash");
     if (tokenHash && currentUrl.searchParams.get("type") === "recovery") {
       setReady("confirm");
@@ -55,7 +54,6 @@ function ResetPasswordPage() {
       };
     }
 
-    // An expired/consumed OTP cannot establish a recovery session.
     if (providerError) {
       setReady("invalid");
       clearAuthParams();
@@ -64,13 +62,17 @@ function ResetPasswordPage() {
       };
     }
 
+    // Supabase handles PKCE (?code=...) and implicit-flow hash tokens during
+    // client initialization. Subscribe before checking the session so neither
+    // a fast nor a delayed PASSWORD_RECOVERY event is missed.
     const recoveryMarker =
       currentUrl.searchParams.has("code") ||
       currentUrl.searchParams.get("type") === "recovery" ||
-      hashParams.get("type") === "recovery";
+      hashParams.get("type") === "recovery" ||
+      hasPasswordRecovery();
 
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY" && active) {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" && active && session) {
         setReady("ok");
         clearAuthParams();
       }

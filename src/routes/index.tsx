@@ -69,6 +69,7 @@ const CATEGORIES = PRODUCT_TYPES.map(
   (id, index) => [id, categoryIcons[id], categoryColors[index % categoryColors.length]] as const,
 );
 import { BrandLogo } from "@/components/BrandLogo";
+import heroBanner from "@/assets/hero-banner.jpg";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 import { localizedProductText } from "@/lib/product-translations";
 
@@ -332,18 +333,47 @@ function Index() {
 
       <main>
         <section id="home" className="bg-cream-light">
-          <div className="mx-auto max-w-6xl px-4 py-16 text-center md:py-24">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">{t.heroKicker}</p>
-            <h1 className="mx-auto mt-4 max-w-3xl text-3xl font-extrabold leading-tight md:text-5xl">
-              {t.heroTitle}
-            </h1>
-            <p className="mx-auto mt-5 max-w-xl text-muted-foreground md:text-lg">{t.heroText}</p>
-            <a
-              href="/catalog"
-              className="mt-8 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
-            >
-              {t.marketplace.viewCatalog}
-            </a>
+          {/* Desktop: banner image as full-width background, live text in the empty left area.
+              Physical left placement (dir="ltr", left-*) keeps the logo on the visual left in RTL too. */}
+          <div className="relative hidden md:block">
+            <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
+            <div className="absolute inset-0 bg-gradient-to-r from-cream-light/90 via-cream-light/40 to-transparent" />
+            <div dir="ltr" className="absolute inset-0 mx-auto flex max-w-6xl items-center px-4">
+              <div className="max-w-md text-left lg:max-w-xl">
+                <BrandLogo className="mb-4 h-20 w-20 lg:mb-6 lg:h-28 lg:w-28" />
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
+                  {t.heroKicker}
+                </p>
+                <h1 className="mt-3 text-3xl font-extrabold leading-tight lg:mt-4 lg:text-5xl">
+                  {t.heroTitle}
+                </h1>
+                <p className="mt-4 text-muted-foreground lg:mt-5 lg:text-lg">{t.heroText}</p>
+                <a
+                  href="/catalog"
+                  className="mt-6 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5 lg:mt-8"
+                >
+                  {t.marketplace.viewCatalog}
+                </a>
+              </div>
+            </div>
+          </div>
+          {/* Mobile: text above the banner image so nothing overlaps the artwork. */}
+          <div className="md:hidden">
+            <div dir="ltr" className="px-4 pb-6 pt-8 text-left">
+              <BrandLogo className="mb-5 h-20 w-20" />
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
+                {t.heroKicker}
+              </p>
+              <h1 className="mt-3 text-3xl font-extrabold leading-tight">{t.heroTitle}</h1>
+              <p className="mt-4 text-muted-foreground">{t.heroText}</p>
+              <a
+                href="/catalog"
+                className="mt-6 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
+              >
+                {t.marketplace.viewCatalog}
+              </a>
+            </div>
+            <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
           </div>
         </section>
 

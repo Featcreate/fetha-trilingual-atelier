@@ -401,7 +401,8 @@ export const dict = {
       automaticTranslation:
         "ستُترجم تسمية المنتج ووصفه تلقائياً إلى العربية والفرنسية والإنجليزية.",
       translationFailed: "الترجمة التلقائية غير متاحة مؤقتاً. أعد المحاولة قبل نشر المنتج.",
-      translationSavedWithoutTranslation: "حُفظ المنتج بلغته الأصلية؛ الترجمة التلقائية غير متاحة مؤقتاً.",
+      translationSavedWithoutTranslation:
+        "حُفظ المنتج بلغته الأصلية؛ الترجمة التلقائية غير متاحة مؤقتاً.",
       noCommission: "الطلبات متوقفة مؤقتاً إلى أن يتم ضبط عمولة المنصة.",
       myOrders: "طلباتي",
       download: "تنزيل",

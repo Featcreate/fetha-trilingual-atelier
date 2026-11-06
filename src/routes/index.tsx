@@ -272,10 +272,11 @@ function Index() {
           <div className="relative">
             <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
           </div>
-          <div dir={lang === "ar" ? "rtl" : "ltr"} className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+          <div dir="ltr" className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
             <a href="#home" aria-label="Algorea Bazaar" className="flex h-12 w-28 shrink-0 md:h-14 md:w-36">
               <BrandLogo slotLabel={t.logoSlot} className="h-full w-full" />
             </a>
+            <div className="ml-auto">{switcher}</div>
           </div>
           <div dir={lang === "ar" ? "rtl" : "ltr"} className="mx-auto max-w-6xl px-4 py-7 text-start md:py-10">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
@@ -336,7 +337,6 @@ function Index() {
               <User className="h-5 w-5" />
               <span className="hidden lg:inline">{accountLabel}</span>
             </Link>
-            {switcher}
             <button
               className="rounded-md p-2 md:hidden"
               onClick={() => setOpen(!open)}

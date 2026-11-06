@@ -254,7 +254,7 @@ function Index() {
           onClick={() => setLang(l)}
           aria-pressed={lang === l}
           lang={l}
-          className={`rounded-full px-3 py-1 text-xs font-bold uppercase transition-colors ${
+          className={`rounded-full px-2 py-1 text-xs font-bold uppercase transition-colors sm:px-3 ${
             lang === l ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"
           }`}
           title={dict[l].langName}
@@ -272,17 +272,16 @@ function Index() {
           <div className="relative">
             <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
           </div>
-          <div dir="ltr" className="flex w-full items-center gap-3 px-4 py-3">
-            <a href="#home" aria-label="Algorea Bazaar" className="flex h-12 w-28 shrink-0 md:h-14 md:w-36">
+          <div dir="ltr" className="flex w-full min-w-0 items-center gap-2 px-2 py-3 sm:gap-3 sm:px-4">
+            <a href="#home" aria-label="Algorea Bazaar" className="flex h-12 w-20 shrink-0 md:h-14 md:w-36">
               <BrandLogo slotLabel={t.logoSlot} className="h-full w-full" />
             </a>
             <Link
               to={session ? "/account" : "/auth"}
               aria-label={accountLabel}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-sm font-semibold hover:text-coral"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card p-2 hover:text-coral"
             >
               <User className="h-5 w-5" />
-              <span>{accountLabel}</span>
             </Link>
             <button
               className="shrink-0 rounded-md border border-border bg-card p-2 md:hidden"

@@ -268,7 +268,7 @@ function Index() {
   return (
     <div className="min-h-screen">
         <section id="home" className="bg-cream-light">
-          {/* Desktop: place the brand logo directly on the banner, at the upper left. */}
+          {/* Desktop: the banner image already includes the brand logo. */}
           <div className="relative hidden md:block">
             <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
             <div className="absolute inset-0 bg-gradient-to-r from-cream-light/90 via-cream-light/40 to-transparent" />

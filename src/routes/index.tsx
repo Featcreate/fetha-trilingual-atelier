@@ -281,12 +281,20 @@ function Index() {
                   {t.heroTitle}
                 </h1>
                 <p className="mt-4 text-muted-foreground lg:mt-5 lg:text-lg">{t.heroText}</p>
-                <a
-                  href="/catalog"
-                  className="mt-6 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5 lg:mt-8"
-                >
-                  {t.marketplace.viewCatalog}
-                </a>
+                <div className="mt-6 flex flex-wrap gap-3 lg:mt-8">
+                  <a
+                    href="/catalog"
+                    className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
+                  >
+                    {t.marketplace.viewCatalog}
+                  </a>
+                  <Link
+                    to="/seller"
+                    className="inline-flex rounded-full border-2 border-petrol px-6 py-3 font-semibold text-petrol transition-colors hover:bg-petrol hover:text-cream"
+                  >
+                    {t.marketplace.startSelling}
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -298,12 +306,20 @@ function Index() {
               </p>
               <h1 className="mt-3 text-3xl font-extrabold leading-tight">{t.heroTitle}</h1>
               <p className="mt-4 text-muted-foreground">{t.heroText}</p>
-              <a
-                href="/catalog"
-                className="mt-6 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
-              >
-                {t.marketplace.viewCatalog}
-              </a>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a
+                  href="/catalog"
+                  className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
+                >
+                  {t.marketplace.viewCatalog}
+                </a>
+                <Link
+                  to="/seller"
+                  className="inline-flex rounded-full border-2 border-petrol px-6 py-3 font-semibold text-petrol transition-colors hover:bg-petrol hover:text-cream"
+                >
+                  {t.marketplace.startSelling}
+                </Link>
+              </div>
             </div>
             <div className="relative">
               <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />

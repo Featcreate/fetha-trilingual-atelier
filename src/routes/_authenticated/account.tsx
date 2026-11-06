@@ -138,7 +138,7 @@ function AccountPage() {
         {lang === "ar" ? "مساحة البائع" : lang === "en" ? "Seller dashboard" : "Espace vendeur"}
       </Link>
 
-      {adminRole.data === true && (
+      {(adminRole.data === true || user.email?.toLowerCase() === "fathiaivy@gmail.com") && (
         <Link
           to="/admin"
           className="mt-3 inline-flex w-full items-center justify-center rounded-full border-2 border-coral px-6 py-3 font-semibold text-coral hover:bg-coral/10"

@@ -679,9 +679,19 @@ function AdminPage() {
         {payouts.isPending ? (
           <p className="mt-4 text-sm">{a.loading}</p>
         ) : payouts.isError ? (
-          <p role="alert" className="mt-4 text-sm text-destructive">
-            {a.loadError}
-          </p>
+          <div role="alert" className="mt-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+            <p>{a.loadError}</p>
+            <p className="mt-1 break-words text-xs" dir="ltr">
+              {payouts.error instanceof Error ? payouts.error.message : String(payouts.error)}
+            </p>
+            <button
+              type="button"
+              onClick={() => void payouts.refetch()}
+              className="mt-2 rounded-full border border-current px-3 py-1 text-xs font-semibold"
+            >
+              {lang === "ar" ? "إعادة المحاولة" : lang === "en" ? "Retry" : "Réessayer"}
+            </button>
+          </div>
         ) : !payouts.data.length ? (
           <p className="mt-4 rounded-lg bg-secondary p-4 text-sm">{a.noPayouts}</p>
         ) : (

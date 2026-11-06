@@ -129,7 +129,7 @@ function Index() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("id,name,slug")
+        .select("id,name,slug,banner_path")
         .eq("owner_id", session!.user.id)
         .maybeSingle();
       if (error) throw error;
@@ -152,6 +152,10 @@ function Index() {
       return (data ?? []) as Omit<HomeProduct, "store">[];
     },
   });
+
+  const myStoreBannerUrl = myStoreQuery.data?.banner_path
+    ? supabase.storage.from("store-assets").getPublicUrl(myStoreQuery.data.banner_path).data.publicUrl
+    : null;
 
   const latestProductsQuery = useQuery({
     queryKey: ["homepage-latest-products"],
@@ -371,6 +375,13 @@ function Index() {
           className="bg-background"
         >
           <div className="mx-auto max-w-6xl px-4 py-10">
+            {myStoreBannerUrl && (
+              <img
+                src={myStoreBannerUrl}
+                alt={myStoreQuery.data?.name ?? "Store banner"}
+                className="mb-6 max-h-56 w-full rounded-2xl border border-border object-cover sm:max-h-72"
+              />
+            )}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <h2
                 id="my-store-products-title"

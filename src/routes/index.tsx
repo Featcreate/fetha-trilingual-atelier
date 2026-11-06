@@ -272,7 +272,7 @@ function Index() {
           <div className="relative">
             <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
           </div>
-          <div dir="ltr" className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+          <div dir="ltr" className="flex w-full items-center gap-3 px-4 py-3">
             <a href="#home" aria-label="Algorea Bazaar" className="flex h-12 w-28 shrink-0 md:h-14 md:w-36">
               <BrandLogo slotLabel={t.logoSlot} className="h-full w-full" />
             </a>

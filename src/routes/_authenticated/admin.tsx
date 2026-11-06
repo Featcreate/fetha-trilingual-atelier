@@ -628,7 +628,19 @@ function AdminPage() {
         {orders.isPending ? (
           <p>{a.loading}</p>
         ) : orders.isError ? (
-          <p role="alert">{a.loadError}</p>
+          <div role="alert" className="rounded-xl border border-destructive/30 bg-secondary p-4">
+            <p className="font-semibold">{a.loadError}</p>
+            <p className="mt-2 break-words text-xs text-muted-foreground">
+              {orders.error instanceof Error ? orders.error.message : String(orders.error)}
+            </p>
+            <button
+              type="button"
+              onClick={() => void orders.refetch()}
+              className="mt-3 rounded-full border border-border px-3 py-2 text-xs font-semibold"
+            >
+              {lang === "ar" ? "إعادة المحاولة" : lang === "en" ? "Retry" : "Réessayer"}
+            </button>
+          </div>
         ) : !orders.data.length ? (
           <p className="rounded-xl bg-secondary p-4">{a.emptyOrders}</p>
         ) : (

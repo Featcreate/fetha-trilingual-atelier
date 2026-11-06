@@ -109,6 +109,7 @@ export const dict = {
       cancelled: "Annulée",
       storePublic: "Voir la boutique",
       viewCatalog: "Parcourir le catalogue",
+      startSelling: "Commencer à vendre",
       viewStore: "Voir la boutique",
       purchaseUnavailable:
         "L'achat en ligne sera disponible après l'activation sécurisée des paiements.",
@@ -374,6 +375,7 @@ export const dict = {
       cancelled: "ملغى",
       storePublic: "عرض المتجر",
       viewCatalog: "تصفح الكتالوج",
+      startSelling: "ابدأ البيع",
       viewStore: "عرض المتجر",
       purchaseUnavailable: "سيصبح الشراء متاحاً بعد تفعيل وسائل الدفع بشكل آمن.",
       save: "حفظ",
@@ -631,6 +633,7 @@ export const dict = {
       cancelled: "Cancelled",
       storePublic: "View store",
       viewCatalog: "Browse catalog",
+      startSelling: "Start selling",
       viewStore: "View store",
       purchaseUnavailable: "Online purchases will be available after secure payment activation.",
       save: "Save",

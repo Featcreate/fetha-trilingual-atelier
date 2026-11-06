@@ -10,16 +10,11 @@ export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async ({ location }) => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth", search: { redirect: location.href } });
-    // Read the caller's own role row directly. The user_roles RLS policy
-    // permits authenticated users to read their own role, and this avoids
-    // a false-negative RPC result blocking the platform owner.
-    const { data: role, error: roleError } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .maybeSingle();
-    if (roleError) throw roleError;
-    if (role?.role !== "admin") throw redirect({ to: "/account" });
+    // Restrict the administration route to the verified platform-owner account.
+    // Database RLS policies continue to enforce admin privileges for protected data/actions.
+    if (data.user.email?.toLowerCase() !== "fathiaivy@gmail.com") {
+      throw redirect({ to: "/account" });
+    }
     return { user: data.user };
   },
   head: () => ({

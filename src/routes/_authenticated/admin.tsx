@@ -67,7 +67,6 @@ type PayoutRow = {
   store_id: string;
   status: string;
   seller_amount_millimes: number;
-  external_fees_millimes: number;
   gross_millimes: number;
   commission_millimes: number;
   discount_millimes: number;
@@ -161,6 +160,18 @@ function AdminPage() {
         .limit(100);
       if (error) throw error;
       return (data ?? []) as PayoutRow[];
+    },
+  });
+  // Read actual fee allocations separately. This avoids coupling the payout list
+  // to the optional snapshot column on seller_payouts and keeps fee evidence intact.
+  const payoutFeeAllocations = useQuery({
+    queryKey: ["admin-payout-fee-allocations"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("seller_payout_fee_allocations")
+        .select("payout_id,amount_millimes");
+      if (error) throw error;
+      return data ?? [];
     },
   });
 
@@ -759,7 +770,11 @@ function AdminPage() {
                         : lang === "en"
                           ? "Seller external fees"
                           : "Frais externes vendeur"}
-                      : {formatTND(payout.external_fees_millimes)}
+                      : {formatTND(
+                          (payoutFeeAllocations.data ?? [])
+                            .filter((fee) => fee.payout_id === payout.id)
+                            .reduce((total, fee) => total + Number(fee.amount_millimes ?? 0), 0),
+                        )}
                     </p>
                   </div>
                 </div>

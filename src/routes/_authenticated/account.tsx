@@ -46,6 +46,19 @@ function AccountPage() {
     },
   });
 
+  const adminRole = useQuery({
+    queryKey: ["account-admin-role", user.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.role === "admin";
+    },
+  });
+
   // Phone/name given at sign-up live in account metadata until first saved to the profile.
   const meta = (user.user_metadata ?? {}) as { full_name?: string; phone?: string };
   const initialName = profile.data?.full_name || meta.full_name || "";
@@ -124,6 +137,15 @@ function AccountPage() {
       >
         {lang === "ar" ? "مساحة البائع" : lang === "en" ? "Seller dashboard" : "Espace vendeur"}
       </Link>
+
+      {adminRole.data === true && (
+        <Link
+          to="/admin"
+          className="mt-3 inline-flex w-full items-center justify-center rounded-full border-2 border-coral px-6 py-3 font-semibold text-coral hover:bg-coral/10"
+        >
+          {t.admin.title}
+        </Link>
+      )}
 
       <h2 className="mt-8 text-lg font-bold">{a.profileTitle}</h2>
       {profile.isPending ? (

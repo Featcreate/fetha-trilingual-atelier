@@ -154,7 +154,7 @@ function AdminPage() {
       const { data, error } = await supabase
         .from("seller_payouts")
         .select(
-          "id,store_id,status,seller_amount_millimes,external_fees_millimes,gross_millimes,commission_millimes,discount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason,payout_destination_method,payout_account_holder_name,payout_provider_name,payout_account_identifier,payout_bank_name,payout_additional_details",
+          "id,store_id,status,seller_amount_millimes,gross_millimes,commission_millimes,discount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason,payout_destination_method,payout_account_holder_name,payout_provider_name,payout_account_identifier,payout_bank_name,payout_additional_details",
         )
         .order("created_at", { ascending: false })
         .limit(100);

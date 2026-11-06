@@ -98,20 +98,6 @@ function Index() {
   const { lang, setLang, t } = useLang();
   const [open, setOpen] = useState(false);
   const { session } = useSession();
-  const adminRole = useQuery({
-    queryKey: ["current-user-admin", session?.user.id],
-    enabled: !!session?.user.id,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("has_role", {
-        _user_id: session!.user.id,
-        _role: "admin",
-      });
-      if (error) throw error;
-      return data === true;
-    },
-  });
-  const isAdmin = adminRole.data === true;
-
   type HomeProduct = {
     id: string;
     name: string;
@@ -346,14 +332,6 @@ function Index() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            {isAdmin && (
-              <Link
-                to="/admin"
-                className="hidden text-sm font-semibold text-coral hover:underline lg:inline"
-              >
-                {t.admin.title}
-              </Link>
-            )}
             {session && (
               <Link
                 to="/orders"

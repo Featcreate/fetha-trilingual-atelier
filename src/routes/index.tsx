@@ -272,12 +272,42 @@ function Index() {
           <div className="relative">
             <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
           </div>
-          <div dir="ltr" className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+          <div dir="ltr" className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
             <a href="#home" aria-label="Algorea Bazaar" className="flex h-12 w-28 shrink-0 md:h-14 md:w-36">
               <BrandLogo slotLabel={t.logoSlot} className="h-full w-full" />
             </a>
+            <Link
+              to={session ? "/account" : "/auth"}
+              aria-label={accountLabel}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-sm font-semibold hover:text-coral"
+            >
+              <User className="h-5 w-5" />
+              <span>{accountLabel}</span>
+            </Link>
+            <button
+              className="shrink-0 rounded-md border border-border bg-card p-2 md:hidden"
+              onClick={() => setOpen(!open)}
+              aria-expanded={open}
+              aria-label={t.menu}
+            >
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
             <div className="ml-auto">{switcher}</div>
           </div>
+          {open && (
+            <nav className="border-t border-border bg-background px-4 py-3 md:hidden">
+              {links.map(([href, label]) => (
+                <a
+                  key={href}
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  className="block py-3 font-medium"
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
+          )}
           <div dir={lang === "ar" ? "rtl" : "ltr"} className="mx-auto max-w-6xl px-4 py-7 text-start md:py-10">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
               {t.heroKicker}
@@ -329,38 +359,8 @@ function Index() {
                 {t.marketplace.myOrders}
               </Link>
             )}
-            <Link
-              to={session ? "/account" : "/auth"}
-              aria-label={accountLabel}
-              className="inline-flex items-center gap-1.5 rounded-full p-2 text-sm font-semibold hover:text-coral md:px-3"
-            >
-              <User className="h-5 w-5" />
-              <span className="hidden lg:inline">{accountLabel}</span>
-            </Link>
-            <button
-              className="rounded-md p-2 md:hidden"
-              onClick={() => setOpen(!open)}
-              aria-expanded={open}
-              aria-label={t.menu}
-            >
-              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
           </div>
         </div>
-        {open && (
-          <nav className="border-t border-border bg-background px-4 py-3 md:hidden">
-            {links.map(([href, label]) => (
-              <a
-                key={href}
-                href={href}
-                onClick={() => setOpen(false)}
-                className="block py-3 font-medium"
-              >
-                {label}
-              </a>
-            ))}
-          </nav>
-        )}
       </header>
 
       <main>

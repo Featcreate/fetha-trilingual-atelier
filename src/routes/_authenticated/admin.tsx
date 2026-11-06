@@ -682,7 +682,11 @@ function AdminPage() {
           <div role="alert" className="mt-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
             <p>{a.loadError}</p>
             <p className="mt-1 break-words text-xs" dir="ltr">
-              {payouts.error instanceof Error ? payouts.error.message : String(payouts.error)}
+              {payouts.error instanceof Error
+                ? payouts.error.message
+                : payouts.error && typeof payouts.error === "object"
+                  ? JSON.stringify(payouts.error, null, 2)
+                  : String(payouts.error)}
             </p>
             <button
               type="button"

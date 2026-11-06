@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
-import { formatTND, parseTNDToMillimes } from "@/lib/money";
+import { formatTND } from "@/lib/money";
 import { AuthShell, SubmitButton } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -93,11 +93,6 @@ function AdminPage() {
   const [payoutStoreId, setPayoutStoreId] = useState("");
   const [payoutReference, setPayoutReference] = useState("");
   const [payoutFailure, setPayoutFailure] = useState("");
-  const [feeCategory, setFeeCategory] = useState("payment_processing");
-  const [feeAmount, setFeeAmount] = useState("");
-  const [feeReference, setFeeReference] = useState("");
-  const [feeDescription, setFeeDescription] = useState("");
-  const [sharedFeeOrderId, setSharedFeeOrderId] = useState("");
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
 
   const settings = useQuery({
@@ -162,19 +157,6 @@ function AdminPage() {
       return (data ?? []) as PayoutRow[];
     },
   });
-  // Read actual fee allocations separately. This avoids coupling the payout list
-  // to the optional snapshot column on seller_payouts and keeps fee evidence intact.
-  const payoutFeeAllocations = useQuery({
-    queryKey: ["admin-payout-fee-allocations"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("seller_payout_fee_allocations")
-        .select("payout_id,amount_millimes");
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-
   async function saveCommission(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const value = Number(commission);
@@ -222,13 +204,7 @@ function AdminPage() {
             : lang === "en"
               ? "The seller must save a receiving method and account details before a payout can be created."
               : "Le vendeur doit enregistrer un moyen de réception et ses coordonnées avant la création du versement."
-          : error.message.includes("external_fees_exceed_available_seller_balance")
-            ? lang === "ar"
-              ? "الرسوم الخارجية المسجلة تتجاوز المستحقات المتاحة حالياً؛ ستبقى معلقة حتى تتوفر مبيعات كافية."
-              : lang === "en"
-                ? "Recorded external fees exceed the currently available seller balance; they remain outstanding until sufficient sales accrue."
-                : "Les frais externes enregistrés dépassent le solde vendeur disponible ; ils restent en attente jusqu’à ce que les ventes soient suffisantes."
-            : error.message.includes("no_unpaid_sales")
+          : error.message.includes("no_unpaid_sales")
               ? lang === "ar"
                 ? "لا توجد مبيعات مؤكدة غير مدفوعة لهذا المتجر."
                 : lang === "en"
@@ -240,101 +216,6 @@ function AdminPage() {
     }
     setNotice({ ok: true, text: a.saved });
     await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
-  }
-
-  async function recordSellerExternalFee(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!payoutStoreId && !sharedFeeOrderId.trim()) {
-      setNotice({ ok: false, text: a.payoutStore });
-      return;
-    }
-    const amount = parseTNDToMillimes(feeAmount);
-    if (!amount || feeReference.trim().length < 3 || feeDescription.trim().length < 3) {
-      setNotice({
-        ok: false,
-        text:
-          lang === "ar"
-            ? "أدخل مبلغاً صحيحاً ومرجعاً ووصفاً يثبت الرسوم الفعلية."
-            : lang === "en"
-              ? "Enter a valid amount, evidence reference and description for the actual fee."
-              : "Saisissez un montant valide, une référence justificative et une description des frais réels.",
-      });
-      return;
-    }
-
-    setBusy("external-fee");
-    setNotice(null);
-    try {
-      const isSharedOrderFee = Boolean(sharedFeeOrderId.trim());
-      const { error } = isSharedOrderFee
-        ? await supabase.rpc("admin_record_shared_seller_fee", {
-            _order_id: sharedFeeOrderId.trim(),
-            _fee_category: feeCategory,
-            _amount_millimes: amount,
-            _source: "verified_provider_or_bank_statement",
-            _external_reference: feeReference.trim(),
-            _description: feeDescription.trim(),
-            _idempotency_key: `seller-shared-fee:${crypto.randomUUID()}`,
-          })
-        : await supabase.rpc("admin_record_seller_external_fee", {
-            _store_id: payoutStoreId,
-            _fee_category: feeCategory,
-            _amount_millimes: amount,
-            _source: "verified_provider_or_bank_statement",
-            _external_reference: feeReference.trim(),
-            _description: feeDescription.trim(),
-            _idempotency_key: `seller-external-fee:${crypto.randomUUID()}`,
-          });
-
-      if (error) {
-        const conflict =
-          error.message.includes("business_reference_conflict") ||
-          error.message.includes("idempotency_conflict");
-        setNotice({
-          ok: false,
-          text: conflict
-            ? lang === "ar"
-              ? "مرجع الرسوم مستخدم سابقاً بمبلغ أو بيانات مختلفة. راجع كشف المزود قبل إعادة التسجيل."
-              : lang === "en"
-                ? "This fee reference was already used with different financial details. Check the provider statement before retrying."
-                : "Cette référence de frais existe déjà avec des données financières différentes. Vérifiez le relevé avant de réessayer."
-            : a.saveError,
-        });
-        return;
-      }
-
-      setFeeAmount("");
-      setFeeReference("");
-      setFeeDescription("");
-      setSharedFeeOrderId("");
-      setNotice({
-        ok: true,
-        text: isSharedOrderFee
-          ? lang === "ar"
-            ? "تم تسجيل الرسوم أو التحقق من تسجيلها سابقاً دون تكرار الخصم."
-            : lang === "en"
-              ? "The fee was recorded or matched to its previous record; no duplicate deduction was created."
-              : "Les frais ont été enregistrés ou rapprochés de leur enregistrement précédent, sans double déduction."
-          : lang === "ar"
-            ? "تم تسجيل الرسوم الفعلية أو التحقق من تسجيلها سابقاً."
-            : lang === "en"
-              ? "The actual fee was recorded or matched to its previous record."
-              : "Les frais réels ont été enregistrés ou rapprochés de leur enregistrement précédent.",
-      });
-      await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
-    } catch {
-      setNotice({
-        ok: false,
-        text:
-          lang === "ar"
-            ? "تعذر تأكيد العملية. يمكنك إعادة المحاولة بنفس مرجع الإيصال؛ ستمنع قاعدة البيانات تكرار الخصم."
-            : lang === "en"
-              ? "The result could not be confirmed. Retry with the same receipt reference; the database will prevent a duplicate deduction."
-              : "Le résultat n'a pas pu être confirmé. Réessayez avec la même référence de reçu ; la base de données empêchera un double débit.",
-      });
-    } finally {
-      setBusy(null);
-    }
   }
 
   async function confirmSellerPayout(payoutId: string) {
@@ -548,145 +429,6 @@ function AdminPage() {
             {busy === "payout-create" ? a.saving : a.createPayout}
           </button>
         </div>
-        <div className="mb-4 rounded-lg border border-border p-4">
-          <h3 className="font-semibold">
-            {lang === "ar"
-              ? "تسجيل رسوم خارجية فعلية"
-              : lang === "en"
-                ? "Record an actual external fee"
-                : "Enregistrer des frais externes réels"}
-          </h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {lang === "ar"
-              ? "لا تسجل إلا الرسوم المثبتة فعلياً. للتوزيع التلقائي بالتناسب على البائعين المرتبطين بطلب مدفوع، أدخل رقم الطلب في الحقل الاختياري. وإلا اختر متجر البائع لتسجيل رسومه وحده."
-              : lang === "en"
-                ? "Record only fees supported by an actual statement or receipt. To allocate a fee proportionally across sellers on a verified paid order, enter the optional order ID. Otherwise select one store to record a seller-specific fee."
-                : "Enregistrez uniquement les frais justifiés par un relevé ou reçu réel. Pour répartir automatiquement des frais au prorata entre les vendeurs d’une commande payée et vérifiée, saisissez l’ID de commande facultatif. Sinon, sélectionnez une boutique pour enregistrer les frais d’un seul vendeur."}
-          </p>
-          <form onSubmit={recordSellerExternalFee} className="mt-3 grid gap-2 sm:grid-cols-2">
-            <select
-              value={feeCategory}
-              onChange={(e) => setFeeCategory(e.target.value)}
-              className="rounded-lg border border-input bg-background px-3 py-2"
-            >
-              <option value="payment_processing">
-                {lang === "ar"
-                  ? "معالجة الدفع"
-                  : lang === "en"
-                    ? "Payment processing"
-                    : "Traitement du paiement"}
-              </option>
-              <option value="payment_collection">
-                {lang === "ar"
-                  ? "تحصيل الدفع"
-                  : lang === "en"
-                    ? "Payment collection"
-                    : "Encaissement"}
-              </option>
-              <option value="currency_conversion">
-                {lang === "ar"
-                  ? "تحويل العملة"
-                  : lang === "en"
-                    ? "Currency conversion"
-                    : "Conversion de devise"}
-              </option>
-              <option value="provider_settlement">
-                {lang === "ar"
-                  ? "تسوية المزود"
-                  : lang === "en"
-                    ? "Provider settlement"
-                    : "Règlement prestataire"}
-              </option>
-              <option value="seller_transfer">
-                {lang === "ar"
-                  ? "تحويل مستحقات البائع"
-                  : lang === "en"
-                    ? "Seller transfer"
-                    : "Virement vendeur"}
-              </option>
-              <option value="receiving">
-                {lang === "ar"
-                  ? "رسوم الاستلام"
-                  : lang === "en"
-                    ? "Receiving fee"
-                    : "Frais de réception"}
-              </option>
-              <option value="withdrawal">
-                {lang === "ar" ? "السحب" : lang === "en" ? "Withdrawal" : "Retrait"}
-              </option>
-              <option value="other">
-                {lang === "ar" ? "أخرى" : lang === "en" ? "Other" : "Autres"}
-              </option>
-            </select>
-            <input
-              value={feeAmount}
-              onChange={(e) => setFeeAmount(e.target.value)}
-              placeholder={
-                lang === "ar"
-                  ? "المبلغ بالدينار التونسي"
-                  : lang === "en"
-                    ? "Amount in TND"
-                    : "Montant en TND"
-              }
-              className="rounded-lg border border-input bg-background px-3 py-2"
-            />
-            <input
-              value={feeReference}
-              onChange={(e) => setFeeReference(e.target.value)}
-              placeholder={
-                lang === "ar"
-                  ? "مرجع الإيصال أو كشف المزود"
-                  : lang === "en"
-                    ? "Statement / receipt reference"
-                    : "Référence du relevé / reçu"
-              }
-              className="rounded-lg border border-input bg-background px-3 py-2"
-            />
-            <input
-              value={sharedFeeOrderId}
-              onChange={(e) => setSharedFeeOrderId(e.target.value)}
-              placeholder={
-                lang === "ar"
-                  ? "رقم الطلب (اختياري لتوزيع الرسوم بالتناسب)"
-                  : lang === "en"
-                    ? "Order ID (optional: allocate proportionally)"
-                    : "ID de commande (facultatif : répartition proportionnelle)"
-              }
-              className="rounded-lg border border-input bg-background px-3 py-2 sm:col-span-2"
-            />
-            <input
-              value={feeDescription}
-              onChange={(e) => setFeeDescription(e.target.value)}
-              placeholder={
-                lang === "ar"
-                  ? "وصف الرسوم"
-                  : lang === "en"
-                    ? "Fee description"
-                    : "Description des frais"
-              }
-              className="rounded-lg border border-input bg-background px-3 py-2"
-            />
-            <button
-              type="submit"
-              disabled={busy === "external-fee" || (!payoutStoreId && !sharedFeeOrderId.trim())}
-              className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50 sm:col-span-2"
-            >
-              {busy === "external-fee"
-                ? a.saving
-                : sharedFeeOrderId.trim()
-                  ? lang === "ar"
-                    ? "توزيع الرسوم على بائعي الطلب"
-                    : lang === "en"
-                      ? "Allocate fee across order sellers"
-                      : "Répartir les frais entre les vendeurs de la commande"
-                  : lang === "ar"
-                    ? "تسجيل الرسوم على البائع المحدد"
-                    : lang === "en"
-                      ? "Record fee against selected seller"
-                      : "Imputer les frais au vendeur sélectionné"}
-            </button>
-          </form>
-        </div>
         {payouts.isPending ? (
           <p className="mt-4 text-sm">{a.loading}</p>
         ) : payouts.isError ? (
@@ -763,18 +505,6 @@ function AdminPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {a.payoutCommission}: {formatTND(payout.commission_millimes)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {lang === "ar"
-                        ? "الرسوم الخارجية على البائع"
-                        : lang === "en"
-                          ? "Seller external fees"
-                          : "Frais externes vendeur"}
-                      : {formatTND(
-                          (payoutFeeAllocations.data ?? [])
-                            .filter((fee) => fee.payout_id === payout.id)
-                            .reduce((total, fee) => total + Number(fee.amount_millimes ?? 0), 0),
-                        )}
                     </p>
                   </div>
                 </div>

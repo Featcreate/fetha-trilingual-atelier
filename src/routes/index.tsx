@@ -272,6 +272,11 @@ function Index() {
           <div className="relative">
             <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
           </div>
+          <div dir={lang === "ar" ? "rtl" : "ltr"} className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+            <a href="#home" aria-label="Algorea Bazaar" className="flex h-12 w-28 shrink-0 md:h-14 md:w-36">
+              <BrandLogo slotLabel={t.logoSlot} className="h-full w-full" />
+            </a>
+          </div>
           <div dir={lang === "ar" ? "rtl" : "ltr"} className="mx-auto max-w-6xl px-4 py-7 text-start md:py-10">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
               {t.heroKicker}
@@ -299,9 +304,6 @@ function Index() {
 
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 md:h-20">
-          <a href="#home" className="flex h-12 w-28 shrink-0 md:h-14 md:w-36">
-            <BrandLogo slotLabel={t.logoSlot} className="h-full w-full" />
-          </a>
           <nav className="hidden items-center gap-7 md:flex">
             {links.map(([href, label]) => (
               <a key={href} href={href} className="text-sm font-medium hover:text-coral">

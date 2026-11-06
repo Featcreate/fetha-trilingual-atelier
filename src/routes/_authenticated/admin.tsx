@@ -468,7 +468,6 @@ function AdminPage() {
                         {payout.provider_transfer_ref}
                       </p>
                     )}
-                      </div>
                     {payout.failure_reason && (
                       <p className="text-xs text-destructive">{payout.failure_reason}</p>
                     )}

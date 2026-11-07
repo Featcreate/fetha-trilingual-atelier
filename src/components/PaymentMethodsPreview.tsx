@@ -107,11 +107,7 @@ export function PaymentMethodsPreview() {
     { id: "ipay:flouci", label: m.paymentFlouci, brand: "Flouci" },
     { id: "ipay:postal", label: m.paymentPostal, brand: "Postal / Bank" },
     { id: "ipay:ooredoo-sms", label: m.paymentOoredooSms, brand: "Ooredoo" },
-    {
-      id: "ipay:tunisie-telecom-sms",
-      label: m.paymentTunisieTelecomSms,
-      brand: "Tunisie Telecom",
-    },
+    { id: "ipay:tunisie-telecom-sms", label: m.paymentTunisieTelecomSms, brand: "Tunisie Telecom" },
     { id: "ipay:bank-transfer", label: m.paymentBankTransfer, brand: "Postal / Bank" },
     { id: "ipay:winsms", label: m.paymentWinSms, brand: "WinSMS" },
   ];

@@ -199,12 +199,12 @@ function AdminPage() {
               ? "The seller must save a receiving method and account details before a payout can be created."
               : "Le vendeur doit enregistrer un moyen de réception et ses coordonnées avant la création du versement."
           : error.message.includes("no_unpaid_sales")
-              ? lang === "ar"
-                ? "لا توجد مبيعات مؤكدة غير مدفوعة لهذا المتجر."
-                : lang === "en"
-                  ? "No verified unpaid sales are available for this store."
-                  : "Aucune vente vérifiée non réglée pour cette boutique."
-              : a.saveError,
+            ? lang === "ar"
+              ? "لا توجد مبيعات مؤكدة غير مدفوعة لهذا المتجر."
+              : lang === "en"
+                ? "No verified unpaid sales are available for this store."
+                : "Aucune vente vérifiée non réglée pour cette boutique."
+            : a.saveError,
       });
       return;
     }
@@ -426,15 +426,11 @@ function AdminPage() {
         {payouts.isPending ? (
           <p className="mt-4 text-sm">{a.loading}</p>
         ) : payouts.isError ? (
-          <div role="alert" className="mt-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+          <div
+            role="alert"
+            className="mt-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
+          >
             <p>{a.loadError}</p>
-            <p className="mt-1 break-words text-xs" dir="ltr">
-              {payouts.error instanceof Error
-                ? payouts.error.message
-                : payouts.error && typeof payouts.error === "object"
-                  ? JSON.stringify(payouts.error, null, 2)
-                  : String(payouts.error)}
-            </p>
             <button
               type="button"
               onClick={() => void payouts.refetch()}
@@ -629,13 +625,6 @@ function AdminPage() {
         ) : orders.isError ? (
           <div role="alert" className="rounded-xl border border-destructive/30 bg-secondary p-4">
             <p className="font-semibold">{a.loadError}</p>
-            <p className="mt-2 break-words text-xs text-muted-foreground">
-              {orders.error instanceof Error
-                ? orders.error.message
-                : orders.error && typeof orders.error === "object"
-                  ? JSON.stringify(orders.error, null, 2)
-                  : String(orders.error)}
-            </p>
             <button
               type="button"
               onClick={() => void orders.refetch()}

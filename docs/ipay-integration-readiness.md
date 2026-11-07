@@ -46,13 +46,26 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 8. **Marketplace eligibility and documents:** Confirm in writing that this organisation/account can process payments for a digital-goods marketplace where buyers pay the platform and the platform separately accounts for and manually pays sellers. Confirm any required business registration, KYC, or supporting documents.
 9. **Fees:** Confirm the 1% monthly-billed commission capped at 5 TND for this organisation and identify every additional acquirer/provider fee by payment method, including refunds and declared transfers.
 
+## Implementation status on feature/ipay-checkout-integration
+
+A first, deliberately incomplete server-side scaffold has been added:
+- `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and Bearer JWT headers.
+- `IPAY_CHECKOUT_ENABLED=true` is required before the one-shot client can run.
+- `IPAY_AMOUNT_UNIT` must explicitly be either `major` or `minor`; without it, configuration is rejected. This is a defensive configuration gate, **not** a claim that either unit has been confirmed by Audasoft.
+- `drizzle/migrations/0034_ipay_checkout_reference.sql` adds separate nullable iPay reference/URL fields and a unique partial index. It does not alter the Konnect columns, order settlement, commission, ledger, or payout rules.
+- `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard.
+
+The iPay client is not yet wired into buyer checkout. No iPay webhook handler or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
+
 ## Implementation gate
 
-Until the confirmations above are received:
-- no live payment activation;
-- no settlement based only on a webhook, redirect, or browser query parameter;
-- no automatic download release for declared bank/postal transfers without confirmed cleared funds;
-- no assumed amount-unit conversion or foreign-currency support;
-- no assumed webhook authenticity or retry behaviour.
+Until Audasoft confirms the open questions above:
+- do not set `IPAY_CHECKOUT_ENABLED=true`;
+- do not apply migration 0034 to Supabase;
+- do not settle an order based only on a webhook, redirect, or browser query parameter;
+- do not release downloads for declared bank/postal transfers without confirmed cleared funds;
+- do not set `IPAY_AMOUNT_UNIT` based on assumption;
+- do not claim international-card or foreign-currency support;
+- do not assume webhook authenticity or retry behaviour.
 
-After the contract is confirmed, implement the iPay adapter and webhook/reconciliation flow on this branch, test in a non-live environment, and review the diff before any merge or deployment.
+Next engineering steps after written confirmation: implement authoritative transaction lookup, authenticated/idempotent webhook reconciliation, exact order/amount/currency/product matching, safe settlement through the existing trusted RPC, and sandbox integration tests. Then run the repository typecheck, unit tests, migration-journal check, and production build on the branch. Review the full diff before any merge or deployment.

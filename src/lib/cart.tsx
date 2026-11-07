@@ -66,9 +66,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 : line,
             );
           }
-          return current.length >= 50
-            ? current
-            : [...current, { productId, quantity: 1 }];
+          return current.length >= 50 ? current : [...current, { productId, quantity: 1 }];
         }),
       setQuantity: (productId, quantity) =>
         setItems((current) =>

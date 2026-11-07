@@ -11,6 +11,36 @@ import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { Building2, CreditCard, Mail, Radio, Smartphone, Wallet } from "lucide-react";
 
+function PaymentBrandLogo({ brand }: { brand: string }) {
+  const styles: Record<string, string> = {
+    KONNECT: "bg-[#102f3d] text-white",
+    VISA: "bg-[#1434a4] text-white italic",
+    Mastercard: "bg-white text-[#eb001b] ring-1 ring-border",
+    "e-DINAR": "bg-[#f4efe6] text-[#8b6b20] ring-1 ring-[#c5a869]",
+    iPay: "bg-[#e8f3ff] text-[#1769aa] ring-1 ring-[#b7d7f0]",
+    D17: "bg-[#f1e9fb] text-[#7136a8] ring-1 ring-[#d7c2ef]",
+    Flouci: "bg-[#e7f8f1] text-[#07845a] ring-1 ring-[#b9e7d5]",
+    ClicToPay: "bg-[#e9efff] text-[#2448a5] ring-1 ring-[#c4d1fa]",
+    Ooredoo: "bg-[#fff0f0] text-[#d71920] ring-1 ring-[#f5c4c6]",
+    "Tunisie Telecom": "bg-[#e8f5ff] text-[#0877b9] ring-1 ring-[#b9def4]",
+    WinSMS: "bg-[#fff4e8] text-[#a65308] ring-1 ring-[#f1d1ad]",
+    "Postal / Bank": "bg-[#f4f0e8] text-[#75613d] ring-1 ring-[#ded3bd]",
+  };
+  return (
+    <span
+      aria-hidden="true"
+      className={`flex h-10 min-w-16 shrink-0 items-center justify-center rounded-lg px-2 text-xs font-extrabold tracking-tight ${styles[brand] ?? "bg-secondary text-foreground"}`}
+    >
+      {brand === "Mastercard" ? (
+        <span className="flex items-center -space-x-2">
+          <span className="h-5 w-5 rounded-full bg-[#eb001b]" />
+          <span className="h-5 w-5 rounded-full bg-[#f79e1b]/95" />
+        </span>
+      ) : brand}
+    </span>
+  );
+}
+
 export const Route = createFileRoute("/products/$id")({
   head: () => ({
     meta: [
@@ -31,18 +61,18 @@ function ProductPage() {
   const m = t.marketplace;
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("konnect:bank_card");
   const konnectPaymentMethods = [
-    { id: "konnect:bank_card", label: m.paymentKonnectBankCard, Icon: CreditCard },
-    { id: "konnect:wallet", label: m.paymentKonnectWallet, Icon: Wallet },
-    { id: "konnect:e-DINAR", label: m.paymentKonnectEdinar, Icon: Smartphone },
+    { id: "konnect:bank_card", label: m.paymentKonnectBankCard, Icon: CreditCard, brand: "VISA" },
+    { id: "konnect:wallet", label: m.paymentKonnectWallet, Icon: Wallet, brand: "KONNECT" },
+    { id: "konnect:e-DINAR", label: m.paymentKonnectEdinar, Icon: Smartphone, brand: "e-DINAR" },
   ];
   const ipayPaymentMethods = [
-    { id: "ipay:clictopay", label: m.paymentClicToPay, Icon: CreditCard },
-    { id: "ipay:flouci", label: m.paymentFlouci, Icon: Wallet },
-    { id: "ipay:postal", label: m.paymentPostal, Icon: Mail },
-    { id: "ipay:ooredoo-sms", label: m.paymentOoredooSms, Icon: Smartphone },
-    { id: "ipay:tunisie-telecom-sms", label: m.paymentTunisieTelecomSms, Icon: Radio },
-    { id: "ipay:bank-transfer", label: m.paymentBankTransfer, Icon: Building2 },
-    { id: "ipay:winsms", label: m.paymentWinSms, Icon: Smartphone },
+    { id: "ipay:clictopay", label: m.paymentClicToPay, Icon: CreditCard, brand: "ClicToPay" },
+    { id: "ipay:flouci", label: m.paymentFlouci, Icon: Wallet, brand: "Flouci" },
+    { id: "ipay:postal", label: m.paymentPostal, Icon: Mail, brand: "Postal / Bank" },
+    { id: "ipay:ooredoo-sms", label: m.paymentOoredooSms, Icon: Smartphone, brand: "Ooredoo" },
+    { id: "ipay:tunisie-telecom-sms", label: m.paymentTunisieTelecomSms, Icon: Radio, brand: "Tunisie Telecom" },
+    { id: "ipay:bank-transfer", label: m.paymentBankTransfer, Icon: Building2, brand: "Postal / Bank" },
+    { id: "ipay:winsms", label: m.paymentWinSms, Icon: Smartphone, brand: "WinSMS" },
   ];
   const query = useQuery({
     queryKey: ["product-detail", id],
@@ -154,7 +184,7 @@ function ProductPage() {
               <p className="mt-1 text-sm text-muted-foreground">{m.paymentTunisiaNote}</p>
               <h4 className="mt-4 text-sm font-bold">{m.paymentProviderKonnect}</h4>
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {konnectPaymentMethods.map(({ id, label, Icon }) => {
+              {konnectPaymentMethods.map(({ id, label, Icon, brand }) => {
                 const selected = selectedPaymentMethod === id;
                 return (
                   <button
@@ -168,7 +198,7 @@ function ProductPage() {
                         : "border-border bg-background hover:bg-secondary"
                     }`}
                   >
-                    <Icon aria-hidden="true" className="h-6 w-6 shrink-0 text-petrol" />
+                    <PaymentBrandLogo brand={brand} />
                     <span className="flex-1 text-sm font-semibold">{label}</span>
                     <span aria-hidden="true" className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs ${
                       selected ? "border-petrol bg-petrol text-white" : "border-muted-foreground/40 text-transparent"
@@ -177,9 +207,29 @@ function ProductPage() {
                 );
               })}
             </div>
+
+              <h4 className="mt-6 text-sm font-bold">{m.paymentD17Title}</h4>
+              <button
+                type="button"
+                aria-pressed={selectedPaymentMethod === "d17"}
+                onClick={() => setSelectedPaymentMethod("d17")}
+                className={`mt-3 flex min-h-20 w-full items-center gap-3 rounded-xl border p-4 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  selectedPaymentMethod === "d17"
+                    ? "border-petrol bg-cream-light ring-1 ring-petrol"
+                    : "border-border bg-background hover:bg-secondary"
+                }`}
+              >
+                <PaymentBrandLogo brand="D17" />
+                <span className="flex-1 text-sm font-semibold">{m.paymentD17Label}</span>
+                <span aria-hidden="true" className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs ${
+                  selectedPaymentMethod === "d17"
+                    ? "border-petrol bg-petrol text-white"
+                    : "border-muted-foreground/40 text-transparent"
+                }`}>✓</span>
+              </button>
               <h4 className="mt-6 text-sm font-bold">{m.paymentProviderIpay}</h4>
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {ipayPaymentMethods.map(({ id, label, Icon }) => {
+              {ipayPaymentMethods.map(({ id, label, Icon, brand }) => {
                 const selected = selectedPaymentMethod === id;
                 return (
                   <button
@@ -208,7 +258,7 @@ function ProductPage() {
               <p className="mt-1 text-sm text-muted-foreground">{m.paymentInternationalNote}</p>
               <h4 className="mt-4 text-sm font-bold">{m.paymentProviderKonnect}</h4>
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {konnectPaymentMethods.filter(({ id }) => id === "konnect:bank_card").map(({ id, label, Icon }) => {
+              {konnectPaymentMethods.filter(({ id }) => id === "konnect:bank_card").map(({ id, label, Icon, brand }) => {
                 const selected = selectedPaymentMethod === id;
                 return (
                   <button

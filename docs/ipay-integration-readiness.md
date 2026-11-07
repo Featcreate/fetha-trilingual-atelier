@@ -37,14 +37,14 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 ## Required confirmation from Audasoft
 
 1. **Amount units:** Is `amount` in TND millimes, decimal TND, or another convention? Provide a request/response example for exactly 10.500 TND.
-2. **Authoritative transaction verification:** What endpoint and fields confirm one transaction's final paid/settled state, amount, currency, product code, transaction ID, and external order reference? Can `GET /api/admin/transactions` filter reliably by transaction ID or invoice/customer external reference?
-3. **Webhook authenticity:** Is there a signature, HMAC, secret header, mTLS, or another authenticity mechanism? Provide exact verification instructions.
-4. **Declared bank/postal transfers:** Does `transaction.completed` on a declared transfer mean funds are already credited/cleared, or only that the customer declared a transfer? Which status/event confirms actual receipt? Can these methods be disabled per product?
-5. **International buyers:** Which card schemes and issuing countries are accepted? Are international-issued Visa/Mastercard supported through this organisation's ClicToPay configuration? Which currencies can be charged, and what currency reaches the platform?
-6. **Webhook delivery:** The public page advertises automatic retry but the authenticated notes supplied earlier say no retry. Which is correct for this account/API version, what is the retry schedule, and how can missed events be replayed?
-7. **Product configuration:** Confirm that product code `algorea-bazaar` is valid for one-shot transactions, and whether success/failure callback URLs are configured per product only or can be overridden per transaction.
-8. **Marketplace eligibility and documents:** Confirm in writing that this organisation/account can process payments for a digital-goods marketplace where buyers pay the platform and the platform separately accounts for and manually pays sellers. Confirm any required business registration, KYC, or supporting documents.
-9. **Fees:** Confirm the 1% monthly-billed commission capped at 5 TND for this organisation and identify every additional acquirer/provider fee by payment method, including refunds and declared transfers.
+1. **Authoritative transaction verification:** What endpoint and fields confirm one transaction's final paid/settled state, amount, currency, product code, transaction ID, and external order reference? Can `GET /api/admin/transactions` filter reliably by transaction ID or invoice/customer external reference?
+1. **Webhook authenticity:** Is there a signature, HMAC, secret header, mTLS, or another authenticity mechanism? Provide exact verification instructions.
+1. **Declared bank/postal transfers:** Does `transaction.completed` on a declared transfer mean funds are already credited/cleared, or only that the customer declared a transfer? Which status/event confirms actual receipt? Can these methods be disabled per product?
+1. **International buyers:** Which card schemes and issuing countries are accepted? Are international-issued Visa/Mastercard supported through this organisation's ClicToPay configuration? Which currencies can be charged, and what currency reaches the platform?
+1. **Webhook delivery:** The public page advertises automatic retry but the authenticated notes supplied earlier say no retry. Which is correct for this account/API version, what is the retry schedule, and how can missed events be replayed?
+1. **Product configuration:** Confirm that product code `algorea-bazaar` is valid for one-shot transactions, and whether success/failure callback URLs are configured per product only or can be overridden per transaction.
+1. **Marketplace eligibility and documents:** Confirm in writing that this organisation/account can process payments for a digital-goods marketplace where buyers pay the platform and the platform separately accounts for and manually pays sellers. Confirm any required business registration, KYC, or supporting documents.
+1. **Fees:** Confirm the 1% monthly-billed commission capped at 5 TND for this organisation and identify every additional acquirer/provider fee by payment method, including refunds and declared transfers.
 
 ## Implementation status on feature/ipay-checkout-integration
 

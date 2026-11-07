@@ -114,9 +114,11 @@ export const dict = {
       paymentMethodsTitle: "Moyens de paiement",
       paymentMethodsPlanned: "Aperçu des méthodes proposées par Konnect et iPay",
       paymentTunisiaTitle: "Acheteurs en Tunisie",
-      paymentTunisiaNote: "Moyens locaux proposés en Tunisie. Leur disponibilité effective dépend de la validation du prestataire.",
+      paymentTunisiaNote:
+        "Moyens locaux proposés en Tunisie. Leur disponibilité effective dépend de la validation du prestataire.",
       paymentInternationalTitle: "Acheteurs hors de Tunisie",
-      paymentInternationalNote: "Cartes Visa et Mastercard internationales via Konnect, sous réserve de validation du prestataire.",
+      paymentInternationalNote:
+        "Cartes Visa et Mastercard internationales via Konnect, sous réserve de validation du prestataire.",
       paymentProviderKonnect: "Via Konnect",
       paymentProviderIpay: "Via iPay",
       paymentKonnectBankCard: "Cartes Visa et Mastercard",
@@ -401,9 +403,11 @@ export const dict = {
       paymentMethodsTitle: "وسائل الدفع",
       paymentMethodsPlanned: "معاينة وسائل الدفع المتاحة عبر Konnect وiPay",
       paymentTunisiaTitle: "للمشترين داخل تونس",
-      paymentTunisiaNote: "وسائل دفع محلية مقترحة داخل تونس. يظل توفرها الفعلي مرتبطاً بتأكيد مزود الخدمة.",
+      paymentTunisiaNote:
+        "وسائل دفع محلية مقترحة داخل تونس. يظل توفرها الفعلي مرتبطاً بتأكيد مزود الخدمة.",
       paymentInternationalTitle: "للمشترين خارج تونس",
-      paymentInternationalNote: "بطاقات Visa وMastercard الدولية عبر Konnect، بعد تأكيد مزود الخدمة.",
+      paymentInternationalNote:
+        "بطاقات Visa وMastercard الدولية عبر Konnect، بعد تأكيد مزود الخدمة.",
       paymentProviderKonnect: "عبر Konnect",
       paymentProviderIpay: "عبر iPay",
       paymentKonnectBankCard: "بطاقات Visa وMastercard",
@@ -681,9 +685,11 @@ export const dict = {
       paymentMethodsTitle: "Payment methods",
       paymentMethodsPlanned: "Preview of methods offered through Konnect and iPay",
       paymentTunisiaTitle: "Buyers in Tunisia",
-      paymentTunisiaNote: "Local payment methods proposed for Tunisia. Actual availability depends on provider confirmation.",
+      paymentTunisiaNote:
+        "Local payment methods proposed for Tunisia. Actual availability depends on provider confirmation.",
       paymentInternationalTitle: "Buyers outside Tunisia",
-      paymentInternationalNote: "International Visa and Mastercard cards through Konnect, subject to provider confirmation.",
+      paymentInternationalNote:
+        "International Visa and Mastercard cards through Konnect, subject to provider confirmation.",
       paymentProviderKonnect: "Via Konnect",
       paymentProviderIpay: "Via iPay",
       paymentKonnectBankCard: "Visa and Mastercard cards",

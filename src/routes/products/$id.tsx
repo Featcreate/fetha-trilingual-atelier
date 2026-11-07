@@ -15,6 +15,7 @@ function PaymentBrandLogo({ brand }: { brand: string }) {
   const styles: Record<string, string> = {
     KONNECT: "bg-[#102f3d] text-white",
     VISA: "bg-[#1434a4] text-white italic",
+    Cards: "bg-white text-[#1434a4] ring-1 ring-border",
     Mastercard: "bg-white text-[#eb001b] ring-1 ring-border",
     "e-DINAR": "bg-[#f4efe6] text-[#8b6b20] ring-1 ring-[#c5a869]",
     iPay: "bg-[#e8f3ff] text-[#1769aa] ring-1 ring-[#b7d7f0]",
@@ -36,6 +37,8 @@ function PaymentBrandLogo({ brand }: { brand: string }) {
           <span className="h-5 w-5 rounded-full bg-[#eb001b]" />
           <span className="h-5 w-5 rounded-full bg-[#f79e1b]/95" />
         </span>
+      ) : brand === "Cards" ? (
+        <span className="flex items-center gap-2"><span className="font-black italic text-[#1434a4]">VISA</span><span className="flex -space-x-2"><span className="h-4 w-4 rounded-full bg-[#eb001b]" /><span className="h-4 w-4 rounded-full bg-[#f79e1b]" /></span></span>
       ) : brand}
     </span>
   );
@@ -61,7 +64,7 @@ function ProductPage() {
   const m = t.marketplace;
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("konnect:bank_card");
   const konnectPaymentMethods = [
-    { id: "konnect:bank_card", label: m.paymentKonnectBankCard, Icon: CreditCard, brand: "VISA" },
+    { id: "konnect:bank_card", label: m.paymentKonnectBankCard, Icon: CreditCard, brand: "Cards" },
     { id: "konnect:wallet", label: m.paymentKonnectWallet, Icon: Wallet, brand: "KONNECT" },
     { id: "konnect:e-DINAR", label: m.paymentKonnectEdinar, Icon: Smartphone, brand: "e-DINAR" },
   ];
@@ -182,7 +185,7 @@ function ProductPage() {
             <div className="mt-5 rounded-xl border border-border p-4">
               <h3 className="text-base font-bold">{m.paymentTunisiaTitle}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{m.paymentTunisiaNote}</p>
-              <h4 className="mt-4 text-sm font-bold">{m.paymentProviderKonnect}</h4>
+              <h4 className="mt-4 flex items-center gap-2 text-sm font-bold"><PaymentBrandLogo brand="KONNECT" />{m.paymentProviderKonnect}</h4>
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {konnectPaymentMethods.map(({ id, label, Icon, brand }) => {
                 const selected = selectedPaymentMethod === id;
@@ -227,7 +230,7 @@ function ProductPage() {
                     : "border-muted-foreground/40 text-transparent"
                 }`}>✓</span>
               </button>
-              <h4 className="mt-6 text-sm font-bold">{m.paymentProviderIpay}</h4>
+              <h4 className="mt-6 flex items-center gap-2 text-sm font-bold"><PaymentBrandLogo brand="iPay" />{m.paymentProviderIpay}</h4>
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {ipayPaymentMethods.map(({ id, label, Icon, brand }) => {
                 const selected = selectedPaymentMethod === id;
@@ -256,7 +259,7 @@ function ProductPage() {
             <div className="mt-4 rounded-xl border border-border p-4">
               <h3 className="text-base font-bold">{m.paymentInternationalTitle}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{m.paymentInternationalNote}</p>
-              <h4 className="mt-4 text-sm font-bold">{m.paymentProviderKonnect}</h4>
+              <h4 className="mt-4 flex items-center gap-2 text-sm font-bold"><PaymentBrandLogo brand="KONNECT" />{m.paymentProviderKonnect}</h4>
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {konnectPaymentMethods.filter(({ id }) => id === "konnect:bank_card").map(({ id, label, Icon, brand }) => {
                 const selected = selectedPaymentMethod === id;

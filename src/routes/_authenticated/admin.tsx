@@ -630,7 +630,11 @@ function AdminPage() {
           <div role="alert" className="rounded-xl border border-destructive/30 bg-secondary p-4">
             <p className="font-semibold">{a.loadError}</p>
             <p className="mt-2 break-words text-xs text-muted-foreground">
-              {orders.error instanceof Error ? orders.error.message : String(orders.error)}
+              {orders.error instanceof Error
+                ? orders.error.message
+                : orders.error && typeof orders.error === "object"
+                  ? JSON.stringify(orders.error, null, 2)
+                  : String(orders.error)}
             </p>
             <button
               type="button"

@@ -104,7 +104,7 @@ function CheckoutPage() {
                     {localizedProductText(product.name, product.name_translations, lang)} ×{" "}
                     {line.quantity}
                   </span>
-                  <strong>{formatTND(product.price_millimes * line.quantity)}</strong>
+                  <strong>{formatTND(product.price_millimes)}</strong>
                 </div>
               );
             })}

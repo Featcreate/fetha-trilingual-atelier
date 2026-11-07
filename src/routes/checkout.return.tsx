@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { AuthShell } from "@/components/AuthShell";
 import { supabase } from "@/integrations/supabase/client";
-import { supabase } from "@/integrations/supabase/client";
 import { checkOrderPayment } from "@/lib/shop.functions";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";

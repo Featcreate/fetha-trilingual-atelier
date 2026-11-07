@@ -8,6 +8,7 @@ import { loadProductGallery } from "@/lib/product-previews";
 import { ProductPreview } from "@/components/ProductPreview";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
+import { CreditCard, Wallet, Landmark } from "lucide-react";
 
 export const Route = createFileRoute("/products/$id")({
   head: () => ({
@@ -121,9 +122,31 @@ function ProductPage() {
           >
             {m.viewStore}: {query.data.store.name}
           </Link>
-          <p className="mt-6 rounded-xl bg-secondary p-4 text-sm leading-7">
-            {m.purchaseUnavailable}
-          </p>
+          <section className="mt-7 rounded-2xl border border-border bg-card p-5" aria-label={m.paymentMethodsTitle}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-base font-bold">{m.paymentMethodsTitle}</h2>
+              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">
+                {m.paymentMethodsPlanned}
+              </span>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-background p-3 text-center">
+                <CreditCard aria-hidden="true" className="h-7 w-7 text-petrol" />
+                <span className="text-sm font-semibold">{m.paymentCard}</span>
+              </div>
+              <div className="flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-background p-3 text-center">
+                <Wallet aria-hidden="true" className="h-7 w-7 text-petrol" />
+                <span className="text-sm font-semibold">{m.paymentWallet}</span>
+              </div>
+              <div className="flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-background p-3 text-center">
+                <Landmark aria-hidden="true" className="h-7 w-7 text-petrol" />
+                <span className="text-sm font-semibold">{m.paymentEdinar}</span>
+              </div>
+            </div>
+            <p className="mt-4 rounded-xl bg-secondary p-4 text-sm leading-7">
+              {m.purchaseUnavailable}
+            </p>
+          </section>
         </article>
       )}
     </AuthShell>

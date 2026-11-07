@@ -17,10 +17,7 @@ export function ipayConfig(requireActivation = false): IpayConfig | null {
   const amountUnit = process.env["IPAY_AMOUNT_UNIT"] ?? "minor";
   if (!orgId || !jwt || !productCode) return null;
   if (amountUnit !== "major" && amountUnit !== "minor") return null;
-  if (
-    requireActivation &&
-    process.env["IPAY_CHECKOUT_ENABLED"] !== "true"
-  ) {
+  if (requireActivation && process.env["IPAY_CHECKOUT_ENABLED"] !== "true") {
     return null;
   }
   return { orgId, jwt, productCode, amountUnit };

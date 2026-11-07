@@ -24,7 +24,7 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 - Public aggregator page lists bank transfer, postal mandate, ClicToPay, Flouci, D17, Konnect, Ooredoo SMS, Tunisie Telecom SMS, and WinSMS.
 - The public page describes these as solutions covering the Tunisian payment ecosystem. ClicToPay is described as a Tunisian-bank card gateway.
 - The public information reviewed does **not** establish that international-issued cards are accepted, that non-TND buyer charges are supported, or that settlement is available in foreign currencies. Do not advertise worldwide card acceptance until Audasoft confirms supported card schemes/issuing countries, currency, and settlement.
-- The public website advertises pricing of 1% per transaction, capped at 5 TND, with no fixed monthly fee. Confirm whether this tariff applies to this organisation, each method, declared transfers, refunds, and any special gateway fees before financial modelling.
+- The public website and the organisation dashboard both show iPay pricing of 1% per transaction, capped at 5 TND, billed monthly; the dashboard currently shows no transaction/commission entries. The public pricing page says third-party provider fees (e.g. ClicToPay, Flouci, SMS) may be charged in addition, while bank transfer and postal mandate have no additional iPay-side surcharge beyond the 1% capped commission. Confirm the precise tariff and all external/acquirer fees for this organisation, refunds, and every enabled method before financial modelling.
 
 ### Webhooks — important inconsistency and risk
 - Public webhook page says events are sent by POST JSON to product-configured URLs; it advertises call history/payload history and automatic retry.
@@ -44,6 +44,7 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 6. **Webhook delivery:** The public page advertises automatic retry but the authenticated notes supplied earlier say no retry. Which is correct for this account/API version, what is the retry schedule, and how can missed events be replayed?
 7. **Product configuration:** Confirm that product code `algorea-bazaar` is valid for one-shot transactions, and whether success/failure callback URLs are configured per product only or can be overridden per transaction.
 8. **Marketplace eligibility and documents:** Confirm in writing that this organisation/account can process payments for a digital-goods marketplace where buyers pay the platform and the platform separately accounts for and manually pays sellers. Confirm any required business registration, KYC, or supporting documents.
+9. **Fees:** Confirm the 1% monthly-billed commission capped at 5 TND for this organisation and identify every additional acquirer/provider fee by payment method, including refunds and declared transfers.
 
 ## Implementation gate
 

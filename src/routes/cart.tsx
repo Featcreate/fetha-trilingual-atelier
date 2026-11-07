@@ -82,9 +82,7 @@ function CartPage() {
 
       const storeIds = [
         ...new Set(
-          (data ?? [])
-            .map((product) => product.store_id)
-            .filter((id): id is string => !!id),
+          (data ?? []).map((product) => product.store_id).filter((id): id is string => !!id),
         ),
       ];
       const { data: stores, error: storeError } = storeIds.length
@@ -154,11 +152,7 @@ function CartPage() {
                     params={{ id: line.product.id }}
                     className="font-bold hover:text-coral"
                   >
-                    {localizedProductText(
-                      line.product.name,
-                      line.product.name_translations,
-                      lang,
-                    )}
+                    {localizedProductText(line.product.name, line.product.name_translations, lang)}
                   </Link>
                   <p className="text-xs text-muted-foreground">{line.store.name}</p>
                   <p className="mt-1 text-sm font-semibold">
@@ -172,9 +166,7 @@ function CartPage() {
                     min={1}
                     max={99}
                     value={line.quantity}
-                    onChange={(event) =>
-                      setQuantity(line.productId, Number(event.target.value))
-                    }
+                    onChange={(event) => setQuantity(line.productId, Number(event.target.value))}
                     className="w-20 rounded-lg border border-input bg-background px-2 py-2"
                   />
                 </label>

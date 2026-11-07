@@ -99,10 +99,7 @@ function CatalogPage() {
           Algorea Bazaar
         </Link>
         <div className="flex items-center gap-4">
-          <Link
-            to="/cart"
-            className="text-sm font-semibold text-coral hover:underline"
-          >
+          <Link to="/cart" className="text-sm font-semibold text-coral hover:underline">
             {lang === "ar"
               ? `السلة (${count})`
               : lang === "en"

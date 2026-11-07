@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useLang } from "@/lib/i18n";
 
-const logoBaseClass =
-  "flex h-10 min-w-16 shrink-0 items-center justify-center rounded-lg px-2 text-xs font-extrabold tracking-tight";
+const logoBaseClass = [
+  "flex h-10 min-w-16 shrink-0 items-center justify-center",
+  "rounded-lg px-2 text-xs font-extrabold tracking-tight",
+].join(" ");
 
 const logoStyles: Record<string, string> = {
   KONNECT: "bg-[#102f3d] text-white",

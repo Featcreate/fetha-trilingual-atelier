@@ -6,10 +6,10 @@ describe("iPay configuration", () => {
     const keys = ["IPAY_ORG_ID", "IPAY_JWT", "IPAY_PRODUCT_CODE", "IPAY_AMOUNT_UNIT"] as const;
     const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
     try {
-      process.env.IPAY_ORG_ID = "org-test";
-      process.env.IPAY_JWT = "jwt-test";
-      process.env.IPAY_PRODUCT_CODE = "product-test";
-      delete process.env.IPAY_AMOUNT_UNIT;
+      process.env["IPAY_ORG_ID"] = "org-test";
+      process.env["IPAY_JWT"] = "jwt-test";
+      process.env["IPAY_PRODUCT_CODE"] = "product-test";
+      delete process.env["IPAY_AMOUNT_UNIT"];
       expect(ipayConfig()).toBeNull();
     } finally {
       for (const key of keys) {
@@ -30,13 +30,13 @@ describe("iPay configuration", () => {
     ] as const;
     const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
     try {
-      process.env.IPAY_ORG_ID = "org-test";
-      process.env.IPAY_JWT = "jwt-test";
-      process.env.IPAY_PRODUCT_CODE = "product-test";
-      process.env.IPAY_AMOUNT_UNIT = "minor";
-      delete process.env.IPAY_CHECKOUT_ENABLED;
+      process.env["IPAY_ORG_ID"] = "org-test";
+      process.env["IPAY_JWT"] = "jwt-test";
+      process.env["IPAY_PRODUCT_CODE"] = "product-test";
+      process.env["IPAY_AMOUNT_UNIT"] = "minor";
+      delete process.env["IPAY_CHECKOUT_ENABLED"];
       expect(ipayConfig(true)).toBeNull();
-      process.env.IPAY_CHECKOUT_ENABLED = "true";
+      process.env["IPAY_CHECKOUT_ENABLED"] = "true";
       expect(ipayConfig(true)?.amountUnit).toBe("minor");
     } finally {
       for (const key of keys) {

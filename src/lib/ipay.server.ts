@@ -91,23 +91,26 @@ export async function ipayCreateOneShot(input: {
     throw new Error("invalid_customer_name");
   }
 
-  const response = await fetch(`${IPAY_API}/api/admin/transactions/create-oneshot`, {
-    method: "POST",
-    headers: {
-      "X-Org-Id": cfg.orgId,
-      Authorization: `Bearer ${cfg.jwt}`,
-      "Content-Type": "application/json",
-      Accept: "application/json",
+  const response = await fetch(
+    `${IPAY_API}/api/admin/transactions/create-oneshot`,
+    {
+      method: "POST",
+      headers: {
+        "X-Org-Id": cfg.orgId,
+        Authorization: `Bearer ${cfg.jwt}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        product_code: cfg.productCode,
+        amount: ipayAmountFromMillimes(input.amountMillimes, cfg.amountUnit),
+        currency: "TND",
+        customer_name: customerName,
+        customer_external_id: input.orderId,
+        invoice_reference: input.orderId,
+      }),
     },
-    body: JSON.stringify({
-      product_code: cfg.productCode,
-      amount: ipayAmountFromMillimes(input.amountMillimes, cfg.amountUnit),
-      currency: "TND",
-      customer_name: customerName,
-      customer_external_id: input.orderId,
-      invoice_reference: input.orderId,
-    }),
-  });
+  );
 
   if (!response.ok) {
     console.error("iPay create-oneshot failed", response.status);

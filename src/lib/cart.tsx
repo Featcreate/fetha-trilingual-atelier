@@ -1,12 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-export type CartLine = { productId: string; quantity: number };
+export type CartLine = { productId: string };
 
 type CartContextValue = {
   items: CartLine[];
   count: number;
   add: (productId: string) => void;
-  setQuantity: (productId: string, quantity: number) => void;
   remove: (productId: string) => void;
   clear: () => void;
 };
@@ -24,22 +23,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (raw) {
         const parsed: unknown = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          const safe = parsed.flatMap((line): CartLine[] => {
-            if (
-              line &&
-              typeof line.productId === "string" &&
-              /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-                line.productId,
-              ) &&
-              Number.isInteger(line.quantity) &&
-              line.quantity >= 1 &&
-              line.quantity <= 99
-            ) {
-              return [{ productId: line.productId, quantity: line.quantity }];
-            }
-            return [];
+          const ids = parsed.flatMap((line): string[] => {
+            const id = line && typeof line.productId === "string" ? line.productId : "";
+            return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
+              ? [id]
+              : [];
           });
-          setItems(safe.slice(0, 50));
+          // Migrate old quantity-based carts to one entitlement per distinct product.
+          setItems([...new Set(ids)].slice(0, 50).map((productId) => ({ productId })));
         }
       }
     } catch {
@@ -55,30 +46,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CartContextValue>(
     () => ({
       items,
-      count: items.reduce((sum, line) => sum + line.quantity, 0),
+      count: items.length,
       add: (productId) =>
-        setItems((current) => {
-          const found = current.find((line) => line.productId === productId);
-          if (found) {
-            return current.map((line) =>
-              line.productId === productId
-                ? { ...line, quantity: Math.min(99, line.quantity + 1) }
-                : line,
-            );
-          }
-          return current.length >= 50 ? current : [...current, { productId, quantity: 1 }];
-        }),
-      setQuantity: (productId, quantity) =>
         setItems((current) =>
-          !Number.isFinite(quantity)
+          current.some((line) => line.productId === productId) || current.length >= 50
             ? current
-            : quantity <= 0
-              ? current.filter((line) => line.productId !== productId)
-              : current.map((line) =>
-                  line.productId === productId
-                    ? { ...line, quantity: Math.min(99, Math.max(1, Math.floor(quantity))) }
-                    : line,
-                ),
+            : [...current, { productId }],
         ),
       remove: (productId) =>
         setItems((current) => current.filter((line) => line.productId !== productId)),

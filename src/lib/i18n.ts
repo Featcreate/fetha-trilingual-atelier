@@ -120,6 +120,9 @@ export const dict = {
       paymentTunisieTelecomSms: "Paiement SMS — Tunisie Telecom",
       paymentBankTransfer: "Virement bancaire",
       paymentWinSms: "Paiement SMS — WinSMS",
+      paymentKonnect: "Konnect",
+      paymentD17: "D17",
+      paymentComingSoon: "Bientôt",
       paymentSelectPrompt: "Choisissez votre moyen de paiement préféré.",
       purchaseUnavailable:
         "La sélection est disponible en aperçu. Le paiement sera ouvert après la liaison des méthodes au produit iPay et la validation technique du paiement.",
@@ -396,6 +399,9 @@ export const dict = {
       paymentTunisieTelecomSms: "الدفع عبر SMS — Tunisie Telecom",
       paymentBankTransfer: "تحويل بنكي",
       paymentWinSms: "الدفع عبر SMS — WinSMS",
+      paymentKonnect: "Konnect",
+      paymentD17: "D17",
+      paymentComingSoon: "قريباً",
       paymentSelectPrompt: "اختاري وسيلة الدفع المفضلة لديك.",
       purchaseUnavailable:
         "يمكنك اختيار وسيلة في المعاينة. سيُفتح الدفع بعد ربط الوسائل بمنتج iPay والتحقق التقني من عملية الدفع.",
@@ -665,6 +671,9 @@ export const dict = {
       paymentTunisieTelecomSms: "SMS payment — Tunisie Telecom",
       paymentBankTransfer: "Bank transfer",
       paymentWinSms: "SMS payment — WinSMS",
+      paymentKonnect: "Konnect",
+      paymentD17: "D17",
+      paymentComingSoon: "Coming soon",
       paymentSelectPrompt: "Choose your preferred payment method.",
       purchaseUnavailable:
         "You can select a method in this preview. Checkout will open after the methods are linked to the iPay product and the payment flow is technically verified.",

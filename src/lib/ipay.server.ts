@@ -32,6 +32,46 @@ export function ipayAmountFromMillimes(
   return unit === "minor" ? amountMillimes : amountMillimes / 1000;
 }
 
+/** Validate the provider response before exposing its hosted URL to a buyer. */
+export function parseIpayOneShotResponse(payload: unknown): {
+  paymentUrl: string;
+  paymentRef: string;
+} {
+  if (!payload || typeof payload !== "object") throw new Error("ipay_invalid_response");
+
+  const record = payload as { id?: unknown; payment_url?: unknown };
+  if (
+    (typeof record.id !== "string" && typeof record.id !== "number") ||
+    typeof record.payment_url !== "string"
+  ) {
+    throw new Error("ipay_invalid_response");
+  }
+
+  const paymentRef = String(record.id).trim();
+  if (!paymentRef || paymentRef.length > 200) throw new Error("ipay_invalid_response");
+
+  let paymentUrl: URL;
+  try {
+    paymentUrl = new URL(record.payment_url);
+  } catch {
+    throw new Error("ipay_invalid_payment_url");
+  }
+
+  const allowedHost =
+    paymentUrl.hostname === "ipay.tn" || paymentUrl.hostname.endsWith(".ipay.tn");
+  if (
+    paymentUrl.protocol !== "https:" ||
+    !allowedHost ||
+    paymentUrl.username !== "" ||
+    paymentUrl.password !== "" ||
+    (paymentUrl.port !== "" && paymentUrl.port !== "443")
+  ) {
+    throw new Error("ipay_invalid_payment_url");
+  }
+
+  return { paymentUrl: paymentUrl.toString(), paymentRef };
+}
+
 export async function ipayCreateOneShot(input: {
   amountMillimes: number;
   orderId: string;
@@ -39,6 +79,13 @@ export async function ipayCreateOneShot(input: {
 }): Promise<{ paymentUrl: string; paymentRef: string }> {
   const cfg = ipayConfig(true);
   if (!cfg) throw new Error("ipay_not_configured");
+  if (!input.orderId.trim() || input.orderId.length > 100) {
+    throw new Error("invalid_order_reference");
+  }
+  const customerName = input.customerName.trim();
+  if (!customerName || customerName.length > 160) {
+    throw new Error("invalid_customer_name");
+  }
 
   const response = await fetch(`${IPAY_API}/api/admin/transactions/create-oneshot`, {
     method: "POST",
@@ -52,7 +99,7 @@ export async function ipayCreateOneShot(input: {
       product_code: cfg.productCode,
       amount: ipayAmountFromMillimes(input.amountMillimes, cfg.amountUnit),
       currency: "TND",
-      customer_name: input.customerName.slice(0, 160),
+      customer_name: customerName,
       customer_external_id: input.orderId,
       invoice_reference: input.orderId,
     }),
@@ -63,22 +110,11 @@ export async function ipayCreateOneShot(input: {
     throw new Error("ipay_provider_error");
   }
 
-  const payload = (await response.json()) as {
-    id?: string | number;
-    payment_url?: string;
-  };
-  if (
-    (typeof payload.id !== "string" && typeof payload.id !== "number") ||
-    typeof payload.payment_url !== "string"
-  ) {
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
     throw new Error("ipay_invalid_response");
   }
-  const paymentUrl = new URL(payload.payment_url);
-  if (
-    paymentUrl.protocol !== "https:" ||
-    (paymentUrl.hostname !== "ipay.tn" && !paymentUrl.hostname.endsWith(".ipay.tn"))
-  ) {
-    throw new Error("ipay_invalid_payment_url");
-  }
-  return { paymentUrl: paymentUrl.toString(), paymentRef: String(payload.id) };
+  return parseIpayOneShotResponse(payload);
 }

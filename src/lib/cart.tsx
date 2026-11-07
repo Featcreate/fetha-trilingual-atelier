@@ -1,16 +1,6 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-export type CartLine = {
-  productId: string;
-  quantity: number;
-};
+export type CartLine = { productId: string; quantity: number };
 
 type CartContextValue = {
   items: CartLine[];

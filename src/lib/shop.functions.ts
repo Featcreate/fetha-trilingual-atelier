@@ -97,10 +97,20 @@ export const startCheckout = createServerFn({ method: "POST" })
 export const startCartCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({
-      items: z.array(z.object({ productId: z.string().uuid(), quantity: z.number().int().min(1).max(99) })).min(1).max(50),
-      checkoutKey: z.string().min(8).max(100),
-    }).parse(input),
+    z
+      .object({
+        items: z
+          .array(
+            z.object({
+              productId: z.string().uuid(),
+              quantity: z.number().int().min(1).max(99),
+            }),
+          )
+          .min(1)
+          .max(50),
+        checkoutKey: z.string().min(8).max(100),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
@@ -125,16 +135,21 @@ export const startCartCheckout = createServerFn({ method: "POST" })
       .eq("id", orderId)
       .single();
     if (!order) return { ok: false as const, error: "order_failed" };
-    if (order.status !== "pending") return { ok: false as const, error: "order_closed", orderId };
-    if (order.konnect_pay_url) return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
+    if (order.status !== "pending") {
+      return { ok: false as const, error: "order_closed", orderId };
+    }
+    if (order.konnect_pay_url) {
+      return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
+    }
 
     const { data: profile } = await context.supabase
       .from("profiles")
       .select("full_name,phone")
       .eq("id", context.userId)
       .maybeSingle();
-    const [firstName, ...rest] = (profile?.full_name ?? "").trim().split(/\s+/);
+    const [firstName, ...rest] = (profile?.full_name ?? "").trim().split(/\\s+/);
     const origin = siteOrigin();
+
     try {
       const { payUrl, paymentRef } = await konnectInitPayment({
         amount: order.total_millimes,
@@ -149,13 +164,22 @@ export const startCartCheckout = createServerFn({ method: "POST" })
         email: order.customer_email ?? undefined,
       });
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { error: saveError } = await supabaseAdmin.from("orders")
+      const { error: saveError } = await supabaseAdmin
+        .from("orders")
         .update({ konnect_payment_ref: paymentRef, konnect_pay_url: payUrl })
-        .eq("id", order.id).eq("status", "pending").is("konnect_payment_ref", null);
-      const { data: saved, error: readError } = await supabaseAdmin.from("orders")
-        .select("konnect_payment_ref,konnect_pay_url").eq("id", order.id).single();
+        .eq("id", order.id)
+        .eq("status", "pending")
+        .is("konnect_payment_ref", null);
+      const { data: saved, error: readError } = await supabaseAdmin
+        .from("orders")
+        .select("konnect_payment_ref,konnect_pay_url")
+        .eq("id", order.id)
+        .single();
       if (readError || !saved?.konnect_payment_ref || !saved.konnect_pay_url) {
-        console.error("Konnect cart payment reference could not be persisted", saveError?.message ?? readError?.message ?? "missing_payment_reference");
+        console.error(
+          "Konnect cart payment reference could not be persisted",
+          saveError?.message ?? readError?.message ?? "missing_payment_reference",
+        );
         return { ok: false as const, error: "payment_reference_save_failed", orderId };
       }
       return { ok: true as const, orderId, payUrl: saved.konnect_pay_url };

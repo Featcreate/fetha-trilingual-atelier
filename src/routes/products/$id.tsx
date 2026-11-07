@@ -9,6 +9,7 @@ import { ProductPreview } from "@/components/ProductPreview";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { PaymentMethodsPreview } from "@/components/PaymentMethodsPreview";
+import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/products/$id")({
   head: () => ({
@@ -28,6 +29,7 @@ function ProductPage() {
   const { id } = Route.useParams();
   const { lang, setLang, t } = useLang();
   const m = t.marketplace;
+  const { add, count } = useCart();
   const query = useQuery({
     queryKey: ["product-detail", id],
     queryFn: async () => {
@@ -55,7 +57,8 @@ function ProductPage() {
   });
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.products} wide>
-      <div className="mb-5">
+      <div className="mb-5 flex justify-between gap-3">
+        <Link to="/cart" className="text-sm font-semibold text-coral hover:underline">{lang === "ar" ? `السلة (${count})` : lang === "en" ? `Cart (${count})` : `Panier (${count})`}</Link>
         <Link to="/catalog" className="text-sm font-semibold text-coral hover:underline">
           {m.viewCatalog}
         </Link>

@@ -36,11 +36,7 @@ BEGIN
       FROM jsonb_array_elements(_items) AS x(value)
      WHERE jsonb_typeof(x.value) <> 'object'
         OR coalesce(x.value->>'productId', '') !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
-        OR CASE
-             WHEN coalesce(x.value->>'quantity', '') ~ '^[0-9]{1,2}$'
-               THEN (x.value->>'quantity')::integer NOT BETWEEN 1 AND 99
-             ELSE true
-           END
+        OR coalesce(x.value->>'quantity', '') <> '1'
   ) THEN
     RAISE EXCEPTION 'invalid_cart';
   END IF;
@@ -95,7 +91,7 @@ BEGIN
     JOIN public.stores s ON s.id = p.store_id
     CROSS JOIN LATERAL (
       SELECT p.price_millimes::bigint AS gross,
-             round((p.price_millimes::bigint * r.quantity)::numeric * _bps / 10000) AS commission
+             round(p.price_millimes::numeric * _bps / 10000) AS commission
     ) c;
 
   INSERT INTO public.order_item_files (order_item_id, file_version_id, storage_path, file_name, size_bytes)

@@ -10,6 +10,7 @@ import { ProductPreview } from "@/components/ProductPreview";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { useCart } from "@/lib/cart";
+import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({
@@ -95,6 +96,7 @@ function CatalogPage() {
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.catalog} wide>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <Link to="/cart" className="text-sm font-semibold text-coral hover:underline">{lang === "ar" ? `السلة (${count})` : lang === "en" ? `Cart (${count})` : `Panier (${count})`}</Link>
         <Link to="/" className="text-sm font-semibold text-coral hover:underline">
           Algorea Bazaar
         </Link>
@@ -163,6 +165,7 @@ function CatalogPage() {
                     locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
                   />
                 </p>
+                <button type="button" onClick={() => add(p.id)} className="w-full rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground">{lang === "ar" ? "أضف إلى السلة" : lang === "en" ? "Add to cart" : "Ajouter au panier"}</button>
                 <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
                   <Link
                     to="/stores/$slug"

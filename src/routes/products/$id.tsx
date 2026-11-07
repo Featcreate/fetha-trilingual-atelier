@@ -208,7 +208,7 @@ function ProductPage() {
               <p className="mt-1 text-sm text-muted-foreground">{m.paymentInternationalNote}</p>
               <h4 className="mt-4 text-sm font-bold">{m.paymentProviderKonnect}</h4>
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {[konnectPaymentMethods[0]].map(({ id, label, Icon }) => {
+              {konnectPaymentMethods.filter(({ id }) => id === "konnect:bank_card").map(({ id, label, Icon }) => {
                 const selected = selectedPaymentMethod === id;
                 return (
                   <button

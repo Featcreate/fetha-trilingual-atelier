@@ -14,9 +14,9 @@ describe("iPay amount conversion", () => {
     expect(() => ipayAmountFromMillimes(0, "major")).toThrow("invalid_order_amount");
     expect(() => ipayAmountFromMillimes(-1, "minor")).toThrow("invalid_order_amount");
     expect(() => ipayAmountFromMillimes(1.5, "major")).toThrow("invalid_order_amount");
-    expect(() =>
-      ipayAmountFromMillimes(Number.MAX_SAFE_INTEGER + 1, "minor"),
-    ).toThrow("invalid_order_amount");
+    expect(() => ipayAmountFromMillimes(Number.MAX_SAFE_INTEGER + 1, "minor")).toThrow(
+      "invalid_order_amount",
+    );
   });
 });
 
@@ -39,16 +39,16 @@ describe("iPay one-shot response validation", () => {
       "https://user@ipay.tn/pay",
       "http://ipay.tn/pay",
     ]) {
-      expect(() =>
-        parseIpayOneShotResponse({ id: "txn-123", payment_url }),
-      ).toThrow("ipay_invalid_payment_url");
+      expect(() => parseIpayOneShotResponse({ id: "txn-123", payment_url })).toThrow(
+        "ipay_invalid_payment_url",
+      );
     }
   });
 
   it("rejects missing or empty transaction references", () => {
-    expect(() =>
-      parseIpayOneShotResponse({ payment_url: "https://ipay.tn/pay" }),
-    ).toThrow("ipay_invalid_response");
+    expect(() => parseIpayOneShotResponse({ payment_url: "https://ipay.tn/pay" })).toThrow(
+      "ipay_invalid_response",
+    );
     expect(() =>
       parseIpayOneShotResponse({ id: "  ", payment_url: "https://ipay.tn/pay" }),
     ).toThrow("ipay_invalid_response");

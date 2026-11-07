@@ -58,7 +58,16 @@ function ProductPage() {
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.products} wide>
       <div className="mb-5 flex justify-between gap-3">
-        <Link to="/cart" className="text-sm font-semibold text-coral hover:underline">{lang === "ar" ? `السلة (${count})` : lang === "en" ? `Cart (${count})` : `Panier (${count})`}</Link>
+        <Link
+          to="/cart"
+          className="text-sm font-semibold text-coral hover:underline"
+        >
+          {lang === "ar"
+            ? `السلة (${count})`
+            : lang === "en"
+              ? `Cart (${count})`
+              : `Panier (${count})`}
+        </Link>
         <Link to="/catalog" className="text-sm font-semibold text-coral hover:underline">
           {m.viewCatalog}
         </Link>
@@ -118,7 +127,17 @@ function ProductPage() {
               locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
             />
           </p>
-          <button type="button" onClick={() => add(query.data!.product.id)} className="mt-4 rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground">{lang === "ar" ? "أضف إلى السلة" : lang === "en" ? "Add to cart" : "Ajouter au panier"}</button>
+          <button
+            type="button"
+            onClick={() => add(query.data!.product.id)}
+            className="mt-4 rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground"
+          >
+            {lang === "ar"
+              ? "أضف إلى السلة"
+              : lang === "en"
+                ? "Add to cart"
+                : "Ajouter au panier"}
+          </button>
           <Link
             to="/stores/$slug"
             params={{ slug: query.data.store.slug }}

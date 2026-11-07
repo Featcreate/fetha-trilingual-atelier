@@ -18,9 +18,9 @@ type Product = {
 type Store = { id: string; name: string };
 
 const copy = {
-  fr: { title: "Panier", empty: "Votre panier est vide.", browse: "Continuer mes achats", checkout: "Passer à la caisse", remove: "Retirer", quantity: "Quantité", subtotal: "Sous-total", unavailable: "Produit indisponible et retiré du panier.", limit: "50 produits différents maximum par panier." },
-  ar: { title: "سلة المشتريات", empty: "سلة مشترياتك فارغة.", browse: "متابعة التسوق", checkout: "الانتقال إلى الدفع", remove: "حذف", quantity: "الكمية", subtotal: "المجموع الفرعي", unavailable: "منتج غير متاح، تمت إزالته من السلة.", limit: "الحد الأقصى 50 منتجاً مختلفاً في السلة." },
-  en: { title: "Shopping cart", empty: "Your cart is empty.", browse: "Continue shopping", checkout: "Proceed to checkout", remove: "Remove", quantity: "Quantity", subtotal: "Subtotal", unavailable: "An unavailable product was removed from your cart.", limit: "Up to 50 different products per cart." },
+  fr: { title: "Panier", empty: "Votre panier est vide.", browse: "Continuer mes achats", checkout: "Passer à la caisse", remove: "Retirer", quantity: "Quantité", subtotal: "Sous-total", unavailable: "Un produit n’est plus disponible. Retirez-le avant de poursuivre.", limit: "50 produits différents maximum par panier." },
+  ar: { title: "سلة المشتريات", empty: "سلة مشترياتك فارغة.", browse: "متابعة التسوق", checkout: "الانتقال إلى الدفع", remove: "حذف", quantity: "الكمية", subtotal: "المجموع الفرعي", unavailable: "يوجد منتج لم يعد متاحاً. احذفيه قبل المتابعة.", limit: "الحد الأقصى 50 منتجاً مختلفاً في السلة." },
+  en: { title: "Shopping cart", empty: "Your cart is empty.", browse: "Continue shopping", checkout: "Proceed to checkout", remove: "Remove", quantity: "Quantity", subtotal: "Subtotal", unavailable: "A product is no longer available. Remove it before continuing.", limit: "Up to 50 different products per cart." },
 } as const;
 
 function CartPage() {
@@ -89,7 +89,7 @@ function CartPage() {
           <div className="mt-6 rounded-xl border border-border bg-card p-5">
             <div className="flex items-center justify-between text-lg font-extrabold"><span>{t.subtotal}</span><span>{formatTND(total)}</span></div>
             <p className="mt-2 text-xs text-muted-foreground">{t.limit}</p>
-            <Link to="/checkout" className="mt-5 inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground">{t.checkout}</Link>
+            {lines.length === items.length ? <Link to="/checkout" className="mt-5 inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground">{t.checkout}</Link> : <button type="button" disabled className="mt-5 w-full rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground opacity-50">{t.checkout}</button>}
           </div>
         </>}
     </AuthShell>

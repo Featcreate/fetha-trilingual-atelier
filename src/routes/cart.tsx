@@ -28,7 +28,6 @@ const copy = {
     browse: "Continuer mes achats",
     checkout: "Passer à la caisse",
     remove: "Retirer",
-    quantity: "Quantité",
     subtotal: "Sous-total",
     unavailable: "Un produit n’est plus disponible. Retirez-le avant de poursuivre.",
     limit: "50 produits différents maximum par panier.",
@@ -41,7 +40,6 @@ const copy = {
     browse: "متابعة التسوق",
     checkout: "الانتقال إلى الدفع",
     remove: "حذف",
-    quantity: "الكمية",
     subtotal: "المجموع الفرعي",
     unavailable: "يوجد منتج لم يعد متاحاً. احذفيه قبل المتابعة.",
     limit: "الحد الأقصى 50 منتجاً مختلفاً في السلة.",
@@ -54,7 +52,6 @@ const copy = {
     browse: "Continue shopping",
     checkout: "Proceed to checkout",
     remove: "Remove",
-    quantity: "Quantity",
     subtotal: "Subtotal",
     unavailable: "A product is no longer available. Remove it before continuing.",
     limit: "Up to 50 different products per cart.",
@@ -66,7 +63,7 @@ const copy = {
 function CartPage() {
   const { lang, setLang } = useLang();
   const t = copy[lang];
-  const { items, count, setQuantity, remove } = useCart();
+  const { items, count, remove } = useCart();
 
   const query = useQuery({
     queryKey: ["cart-products", items.map((line) => line.productId).join(",")],
@@ -107,7 +104,7 @@ function CartPage() {
       const product = productMap.get(line.productId);
       const store = product?.store_id ? storeMap.get(product.store_id) : undefined;
       return product && store
-        ? [{ ...line, product, store, total: product.price_millimes * line.quantity }]
+        ? [{ ...line, product, store, total: product.price_millimes }]
         : [];
     });
   }, [items, query.data]);

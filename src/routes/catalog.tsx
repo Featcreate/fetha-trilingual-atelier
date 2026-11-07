@@ -99,7 +99,16 @@ function CatalogPage() {
           Algorea Bazaar
         </Link>
         <div className="flex items-center gap-4">
-          <Link to="/cart" className="text-sm font-semibold text-coral hover:underline">{lang === "ar" ? `السلة (${count})` : lang === "en" ? `Cart (${count})` : `Panier (${count})`}</Link>
+          <Link
+            to="/cart"
+            className="text-sm font-semibold text-coral hover:underline"
+          >
+            {lang === "ar"
+              ? `السلة (${count})`
+              : lang === "en"
+                ? `Cart (${count})`
+                : `Panier (${count})`}
+          </Link>
           <Link to="/seller" className="text-sm font-semibold text-coral hover:underline">
             {m.sellerArea}
           </Link>
@@ -163,7 +172,17 @@ function CatalogPage() {
                     locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
                   />
                 </p>
-                <button type="button" onClick={() => add(p.id)} className="w-full rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground">{lang === "ar" ? "أضف إلى السلة" : lang === "en" ? "Add to cart" : "Ajouter au panier"}</button>
+                <button
+                  type="button"
+                  onClick={() => add(p.id)}
+                  className="w-full rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground"
+                >
+                  {lang === "ar"
+                    ? "أضف إلى السلة"
+                    : lang === "en"
+                      ? "Add to cart"
+                      : "Ajouter au panier"}
+                </button>
                 <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
                   <Link
                     to="/stores/$slug"

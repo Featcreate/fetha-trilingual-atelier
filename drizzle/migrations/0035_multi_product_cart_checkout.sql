@@ -31,14 +31,14 @@ BEGIN
   IF _line_count < 1 OR _line_count > 50 THEN RAISE EXCEPTION 'invalid_cart'; END IF;
 
   IF EXISTS (
-    SELECT 1 FROM jsonb_array_elements(_items) x
-     WHERE jsonb_typeof(x) <> 'object'
-        OR coalesce(x->>'productId', '') !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
-        OR coalesce(x->>'quantity', '') !~ '^[0-9]{1,2}$'
-        OR (x->>'quantity')::integer NOT BETWEEN 1 AND 99
+    SELECT 1 FROM jsonb_array_elements(_items) AS x(value)
+     WHERE jsonb_typeof(x.value) <> 'object'
+        OR coalesce(x.value->>'productId', '') !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+        OR coalesce(x.value->>'quantity', '') !~ '^[0-9]{1,2}$'
+        OR (x.value->>'quantity')::integer NOT BETWEEN 1 AND 99
   ) THEN RAISE EXCEPTION 'invalid_cart'; END IF;
 
-  IF (SELECT count(DISTINCT x->>'productId') FROM jsonb_array_elements(_items) x) <> _line_count THEN
+  IF (SELECT count(DISTINCT x.value->>'productId') FROM jsonb_array_elements(_items) AS x(value)) <> _line_count THEN
     RAISE EXCEPTION 'invalid_cart';
   END IF;
 
@@ -46,8 +46,8 @@ BEGIN
   IF _bps IS NULL THEN RAISE EXCEPTION 'commission_not_configured'; END IF;
 
   WITH requested AS (
-    SELECT (x->>'productId')::uuid AS product_id, (x->>'quantity')::integer AS quantity
-    FROM jsonb_array_elements(_items) x
+    SELECT (x.value->>'productId')::uuid AS product_id, (x.value->>'quantity')::integer AS quantity
+    FROM jsonb_array_elements(_items) AS x(value)
   )
   SELECT count(*), coalesce(sum(p.price_millimes::bigint * r.quantity), 0)
     INTO _valid_count, _total
@@ -74,8 +74,8 @@ BEGIN
   SELECT _order, p.id, p.name, p.price_millimes, s.id, s.owner_id, r.quantity,
          c.gross::integer, 0, c.gross::integer, _bps, c.commission::integer,
          (c.gross - c.commission)::integer
-    FROM jsonb_array_elements(_items) x
-    JOIN LATERAL (SELECT (x->>'productId')::uuid product_id, (x->>'quantity')::integer quantity) r ON true
+    FROM jsonb_array_elements(_items) AS x(value)
+    JOIN LATERAL (SELECT (x.value->>'productId')::uuid product_id, (x.value->>'quantity')::integer quantity) r ON true
     JOIN public.products p ON p.id = r.product_id
     JOIN public.stores s ON s.id = p.store_id
     CROSS JOIN LATERAL (

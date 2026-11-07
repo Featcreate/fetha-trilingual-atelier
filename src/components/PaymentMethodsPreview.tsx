@@ -98,15 +98,15 @@ function PaymentOption({
 export function PaymentMethodsPreview() {
   const { t } = useLang();
   const m = t.marketplace;
-  const [selected, setSelected] = useState("konnect:bank_card");
+  const [selected, setSelected] = useState("konnect:bank_card:tn");
 
   const konnectMethods: PaymentMethod[] = [
-    { id: "konnect:bank_card", label: m.paymentKonnectBankCard, brand: "Cards" },
+    { id: "konnect:bank_card:tn", label: m.paymentKonnectBankCard, brand: "Cards" },
     { id: "konnect:wallet", label: m.paymentKonnectWallet, brand: "KONNECT" },
     { id: "konnect:e-DINAR", label: m.paymentKonnectEdinar, brand: "e-DINAR" },
   ];
   const internationalCardMethod: PaymentMethod = {
-    id: "konnect:bank_card",
+    id: "konnect:bank_card:international",
     label: m.paymentKonnectBankCard,
     brand: "Cards",
   };

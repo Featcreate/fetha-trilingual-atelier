@@ -17,8 +17,7 @@ const copy = {
     disabled:
       "Le paiement en ligne est temporairement désactivé. Votre panier est conservé ; aucune commande ni aucun débit ne sera créé.",
     back: "Retour au panier",
-    methods:
-      "Un seul paiement couvrira l'ensemble du panier lorsque le service sera activé.",
+    methods: "Un seul paiement couvrira l'ensemble du panier lorsque le service sera activé.",
     empty: "Votre panier est vide.",
     loading: "Chargement…",
     error: "Impossible de charger la commande.",
@@ -27,8 +26,7 @@ const copy = {
   ar: {
     title: "مراجعة الطلب",
     total: "الإجمالي المستحق",
-    disabled:
-      "الدفع الإلكتروني معطّل مؤقتاً. ستبقى سلتك محفوظة، ولن يتم إنشاء طلب أو خصم أي مبلغ.",
+    disabled: "الدفع الإلكتروني معطّل مؤقتاً. ستبقى سلتك محفوظة، ولن يتم إنشاء طلب أو خصم أي مبلغ.",
     back: "العودة إلى السلة",
     methods: "ستكون هناك دفعة واحدة لكامل محتويات السلة عند تفعيل الخدمة.",
     empty: "السلة فارغة.",

@@ -149,8 +149,11 @@ function ProductPage() {
               </span>
             </div>
             <p className="mt-3 text-sm text-muted-foreground">{m.paymentSelectPrompt}</p>
-            <h3 className="mt-5 text-sm font-bold">{m.paymentProviderKonnect}</h3>
-            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="mt-5 rounded-xl border border-border p-4">
+              <h3 className="text-base font-bold">{m.paymentTunisiaTitle}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{m.paymentTunisiaNote}</p>
+              <h4 className="mt-4 text-sm font-bold">{m.paymentProviderKonnect}</h4>
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {konnectPaymentMethods.map(({ id, label, Icon }) => {
                 const selected = selectedPaymentMethod === id;
                 return (
@@ -174,8 +177,8 @@ function ProductPage() {
                 );
               })}
             </div>
-            <h3 className="mt-6 text-sm font-bold">{m.paymentProviderIpay}</h3>
-            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <h4 className="mt-6 text-sm font-bold">{m.paymentProviderIpay}</h4>
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {ipayPaymentMethods.map(({ id, label, Icon }) => {
                 const selected = selectedPaymentMethod === id;
                 return (
@@ -198,6 +201,36 @@ function ProductPage() {
                   </button>
                 );
               })}
+            </div>
+            </div>
+            <div className="mt-4 rounded-xl border border-border p-4">
+              <h3 className="text-base font-bold">{m.paymentInternationalTitle}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{m.paymentInternationalNote}</p>
+              <h4 className="mt-4 text-sm font-bold">{m.paymentProviderKonnect}</h4>
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {[konnectPaymentMethods[0]].map(({ id, label, Icon }) => {
+                const selected = selectedPaymentMethod === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setSelectedPaymentMethod(id)}
+                    className={`flex min-h-20 items-center gap-3 rounded-xl border p-4 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                      selected
+                        ? "border-petrol bg-cream-light ring-1 ring-petrol"
+                        : "border-border bg-background hover:bg-secondary"
+                    }`}
+                  >
+                    <Icon aria-hidden="true" className="h-6 w-6 shrink-0 text-petrol" />
+                    <span className="flex-1 text-sm font-semibold">{label}</span>
+                    <span aria-hidden="true" className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs ${
+                      selected ? "border-petrol bg-petrol text-white" : "border-muted-foreground/40 text-transparent"
+                    }`}>✓</span>
+                  </button>
+                );
+              })}
+            </div>
             </div>
             <p className="mt-4 rounded-xl bg-secondary p-4 text-sm leading-7">
               {m.purchaseUnavailable}

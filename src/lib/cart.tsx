@@ -7,7 +7,10 @@ import {
   type ReactNode,
 } from "react";
 
-export type CartLine = { productId: string; quantity: number };
+export type CartLine = {
+  productId: string;
+  quantity: number;
+};
 
 type CartContextValue = {
   items: CartLine[];

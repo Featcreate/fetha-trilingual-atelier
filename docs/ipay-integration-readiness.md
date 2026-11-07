@@ -16,7 +16,7 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 
 ### API and checkout
 
-- Public developer page documents API base authentication headers: `X-Org-Id` and `Authorization: ***; token is stated to be valid for one year.
+- Public developer page documents API base authentication headers: `X-Org-Id` and `Authorization: Bearer <JWT>`; token is stated to be valid for one year.
 - Public developer page lists `GET /api/admin/transactions` for listing transactions.
 - Public one-shot page explicitly describes e-commerce/m-commerce: `POST /api/admin/transactions/create-oneshot`, one transaction per order, returning a payment link for redirect. It says the buyer chooses a method on iPay.
 - The public pages do not publish the full create-oneshot request/response schema; the detailed API documentation is stated to be available inside the authenticated dashboard. The field list previously recorded in this project came from the user-provided authenticated documentation, not independently verifiable public page content.
@@ -53,11 +53,11 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 
 A first, deliberately incomplete server-side scaffold has been added:
 
-- `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and *** headers.
-- `IPAY_CHECKOUT_ENABLED=true` is required before the one-shot client can run.
+- `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and Bearer JWT headers.
+- The one-shot client validates the order/customer input, requires `IPAY_CHECKOUT_ENABLED=true`, and rejects provider responses with empty references or checkout URLs outside HTTPS iPay domains (including URLs containing embedded credentials).
 - `IPAY_AMOUNT_UNIT` defaults to `minor` (integer TND millimes); `major` remains an explicit override only if Audasoft confirms decimal dinars in writing. This is an adopted but unverified assumption, not an official confirmation.
 - `drizzle/migrations/0034_ipay_checkout_reference.sql` adds separate nullable iPay reference/URL fields and a unique partial index. It does not alter the Konnect columns, order settlement, commission, ledger, or payout rules.
-- `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard.
+- `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard and hosted checkout URL/reference validation.
 
 The iPay client is not yet wired into buyer checkout. No iPay webhook handler or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
 

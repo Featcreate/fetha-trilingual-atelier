@@ -199,12 +199,12 @@ function AdminPage() {
               ? "The seller must save a receiving method and account details before a payout can be created."
               : "Le vendeur doit enregistrer un moyen de réception et ses coordonnées avant la création du versement."
           : error.message.includes("no_unpaid_sales")
-              ? lang === "ar"
-                ? "لا توجد مبيعات مؤكدة غير مدفوعة لهذا المتجر."
-                : lang === "en"
-                  ? "No verified unpaid sales are available for this store."
-                  : "Aucune vente vérifiée non réglée pour cette boutique."
-              : a.saveError,
+            ? lang === "ar"
+              ? "لا توجد مبيعات مؤكدة غير مدفوعة لهذا المتجر."
+              : lang === "en"
+                ? "No verified unpaid sales are available for this store."
+                : "Aucune vente vérifiée non réglée pour cette boutique."
+            : a.saveError,
       });
       return;
     }
@@ -426,7 +426,10 @@ function AdminPage() {
         {payouts.isPending ? (
           <p className="mt-4 text-sm">{a.loading}</p>
         ) : payouts.isError ? (
-          <div role="alert" className="mt-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+          <div
+            role="alert"
+            className="mt-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
+          >
             <p>{a.loadError}</p>
             <button
               type="button"

@@ -15,18 +15,21 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 ## Public information verified on ipay.tn
 
 ### API and checkout
-- Public developer page documents API base authentication headers: `X-Org-Id` and `Authorization: Bearer <JWT>`; token is stated to be valid for one year.
+
+- Public developer page documents API base authentication headers: `X-Org-Id` and `Authorization: ***; token is stated to be valid for one year.
 - Public developer page lists `GET /api/admin/transactions` for listing transactions.
 - Public one-shot page explicitly describes e-commerce/m-commerce: `POST /api/admin/transactions/create-oneshot`, one transaction per order, returning a payment link for redirect. It says the buyer chooses a method on iPay.
 - The public pages do not publish the full create-oneshot request/response schema; the detailed API documentation is stated to be available inside the authenticated dashboard. The field list previously recorded in this project came from the user-provided authenticated documentation, not independently verifiable public page content.
 
 ### Payment methods and geography
+
 - Public aggregator page lists bank transfer, postal mandate, ClicToPay, Flouci, D17, Konnect, Ooredoo SMS, Tunisie Telecom SMS, and WinSMS.
 - The public page describes these as solutions covering the Tunisian payment ecosystem. ClicToPay is described as a Tunisian-bank card gateway.
 - The public information reviewed does **not** establish that international-issued cards are accepted, that non-TND buyer charges are supported, or that settlement is available in foreign currencies. Do not advertise worldwide card acceptance until Audasoft confirms supported card schemes/issuing countries, currency, and settlement.
 - The public website and the organisation dashboard both show iPay pricing of 1% per transaction, capped at 5 TND, billed monthly; the dashboard currently shows no transaction/commission entries. The public pricing page says third-party provider fees (e.g. ClicToPay, Flouci, SMS) may be charged in addition, while bank transfer and postal mandate have no additional iPay-side surcharge beyond the 1% capped commission. Confirm the precise tariff and all external/acquirer fees for this organisation, refunds, and every enabled method before financial modelling.
 
 ### Webhooks — important inconsistency and risk
+
 - Public webhook page says events are sent by POST JSON to product-configured URLs; it advertises call history/payload history and automatic retry.
 - The same page says `transaction.completed` can be triggered when a customer declares a bank transfer or postal mandate, when an administrator manually changes status to paid, and when a gateway callback confirms payment.
 - Public one-shot page also describes `transaction.completed` for card, declared transfer, Flouci, and SMS.
@@ -49,7 +52,8 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 ## Implementation status on feature/ipay-checkout-integration
 
 A first, deliberately incomplete server-side scaffold has been added:
-- `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and Bearer JWT headers.
+
+- `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and *** headers.
 - `IPAY_CHECKOUT_ENABLED=true` is required before the one-shot client can run.
 - `IPAY_AMOUNT_UNIT` defaults to `minor` (integer TND millimes); `major` remains an explicit override only if Audasoft confirms decimal dinars in writing. This is an adopted but unverified assumption, not an official confirmation.
 - `drizzle/migrations/0034_ipay_checkout_reference.sql` adds separate nullable iPay reference/URL fields and a unique partial index. It does not alter the Konnect columns, order settlement, commission, ledger, or payout rules.
@@ -60,6 +64,7 @@ The iPay client is not yet wired into buyer checkout. No iPay webhook handler or
 ## Implementation gate
 
 Until Audasoft confirms the open questions above:
+
 - do not set `IPAY_CHECKOUT_ENABLED=true`;
 - do not apply migration 0034 to Supabase;
 - do not settle an order based only on a webhook, redirect, or browser query parameter;

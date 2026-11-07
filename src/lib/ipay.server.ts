@@ -61,8 +61,7 @@ export function parseIpayOneShotResponse(payload: unknown): {
     throw new Error("ipay_invalid_payment_url");
   }
 
-  const allowedHost =
-    paymentUrl.hostname === "ipay.tn" || paymentUrl.hostname.endsWith(".ipay.tn");
+  const allowedHost = paymentUrl.hostname === "ipay.tn" || paymentUrl.hostname.endsWith(".ipay.tn");
   if (
     paymentUrl.protocol !== "https:" ||
     !allowedHost ||

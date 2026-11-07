@@ -5,6 +5,7 @@ import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { AuthShell } from "@/components/AuthShell";
 import { useCart } from "@/lib/cart";
+import { PaymentMethodsPreview } from "@/components/PaymentMethodsPreview";
 
 export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
 
@@ -45,6 +46,7 @@ function CheckoutPage() {
           </div>
           <div className="mt-5 flex justify-between text-xl font-extrabold"><span>{t.total}</span><span>{formatTND(total)}</span></div>
           <p className="mt-4 rounded-xl bg-secondary p-4 text-sm">{t.methods}</p>
+          <section className="mt-5 rounded-xl border border-border p-4"><PaymentMethodsPreview /></section>
           <p role="status" className="mt-3 rounded-xl border border-border p-4 text-sm">{t.disabled}</p>
           <Link to="/cart" className="mt-5 inline-flex rounded-full border border-border px-5 py-3 text-sm font-semibold">{t.back}</Link>
         </>}

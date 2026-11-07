@@ -81,7 +81,11 @@ function CartPage() {
       if (error) throw error;
 
       const storeIds = [
-        ...new Set((data ?? []).map((product) => product.store_id).filter((id): id is string => !!id)),
+        ...new Set(
+          (data ?? [])
+            .map((product) => product.store_id)
+            .filter((id): id is string => !!id),
+        ),
       ];
       const { data: stores, error: storeError } = storeIds.length
         ? await supabase.from("stores").select("id,name").in("id", storeIds).eq("status", "active")
@@ -96,7 +100,9 @@ function CartPage() {
   });
 
   const lines = useMemo(() => {
-    const productMap = new Map((query.data?.products ?? []).map((product) => [product.id, product]));
+    const productMap = new Map(
+      (query.data?.products ?? []).map((product) => [product.id, product]),
+    );
     const storeMap = new Map((query.data?.stores ?? []).map((store) => [store.id, store]));
 
     return items.flatMap((line) => {

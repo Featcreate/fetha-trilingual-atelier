@@ -1,4 +1,4 @@
--- Quantity-aware unified cart orders. This additive RPC keeps the existing
+-- One-unit-per-product unified cart orders. This additive RPC keeps the existing
 -- immutable order-item snapshots, per-item commission, seller ledger and payout model.
 CREATE OR REPLACE FUNCTION public.create_order_from_cart(_items jsonb, _checkout_key text)
 RETURNS uuid
@@ -60,7 +60,7 @@ BEGIN
            (x.value->>'quantity')::integer AS quantity
       FROM jsonb_array_elements(_items) AS x(value)
   )
-  SELECT count(*), coalesce(sum(p.price_millimes::bigint * r.quantity), 0)
+  SELECT count(*), coalesce(sum(p.price_millimes::bigint), 0)
     INTO _valid_count, _total
     FROM requested r
     JOIN public.products p ON p.id = r.product_id
@@ -87,14 +87,14 @@ BEGIN
     order_id, product_id, product_name, unit_price_millimes, store_id, seller_id, quantity,
     gross_millimes, discount_millimes, payable_millimes, commission_bps, commission_millimes, seller_net_millimes
   )
-  SELECT _order, p.id, p.name, p.price_millimes, s.id, s.owner_id, r.quantity,
+  SELECT _order, p.id, p.name, p.price_millimes, s.id, s.owner_id, 1,
          c.gross::integer, 0, c.gross::integer, _bps, c.commission::integer,
          (c.gross - c.commission)::integer
     FROM requested r
     JOIN public.products p ON p.id = r.product_id
     JOIN public.stores s ON s.id = p.store_id
     CROSS JOIN LATERAL (
-      SELECT p.price_millimes::bigint * r.quantity AS gross,
+      SELECT p.price_millimes::bigint AS gross,
              round((p.price_millimes::bigint * r.quantity)::numeric * _bps / 10000) AS commission
     ) c;
 

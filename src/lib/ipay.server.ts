@@ -37,7 +37,9 @@ export function parseIpayOneShotResponse(payload: unknown): {
   paymentUrl: string;
   paymentRef: string;
 } {
-  if (!payload || typeof payload !== "object") throw new Error("ipay_invalid_response");
+  if (!payload || typeof payload !== "object") {
+    throw new Error("ipay_invalid_response");
+  }
 
   const record = payload as { id?: unknown; payment_url?: unknown };
   if (
@@ -48,7 +50,9 @@ export function parseIpayOneShotResponse(payload: unknown): {
   }
 
   const paymentRef = String(record.id).trim();
-  if (!paymentRef || paymentRef.length > 200) throw new Error("ipay_invalid_response");
+  if (!paymentRef || paymentRef.length > 200) {
+    throw new Error("ipay_invalid_response");
+  }
 
   let paymentUrl: URL;
   try {
@@ -87,26 +91,23 @@ export async function ipayCreateOneShot(input: {
     throw new Error("invalid_customer_name");
   }
 
-  const response = await fetch(
-    `${IPAY_API}/api/admin/transactions/create-oneshot`,
-    {
-      method: "POST",
-      headers: {
-        "X-Org-Id": cfg.orgId,
-        Authorization: `Bearer ${cfg.jwt}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        product_code: cfg.productCode,
-        amount: ipayAmountFromMillimes(input.amountMillimes, cfg.amountUnit),
-        currency: "TND",
-        customer_name: customerName,
-        customer_external_id: input.orderId,
-        invoice_reference: input.orderId,
-      }),
+  const response = await fetch(`${IPAY_API}/api/admin/transactions/create-oneshot`, {
+    method: "POST",
+    headers: {
+      "X-Org-Id": cfg.orgId,
+      Authorization: `Bearer ${cfg.jwt}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
-  );
+    body: JSON.stringify({
+      product_code: cfg.productCode,
+      amount: ipayAmountFromMillimes(input.amountMillimes, cfg.amountUnit),
+      currency: "TND",
+      customer_name: customerName,
+      customer_external_id: input.orderId,
+      invoice_reference: input.orderId,
+    }),
+  });
 
   if (!response.ok) {
     console.error("iPay create-oneshot failed", response.status);

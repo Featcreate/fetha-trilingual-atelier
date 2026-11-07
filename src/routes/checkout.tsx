@@ -75,8 +75,7 @@ function CheckoutPage() {
   const total = items.reduce(
     (sum, line) =>
       sum +
-      (products.find((product) => product.id === line.productId)?.price_millimes ?? 0) *
-        line.quantity,
+      (products.find((product) => product.id === line.productId)?.price_millimes ?? 0),
     0,
   );
 
@@ -101,8 +100,7 @@ function CheckoutPage() {
                   className="flex justify-between gap-3 border-b border-border pb-3"
                 >
                   <span>
-                    {localizedProductText(product.name, product.name_translations, lang)} ×{" "}
-                    {line.quantity}
+                    {localizedProductText(product.name, product.name_translations, lang)}
                   </span>
                   <strong>{formatTND(product.price_millimes)}</strong>
                 </div>

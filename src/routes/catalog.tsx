@@ -10,7 +10,6 @@ import { ProductPreview } from "@/components/ProductPreview";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { useCart } from "@/lib/cart";
-import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({

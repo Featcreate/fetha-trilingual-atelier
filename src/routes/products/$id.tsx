@@ -10,6 +10,7 @@ import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { PaymentMethodsPreview } from "@/components/PaymentMethodsPreview";
 import { useCart } from "@/lib/cart";
+import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/products/$id")({
   head: () => ({
@@ -118,6 +119,7 @@ function ProductPage() {
               locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
             />
           </p>
+          <button type="button" onClick={() => add(query.data!.product.id)} className="mt-4 rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground">{lang === "ar" ? "أضف إلى السلة" : lang === "en" ? "Add to cart" : "Ajouter au panier"}</button>
           <Link
             to="/stores/$slug"
             params={{ slug: query.data.store.slug }}

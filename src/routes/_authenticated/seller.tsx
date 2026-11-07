@@ -994,6 +994,18 @@ function SellerPage() {
                     ? "Choose how you receive your seller proceeds. Algorea Bazaar sends weekly manual transfers to these details. Never enter a password, OTP, or secret key."
                     : "Choisissez votre moyen de réception. Algorea Bazaar effectue un virement manuel chaque semaine vers ces coordonnées. Ne saisissez jamais de mot de passe, code OTP ou clé secrète."}
               </p>
+              <a
+                href="https://dashboard.konnect.network"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex rounded-full border border-border px-4 py-2 text-sm font-semibold hover:bg-secondary"
+              >
+                {lang === "ar"
+                  ? "فتح حساب Konnect"
+                  : lang === "en"
+                    ? "Open a Konnect account"
+                    : "Ouvrir un compte Konnect"}
+              </a>
               <form
                 key={payoutPreferenceQuery.data?.updated_at ?? "new-payout-preference"}
                 onSubmit={(e) => void savePayoutPreference(e)}

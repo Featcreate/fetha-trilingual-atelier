@@ -52,7 +52,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         ? { ...line, quantity: Math.min(99, line.quantity + 1) } : line);
       return current.length >= 50 ? current : [...current, { productId, quantity: 1 }];
     }),
-    setQuantity: (productId, quantity) => setItems((current) => quantity <= 0
+    setQuantity: (productId, quantity) => setItems((current) => !Number.isFinite(quantity) ? current : quantity <= 0
       ? current.filter((line) => line.productId !== productId)
       : current.map((line) => line.productId === productId
         ? { ...line, quantity: Math.min(99, Math.max(1, Math.floor(quantity))) } : line)),

@@ -21,7 +21,10 @@ export function ipayConfig(requireActivation = false): IpayConfig | null {
 }
 
 /** Convert canonical TND millimes only according to an explicitly configured provider contract. */
-export function ipayAmountFromMillimes(amountMillimes: number, unit: IpayConfig["amountUnit"]): number {
+export function ipayAmountFromMillimes(
+  amountMillimes: number,
+  unit: IpayConfig["amountUnit"],
+): number {
   if (!Number.isSafeInteger(amountMillimes) || amountMillimes <= 0) {
     throw new Error("invalid_order_amount");
   }
@@ -71,7 +74,10 @@ export async function ipayCreateOneShot(input: {
     throw new Error("ipay_invalid_response");
   }
   const paymentUrl = new URL(payload.payment_url);
-  if (paymentUrl.protocol !== "https:" || paymentUrl.hostname !== "ipay.tn" && !paymentUrl.hostname.endsWith(".ipay.tn")) {
+  if (
+    paymentUrl.protocol !== "https:" ||
+    (paymentUrl.hostname !== "ipay.tn" && !paymentUrl.hostname.endsWith(".ipay.tn"))
+  ) {
     throw new Error("ipay_invalid_payment_url");
   }
   return { paymentUrl: paymentUrl.toString(), paymentRef: String(payload.id) };

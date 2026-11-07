@@ -95,7 +95,6 @@ function CatalogPage() {
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.catalog} wide>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <Link to="/cart" className="text-sm font-semibold text-coral hover:underline">{lang === "ar" ? `السلة (${count})` : lang === "en" ? `Cart (${count})` : `Panier (${count})`}</Link>
         <Link to="/" className="text-sm font-semibold text-coral hover:underline">
           Algorea Bazaar
         </Link>

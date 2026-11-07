@@ -86,6 +86,11 @@ export function PaymentMethodsPreview() {
     { id: "konnect:wallet", label: m.paymentKonnectWallet, brand: "KONNECT" },
     { id: "konnect:e-DINAR", label: m.paymentKonnectEdinar, brand: "e-DINAR" },
   ];
+  const internationalCardMethod: PaymentMethod = {
+    id: "konnect:bank_card",
+    label: m.paymentKonnectBankCard,
+    brand: "Cards",
+  };
   const ipayMethods: PaymentMethod[] = [
     { id: "ipay:clictopay", label: m.paymentClicToPay, brand: "ClicToPay" },
     { id: "ipay:flouci", label: m.paymentFlouci, brand: "Flouci" },
@@ -156,8 +161,8 @@ export function PaymentMethodsPreview() {
         </h4>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <PaymentOption
-            method={konnectMethods[0]}
-            selected={selected === konnectMethods[0].id}
+            method={internationalCardMethod}
+            selected={selected === internationalCardMethod.id}
             onSelect={setSelected}
           />
         </div>

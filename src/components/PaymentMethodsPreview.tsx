@@ -83,9 +83,7 @@ function PaymentOption({
     >
       <PaymentBrandMark brand={method.brand} />
       <span className="flex-1 text-sm font-semibold">{method.label}</span>
-      <span aria-hidden="true" className={checkmarkClass}>
-        ✓
-      </span>
+      <span aria-hidden="true" className={checkmarkClass}>✓</span>
     </button>
   );
 }

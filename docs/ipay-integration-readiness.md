@@ -37,6 +37,12 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 - There is a documentation conflict: the authenticated API notes supplied by the user previously stated that iPay does **not** retry failed webhook deliveries, while the current public webhook page advertises automatic retry. Do not rely on retries until Audasoft confirms the actual behaviour for this organisation/API version. The receiver must be idempotent regardless.
 - The public pages reviewed do not specify a webhook signature/HMAC scheme or provide an authoritative transaction-by-ID verification endpoint/response schema. This is an absence in the public documentation reviewed, not proof that the capability does not exist.
 
+## Provider contact status
+
+- A one-question email was attempted to `support@ipay.tn` on 2026-11-07, asking whether `create-oneshot.amount` uses integer millimes or decimal dinars.
+- Gmail returned a delivery failure: `554 5.7.1 Relay access denied`. The message did not reach iPay; no provider response or confirmation has been received.
+- The published general/commercial contact is `contact@audasoft.co`. A follow-up to that alternate address has not been sent pending the account owner's approval.
+
 ## Required confirmation from Audasoft
 
 1. **Amount units:** Is `amount` in TND millimes, decimal TND, or another convention? Provide a request/response example for exactly 10.500 TND.

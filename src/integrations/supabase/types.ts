@@ -1304,6 +1304,10 @@ export type Database = {
         Args: { _checkout_key: string; _product_ids: string[] }
         Returns: string
       }
+      create_order_from_cart: {
+        Args: { _checkout_key: string; _items: Json }
+        Returns: string
+      }
       create_seller_store: {
         Args: {
           _language: string

@@ -23,6 +23,7 @@ const logoStyles: Record<string, string> = {
 function PaymentBrandMark({ brand }: { brand: string }) {
   const brandClass = logoStyles[brand] ?? "bg-secondary text-foreground";
 
+  // prettier-ignore
   return (
     <span aria-hidden="true" className={`${logoBaseClass} ${brandClass}`}>
       {brand === "Cards" ? (
@@ -73,6 +74,7 @@ function PaymentOption({
       : "border-muted-foreground/40 text-transparent"
   }`;
 
+  // prettier-ignore
   return (
     <button
       type="button"
@@ -116,6 +118,7 @@ export function PaymentMethodsPreview() {
     { id: "ipay:winsms", label: m.paymentWinSms, brand: "WinSMS" },
   ];
 
+  // prettier-ignore
   return (
     <>
       <p className="mt-3 text-sm text-muted-foreground">{m.paymentSelectPrompt}</p>

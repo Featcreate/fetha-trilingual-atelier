@@ -46,9 +46,9 @@ describe("iPay one-shot response validation", () => {
   });
 
   it("rejects missing or empty transaction references", () => {
-    expect(() => parseIpayOneShotResponse({ payment_url: "https://ipay.tn/pay" })).toThrow(
-      "ipay_invalid_response",
-    );
+    expect(() =>
+      parseIpayOneShotResponse({ payment_url: "https://ipay.tn/pay" }),
+    ).toThrow("ipay_invalid_response");
     expect(() =>
       parseIpayOneShotResponse({ id: "  ", payment_url: "https://ipay.tn/pay" }),
     ).toThrow("ipay_invalid_response");

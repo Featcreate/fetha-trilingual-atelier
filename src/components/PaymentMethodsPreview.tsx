@@ -68,9 +68,13 @@ function PaymentOption({
     focusClass,
     selected ? selectedClass : unselectedClass,
   ].join(" ");
-  const checkmarkClass = selected
-    ? "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs border-petrol bg-petrol text-white"
-    : "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs border-muted-foreground/40 text-transparent";
+  const checkmarkBase =
+    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs";
+  const checkmarkClass = `${checkmarkBase} ${
+    selected
+      ? "border-petrol bg-petrol text-white"
+      : "border-muted-foreground/40 text-transparent"
+  }`;
 
   return (
     <button

@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useLang } from "@/lib/i18n";
 
+// prettier-ignore
 const logoBaseClass = [
   "flex h-10 min-w-16 shrink-0 items-center justify-center",
   "rounded-lg px-2 text-xs font-extrabold tracking-tight",
 ].join(" ");
 
+// prettier-ignore
 const logoStyles: Record<string, string> = {
   KONNECT: "bg-[#102f3d] text-white",
   Cards: "bg-white text-[#1434a4] ring-1 ring-border",
@@ -20,6 +22,7 @@ const logoStyles: Record<string, string> = {
   "Postal / Bank": "bg-[#f4f0e8] text-[#75613d] ring-1 ring-[#ded3bd]",
 };
 
+// prettier-ignore
 function PaymentBrandMark({ brand }: { brand: string }) {
   const brandClass = logoStyles[brand] ?? "bg-secondary text-foreground";
 
@@ -41,12 +44,14 @@ function PaymentBrandMark({ brand }: { brand: string }) {
   );
 }
 
+// prettier-ignore
 type PaymentMethod = {
   id: string;
   label: string;
   brand: string;
 };
 
+// prettier-ignore
 function PaymentOption({
   method,
   selected,
@@ -89,6 +94,7 @@ function PaymentOption({
   );
 }
 
+// prettier-ignore
 export function PaymentMethodsPreview() {
   const { t } = useLang();
   const m = t.marketplace;

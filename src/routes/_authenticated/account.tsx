@@ -132,6 +132,13 @@ function AccountPage() {
       </dl>
 
       <Link
+        to="/orders"
+        className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-border px-6 py-3 font-semibold hover:bg-secondary"
+      >
+        {t.marketplace.myOrders}
+      </Link>
+
+      <Link
         to="/seller"
         className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground hover:bg-primary/90"
       >

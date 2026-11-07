@@ -428,13 +428,6 @@ function AdminPage() {
         ) : payouts.isError ? (
           <div role="alert" className="mt-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
             <p>{a.loadError}</p>
-            <p className="mt-1 break-words text-xs" dir="ltr">
-              {(payouts.error as unknown) instanceof Error
-                ? (payouts.error as Error).message
-                : (payouts.error as unknown) && typeof (payouts.error as unknown) === "object"
-                  ? JSON.stringify(payouts.error as unknown, null, 2)
-                  : String(payouts.error as unknown)}
-            </p>
             <button
               type="button"
               onClick={() => void payouts.refetch()}
@@ -629,13 +622,6 @@ function AdminPage() {
         ) : orders.isError ? (
           <div role="alert" className="rounded-xl border border-destructive/30 bg-secondary p-4">
             <p className="font-semibold">{a.loadError}</p>
-            <p className="mt-2 break-words text-xs text-muted-foreground">
-              {(orders.error as unknown) instanceof Error
-                ? (orders.error as Error).message
-                : (orders.error as unknown) && typeof (orders.error as unknown) === "object"
-                  ? JSON.stringify(orders.error as unknown, null, 2)
-                  : String(orders.error as unknown)}
-            </p>
             <button
               type="button"
               onClick={() => void orders.refetch()}

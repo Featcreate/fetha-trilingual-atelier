@@ -9,7 +9,7 @@ import { loadProductGallery } from "@/lib/product-previews";
 import { ProductPreview } from "@/components/ProductPreview";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
-import { CreditCard, Wallet, Landmark, Smartphone, Mail, Building2, Radio } from "lucide-react";
+import { Building2, CreditCard, Mail, Radio, Smartphone, Wallet } from "lucide-react";
 
 export const Route = createFileRoute("/products/$id")({
   head: () => ({

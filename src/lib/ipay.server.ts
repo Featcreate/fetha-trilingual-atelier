@@ -20,8 +20,9 @@ export function ipayConfig(requireActivation = false): IpayConfig | null {
   if (
     requireActivation &&
     process.env["IPAY_CHECKOUT_ENABLED"] !== "true"
-  )
+  ) {
     return null;
+  }
   return { orgId, jwt, productCode, amountUnit };
 }
 

@@ -1,25 +1,28 @@
 import { useState } from "react";
 import { useLang } from "@/lib/i18n";
 
-function PaymentBrandMark({ brand }: { brand: string }) {
-  const styles: Record<string, string> = {
-    KONNECT: "bg-[#102f3d] text-white",
-    Cards: "bg-white text-[#1434a4] ring-1 ring-border",
-    "e-DINAR": "bg-[#f4efe6] text-[#8b6b20] ring-1 ring-[#c5a869]",
-    iPay: "bg-[#e8f3ff] text-[#1769aa] ring-1 ring-[#b7d7f0]",
-    D17: "bg-[#f1e9fb] text-[#7136a8] ring-1 ring-[#d7c2ef]",
-    Flouci: "bg-[#e7f8f1] text-[#07845a] ring-1 ring-[#b9e7d5]",
-    ClicToPay: "bg-[#e9efff] text-[#2448a5] ring-1 ring-[#c4d1fa]",
-    Ooredoo: "bg-[#fff0f0] text-[#d71920] ring-1 ring-[#f5c4c6]",
-    "Tunisie Telecom": "bg-[#e8f5ff] text-[#0877b9] ring-1 ring-[#b9def4]",
-    WinSMS: "bg-[#fff4e8] text-[#a65308] ring-1 ring-[#f1d1ad]",
-    "Postal / Bank": "bg-[#f4f0e8] text-[#75613d] ring-1 ring-[#ded3bd]",
-  };
+const logoBaseClass =
+  "flex h-10 min-w-16 shrink-0 items-center justify-center rounded-lg px-2 text-xs font-extrabold tracking-tight";
 
+const logoStyles: Record<string, string> = {
+  KONNECT: "bg-[#102f3d] text-white",
+  Cards: "bg-white text-[#1434a4] ring-1 ring-border",
+  "e-DINAR": "bg-[#f4efe6] text-[#8b6b20] ring-1 ring-[#c5a869]",
+  iPay: "bg-[#e8f3ff] text-[#1769aa] ring-1 ring-[#b7d7f0]",
+  D17: "bg-[#f1e9fb] text-[#7136a8] ring-1 ring-[#d7c2ef]",
+  Flouci: "bg-[#e7f8f1] text-[#07845a] ring-1 ring-[#b9e7d5]",
+  ClicToPay: "bg-[#e9efff] text-[#2448a5] ring-1 ring-[#c4d1fa]",
+  Ooredoo: "bg-[#fff0f0] text-[#d71920] ring-1 ring-[#f5c4c6]",
+  "Tunisie Telecom": "bg-[#e8f5ff] text-[#0877b9] ring-1 ring-[#b9def4]",
+  WinSMS: "bg-[#fff4e8] text-[#a65308] ring-1 ring-[#f1d1ad]",
+  "Postal / Bank": "bg-[#f4f0e8] text-[#75613d] ring-1 ring-[#ded3bd]",
+};
+
+function PaymentBrandMark({ brand }: { brand: string }) {
   return (
     <span
       aria-hidden="true"
-      className={`flex h-10 min-w-16 shrink-0 items-center justify-center rounded-lg px-2 text-xs font-extrabold tracking-tight ${styles[brand] ?? "bg-secondary text-foreground"}`}
+      className={`${logoBaseClass} ${logoStyles[brand] ?? "bg-secondary text-foreground"}`}
     >
       {brand === "Cards" ? (
         <span className="flex items-center gap-2">
@@ -29,7 +32,9 @@ function PaymentBrandMark({ brand }: { brand: string }) {
             <span className="h-4 w-4 rounded-full bg-[#f79e1b]" />
           </span>
         </span>
-      ) : brand}
+      ) : (
+        brand
+      )}
     </span>
   );
 }
@@ -49,16 +54,18 @@ function PaymentOption({
   selected: boolean;
   onSelect: (id: string) => void;
 }) {
+  const selectedClass = "border-petrol bg-cream-light ring-1 ring-petrol";
+  const unselectedClass = "border-border bg-background hover:bg-secondary";
+  const optionClass =
+    "flex min-h-20 items-center gap-3 rounded-xl border p-4 text-start transition-colors";
+  const focusClass = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
   return (
     <button
       type="button"
       aria-pressed={selected}
       onClick={() => onSelect(method.id)}
-      className={`flex min-h-20 items-center gap-3 rounded-xl border p-4 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-        selected
-          ? "border-petrol bg-cream-light ring-1 ring-petrol"
-          : "border-border bg-background hover:bg-secondary"
-      }`}
+      className={`${optionClass} ${focusClass} ${selected ? selectedClass : unselectedClass}`}
     >
       <PaymentBrandMark brand={method.brand} />
       <span className="flex-1 text-sm font-semibold">{method.label}</span>

@@ -21,10 +21,12 @@ const logoStyles: Record<string, string> = {
 };
 
 function PaymentBrandMark({ brand }: { brand: string }) {
+  const brandClass = logoStyles[brand] ?? "bg-secondary text-foreground";
+
   return (
     <span
       aria-hidden="true"
-      className={`${logoBaseClass} ${logoStyles[brand] ?? "bg-secondary text-foreground"}`}
+      className={`${logoBaseClass} ${brandClass}`}
     >
       {brand === "Cards" ? (
         <span className="flex items-center gap-2">
@@ -61,23 +63,27 @@ function PaymentOption({
   const optionClass =
     "flex min-h-20 items-center gap-3 rounded-xl border p-4 text-start transition-colors";
   const focusClass = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const optionClasses = [
+    optionClass,
+    focusClass,
+    selected ? selectedClass : unselectedClass,
+  ].join(" ");
+  const checkmarkClass = selected
+    ? "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs border-petrol bg-petrol text-white"
+    : "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs border-muted-foreground/40 text-transparent";
 
   return (
     <button
       type="button"
       aria-pressed={selected}
       onClick={() => onSelect(method.id)}
-      className={`${optionClass} ${focusClass} ${selected ? selectedClass : unselectedClass}`}
+      className={optionClasses}
     >
       <PaymentBrandMark brand={method.brand} />
       <span className="flex-1 text-sm font-semibold">{method.label}</span>
       <span
         aria-hidden="true"
-        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs ${
-          selected
-            ? "border-petrol bg-petrol text-white"
-            : "border-muted-foreground/40 text-transparent"
-        }`}
+        className={checkmarkClass}
       >
         ✓
       </span>

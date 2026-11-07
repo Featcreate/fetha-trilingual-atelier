@@ -1,7 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { AuthShell } from "@/components/AuthShell";
+import { supabase } from "@/integrations/supabase/client";
 import { supabase } from "@/integrations/supabase/client";
 import { checkOrderPayment } from "@/lib/shop.functions";
 import { useLang } from "@/lib/i18n";
@@ -11,6 +12,12 @@ const searchSchema = z.object({ order: z.string().uuid().optional() });
 
 export const Route = createFileRoute("/checkout/return")({
   validateSearch: searchSchema,
+  beforeLoad: async ({ location }) => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      throw redirect({ to: "/auth", search: { redirect: location.href } });
+    }
+  },
   component: CheckoutReturnPage,
 });
 

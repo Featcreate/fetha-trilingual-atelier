@@ -10,39 +10,6 @@ import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { PaymentMethodsPreview } from "@/components/PaymentMethodsPreview";
 
-function PaymentBrandLogo({ brand }: { brand: string }) {
-  const styles: Record<string, string> = {
-    KONNECT: "bg-[#102f3d] text-white",
-    VISA: "bg-[#1434a4] text-white italic",
-    Cards: "bg-white text-[#1434a4] ring-1 ring-border",
-    Mastercard: "bg-white text-[#eb001b] ring-1 ring-border",
-    "e-DINAR": "bg-[#f4efe6] text-[#8b6b20] ring-1 ring-[#c5a869]",
-    iPay: "bg-[#e8f3ff] text-[#1769aa] ring-1 ring-[#b7d7f0]",
-    D17: "bg-[#f1e9fb] text-[#7136a8] ring-1 ring-[#d7c2ef]",
-    Flouci: "bg-[#e7f8f1] text-[#07845a] ring-1 ring-[#b9e7d5]",
-    ClicToPay: "bg-[#e9efff] text-[#2448a5] ring-1 ring-[#c4d1fa]",
-    Ooredoo: "bg-[#fff0f0] text-[#d71920] ring-1 ring-[#f5c4c6]",
-    "Tunisie Telecom": "bg-[#e8f5ff] text-[#0877b9] ring-1 ring-[#b9def4]",
-    WinSMS: "bg-[#fff4e8] text-[#a65308] ring-1 ring-[#f1d1ad]",
-    "Postal / Bank": "bg-[#f4f0e8] text-[#75613d] ring-1 ring-[#ded3bd]",
-  };
-  return (
-    <span
-      aria-hidden="true"
-      className={`flex h-10 min-w-16 shrink-0 items-center justify-center rounded-lg px-2 text-xs font-extrabold tracking-tight ${styles[brand] ?? "bg-secondary text-foreground"}`}
-    >
-      {brand === "Mastercard" ? (
-        <span className="flex items-center -space-x-2">
-          <span className="h-5 w-5 rounded-full bg-[#eb001b]" />
-          <span className="h-5 w-5 rounded-full bg-[#f79e1b]/95" />
-        </span>
-      ) : brand === "Cards" ? (
-        <span className="flex items-center gap-2"><span className="font-black italic text-[#1434a4]">VISA</span><span className="flex -space-x-2"><span className="h-4 w-4 rounded-full bg-[#eb001b]" /><span className="h-4 w-4 rounded-full bg-[#f79e1b]" /></span></span>
-      ) : brand}
-    </span>
-  );
-}
-
 export const Route = createFileRoute("/products/$id")({
   head: () => ({
     meta: [

@@ -92,7 +92,7 @@ export const startCheckout = createServerFn({ method: "POST" })
     }
   });
 
-/** Create one pending order from quantity-aware cart lines, then request one Konnect charge.
+/** Create one pending order with one entitlement per distinct digital product, then request one Konnect charge.
  * The activation gate is checked before an order is created; disabled payments fail closed. */
 export const startCartCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -103,7 +103,6 @@ export const startCartCheckout = createServerFn({ method: "POST" })
           .array(
             z.object({
               productId: z.string().uuid(),
-              quantity: z.number().int().min(1).max(99),
             }),
           )
           .min(1)
@@ -117,7 +116,7 @@ export const startCartCheckout = createServerFn({ method: "POST" })
     if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
 
     const { data: orderId, error } = await context.supabase.rpc("create_order_from_cart", {
-      _items: data.items,
+      _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),
       _checkout_key: data.checkoutKey,
     });
     if (error || !orderId) {

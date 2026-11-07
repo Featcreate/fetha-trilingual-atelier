@@ -41,6 +41,16 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Temporary formatting preview
+        run: |
+          bunx prettier --write docs/ipay-integration-readiness.md src/routes/_authenticated/admin.tsx
+          echo "----- DOC START -----"
+          cat docs/ipay-integration-readiness.md
+          echo "----- DOC END -----"
+          echo "----- ADMIN START -----"
+          cat src/routes/_authenticated/admin.tsx
+          echo "----- ADMIN END -----"
+
       - name: Check formatting
         shell: bash
         run: |

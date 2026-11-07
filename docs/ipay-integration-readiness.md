@@ -51,7 +51,7 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 A first, deliberately incomplete server-side scaffold has been added:
 - `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and Bearer JWT headers.
 - `IPAY_CHECKOUT_ENABLED=true` is required before the one-shot client can run.
-- `IPAY_AMOUNT_UNIT` must explicitly be either `major` or `minor`; without it, configuration is rejected. This is a defensive configuration gate, **not** a claim that either unit has been confirmed by Audasoft.
+- `IPAY_AMOUNT_UNIT` defaults to `minor` (integer TND millimes); `major` remains an explicit override only if Audasoft confirms decimal dinars in writing. This is an adopted but unverified assumption, not an official confirmation.
 - `drizzle/migrations/0034_ipay_checkout_reference.sql` adds separate nullable iPay reference/URL fields and a unique partial index. It does not alter the Konnect columns, order settlement, commission, ledger, or payout rules.
 - `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard.
 
@@ -64,7 +64,7 @@ Until Audasoft confirms the open questions above:
 - do not apply migration 0034 to Supabase;
 - do not settle an order based only on a webhook, redirect, or browser query parameter;
 - do not release downloads for declared bank/postal transfers without confirmed cleared funds;
-- do not set `IPAY_AMOUNT_UNIT` based on assumption;
+- keep the adopted `minor` default provisional until a non-settling sandbox test confirms that `amount: 1000` displays exactly `1.000 TND`; do not enable live checkout based on this assumption;
 - do not claim international-card or foreign-currency support;
 - do not assume webhook authenticity or retry behaviour.
 

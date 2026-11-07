@@ -24,10 +24,7 @@ function PaymentBrandMark({ brand }: { brand: string }) {
   const brandClass = logoStyles[brand] ?? "bg-secondary text-foreground";
 
   return (
-    <span
-      aria-hidden="true"
-      className={`${logoBaseClass} ${brandClass}`}
-    >
+    <span aria-hidden="true" className={`${logoBaseClass} ${brandClass}`}>
       {brand === "Cards" ? (
         <span className="flex items-center gap-2">
           <span className="font-black italic text-[#1434a4]">VISA</span>
@@ -85,10 +82,7 @@ function PaymentOption({
     >
       <PaymentBrandMark brand={method.brand} />
       <span className="flex-1 text-sm font-semibold">{method.label}</span>
-      <span
-        aria-hidden="true"
-        className={checkmarkClass}
-      >
+      <span aria-hidden="true" className={checkmarkClass}>
         ✓
       </span>
     </button>

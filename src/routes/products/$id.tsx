@@ -38,6 +38,8 @@ function ProductPage() {
     { id: "tunisie-telecom-sms", label: m.paymentTunisieTelecomSms, Icon: Radio },
     { id: "bank-transfer", label: m.paymentBankTransfer, Icon: Building2 },
     { id: "winsms", label: m.paymentWinSms, Icon: Smartphone },
+    { id: "konnect", label: m.paymentKonnect, mark: "K", future: true },
+    { id: "d17", label: m.paymentD17, mark: "D17", future: true },
   ];
   const query = useQuery({
     queryKey: ["product-detail", id],
@@ -145,22 +147,32 @@ function ProductPage() {
             </div>
             <p className="mt-3 text-sm text-muted-foreground">{m.paymentSelectPrompt}</p>
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {paymentMethods.map(({ id, label, Icon }) => {
+              {paymentMethods.map(({ id, label, Icon, mark, future }) => {
                 const selected = selectedPaymentMethod === id;
                 return (
                   <button
                     key={id}
                     type="button"
                     aria-pressed={selected}
-                    onClick={() => setSelectedPaymentMethod(id)}
+                    onClick={() => !future && setSelectedPaymentMethod(id)}
+                    disabled={future}
                     className={`flex min-h-20 items-center gap-3 rounded-xl border p-4 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                      selected
-                        ? "border-petrol bg-cream-light ring-1 ring-petrol"
-                        : "border-border bg-background hover:bg-secondary"
+                      future
+                        ? "cursor-not-allowed border-border bg-secondary/60 opacity-80"
+                        : selected
+                          ? "border-petrol bg-cream-light ring-1 ring-petrol"
+                          : "border-border bg-background hover:bg-secondary"
                     }`}
                   >
-                    <Icon aria-hidden="true" className="h-6 w-6 shrink-0 text-petrol" />
+                    {mark ? (
+                      <span aria-hidden="true" className={`flex h-10 min-w-10 shrink-0 items-center justify-center rounded-xl px-2 text-sm font-black text-white ${id === "konnect" ? "bg-[#1688D4]" : "bg-[#E5A323]"}`}>
+                        {mark}
+                      </span>
+                    ) : Icon ? (
+                      <Icon aria-hidden="true" className="h-6 w-6 shrink-0 text-petrol" />
+                    ) : null}
                     <span className="flex-1 text-sm font-semibold">{label}</span>
+                    {future && <span className="rounded-full bg-cream-light px-2 py-1 text-[11px] font-bold text-muted-foreground">{m.paymentComingSoon}</span>}
                     <span
                       aria-hidden="true"
                       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs ${

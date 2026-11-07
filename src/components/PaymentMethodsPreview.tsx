@@ -59,7 +59,8 @@ function PaymentOption({
   const unselectedClass = "border-border bg-background hover:bg-secondary";
   const optionClass =
     "flex min-h-20 items-center gap-3 rounded-xl border p-4 text-start transition-colors";
-  const focusClass = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const focusClass =
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
   const optionClasses = [
     optionClass,
     focusClass,
@@ -120,10 +121,14 @@ export function PaymentMethodsPreview() {
 
   return (
     <>
-      <p className="mt-3 text-sm text-muted-foreground">{m.paymentSelectPrompt}</p>
+      <p className="mt-3 text-sm text-muted-foreground">
+        {m.paymentSelectPrompt}
+      </p>
       <div className="mt-5 rounded-xl border border-border p-4">
         <h3 className="text-base font-bold">{m.paymentTunisiaTitle}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{m.paymentTunisiaNote}</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {m.paymentTunisiaNote}
+        </p>
 
         <h4 className="mt-4 flex items-center gap-2 text-sm font-bold">
           <PaymentBrandMark brand="KONNECT" />
@@ -167,7 +172,9 @@ export function PaymentMethodsPreview() {
 
       <div className="mt-4 rounded-xl border border-border p-4">
         <h3 className="text-base font-bold">{m.paymentInternationalTitle}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{m.paymentInternationalNote}</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {m.paymentInternationalNote}
+        </p>
         <h4 className="mt-4 flex items-center gap-2 text-sm font-bold">
           <PaymentBrandMark brand="KONNECT" />
           {m.paymentProviderKonnect}

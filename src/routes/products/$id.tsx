@@ -133,7 +133,10 @@ function ProductPage() {
           >
             {m.viewStore}: {query.data.store.name}
           </Link>
-          <section className="mt-7 rounded-2xl border border-border bg-card p-5" aria-label={m.paymentMethodsTitle}>
+          <section
+            className="mt-7 rounded-2xl border border-border bg-card p-5"
+            aria-label={m.paymentMethodsTitle}
+          >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-base font-bold">{m.paymentMethodsTitle}</h2>
               <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">

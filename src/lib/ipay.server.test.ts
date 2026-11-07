@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { ipayAmountFromMillimes, parseIpayOneShotResponse } from "./ipay.server";
+import {
+  ipayAmountFromMillimes,
+  parseIpayOneShotResponse,
+} from "./ipay.server";
 
 describe("iPay amount conversion", () => {
   it("converts canonical TND millimes to major TND units only when explicitly configured", () => {
@@ -11,9 +14,15 @@ describe("iPay amount conversion", () => {
   });
 
   it("rejects zero, negative, fractional, and unsafe amounts", () => {
-    expect(() => ipayAmountFromMillimes(0, "major")).toThrow("invalid_order_amount");
-    expect(() => ipayAmountFromMillimes(-1, "minor")).toThrow("invalid_order_amount");
-    expect(() => ipayAmountFromMillimes(1.5, "major")).toThrow("invalid_order_amount");
+    expect(() =>
+      ipayAmountFromMillimes(0, "major"),
+    ).toThrow("invalid_order_amount");
+    expect(() =>
+      ipayAmountFromMillimes(-1, "minor"),
+    ).toThrow("invalid_order_amount");
+    expect(() =>
+      ipayAmountFromMillimes(1.5, "major"),
+    ).toThrow("invalid_order_amount");
     expect(() =>
       ipayAmountFromMillimes(Number.MAX_SAFE_INTEGER + 1, "minor"),
     ).toThrow("invalid_order_amount");

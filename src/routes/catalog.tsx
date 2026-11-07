@@ -9,6 +9,7 @@ import { PRODUCT_TYPES } from "@/lib/product-types";
 import { ProductPreview } from "@/components/ProductPreview";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
+import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({
@@ -45,6 +46,7 @@ type Store = { id: string; name: string; slug: string };
 function CatalogPage() {
   const { lang, setLang, t } = useLang();
   const m = t.marketplace;
+  const { add, count } = useCart();
   const [search, setSearch] = useState("");
   const [type, setType] = useState(Route.useSearch().type ?? "all");
   const catalog = useQuery({
@@ -96,9 +98,12 @@ function CatalogPage() {
         <Link to="/" className="text-sm font-semibold text-coral hover:underline">
           Algorea Bazaar
         </Link>
-        <Link to="/seller" className="text-sm font-semibold text-coral hover:underline">
-          {m.sellerArea}
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link to="/cart" className="text-sm font-semibold text-coral hover:underline">{lang === "ar" ? `السلة (${count})` : lang === "en" ? `Cart (${count})` : `Panier (${count})`}</Link>
+          <Link to="/seller" className="text-sm font-semibold text-coral hover:underline">
+            {m.sellerArea}
+          </Link>
+        </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-[1fr_220px]">
         <input

@@ -92,6 +92,78 @@ export const startCheckout = createServerFn({ method: "POST" })
     }
   });
 
+/** Create one pending order from quantity-aware cart lines, then request one Konnect charge.
+ * The activation gate is checked before an order is created; disabled payments fail closed. */
+export const startCartCheckout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({
+      items: z.array(z.object({ productId: z.string().uuid(), quantity: z.number().int().min(1).max(99) })).min(1).max(50),
+      checkoutKey: z.string().min(8).max(100),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
+    if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
+
+    const { data: orderId, error } = await context.supabase.rpc("create_order_from_cart", {
+      _items: data.items,
+      _checkout_key: data.checkoutKey,
+    });
+    if (error || !orderId) {
+      const code = error?.message?.includes("product_unavailable")
+        ? "product_unavailable"
+        : error?.message?.includes("commission_not_configured")
+          ? "commission_not_configured"
+          : "order_failed";
+      return { ok: false as const, error: code };
+    }
+
+    const { data: order } = await context.supabase
+      .from("orders")
+      .select("id,status,total_millimes,konnect_pay_url,customer_email")
+      .eq("id", orderId)
+      .single();
+    if (!order) return { ok: false as const, error: "order_failed" };
+    if (order.status !== "pending") return { ok: false as const, error: "order_closed", orderId };
+    if (order.konnect_pay_url) return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
+
+    const { data: profile } = await context.supabase
+      .from("profiles")
+      .select("full_name,phone")
+      .eq("id", context.userId)
+      .maybeSingle();
+    const [firstName, ...rest] = (profile?.full_name ?? "").trim().split(/\s+/);
+    const origin = siteOrigin();
+    try {
+      const { payUrl, paymentRef } = await konnectInitPayment({
+        amount: order.total_millimes,
+        orderId: order.id,
+        description: `Algorea Bazaar #${order.id.slice(0, 8)}`,
+        webhook: `${origin}/api/public/konnect/webhook`,
+        successUrl: `${origin}/checkout/return?order=${order.id}`,
+        failUrl: `${origin}/checkout/return?order=${order.id}`,
+        firstName,
+        lastName: rest.join(" "),
+        phoneNumber: profile?.phone,
+        email: order.customer_email ?? undefined,
+      });
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { error: saveError } = await supabaseAdmin.from("orders")
+        .update({ konnect_payment_ref: paymentRef, konnect_pay_url: payUrl })
+        .eq("id", order.id).eq("status", "pending").is("konnect_payment_ref", null);
+      const { data: saved, error: readError } = await supabaseAdmin.from("orders")
+        .select("konnect_payment_ref,konnect_pay_url").eq("id", order.id).single();
+      if (readError || !saved?.konnect_payment_ref || !saved.konnect_pay_url) {
+        console.error("Konnect cart payment reference could not be persisted", saveError?.message ?? readError?.message ?? "missing_payment_reference");
+        return { ok: false as const, error: "payment_reference_save_failed", orderId };
+      }
+      return { ok: true as const, orderId, payUrl: saved.konnect_pay_url };
+    } catch {
+      return { ok: false as const, error: "payment_provider_error", orderId };
+    }
+  });
+
 /** Re-check an own order's payment with Konnect (never trusts redirect parameters). */
 export const checkOrderPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

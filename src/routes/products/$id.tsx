@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
@@ -30,6 +32,9 @@ function ProductPage() {
   const { lang, setLang, t } = useLang();
   const m = t.marketplace;
   const { add, count, items } = useCart();
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const didSwipeRef = useRef(false);
   const query = useQuery({
     queryKey: ["product-detail", id],
     queryFn: async () => {
@@ -77,28 +82,137 @@ function ProductPage() {
         <p className="rounded-xl bg-secondary p-5">{m.noCatalog}</p>
       ) : (
         <article className="mx-auto max-w-2xl">
-          <div className="space-y-3">
-            <div className="flex aspect-[16/7] items-center justify-center overflow-hidden rounded-2xl bg-cream-light text-4xl font-bold text-petrol/40">
-              <ProductPreview path={query.data.product.image_path} alt={query.data.product.name} />
-            </div>
-            {query.data.gallery.length > 0 && (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {query.data.gallery.map(
-                  (image: { id: string; image_path: string }, index: number) => (
-                    <div
-                      key={image.id}
-                      className="flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-cream-light"
-                    >
-                      <ProductPreview
-                        path={image.image_path}
-                        alt={`${query.data?.product.name ?? "Algorea Bazaar"} — ${index + 1}`}
-                      />
-                    </div>
-                  ),
+          {(() => {
+            const images = [
+              ...(query.data.product.image_path
+                ? [{ id: "cover", image_path: query.data.product.image_path }]
+                : []),
+              ...query.data.gallery,
+            ];
+            const activeImage = images[activeImageIndex] ?? images[0];
+            const showPrevious = () =>
+              setActiveImageIndex((current) => (current - 1 + images.length) % images.length);
+            const showNext = () =>
+              setActiveImageIndex((current) => (current + 1) % images.length);
+            return (
+              <div className="space-y-4">
+                <div
+                  className="relative flex touch-pan-y aspect-[16/9] items-center justify-center overflow-hidden rounded-2xl bg-cream-light text-4xl font-bold text-petrol/40"
+                  onClickCapture={(event) => {
+                    if (didSwipeRef.current) {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      didSwipeRef.current = false;
+                    }
+                  }}
+                  onTouchStart={(event) => setTouchStartX(event.touches[0]?.clientX ?? null)}
+                  onTouchEnd={(event) => {
+                    if (touchStartX === null || images.length < 2) return;
+                    const delta = event.changedTouches[0]?.clientX;
+                    if (delta === undefined) return;
+                    const distance = delta - touchStartX;
+                    if (Math.abs(distance) > 45) {
+                      didSwipeRef.current = true;
+                      if (distance > 0) showPrevious();
+                      else showNext();
+                    }
+                    setTouchStartX(null);
+                  }}
+                  onTouchCancel={() => setTouchStartX(null)}
+                >
+                  {activeImage ? (
+                    <ProductPreview
+                      path={activeImage.image_path}
+                      alt={`${query.data.product.name} — ${activeImageIndex + 1}`}
+                    />
+                  ) : (
+                    <span>AB</span>
+                  )}
+                  {images.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={showPrevious}
+                        aria-label={
+                          lang === "ar"
+                            ? "الصورة السابقة"
+                            : lang === "en"
+                              ? "Previous image"
+                              : "Image précédente"
+                        }
+                        className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-petrol/85 text-white shadow-lg transition hover:bg-petrol"
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={showNext}
+                        aria-label={
+                          lang === "ar"
+                            ? "الصورة التالية"
+                            : lang === "en"
+                              ? "Next image"
+                              : "Image suivante"
+                        }
+                        className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-petrol/85 text-white shadow-lg transition hover:bg-petrol"
+                      >
+                        <ChevronRight className="h-6 w-6" />
+                      </button>
+                      <span
+                        className="absolute bottom-3 right-3 rounded-full bg-petrol/80 px-3 py-1 text-xs font-semibold text-white"
+                      >
+                        {activeImageIndex + 1} / {images.length}
+                      </span>
+                    </>
+                  )}
+                </div>
+                {images.length > 1 && (
+                  <div
+                    className="flex gap-3 overflow-x-auto pb-2"
+                    aria-label={
+                      lang === "ar"
+                        ? "صور معاينة المنتج"
+                        : lang === "en"
+                          ? "Product image previews"
+                          : "Aperçus du produit"
+                    }
+                  >
+                    {images.map((image, index) => (
+                      <button
+                        key={image.id}
+                        type="button"
+                        onClick={() => setActiveImageIndex(index)}
+                        aria-label={
+                          lang === "ar"
+                            ? `عرض الصورة ${index + 1}`
+                            : lang === "en"
+                              ? `Show image ${index + 1}`
+                              : `Afficher l’image ${index + 1}`
+                        }
+                        aria-pressed={activeImageIndex === index}
+                        className={`h-20 w-24 flex-none overflow-hidden rounded-lg border-2 bg-cream-light transition sm:h-24 sm:w-28 ${
+                          activeImageIndex === index
+                            ? "border-coral ring-2 ring-coral/20"
+                            : "border-border opacity-75 hover:opacity-100"
+                        }`}
+                      >
+                        <img
+                          src={
+                            supabase.storage
+                              .from("product-images")
+                              .getPublicUrl(image.image_path).data.publicUrl
+                          }
+                          alt=""
+                          loading="lazy"
+                          className="h-full w-full object-contain"
+                        />
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
+            );
+          })()}
           <p className="mt-6 text-sm text-muted-foreground">
             {m[query.data.product.product_type as keyof typeof m] ??
               query.data.product.product_type}

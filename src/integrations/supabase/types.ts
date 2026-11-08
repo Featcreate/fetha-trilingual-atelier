@@ -1249,6 +1249,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_my_seller_ratings: {
+        Args: Record<PropertyKey, never>
+        Returns: { store_id: string; stars: number }[]
+      }
+      get_top_rated_stores: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          store_id: string
+          store_name: string
+          store_slug: string
+          logo_path: string | null
+          avatar_path: string | null
+          average_rating: number
+          rating_count: number
+        }[]
+      }
+      submit_seller_rating: {
+        Args: { _stars: number; _store_id: string }
+        Returns: undefined
+      }
       activate_file_version: {
         Args: { _version_id: string }
         Returns: undefined

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { User } from "lucide-react";
+import { User, Star } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTND } from "@/lib/money";
@@ -144,6 +144,30 @@ function Index() {
   const myStoreBannerUrl = myStoreQuery.data?.banner_path
     ? supabase.storage.from("store-assets").getPublicUrl(myStoreQuery.data.banner_path).data.publicUrl
     : null;
+
+  const topRatedStoresQuery = useQuery({
+    queryKey: ["homepage-top-rated-stores"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_top_rated_stores");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const topRatedScrollerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if ((topRatedStoresQuery.data?.length ?? 0) < 2) return;
+    const timer = window.setInterval(() => {
+      const element = topRatedScrollerRef.current;
+      if (!element) return;
+      const next = element.scrollLeft + Math.max(220, element.clientWidth * 0.72);
+      if (next + element.clientWidth >= element.scrollWidth - 12) {
+        element.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        element.scrollTo({ left: next, behavior: "smooth" });
+      }
+    }, 3500);
+    return () => window.clearInterval(timer);
+  }, [topRatedStoresQuery.data?.length]);
 
   const latestProductsQuery = useQuery({
     queryKey: ["homepage-latest-products"],
@@ -449,6 +473,79 @@ function Index() {
                 {latestProductsQuery.data.map((product) =>
                   renderProductCard(product, product.store.name, product.store.slug),
                 )}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section
+          id="top-rated-sellers"
+          aria-labelledby="top-rated-sellers-title"
+          className="bg-background"
+        >
+          <div className="mx-auto max-w-6xl px-4 py-10">
+            <h2
+              id="top-rated-sellers-title"
+              className="mb-6 text-xl font-bold text-petrol md:text-2xl"
+            >
+              {t.marketplace.topRatedSellers}
+            </h2>
+            {topRatedStoresQuery.isPending ? (
+              <p className="py-5 text-center text-sm text-muted-foreground">{t.marketplace.loading}</p>
+            ) : topRatedStoresQuery.isError ? (
+              <p role="alert" className="py-5 text-center text-sm text-muted-foreground">{t.marketplace.error}</p>
+            ) : !topRatedStoresQuery.data?.length ? (
+              <p className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+                {t.marketplace.verifiedPurchaseRating}
+              </p>
+            ) : (
+              <div
+                ref={topRatedScrollerRef}
+                dir="ltr"
+                className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-4"
+                aria-label={t.marketplace.topRatedSellers}
+              >
+                {topRatedStoresQuery.data.map((store, index) => {
+                  const imagePath = store.logo_path ?? store.avatar_path;
+                  const imageUrl = imagePath
+                    ? supabase.storage.from("store-assets").getPublicUrl(imagePath).data.publicUrl
+                    : null;
+                  return (
+                    <Link
+                      key={store.store_id}
+                      to="/stores/$slug"
+                      params={{ slug: store.store_slug }}
+                      className="w-56 flex-none snap-start rounded-2xl border border-border bg-card p-4 text-center transition hover:-translate-y-1 hover:shadow-md"
+                    >
+                      <span className="mb-3 inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-cream-light px-2 text-xs font-bold text-petrol">
+                        #{index + 1}
+                      </span>
+                      <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-border bg-cream-light text-xl font-bold text-petrol">
+                        {imageUrl ? (
+                          <img src={imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                        ) : (
+                          store.store_name.slice(0, 2).toUpperCase()
+                        )}
+                      </div>
+                      <p className="mt-3 truncate font-bold text-petrol">{store.store_name}</p>
+                      <div className="mt-2 flex items-center justify-center gap-1 text-amber-500">
+                        {Array.from({ length: 5 }, (_, starIndex) => (
+                          <Star
+                            key={starIndex}
+                            className="h-4 w-4"
+                            fill={starIndex < Math.round(store.average_rating) ? "currentColor" : "none"}
+                          />
+                        ))}
+                        <span className="ms-1 text-sm font-bold text-foreground">
+                          {Number(store.average_rating).toFixed(1)}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {store.rating_count} {t.marketplace.ratingCount}
+                      </p>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -738,8 +738,19 @@ function SellerPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Field id="price" label={m.price} required inputMode="decimal" placeholder="12.500" />
-                  <Field id="sale_price" label={m.salePriceOptional} inputMode="decimal" placeholder="10.000" />
+                  <Field
+                    id="price"
+                    label={m.price}
+                    required
+                    inputMode="decimal"
+                    placeholder="12.500"
+                  />
+                  <Field
+                    id="sale_price"
+                    label={m.salePriceOptional}
+                    inputMode="decimal"
+                    placeholder="10.000"
+                  />
                 </div>
                 <div>
                   <label htmlFor="product_type" className="mb-1 block text-sm font-medium">
@@ -871,8 +882,21 @@ function SellerPage() {
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Field id={`edit_price_${product.id}`} label={m.price} defaultValue={(product.price_millimes / 1000).toFixed(3)} required />
-                          <Field id={`edit_sale_price_${product.id}`} label={m.salePriceOptional} defaultValue={product.sale_price_millimes ? (product.sale_price_millimes / 1000).toFixed(3) : ""} />
+                          <Field
+                            id={`edit_price_${product.id}`}
+                            label={m.price}
+                            defaultValue={(product.price_millimes / 1000).toFixed(3)}
+                            required
+                          />
+                          <Field
+                            id={`edit_sale_price_${product.id}`}
+                            label={m.salePriceOptional}
+                            defaultValue={
+                              product.sale_price_millimes
+                                ? (product.sale_price_millimes / 1000).toFixed(3)
+                                : ""
+                            }
+                          />
                         </div>
                         <label
                           className="block text-sm font-medium"
@@ -933,7 +957,29 @@ function SellerPage() {
                             {product.description}
                           </p>
                           <p className="mt-2 flex flex-wrap items-center gap-2 text-sm font-bold">
-                            {product.sale_price_millimes ? <><span className="text-xs font-bold text-red-600">PROMO</span><span className="text-muted-foreground line-through">{formatTND(product.price_millimes)}</span><span className="text-red-600">{formatTND(product.sale_price_millimes)}</span><TndEquivalents millimes={product.sale_price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></> : <>{formatTND(product.price_millimes)}<TndEquivalents millimes={product.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></>}
+                            {product.sale_price_millimes ? (
+                              <>
+                                <span className="text-xs font-bold text-red-600">PROMO</span>
+                                <span className="text-muted-foreground line-through">
+                                  {formatTND(product.price_millimes)}
+                                </span>
+                                <span className="text-red-600">
+                                  {formatTND(product.sale_price_millimes)}
+                                </span>
+                                <TndEquivalents
+                                  millimes={product.sale_price_millimes}
+                                  locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                                />
+                              </>
+                            ) : (
+                              <>
+                                {formatTND(product.price_millimes)}
+                                <TndEquivalents
+                                  millimes={product.price_millimes}
+                                  locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                                />
+                              </>
+                            )}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">

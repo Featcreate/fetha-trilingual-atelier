@@ -307,7 +307,6 @@ export type Database = {
           email_sent_at?: string | null
           id?: string
           konnect_init_claimed_at?: string | null
-          konnect_init_claimed_at?: string | null
           konnect_pay_url?: string | null
           konnect_payment_ref?: string | null
           ipay_payment_ref?: string | null
@@ -338,6 +337,7 @@ export type Database = {
           email_error?: string | null
           email_sent_at?: string | null
           id?: string
+          konnect_init_claimed_at?: string | null
           konnect_pay_url?: string | null
           konnect_payment_ref?: string | null
           ipay_payment_ref?: string | null

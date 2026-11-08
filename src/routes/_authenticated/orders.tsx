@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
@@ -23,6 +24,8 @@ type BuyerOrder = {
     id: string;
     product_name: string;
     unit_price_millimes: number;
+    store_id: string | null;
+    stores: { name: string } | null;
     order_item_files: Array<{
       id: string;
       file_name: string;
@@ -39,13 +42,23 @@ function BuyerOrdersPage() {
   const m = t.marketplace;
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
+  const [ratingBusy, setRatingBusy] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const ratingsQuery = useQuery({
+    queryKey: ["buyer-seller-ratings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_my_seller_ratings");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const query = useQuery({
     queryKey: ["buyer-orders"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id,status,total_millimes,created_at,order_items(id,product_name,unit_price_millimes,order_item_files(id,file_name,download_entitlements(id,expires_at,max_downloads,used_downloads)))",
+          "id,status,total_millimes,created_at,order_items(id,product_name,unit_price_millimes,store_id,stores(name),order_item_files(id,file_name,download_entitlements(id,expires_at,max_downloads,used_downloads)))",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -53,6 +66,17 @@ function BuyerOrdersPage() {
     },
   });
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
+
+  async function rateSeller(storeId: string, stars: number) {
+    setRatingBusy(storeId);
+    setNotice("");
+    const { error } = await supabase.rpc("submit_seller_rating", { _store_id: storeId, _stars: stars });
+    setRatingBusy(null);
+    if (error) { setNotice(error.message.includes("verified_purchase_required") ? m.verifiedPurchaseRating : m.error); return; }
+    setNotice(m.ratingSaved);
+    await qc.invalidateQueries({ queryKey: ["buyer-seller-ratings"] });
+    await qc.invalidateQueries({ queryKey: ["homepage-top-rated-stores"] });
+  }
 
   async function download(entitlementId: string) {
     setBusy(entitlementId);
@@ -106,6 +130,21 @@ function BuyerOrdersPage() {
                 </span>
               </div>
               <div className="mt-4 space-y-3 border-t border-border pt-3">
+                {Array.from(new Map(order.order_items.filter((item) => item.store_id).map((item) => [item.store_id!, { storeId: item.store_id!, storeName: item.stores?.name ?? m.store }])).values()).map((store) => {
+                  const currentStars = ratingsQuery.data?.find((rating) => rating.store_id === store.storeId)?.stars ?? 0;
+                  return (
+                    <div key={store.storeId} className="rounded-xl bg-cream-light p-3">
+                      <p className="text-sm font-semibold">{m.rateSeller}: {store.storeName}</p>
+                      <div className="mt-2 flex items-center gap-1" dir="ltr">
+                        {Array.from({ length: 5 }, (_, index) => {
+                          const stars = index + 1;
+                          return <button key={stars} type="button" disabled={ratingBusy === store.storeId} onClick={() => rateSeller(store.storeId, stars)} aria-label={stars + " / 5"} aria-pressed={currentStars === stars} className="rounded p-1 text-amber-500 transition hover:scale-110 disabled:opacity-50"><Star className="h-6 w-6" fill={stars <= currentStars ? "currentColor" : "none"} /></button>;
+                        })}
+                        {currentStars > 0 && <span className="ms-2 text-xs text-muted-foreground">{m.updateRating}</span>}
+                      </div>
+                    </div>
+                  );
+                })}
                 {order.order_items.map((item) => (
                   <div key={item.id} className="flex flex-wrap items-center justify-between gap-3">
                     <div>

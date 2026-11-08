@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Trash2 } from "lucide-react";
+import { ShoppingCart, Trash2 } from "lucide-react";
 import { AuthShell } from "@/components/AuthShell";
 import { ProductPreview } from "@/components/ProductPreview";
 import { supabase } from "@/integrations/supabase/client";
@@ -122,7 +122,17 @@ function CartPage() {
   const unavailable = !query.isPending && lines.length !== items.length;
 
   return (
-    <AuthShell lang={lang} setLang={setLang} title={t.title} wide>
+    <AuthShell
+      lang={lang}
+      setLang={setLang}
+      title={
+        <span className="inline-flex items-center gap-2">
+          <ShoppingCart className="h-6 w-6" aria-hidden="true" />
+          <span>{t.title}</span>
+        </span>
+      }
+      wide
+    >
       <div className="mb-5 flex flex-wrap justify-between gap-3">
         <Link to="/catalog" className="text-sm font-semibold text-coral hover:underline">
           {t.browse}

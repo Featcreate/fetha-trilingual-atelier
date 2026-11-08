@@ -51,14 +51,16 @@ export const startCheckout = createServerFn({ method: "POST" })
       { _order_id: order.id },
     );
     const claim = claimRows?.[0] as { outcome?: string; pay_url?: string | null } | undefined;
-    if (claimError || !claim) return { ok: false as const, error: "payment_initialization_uncertain", orderId };
+    if (claimError || !claim)
+      return { ok: false as const, error: "payment_initialization_uncertain", orderId };
     if (claim.outcome === "existing" && claim.pay_url) {
       return { ok: true as const, orderId, payUrl: claim.pay_url };
     }
     if (claim.outcome !== "claimed") {
       return {
         ok: false as const,
-        error: claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain",
+        error:
+          claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain",
         orderId,
       };
     }

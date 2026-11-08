@@ -181,7 +181,8 @@ export const startCartCheckout = createServerFn({ method: "POST" })
     if (claim.outcome !== "claimed") {
       return {
         ok: false as const,
-        error: claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain",
+        error:
+          claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain",
         orderId,
       };
     }

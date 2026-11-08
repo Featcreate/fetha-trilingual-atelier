@@ -1231,7 +1231,6 @@ function SellerPage() {
             </div>
           </section>
 
-
           <section className="space-y-4">
             <h2 className="text-xl font-bold">{m.orders}</h2>
             {ordersQuery.isPending ? (

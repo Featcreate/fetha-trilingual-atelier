@@ -26,7 +26,8 @@ const copy = {
     unavailable: "Un ou plusieurs produits ne sont plus disponibles. Retournez au panier.",
     pay: "Payer le panier en une fois avec Konnect",
     starting: "Préparation du paiement…",
-    paymentError: "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. Réessayez uniquement après vérification de l’état de la commande.",
+    paymentError:
+      "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. Réessayez uniquement après vérification de l’état de la commande.",
   },
   ar: {
     title: "مراجعة الطلب",
@@ -40,7 +41,8 @@ const copy = {
     unavailable: "منتج أو أكثر لم يعد متاحاً. عودي إلى السلة.",
     pay: "دفع كامل السلة دفعة واحدة عبر Konnect",
     starting: "جارٍ إعداد الدفع…",
-    paymentError: "تعذر إعداد الدفع. لن تتم إعادة محاولة إنشاء عملية دفع تلقائياً. لا تعيدي المحاولة إلا بعد التحقق من حالة الطلب.",
+    paymentError:
+      "تعذر إعداد الدفع. لن تتم إعادة محاولة إنشاء عملية دفع تلقائياً. لا تعيدي المحاولة إلا بعد التحقق من حالة الطلب.",
   },
   en: {
     title: "Order summary",
@@ -55,7 +57,8 @@ const copy = {
     unavailable: "One or more products are no longer available. Return to your cart.",
     pay: "Pay the entire cart in one Konnect payment",
     starting: "Preparing payment…",
-    paymentError: "Payment could not be initialized. Another payment will not be started automatically. Retry only after checking the order status.",
+    paymentError:
+      "Payment could not be initialized. Another payment will not be started automatically. Retry only after checking the order status.",
   },
 } as const;
 
@@ -64,7 +67,10 @@ function CheckoutPage() {
   const t = copy[lang];
   const { items } = useCart();
   const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
-  const signature = items.map((line) => line.productId).sort().join(",");
+  const signature = items
+    .map((line) => line.productId)
+    .sort()
+    .join(",");
 
   const availability = useQuery({
     queryKey: ["cart-checkout-availability"],
@@ -170,8 +176,7 @@ function CheckoutPage() {
               {availability.isPending ? t.loading : t.disabled}
             </p>
           )}
-          {checkoutMutation.isError ||
-          (checkoutMutation.data && !checkoutMutation.data.ok) ? (
+          {checkoutMutation.isError || (checkoutMutation.data && !checkoutMutation.data.ok) ? (
             <p role="alert" className="mt-3 rounded-xl border border-border p-4 text-sm">
               {t.paymentError}
             </p>

@@ -178,7 +178,11 @@ function CatalogPage() {
                       <TndEquivalents
                         millimes={p.sale_price_millimes}
                         locale={
-                          lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"
+                          lang === "ar"
+                            ? "ar-TN"
+                            : lang === "en"
+                              ? "en-GB"
+                              : "fr-FR"
                         }
                       />
                     </>
@@ -188,7 +192,11 @@ function CatalogPage() {
                       <TndEquivalents
                         millimes={p.price_millimes}
                         locale={
-                          lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"
+                          lang === "ar"
+                            ? "ar-TN"
+                            : lang === "en"
+                              ? "en-GB"
+                              : "fr-FR"
                         }
                       />
                     </>

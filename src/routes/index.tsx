@@ -105,6 +105,7 @@ function Index() {
     name_translations: unknown;
     product_type: string;
     price_millimes: number;
+    sale_price_millimes: number | null;
     image_path: string | null;
     store_id: string | null;
     store: { name: string; slug: string };
@@ -130,7 +131,7 @@ function Index() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,name,name_translations,product_type,price_millimes,image_path,store_id")
+        .select("id,name,name_translations,product_type,price_millimes,sale_price_millimes,image_path,store_id")
         .eq("store_id", myStoreQuery.data!.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false })
@@ -149,7 +150,7 @@ function Index() {
     queryFn: async () => {
       const { data: products, error } = await supabase
         .from("products")
-        .select("id,name,name_translations,product_type,price_millimes,image_path,store_id")
+        .select("id,name,name_translations,product_type,price_millimes,sale_price_millimes,image_path,store_id")
         .eq("is_active", true)
         .not("store_id", "is", null)
         .order("created_at", { ascending: false })
@@ -205,12 +206,8 @@ function Index() {
           >
             {localizedProductText(product.name, product.name_translations, lang)}
           </Link>
-          <p className="mt-2 font-bold">
-            {formatTND(product.price_millimes)}
-            <TndEquivalents
-              millimes={product.price_millimes}
-              locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
-            />
+          <p className="mt-2 flex flex-wrap items-center gap-2 font-bold">
+            {product.sale_price_millimes ? <><span className="text-xs font-bold text-red-600">PROMO</span><span className="text-sm text-muted-foreground line-through">{formatTND(product.price_millimes)}</span><span className="text-red-600">{formatTND(product.sale_price_millimes)}</span><TndEquivalents millimes={product.sale_price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></> : <>{formatTND(product.price_millimes)}<TndEquivalents millimes={product.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></>}
           </p>
           <Link
             to="/stores/$slug"

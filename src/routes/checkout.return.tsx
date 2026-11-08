@@ -37,7 +37,8 @@ const copy = {
     loading: "Vérification du paiement…",
     error: "Impossible de vérifier la commande pour le moment.",
     recheck: "Vérifier à nouveau",
-    paused: "La vérification automatique est en pause. Vous pouvez relancer une vérification manuelle.",
+    paused:
+      "La vérification automatique est en pause. Vous pouvez relancer une vérification manuelle.",
   },
   ar: {
     title: "حالة طلبك",

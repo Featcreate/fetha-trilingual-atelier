@@ -25,6 +25,28 @@ ALTER TABLE public.seller_payouts
       AND payout_account_identifier IS NOT NULL)
   );
 
+DROP POLICY IF EXISTS "Sellers manage own payout preference"
+  ON public.seller_payout_preferences;
+CREATE POLICY "Sellers manage own payout preference"
+  ON public.seller_payout_preferences FOR ALL TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.stores s
+      WHERE s.id = seller_payout_preferences.store_id
+        AND s.owner_id = (SELECT auth.uid())
+        AND s.status = 'active'
+    )
+  )
+  WITH CHECK (
+    method IN ('konnect', 'ipay', 'wepay', 'bank_transfer', 'other')
+    AND EXISTS (
+      SELECT 1 FROM public.stores s
+      WHERE s.id = seller_payout_preferences.store_id
+        AND s.owner_id = (SELECT auth.uid())
+        AND s.status = 'active'
+    )
+  );
+
 CREATE OR REPLACE FUNCTION public.guard_seller_payout_preference()
 RETURNS trigger
 LANGUAGE plpgsql

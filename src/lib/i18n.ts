@@ -66,7 +66,7 @@ export const dict = {
     },
     contact: {
       title: "Contactez-nous",
-      description: "Une question, une suggestion ou besoin d’aide ? Écrivez-nous, nous serons ravis de vous répondre.",
+      description: "Une question ou besoin d’aide ? Écrivez-nous, nous vous répondrons avec plaisir.",
       button: "Envoyer un e-mail",
     },
     logoSlot: "Emplacement du logo",
@@ -391,7 +391,7 @@ export const dict = {
     },
     contact: {
       title: "اتصل بنا",
-      description: "هل لديك سؤال أو اقتراح أو تحتاج إلى مساعدة؟ راسلنا عبر البريد الإلكتروني، وسنسعد بالتواصل معك.",
+      description: "لديك سؤال أو تحتاج إلى مساعدة؟ راسلنا عبر البريد الإلكتروني، وسنسعد بالرد عليك.",
       button: "إرسال رسالة عبر البريد الإلكتروني",
     },
     logoSlot: "مكان الشعار",
@@ -713,7 +713,7 @@ export const dict = {
     },
     contact: {
       title: "Get in touch",
-      description: "Have a question, suggestion, or need help? Send us an email. We’ll be happy to hear from you.",
+      description: "Have a question or need help? Email us. We’ll be happy to assist.",
       button: "Send an email",
     },
     logoSlot: "Logo slot",

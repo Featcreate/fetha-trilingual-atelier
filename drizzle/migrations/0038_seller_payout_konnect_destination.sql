@@ -55,6 +55,14 @@ BEGIN
      OR length(trim(NEW.account_identifier)) NOT BETWEEN 3 AND 200 THEN
     RAISE EXCEPTION 'payout_destination_details_required';
   END IF;
+  IF NEW.method = 'other'
+     AND (NEW.provider_name IS NULL OR length(trim(NEW.provider_name)) NOT BETWEEN 2 AND 120) THEN
+    RAISE EXCEPTION 'payout_provider_name_required';
+  END IF;
+  IF NEW.method = 'bank_transfer'
+     AND (NEW.bank_name IS NULL OR length(trim(NEW.bank_name)) NOT BETWEEN 2 AND 160) THEN
+    RAISE EXCEPTION 'payout_bank_name_required';
+  END IF;
   IF NEW.provider_name IS NOT NULL AND length(trim(NEW.provider_name)) NOT BETWEEN 2 AND 120 THEN
     RAISE EXCEPTION 'invalid_payout_provider_name';
   END IF;

@@ -1,11 +1,13 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { z } from "zod";
 import { AuthShell } from "@/components/AuthShell";
 import { supabase } from "@/integrations/supabase/client";
 import { checkOrderPayment } from "@/lib/shop.functions";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
+import { useCart } from "@/lib/cart";
 
 const searchSchema = z.object({ order: z.string().uuid().optional() });
 
@@ -69,13 +71,19 @@ type OrderSummary = {
   id: string;
   status: string;
   total_millimes: number;
-  order_items: Array<{ id: string; product_name: string; unit_price_millimes: number }>;
+  order_items: Array<{
+    id: string;
+    product_id: string;
+    product_name: string;
+    unit_price_millimes: number;
+  }>;
 };
 
 function CheckoutReturnPage() {
   const { order } = Route.useSearch();
   const { lang, setLang } = useLang();
   const t = copy[lang];
+  const { remove } = useCart();
 
   const query = useQuery({
     queryKey: ["checkout-return-order", order],
@@ -84,7 +92,7 @@ function CheckoutReturnPage() {
       await checkOrderPayment({ data: { orderId: order! } });
       const { data, error } = await supabase
         .from("orders")
-        .select("id,status,total_millimes,order_items(id,product_name,unit_price_millimes)")
+        .select("id,status,total_millimes,order_items(id,product_id,product_name,unit_price_millimes)")
         .eq("id", order!)
         .maybeSingle();
       if (error) throw error;
@@ -92,6 +100,12 @@ function CheckoutReturnPage() {
     },
     refetchInterval: (q) => (q.state.data?.status === "pending" ? 5000 : false),
   });
+
+  useEffect(() => {
+    if (query.data?.status === "paid") {
+      query.data.order_items.forEach((item) => remove(item.product_id));
+    }
+  }, [query.data?.status, query.data?.order_items, remove]);
 
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
   const message =

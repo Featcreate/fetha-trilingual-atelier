@@ -74,8 +74,7 @@ function CheckoutPage() {
   const unavailable = !query.isPending && products.length !== items.length;
   const total = items.reduce(
     (sum, line) =>
-      sum +
-      (products.find((product) => product.id === line.productId)?.price_millimes ?? 0),
+      sum + (products.find((product) => product.id === line.productId)?.price_millimes ?? 0),
     0,
   );
 

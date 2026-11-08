@@ -21,6 +21,49 @@ export const dict = {
     comingSoon: "Bientôt",
     preview: "Aperçu",
     footer: "Tous droits réservés.",
+    about: {
+      title: "À propos d’Algorea Bazaar",
+      tagline: "Un espace numérique pour la créativité, l’apprentissage et les opportunités",
+      intro:
+        "Algorea Bazaar est une plateforme dédiée à l’achat et à la vente de produits numériques. Elle réunit créateurs, designers, enseignants et porteurs de projets numériques, en leur offrant un espace pour présenter leurs produits et toucher un public plus large.",
+      belief:
+        "Nous croyons que le savoir et la créativité méritent de plus grandes possibilités de diffusion. Nous souhaitons donc proposer un marché numérique qui facilite la découverte de ressources éducatives et créatives, tout en aidant les personnes talentueuses à transformer leur travail en produits numériques à vendre.",
+      whatTitle: "Que trouve-t-on sur Algorea Bazaar ?",
+      items: [
+        "Ressources pédagogiques et fichiers imprimables",
+        "Activités, fiches d’exercices et cartes éducatives",
+        "Designs, modèles et ressources créatives",
+        "Fichiers numériques, outils et produits logiciels",
+        "Applications et solutions numériques variées",
+      ],
+      missionTitle: "Notre mission",
+      mission:
+        "Faciliter l’accès à des produits numériques utiles, soutenir les créateurs et les boutiques numériques, et construire un espace qui rassemble créativité, savoir et commerce numérique.",
+      visionTitle: "Notre vision",
+      vision:
+        "Devenir une destination numérique fiable et diversifiée, permettant aux créateurs de présenter leurs réalisations et aux acheteurs de découvrir des produits adaptés à leurs besoins, sans frontières géographiques.",
+      valuesTitle: "Nos valeurs",
+      values: [
+        { title: "Créativité", text: "Nous valorisons les idées et les produits innovants." },
+        {
+          title: "Savoir",
+          text: "Nous encourageons le partage de ressources éducatives et utiles.",
+        },
+        {
+          title: "Opportunités",
+          text: "Nous ouvrons aux créateurs un espace pour présenter leurs produits.",
+        },
+        {
+          title: "Diversité",
+          text: "Nous proposons des produits numériques dans de nombreux domaines.",
+        },
+        {
+          title: "Confiance",
+          text: "Nous visons une expérience claire et simple pour les acheteurs et les vendeurs.",
+        },
+      ],
+      closing: "Algorea Bazaar — Découvrez, créez et partagez vos idées avec le monde.",
+    },
     logoSlot: "Emplacement du logo",
     marketplace: {
       catalog: "Catalogue",
@@ -310,6 +353,37 @@ export const dict = {
     comingSoon: "قريباً",
     preview: "معاينة",
     footer: "جميع الحقوق محفوظة.",
+    about: {
+      title: "من نحن",
+      tagline: "Algorea Bazaar – مساحة رقمية للإبداع والتعلّم والفرص",
+      intro:
+        "Algorea Bazaar هي منصة متخصصة في بيع وشراء المنتجات الرقمية، تجمع بين المبدعين والمصممين والمعلمين وأصحاب المشاريع الرقمية، وتمنحهم مساحة لعرض منتجاتهم والوصول إلى جمهور أوسع.",
+      belief:
+        "نؤمن بأن المعرفة والإبداع يستحقان فرصاً أكبر للانتشار، لذلك نسعى إلى توفير سوق رقمي يسهّل اكتشاف الموارد التعليمية والإبداعية والاستفادة منها، ويدعم أصحاب الأفكار والمهارات في تحويل أعمالهم إلى منتجات رقمية قابلة للبيع.",
+      whatTitle: "ماذا تجد في Algorea Bazaar؟",
+      items: [
+        "موارد تعليمية وملفات قابلة للطباعة.",
+        "أنشطة وأوراق عمل وبطاقات تعليمية.",
+        "تصاميم وقوالب وموارد إبداعية.",
+        "ملفات رقمية وأدوات ومنتجات برمجية.",
+        "تطبيقات وحلول رقمية متنوعة.",
+      ],
+      missionTitle: "رسالتنا",
+      mission:
+        "تسهيل الوصول إلى المنتجات الرقمية المفيدة، ودعم المبدعين وأصحاب المتاجر الرقمية، وبناء مساحة تجمع بين الإبداع والمعرفة والتجارة الرقمية.",
+      visionTitle: "رؤيتنا",
+      vision:
+        "أن تصبح Algorea Bazaar وجهة رقمية موثوقة ومتنوعة، تتيح للمبدعين عرض أعمالهم، وللمشترين اكتشاف منتجات رقمية تلبي احتياجاتهم، دون حدود جغرافية.",
+      valuesTitle: "قيمنا",
+      values: [
+        { title: "الإبداع", text: "نحتفي بالأفكار والمنتجات المبتكرة." },
+        { title: "المعرفة", text: "نشجع مشاركة الموارد التعليمية والمفيدة." },
+        { title: "الفرص", text: "نفتح المجال أمام المبدعين لعرض منتجاتهم." },
+        { title: "التنوع", text: "نوفر منتجات رقمية في مجالات متعددة." },
+        { title: "الثقة", text: "نسعى إلى تقديم تجربة واضحة وسهلة للمشترين والبائعين." },
+      ],
+      closing: "Algorea Bazaar — اكتشف، أبدع، وشارك أفكارك مع العالم.",
+    },
     logoSlot: "مكان الشعار",
     marketplace: {
       catalog: "الكتالوج",
@@ -593,6 +667,40 @@ export const dict = {
     comingSoon: "Coming soon",
     preview: "Preview",
     footer: "All rights reserved.",
+    about: {
+      title: "About Us",
+      tagline: "Algorea Bazaar — a digital space for creativity, learning, and opportunity",
+      intro:
+        "Algorea Bazaar is a platform dedicated to buying and selling digital products. It brings together creators, designers, educators, and digital entrepreneurs, giving them a space to showcase their products and reach a wider audience.",
+      belief:
+        "We believe knowledge and creativity deserve greater opportunities to reach people. That is why we aim to provide a digital marketplace that makes educational and creative resources easier to discover and use, while helping people turn their ideas and skills into digital products for sale.",
+      whatTitle: "What can you find on Algorea Bazaar?",
+      items: [
+        "Educational resources and printable files",
+        "Activities, worksheets, and learning cards",
+        "Designs, templates, and creative resources",
+        "Digital files, tools, and software products",
+        "A variety of apps and digital solutions",
+      ],
+      missionTitle: "Our Mission",
+      mission:
+        "To make useful digital products easier to access, support creators and digital storefronts, and build a space that brings together creativity, knowledge, and digital commerce.",
+      visionTitle: "Our Vision",
+      vision:
+        "To become a trusted and diverse digital destination where creators can showcase their work and buyers can discover digital products that meet their needs, without geographical boundaries.",
+      valuesTitle: "Our Values",
+      values: [
+        { title: "Creativity", text: "We celebrate innovative ideas and products." },
+        { title: "Knowledge", text: "We encourage sharing useful and educational resources." },
+        { title: "Opportunity", text: "We give creators room to showcase their products." },
+        { title: "Diversity", text: "We offer digital products across a range of fields." },
+        {
+          title: "Trust",
+          text: "We strive to provide a clear and simple experience for buyers and sellers.",
+        },
+      ],
+      closing: "Algorea Bazaar — Discover, create, and share your ideas with the world.",
+    },
     logoSlot: "Logo slot",
     marketplace: {
       catalog: "Catalog",

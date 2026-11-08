@@ -494,8 +494,57 @@ function Index() {
         </section>
       </main>
 
+      <section id="about" aria-labelledby="about-title" dir={lang === "ar" ? "rtl" : "ltr"} className="bg-cream-light">
+        <div className="mx-auto max-w-6xl space-y-10 px-4 py-12 md:py-16">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Algorea Bazaar</p>
+            <h2 id="about-title" className="mt-3 text-2xl font-extrabold text-petrol md:text-3xl">{t.about.title}</h2>
+            <p className="mt-3 text-lg font-semibold text-coral">{t.about.tagline}</p>
+            <p className="mt-5 leading-8 text-foreground">{t.about.intro}</p>
+            <p className="mt-3 leading-8 text-muted-foreground">{t.about.belief}</p>
+          </div>
+
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+            <h3 className="text-xl font-bold text-petrol">{t.about.whatTitle}</h3>
+            <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {t.about.items.map((item) => (
+                <li key={item} className="flex items-start gap-3 rounded-xl bg-cream-light p-4 leading-7">
+                  <span aria-hidden="true" className="mt-2 h-2 w-2 shrink-0 rounded-full bg-coral" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <article className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-xl font-bold text-petrol">{t.about.missionTitle}</h3>
+              <p className="mt-3 leading-8 text-muted-foreground">{t.about.mission}</p>
+            </article>
+            <article className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-xl font-bold text-petrol">{t.about.visionTitle}</h3>
+              <p className="mt-3 leading-8 text-muted-foreground">{t.about.vision}</p>
+            </article>
+          </div>
+
+          <div>
+            <h3 className="text-center text-xl font-bold text-petrol">{t.about.valuesTitle}</h3>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {t.about.values.map((value) => (
+                <article key={value.title} className="rounded-2xl border border-border bg-card p-5 text-start">
+                  <h4 className="font-bold text-coral">{value.title}</h4>
+                  <p className="mt-2 text-sm leading-7 text-muted-foreground">{value.text}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-center text-lg font-bold text-petrol">{t.about.closing}</p>
+        </div>
+      </section>
+
       <footer id="contact" className="bg-petrol text-cream">
-        <div id="about" className="mx-auto max-w-6xl px-4 py-8 text-center text-sm">
+        <div className="mx-auto max-w-6xl px-4 py-8 text-center text-sm">
           © {new Date().getFullYear()} Algorea Bazaar. {t.footer}
         </div>
       </footer>

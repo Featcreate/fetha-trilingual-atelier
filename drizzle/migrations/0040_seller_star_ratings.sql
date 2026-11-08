@@ -53,3 +53,13 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
 $$;
 REVOKE ALL ON FUNCTION public.get_top_rated_stores() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_top_rated_stores() TO anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.get_my_seller_ratings()
+RETURNS TABLE (store_id uuid, stars smallint)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT r.store_id, r.stars
+  FROM public.seller_ratings r
+  WHERE r.reviewer_id = auth.uid();
+$$;
+REVOKE ALL ON FUNCTION public.get_my_seller_ratings() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_my_seller_ratings() TO authenticated;

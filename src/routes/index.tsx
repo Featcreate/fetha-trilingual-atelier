@@ -321,7 +321,7 @@ function Index() {
           </div>
         </section>
 
-      <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
+      <header className="sticky top-0 z-40 hidden border-b border-border bg-background/90 backdrop-blur md:block">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 md:h-20">
           <nav className="hidden items-center gap-7 md:flex">
             {links.map(([href, label]) => (

@@ -41,12 +41,6 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
-      - name: Temporary seller Prettier diagnostic
-        shell: bash
-        run: |
-          bunx prettier --write 'src/routes/_authenticated/seller.tsx'
-          git diff -- 'src/routes/_authenticated/seller.tsx'
-
       - name: Check formatting
         shell: bash
         run: |

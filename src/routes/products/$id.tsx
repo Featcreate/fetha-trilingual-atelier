@@ -17,7 +17,10 @@ export const Route = createFileRoute("/products/$id")({
   head: () => ({
     meta: [
       { title: "Produit numérique — Algorea Bazaar" },
-      { name: "description", content: "Découvrez ce produit numérique sur Algorea Bazaar." },
+      {
+        name: "description",
+        content: "Découvrez ce produit numérique sur Algorea Bazaar.",
+      },
       { property: "og:title", content: "Produit numérique — Algorea Bazaar" },
       {
         property: "og:description",
@@ -66,14 +69,20 @@ function ProductPage() {
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.products} wide>
       <div className="mb-5 flex justify-between gap-3">
-        <Link to="/cart" className="text-sm font-semibold text-coral hover:underline">
+        <Link
+          to="/cart"
+          className="text-sm font-semibold text-coral hover:underline"
+        >
           {lang === "ar"
             ? `السلة (${count})`
             : lang === "en"
               ? `Cart (${count})`
               : `Panier (${count})`}
         </Link>
-        <Link to="/catalog" className="text-sm font-semibold text-coral hover:underline">
+        <Link
+          to="/catalog"
+          className="text-sm font-semibold text-coral hover:underline"
+        >
           {m.viewCatalog}
         </Link>
       </div>
@@ -165,7 +174,9 @@ function ProductPage() {
                       >
                         <ChevronRight className="h-6 w-6" />
                       </button>
-                      <span className="absolute bottom-3 right-3 rounded-full bg-petrol/80 px-3 py-1 text-xs font-semibold text-white">
+                      <span
+                        className="absolute bottom-3 right-3 rounded-full bg-petrol/80 px-3 py-1 text-xs font-semibold text-white"
+                      >
                         {activeImageIndex + 1} / {images.length}
                       </span>
                     </>
@@ -250,7 +261,9 @@ function ProductPage() {
                 </span>
                 <TndEquivalents
                   millimes={query.data.product.sale_price_millimes}
-                  locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                  locale={
+                    lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"
+                  }
                 />
               </>
             ) : (
@@ -258,7 +271,9 @@ function ProductPage() {
                 {formatTND(query.data.product.price_millimes)}
                 <TndEquivalents
                   millimes={query.data.product.price_millimes}
-                  locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                  locale={
+                    lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"
+                  }
                 />
               </>
             )}
@@ -291,7 +306,9 @@ function ProductPage() {
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-base font-bold">{m.paymentMethodsTitle}</h2>
-              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">
+              <span
+                className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground"
+              >
                 {m.paymentMethodsPlanned}
               </span>
             </div>

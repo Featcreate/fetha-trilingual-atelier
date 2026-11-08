@@ -99,9 +99,7 @@ function CheckoutPage() {
                   key={line.productId}
                   className="flex justify-between gap-3 border-b border-border pb-3"
                 >
-                  <span>
-                    {localizedProductText(product.name, product.name_translations, lang)}
-                  </span>
+                  <span>{localizedProductText(product.name, product.name_translations, lang)}</span>
                   <strong>{formatTND(product.price_millimes)}</strong>
                 </div>
               );

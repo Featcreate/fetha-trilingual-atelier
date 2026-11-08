@@ -108,7 +108,9 @@ function CheckoutReturnPage() {
   return (
     <AuthShell lang={lang} setLang={setLang} title={t.title} wide>
       {!order ? (
-        <p role="alert" className="rounded-xl bg-secondary p-4">{t.invalid}</p>
+        <p role="alert" className="rounded-xl bg-secondary p-4">
+          {t.invalid}
+        </p>
       ) : query.isPending ? (
         <p>{t.loading}</p>
       ) : (
@@ -123,7 +125,9 @@ function CheckoutReturnPage() {
             <section className="mt-5 rounded-xl border border-border p-4">
               <div className="flex flex-wrap justify-between gap-2">
                 <span className="text-sm text-muted-foreground">#{query.data.id.slice(0, 8)}</span>
-                <strong>{t.total}: {formatTND(query.data.total_millimes)}</strong>
+                <strong>
+                  {t.total}: {formatTND(query.data.total_millimes)}
+                </strong>
               </div>
               <h2 className="mt-4 font-bold">{t.products}</h2>
               <ul className="mt-3 divide-y divide-border">
@@ -144,7 +148,10 @@ function CheckoutReturnPage() {
               {t.downloads}
             </Link>
           )}
-          <Link to="/catalog" className="mt-4 inline-flex text-sm font-semibold text-coral hover:underline">
+          <Link
+            to="/catalog"
+            className="mt-4 inline-flex text-sm font-semibold text-coral hover:underline"
+          >
             {t.catalog}
           </Link>
         </>

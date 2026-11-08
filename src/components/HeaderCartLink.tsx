@@ -8,8 +8,13 @@ type HeaderCartLinkProps = {
 
 export function HeaderCartLink({ lang }: HeaderCartLinkProps) {
   const { count } = useCart();
-  const label =
-    lang === "ar" ? "سلة المشتريات" : lang === "fr" ? "Panier" : "Shopping cart";
+  let label = "Shopping cart";
+
+  if (lang === "ar") {
+    label = "سلة المشتريات";
+  } else if (lang === "fr") {
+    label = "Panier";
+  }
 
   return (
     <Link

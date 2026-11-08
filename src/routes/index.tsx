@@ -543,15 +543,36 @@ function Index() {
         </div>
       </section>
 
-      <footer id="contact" className="bg-petrol text-cream">
-        <div className="mx-auto max-w-6xl space-y-3 px-4 py-8 text-center text-sm">
-          <div className="font-semibold">{lang === "ar" ? "للتواصل معنا" : lang === "fr" ? "Contactez-nous" : "Contact us"}</div>
-          <a
-            href="mailto:contact.algoreabazaar@gmail.com"
-            className="inline-flex items-center justify-center underline underline-offset-4 transition-colors hover:text-coral"
-          >
-            contact.algoreabazaar@gmail.com
-          </a>
+      <section
+        id="contact"
+        aria-labelledby="contact-title"
+        dir={lang === "ar" ? "rtl" : "ltr"}
+        className="bg-background"
+      >
+        <div className="mx-auto max-w-6xl px-4 py-12 md:py-16">
+          <div className="mx-auto max-w-3xl rounded-3xl border border-border bg-cream-light p-6 text-center shadow-sm md:p-10">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Algorea Bazaar</p>
+            <h2 id="contact-title" className="mt-3 text-2xl font-extrabold text-petrol md:text-3xl">
+              {t.contact.title}
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl leading-8 text-muted-foreground">
+              {t.contact.description}
+            </p>
+            <a
+              href="mailto:contact.algoreabazaar@gmail.com"
+              className="mt-6 inline-flex items-center justify-center rounded-full bg-accent px-7 py-3 font-semibold text-accent-foreground shadow-soft transition-transform hover:-translate-y-0.5"
+            >
+              {t.contact.button}
+            </a>
+            <p className="mt-4 text-sm font-medium text-petrol" dir="ltr">
+              contact.algoreabazaar@gmail.com
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <footer className="bg-petrol text-cream">
+        <div className="mx-auto max-w-6xl px-4 py-6 text-center text-sm">
           <div>© {new Date().getFullYear()} Algorea Bazaar. {t.footer}</div>
         </div>
       </footer>

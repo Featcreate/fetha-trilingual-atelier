@@ -64,6 +64,11 @@ export const dict = {
       ],
       closing: "Algorea Bazaar — Découvrez, créez et partagez vos idées avec le monde.",
     },
+    contact: {
+      title: "Contactez-nous",
+      description: "Une question ? Écrivez-nous, nous serons heureux de vous aider.",
+      button: "Envoyer un e-mail",
+    },
     logoSlot: "Emplacement du logo",
     marketplace: {
       catalog: "Catalogue",
@@ -384,6 +389,11 @@ export const dict = {
       ],
       closing: "Algorea Bazaar — اكتشف، أبدع، وشارك أفكارك مع العالم.",
     },
+    contact: {
+      title: "اتصل بنا",
+      description: "لديك سؤال؟ راسلنا، وسنسعد بمساعدتك.",
+      button: "إرسال رسالة عبر البريد الإلكتروني",
+    },
     logoSlot: "مكان الشعار",
     marketplace: {
       catalog: "الكتالوج",
@@ -700,6 +710,11 @@ export const dict = {
         },
       ],
       closing: "Algorea Bazaar — Discover, create, and share your ideas with the world.",
+    },
+    contact: {
+      title: "Get in touch",
+      description: "Questions? Email us. We’ll be happy to help.",
+      button: "Send an email",
     },
     logoSlot: "Logo slot",
     marketplace: {

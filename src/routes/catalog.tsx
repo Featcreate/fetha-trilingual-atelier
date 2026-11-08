@@ -47,7 +47,7 @@ type Store = { id: string; name: string; slug: string };
 function CatalogPage() {
   const { lang, setLang, t } = useLang();
   const m = t.marketplace;
-  const { add, count } = useCart();
+  const { add, count, items } = useCart();
   const [search, setSearch] = useState("");
   const [type, setType] = useState(Route.useSearch().type ?? "all");
   const catalog = useQuery({
@@ -191,7 +191,11 @@ function CatalogPage() {
                 <button
                   type="button"
                   onClick={() => add(p.id)}
-                  className="w-full rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground"
+                  className={`w-full rounded-full px-4 py-2 text-sm font-semibold text-white transition-colors ${
+                    items.some((item) => item.productId === p.id)
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-accent text-accent-foreground"
+                  }`}
                 >
                   {lang === "ar"
                     ? "أضف إلى السلة"

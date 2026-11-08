@@ -46,6 +46,23 @@ export const startCheckout = createServerFn({ method: "POST" })
     if (order.status !== "pending") return { ok: false as const, error: "order_closed", orderId };
     if (order.konnect_pay_url) return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
 
+    const { data: claimRows, error: claimError } = await context.supabase.rpc(
+      "claim_order_konnect_init",
+      { _order_id: order.id },
+    );
+    const claim = claimRows?.[0] as { outcome?: string; pay_url?: string | null } | undefined;
+    if (claimError || !claim) return { ok: false as const, error: "payment_initialization_uncertain", orderId };
+    if (claim.outcome === "existing" && claim.pay_url) {
+      return { ok: true as const, orderId, payUrl: claim.pay_url };
+    }
+    if (claim.outcome !== "claimed") {
+      return {
+        ok: false as const,
+        error: claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain",
+        orderId,
+      };
+    }
+
     const { data: profile } = await context.supabase
       .from("profiles")
       .select("full_name, phone")
@@ -73,6 +90,7 @@ export const startCheckout = createServerFn({ method: "POST" })
         .update({ konnect_payment_ref: paymentRef, konnect_pay_url: payUrl })
         .eq("id", order.id)
         .eq("status", "pending")
+        .not("konnect_init_claimed_at", "is", null)
         .is("konnect_payment_ref", null);
       const { data: saved, error: readError } = await supabaseAdmin
         .from("orders")
@@ -141,6 +159,25 @@ export const startCartCheckout = createServerFn({ method: "POST" })
       return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
     }
 
+    const { data: claimRows, error: claimError } = await context.supabase.rpc(
+      "claim_order_konnect_init",
+      { _order_id: order.id },
+    );
+    const claim = claimRows?.[0] as { outcome?: string; pay_url?: string | null } | undefined;
+    if (claimError || !claim) {
+      return { ok: false as const, error: "payment_initialization_uncertain", orderId };
+    }
+    if (claim.outcome === "existing" && claim.pay_url) {
+      return { ok: true as const, orderId, payUrl: claim.pay_url };
+    }
+    if (claim.outcome !== "claimed") {
+      return {
+        ok: false as const,
+        error: claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain",
+        orderId,
+      };
+    }
+
     const { data: profile } = await context.supabase
       .from("profiles")
       .select("full_name,phone")
@@ -168,6 +205,7 @@ export const startCartCheckout = createServerFn({ method: "POST" })
         .update({ konnect_payment_ref: paymentRef, konnect_pay_url: payUrl })
         .eq("id", order.id)
         .eq("status", "pending")
+        .not("konnect_init_claimed_at", "is", null)
         .is("konnect_payment_ref", null);
       const { data: saved, error: readError } = await supabaseAdmin
         .from("orders")

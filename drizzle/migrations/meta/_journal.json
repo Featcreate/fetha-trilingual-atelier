@@ -288,6 +288,13 @@
       "when": 1794186000000,
       "tag": "0038_seller_payout_konnect_destination",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1794189600000,
+      "tag": "0039_update_payout_terms_acceptance_versions",
+      "breakpoints": true
     }
   ]
 }

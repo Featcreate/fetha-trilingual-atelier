@@ -265,7 +265,11 @@ function ProductPage() {
                 : "bg-accent text-accent-foreground"
             }`}
           >
-            {lang === "ar" ? "أضف إلى السلة" : lang === "en" ? "Add to cart" : "Ajouter au panier"}
+            {lang === "ar"
+              ? "أضف إلى السلة"
+              : lang === "en"
+                ? "Add to cart"
+                : "Ajouter au panier"}
           </button>
           <Link
             to="/stores/$slug"

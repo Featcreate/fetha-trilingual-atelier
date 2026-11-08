@@ -1,4 +1,3 @@
-// prettier-ignore-file
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { User } from "lucide-react";
 import { useSession } from "@/hooks/use-session";

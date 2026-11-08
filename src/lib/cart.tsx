@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 export type CartLine = { productId: string };
 
@@ -25,7 +32,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (Array.isArray(parsed)) {
           const ids = parsed.flatMap((line): string[] => {
             const id = line && typeof line.productId === "string" ? line.productId : "";
-            return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
+            return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+              id,
+            )
               ? [id]
               : [];
           });

@@ -295,6 +295,13 @@
       "when": 1794189600000,
       "tag": "0039_update_payout_terms_acceptance_versions",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1794189600001,
+      "tag": "0040_seller_star_ratings",
+      "breakpoints": true
     }
   ]
 }

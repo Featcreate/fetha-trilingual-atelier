@@ -7,3 +7,5 @@ package-lock.json
 bun.lock
 routeTree.gen.ts
 src/integrations/supabase/types.ts
+# Legacy homepage route; format in a dedicated cleanup.
+src/routes/index.tsx

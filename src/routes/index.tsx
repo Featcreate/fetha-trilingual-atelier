@@ -72,6 +72,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import heroBanner from "@/assets/1793464236433.jpg";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 import { localizedProductText } from "@/lib/product-translations";
+import { HeaderCartLink } from "@/components/HeaderCartLink";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -266,6 +267,7 @@ function Index() {
             <a href="#home" aria-label="Algorea Bazaar" className="flex h-12 w-20 shrink-0 md:h-14 md:w-36">
               <BrandLogo slotLabel={t.logoSlot} className="h-full w-full" />
             </a>
+            <HeaderCartLink lang={lang} />
             <Link
               to={session ? "/account" : "/auth"}
               aria-label={accountLabel}

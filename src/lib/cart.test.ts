@@ -16,14 +16,9 @@ describe("digital product cart", () => {
   });
 
   it("ignores invalid records and invalid product identifiers", () => {
-    expect(
-      normalizeCart([
-        null,
-        {},
-        { productId: "not-a-uuid" },
-        { productId: productA },
-      ]),
-    ).toEqual([{ productId: productA }]);
+    expect(normalizeCart([null, {}, { productId: "not-a-uuid" }, { productId: productA }])).toEqual(
+      [{ productId: productA }],
+    );
     expect(normalizeCart({ productId: productA })).toEqual([]);
   });
 

@@ -271,7 +271,10 @@ function SellerPage() {
       );
       return;
     }
-    if ((method === "other" && !providerName) || (method === "bank_transfer" && !bankName)) {
+    if (
+      (method === "other" && !providerName) ||
+      (method === "bank_transfer" && !bankName)
+    ) {
       setNotice(
         lang === "ar"
           ? method === "bank_transfer"

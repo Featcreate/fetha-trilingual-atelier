@@ -71,6 +71,17 @@ BEGIN
    LIMIT 1;
   IF _existing IS NOT NULL THEN RETURN _existing; END IF;
 
+  -- If a prior provider call timed out before its reference was saved, block
+  -- new cart orders for this buyer until the uncertain attempt is reconciled.
+  SELECT id INTO _existing
+    FROM public.orders
+   WHERE user_id = _uid
+     AND status = 'pending'
+     AND konnect_init_claimed_at IS NOT NULL
+     AND konnect_pay_url IS NULL
+   LIMIT 1;
+  IF _existing IS NOT NULL THEN RETURN _existing; END IF;
+
   SELECT commission_bps INTO _bps FROM public.platform_settings WHERE id = true;
   IF _bps IS NULL THEN RAISE EXCEPTION 'commission_not_configured'; END IF;
 

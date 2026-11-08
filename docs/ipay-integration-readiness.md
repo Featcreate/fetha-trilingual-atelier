@@ -55,15 +55,16 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 1. **Marketplace eligibility and documents:** Confirm in writing that this organisation/account can process payments for a digital-goods marketplace where buyers pay the platform and the platform separately accounts for and manually pays sellers. Confirm any required business registration, KYC, or supporting documents.
 1. **Fees:** Confirm the 1% monthly-billed commission capped at 5 TND for this organisation and identify every additional acquirer/provider fee by payment method, including refunds and declared transfers.
 
-## Implementation status on feature/ipay-checkout-integration
+## Implementation status on the review branch
 
 A first, deliberately incomplete server-side scaffold has been added:
 
 - `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and Bearer JWT headers.
 - The one-shot client validates the order/customer input, requires `IPAY_CHECKOUT_ENABLED=true`, and rejects provider responses with empty references or checkout URLs outside HTTPS iPay domains (including URLs containing embedded credentials).
-- `IPAY_AMOUNT_UNIT` defaults to `minor` (integer TND millimes); `major` remains an explicit override only if Audasoft confirms decimal dinars in writing. This is an adopted but unverified assumption, not an official confirmation.
+- `IPAY_AMOUNT_UNIT` is now mandatory and must be explicitly set to `major` or `minor`; there is no fallback. Do not set it until Audasoft confirms the contract or a non-settling sandbox test verifies it.
 - `drizzle/migrations/0034_ipay_checkout_reference.sql` adds separate nullable iPay reference/URL fields and a unique partial index. It does not alter the Konnect columns, order settlement, commission, ledger, or payout rules.
-- `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard and hosted checkout URL/reference validation.
+- `src/lib/ipay.server.test.ts` covers explicit configuration, the activation guard, amount conversion, URL allowlisting, port restrictions, and response-size validation.
+- Provider requests now have a 15-second timeout. Network failures and timeouts return safe error codes; provider response bodies and credentials are never logged.
 
 The iPay client is not yet wired into buyer checkout. No iPay webhook handler or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
 
@@ -75,8 +76,17 @@ Until Audasoft confirms the open questions above:
 - do not apply migration 0034 to Supabase;
 - do not settle an order based only on a webhook, redirect, or browser query parameter;
 - do not release downloads for declared bank/postal transfers without confirmed cleared funds;
-- keep the adopted `minor` default provisional until a non-settling sandbox test confirms that `amount: 1000` displays exactly `1.000 TND`; do not enable live checkout based on this assumption;
+- leave `IPAY_AMOUNT_UNIT` unset until a non-settling sandbox test confirms whether `amount: 1000` displays exactly `1.000 TND`; the client now fails closed when the unit is unset;
 - do not claim international-card or foreign-currency support;
 - do not assume webhook authenticity or retry behaviour.
 
 Next engineering steps after written confirmation: implement authoritative transaction lookup, authenticated/idempotent webhook reconciliation, exact order/amount/currency/product matching, safe settlement through the existing trusted RPC, and sandbox integration tests. Then run the repository typecheck, unit tests, migration-journal check, and production build on the branch. Review the full diff before any merge or deployment.
+
+
+## Supabase security-advisor review
+
+The 13 `authenticated_security_definer_function_executable` notices were reviewed against the defining migrations. These RPCs are intentionally callable by signed-in users for scoped operations (such as a seller managing their own file version or a buyer creating their own order) or for admin workflows. The reviewed implementations include caller/ownership checks or `has_role(auth.uid(), 'admin')` checks; the high-impact settlement RPCs remain restricted to `service_role`. The advisor notice alone does not establish an authorization bypass. Do not blanket-revoke `authenticated` execution or convert these routines to `SECURITY INVOKER`, because that would break legitimate app flows and can change RLS semantics. Keep a regression review for every SECURITY DEFINER function and confirm role/ownership checks whenever one changes.
+
+The separate `auth_leaked_password_protection` notice requires enabling Supabase Auth's leaked-password protection in the project's Auth password/security settings. The available project connector does not expose that Auth setting as a safe configuration operation, so it remains a dashboard action and must be enabled before public account registration. No production Auth setting was changed in this review.
+
+The performance advisor also reports unused indexes and multiple permissive RLS policies. These are optimization notices, not proof of data exposure. Do not remove indexes or combine policies without query-plan and policy-equivalence tests.

@@ -348,9 +348,8 @@ function SellerPage() {
       .filter((value): value is File => value instanceof File && value.size > 0);
     if (!name || !description) return setNotice(m.productRequired);
     if (!price) return setNotice(m.invalidPrice);
-    if (salePriceInput && (!salePrice || salePrice >= price)) {
+    if (salePriceInput && (!salePrice || salePrice >= price))
       return setNotice(m.invalidSalePrice);
-    }
     if (!files.length || files.some((file) => file.size < 1 || file.size > MAX_FILE_BYTES))
       return setNotice(m.invalidFile);
     if (
@@ -518,9 +517,8 @@ function SellerPage() {
     const salePrice = salePriceInput ? parseTNDToMillimes(salePriceInput) : null;
     if (!name || !description) return setNotice(m.productRequired);
     if (!price) return setNotice(m.invalidPrice);
-    if (salePriceInput && (!salePrice || salePrice >= price)) {
+    if (salePriceInput && (!salePrice || salePrice >= price))
       return setNotice(m.invalidSalePrice);
-    }
     const productType = String(
       f.get(`edit_type_${product.id}`) ?? product.product_type,
     ) as ProductType;

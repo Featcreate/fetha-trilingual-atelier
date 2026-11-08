@@ -654,6 +654,7 @@ export type Database = {
           name: string
           name_translations: Json
           price_millimes: number
+          sale_price_millimes: number | null
           product_type: string
           store_id: string | null
           updated_at: string
@@ -669,6 +670,7 @@ export type Database = {
           name: string
           name_translations?: Json
           price_millimes: number
+          sale_price_millimes?: number | null
           product_type?: string
           store_id?: string | null
           updated_at?: string
@@ -684,6 +686,7 @@ export type Database = {
           name?: string
           name_translations?: Json
           price_millimes?: number
+          sale_price_millimes?: number | null
           product_type?: string
           store_id?: string | null
           updated_at?: string

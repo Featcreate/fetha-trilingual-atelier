@@ -91,13 +91,15 @@ function ProductPage() {
             ];
             const activeImage = images[activeImageIndex] ?? images[0];
             const showPrevious = () =>
-              setActiveImageIndex((current) => (current - 1 + images.length) % images.length);
+              setActiveImageIndex(
+                (current) => (current - 1 + images.length) % images.length,
+              );
             const showNext = () =>
               setActiveImageIndex((current) => (current + 1) % images.length);
             return (
               <div className="space-y-4">
                 <div
-                  className="relative flex touch-pan-y aspect-[16/9] items-center justify-center overflow-hidden rounded-2xl bg-cream-light text-4xl font-bold text-petrol/40"
+                  className="relative flex aspect-[16/9] touch-pan-y items-center justify-center overflow-hidden rounded-2xl bg-cream-light text-4xl font-bold text-petrol/40"
                   onClickCapture={(event) => {
                     if (didSwipeRef.current) {
                       event.preventDefault();
@@ -105,7 +107,9 @@ function ProductPage() {
                       didSwipeRef.current = false;
                     }
                   }}
-                  onTouchStart={(event) => setTouchStartX(event.touches[0]?.clientX ?? null)}
+                  onTouchStart={(event) =>
+                    setTouchStartX(event.touches[0]?.clientX ?? null)
+                  }
                   onTouchEnd={(event) => {
                     if (touchStartX === null || images.length < 2) return;
                     const delta = event.changedTouches[0]?.clientX;
@@ -158,9 +162,7 @@ function ProductPage() {
                       >
                         <ChevronRight className="h-6 w-6" />
                       </button>
-                      <span
-                        className="absolute bottom-3 right-3 rounded-full bg-petrol/80 px-3 py-1 text-xs font-semibold text-white"
-                      >
+                      <span className="absolute bottom-3 right-3 rounded-full bg-petrol/80 px-3 py-1 text-xs font-semibold text-white">
                         {activeImageIndex + 1} / {images.length}
                       </span>
                     </>
@@ -267,7 +269,11 @@ function ProductPage() {
                 : "bg-accent text-accent-foreground"
             }`}
           >
-            {lang === "ar" ? "أضف إلى السلة" : lang === "en" ? "Add to cart" : "Ajouter au panier"}
+            {lang === "ar"
+              ? "أضف إلى السلة"
+              : lang === "en"
+                ? "Add to cart"
+                : "Ajouter au panier"}
           </button>
           <Link
             to="/stores/$slug"

@@ -118,7 +118,31 @@ function ProductPage() {
             )}
           </p>
           <p className="mt-6 flex flex-wrap items-center gap-3 text-2xl font-extrabold">
-            {query.data.product.sale_price_millimes ? <><span className="rounded bg-red-100 px-2 py-1 text-sm font-bold text-red-700">PROMO</span><span className="text-base text-muted-foreground line-through">{formatTND(query.data.product.price_millimes)}</span><span className="text-red-600">{formatTND(query.data.product.sale_price_millimes)}</span><TndEquivalents millimes={query.data.product.sale_price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></> : <>{formatTND(query.data.product.price_millimes)}<TndEquivalents millimes={query.data.product.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></>}
+            {query.data.product.sale_price_millimes ? (
+              <>
+                <span className="rounded bg-red-100 px-2 py-1 text-sm font-bold text-red-700">
+                  PROMO
+                </span>
+                <span className="text-base text-muted-foreground line-through">
+                  {formatTND(query.data.product.price_millimes)}
+                </span>
+                <span className="text-red-600">
+                  {formatTND(query.data.product.sale_price_millimes)}
+                </span>
+                <TndEquivalents
+                  millimes={query.data.product.sale_price_millimes}
+                  locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                />
+              </>
+            ) : (
+              <>
+                {formatTND(query.data.product.price_millimes)}
+                <TndEquivalents
+                  millimes={query.data.product.price_millimes}
+                  locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                />
+              </>
+            )}
           </p>
           <button
             type="button"

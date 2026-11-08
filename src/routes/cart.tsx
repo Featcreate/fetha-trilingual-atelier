@@ -79,11 +79,17 @@ function CartPage() {
 
       const storeIds = [
         ...new Set(
-          (data ?? []).map((product) => product.store_id).filter((id): id is string => !!id),
+          (data ?? [])
+            .map((product) => product.store_id)
+            .filter((id): id is string => !!id),
         ),
       ];
       const { data: stores, error: storeError } = storeIds.length
-        ? await supabase.from("stores").select("id,name").in("id", storeIds).eq("status", "active")
+        ? await supabase
+            .from("stores")
+            .select("id,name")
+            .in("id", storeIds)
+            .eq("status", "active")
         : { data: [], error: null };
       if (storeError) throw storeError;
 
@@ -98,7 +104,9 @@ function CartPage() {
     const productMap = new Map(
       (query.data?.products ?? []).map((product) => [product.id, product]),
     );
-    const storeMap = new Map((query.data?.stores ?? []).map((store) => [store.id, store]));
+    const storeMap = new Map(
+      (query.data?.stores ?? []).map((store) => [store.id, store]),
+    );
 
     return items.flatMap((line) => {
       const product = productMap.get(line.productId);
@@ -155,7 +163,8 @@ function CartPage() {
                   <p className="mt-1 text-sm font-semibold">
                     {formatTND(line.product.price_millimes)}
                   </p>
-                </div>                <div className="text-end">
+                </div>
+                <div className="text-end">
                   <p className="font-bold">{formatTND(line.total)}</p>
                   <button
                     type="button"

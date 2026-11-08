@@ -1,6 +1,6 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { z } from "zod";
 import { AuthShell } from "@/components/AuthShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,6 +84,7 @@ function CheckoutReturnPage() {
   const { lang, setLang } = useLang();
   const t = copy[lang];
   const { remove } = useCart();
+  const processedPaidOrder = useRef<string | null>(null);
 
   const query = useQuery({
     queryKey: ["checkout-return-order", order],
@@ -102,10 +103,11 @@ function CheckoutReturnPage() {
   });
 
   useEffect(() => {
-    if (query.data?.status === "paid") {
+    if (query.data?.status === "paid" && processedPaidOrder.current !== query.data.id) {
+      processedPaidOrder.current = query.data.id;
       query.data.order_items.forEach((item) => remove(item.product_id));
     }
-  }, [query.data?.status, query.data?.order_items, remove]);
+  }, [query.data?.status, query.data?.id, query.data?.order_items, remove]);
 
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
   const message =

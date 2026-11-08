@@ -270,7 +270,13 @@ function Index() {
             </a>
             <Link
               to="/cart"
-              aria-label={lang === "ar" ? "سلة المشتريات" : lang === "fr" ? "Panier" : "Shopping cart"}
+              aria-label={
+                lang === "ar"
+                  ? "سلة المشتريات"
+                  : lang === "fr"
+                    ? "Panier"
+                    : "Shopping cart"
+              }
               className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-red-200 bg-red-50 p-2 text-red-600 transition-colors hover:bg-red-100"
             >
               <ShoppingCart className="h-5 w-5" aria-hidden="true" />

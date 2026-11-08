@@ -60,6 +60,12 @@ jobs:
             echo "No changed files require formatting."
           fi
 
+      - name: Diagnose Prettier output
+        if: failure()
+        run: |
+          bunx prettier src/routes/_authenticated/seller.tsx > /tmp/seller.formatted.tsx
+          diff -u src/routes/_authenticated/seller.tsx /tmp/seller.formatted.tsx || true
+
       - name: Lint
         shell: bash
         run: |

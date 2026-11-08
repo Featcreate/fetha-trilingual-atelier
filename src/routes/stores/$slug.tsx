@@ -31,7 +31,7 @@ function StorefrontPage() {
       const { data: products, error: productError } = await supabase
         .from("products")
         .select(
-          "id,name,description,name_translations,description_translations,price_millimes,product_type,image_path",
+          "id,name,description,name_translations,description_translations,price_millimes,sale_price_millimes,product_type,image_path",
         )
         .eq("store_id", store.id)
         .eq("is_active", true)
@@ -126,12 +126,8 @@ function StorefrontPage() {
                   <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
                     {localizedProductText(p.description, p.description_translations, lang)}
                   </p>
-                  <p className="mt-3 text-lg font-extrabold">
-                    {formatTND(p.price_millimes)}
-                    <TndEquivalents
-                      millimes={p.price_millimes}
-                      locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
-                    />
+                  <p className="mt-3 flex flex-wrap items-center gap-2 text-lg font-extrabold">
+                    {p.sale_price_millimes ? <><span className="rounded bg-red-100 px-2 py-1 text-xs font-bold text-red-700">PROMO</span><span className="text-sm text-muted-foreground line-through">{formatTND(p.price_millimes)}</span><span className="text-red-600">{formatTND(p.sale_price_millimes)}</span><TndEquivalents millimes={p.sale_price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></> : <>{formatTND(p.price_millimes)}<TndEquivalents millimes={p.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></>}
                   </p>
                 </article>
               ))}

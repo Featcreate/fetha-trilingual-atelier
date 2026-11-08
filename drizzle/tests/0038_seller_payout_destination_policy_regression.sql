@@ -26,7 +26,9 @@ BEGIN
   SELECT pg_get_functiondef('public.guard_seller_payout_preference()'::regprocedure)
   INTO _preference_guard;
   IF position('konnect' IN lower(_preference_guard)) = 0
-     OR position('payout_destination_details_required' IN _preference_guard) = 0 THEN
+     OR position('payout_destination_details_required' IN _preference_guard) = 0
+     OR position('payout_provider_name_required' IN _preference_guard) = 0
+     OR position('payout_bank_name_required' IN _preference_guard) = 0 THEN
     RAISE EXCEPTION 'test_failed: preference guard must accept Konnect and retain required destination validation';
   END IF;
 

@@ -971,7 +971,11 @@ function SellerPage() {
                                 <TndEquivalents
                                   millimes={product.sale_price_millimes}
                                   locale={
-                                    lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"
+                                    lang === "ar"
+                                      ? "ar-TN"
+                                      : lang === "en"
+                                        ? "en-GB"
+                                        : "fr-FR"
                                   }
                                 />
                               </>
@@ -981,7 +985,11 @@ function SellerPage() {
                                 <TndEquivalents
                                   millimes={product.price_millimes}
                                   locale={
-                                    lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"
+                                    lang === "ar"
+                                      ? "ar-TN"
+                                      : lang === "en"
+                                        ? "en-GB"
+                                        : "fr-FR"
                                   }
                                 />
                               </>

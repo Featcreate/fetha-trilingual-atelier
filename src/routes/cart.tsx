@@ -105,7 +105,16 @@ function CartPage() {
     return items.flatMap((line) => {
       const product = productMap.get(line.productId);
       const store = product?.store_id ? storeMap.get(product.store_id) : undefined;
-      return product && store ? [{ ...line, product, store, total: product.sale_price_millimes ?? product.price_millimes }] : [];
+      return product && store
+        ? [
+            {
+              ...line,
+              product,
+              store,
+              total: product.sale_price_millimes ?? product.price_millimes,
+            },
+          ]
+        : [];
     });
   }, [items, query.data]);
 

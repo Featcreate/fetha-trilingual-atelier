@@ -35,6 +35,7 @@ type Product = {
   name: string;
   description: string;
   price_millimes: number;
+  sale_price_millimes: number | null;
   product_type: string;
   store_id: string | null;
   image_path: string | null;
@@ -55,7 +56,7 @@ function CatalogPage() {
       const { data: products, error } = await supabase
         .from("products")
         .select(
-          "id,name,description,name_translations,description_translations,price_millimes,product_type,store_id,image_path",
+          "id,name,description,name_translations,description_translations,price_millimes,sale_price_millimes,product_type,store_id,image_path",
         )
         .eq("is_active", true)
         .order("created_at", { ascending: false });
@@ -162,12 +163,8 @@ function CatalogPage() {
                     {localizedProductText(p.description, p.description_translations, lang)}
                   </p>
                 </div>
-                <p className="text-lg font-extrabold">
-                  {formatTND(p.price_millimes)}
-                  <TndEquivalents
-                    millimes={p.price_millimes}
-                    locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
-                  />
+                <p className="flex flex-wrap items-center gap-2 text-lg font-extrabold">
+                  {p.sale_price_millimes ? <><span className="rounded bg-red-100 px-2 py-1 text-xs font-bold text-red-700">PROMO</span><span className="text-sm text-muted-foreground line-through">{formatTND(p.price_millimes)}</span><span className="text-red-600">{formatTND(p.sale_price_millimes)}</span><TndEquivalents millimes={p.sale_price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></> : <>{formatTND(p.price_millimes)}<TndEquivalents millimes={p.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></>}
                 </p>
                 <button
                   type="button"

@@ -4,6 +4,10 @@ ALTER TABLE public.orders
   ADD COLUMN IF NOT EXISTS cart_fingerprint text,
   ADD COLUMN IF NOT EXISTS konnect_init_claimed_at timestamptz;
 
+CREATE UNIQUE INDEX IF NOT EXISTS orders_one_pending_cart_fingerprint
+  ON public.orders(user_id, cart_fingerprint)
+  WHERE status = 'pending' AND cart_fingerprint IS NOT NULL;
+
 CREATE OR REPLACE FUNCTION public.create_order_from_cart(_items jsonb, _checkout_key text)
 RETURNS uuid
 LANGUAGE plpgsql
@@ -27,7 +31,7 @@ BEGIN
   END IF;
   IF jsonb_typeof(_items) IS DISTINCT FROM 'array' THEN RAISE EXCEPTION 'invalid_cart'; END IF;
 
-  PERFORM pg_advisory_xact_lock(hashtextextended(_uid::text || ':' || _checkout_key, 0));
+  PERFORM pg_advisory_xact_lock(hashtextextended(_uid::text || ':key:' || _checkout_key, 0));
 
   SELECT count(*) INTO _line_count FROM jsonb_array_elements(_items);
   IF _line_count < 1 OR _line_count > 50 THEN RAISE EXCEPTION 'invalid_cart'; END IF;
@@ -47,6 +51,9 @@ BEGIN
     FROM (SELECT (x.value->>'productId')::uuid AS product_id
           FROM jsonb_array_elements(_items) AS x(value)) requested;
 
+  -- Serialize different checkout keys for the same cart as well.
+  PERFORM pg_advisory_xact_lock(hashtextextended(_uid::text || ':cart:' || _fingerprint, 0));
+
   SELECT id, cart_fingerprint INTO _existing, _existing_fingerprint
     FROM public.orders WHERE user_id = _uid AND checkout_key = _checkout_key;
   IF _existing IS NOT NULL THEN
@@ -55,6 +62,14 @@ BEGIN
     END IF;
     RETURN _existing;
   END IF;
+
+  -- A pending order for this exact cart must be reused even after a browser reload
+  -- or a newly generated client key; never create a second charge for the same cart.
+  SELECT id INTO _existing
+    FROM public.orders
+   WHERE user_id = _uid AND cart_fingerprint = _fingerprint AND status = 'pending'
+   LIMIT 1;
+  IF _existing IS NOT NULL THEN RETURN _existing; END IF;
 
   SELECT commission_bps INTO _bps FROM public.platform_settings WHERE id = true;
   IF _bps IS NULL THEN RAISE EXCEPTION 'commission_not_configured'; END IF;

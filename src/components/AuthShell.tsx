@@ -39,7 +39,7 @@ export function AuthShell({
 }: {
   lang: Lang;
   setLang: (l: Lang) => void;
-  title: string;
+  title: ReactNode;
   children: ReactNode;
   wide?: boolean;
 }) {

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useLang } from "@/lib/i18n";
@@ -84,6 +84,7 @@ function SellerPage() {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
   const [confirmationBusy, setConfirmationBusy] = useState(false);
+  const [payoutMethod, setPayoutMethod] = useState("other");
 
   const storeQuery = useQuery({
     queryKey: ["seller-store", user.id],
@@ -164,6 +165,12 @@ function SellerPage() {
       return data;
     },
   });
+
+  useEffect(() => {
+    if (payoutPreferenceQuery.data?.method) {
+      setPayoutMethod(payoutPreferenceQuery.data.method);
+    }
+  }, [payoutPreferenceQuery.data?.method]);
 
   const payoutHistoryQuery = useQuery({
     queryKey: ["seller-payout-history", store?.id],
@@ -252,6 +259,8 @@ function SellerPage() {
     const method = String(values.get("payout_method") ?? "other");
     const accountHolderName = String(values.get("account_holder_name") ?? "").trim();
     const accountIdentifier = String(values.get("account_identifier") ?? "").trim();
+    const providerName = String(values.get("provider_name") ?? "").trim();
+    const bankName = String(values.get("bank_name") ?? "").trim();
     if (!accountHolderName || !accountIdentifier) {
       setNotice(
         lang === "ar"
@@ -259,6 +268,22 @@ function SellerPage() {
           : lang === "en"
             ? "Enter the account holder name and account identifier."
             : "Saisissez le titulaire et l’identifiant du compte.",
+      );
+      return;
+    }
+    if ((method === "other" && !providerName) || (method === "bank_transfer" && !bankName)) {
+      setNotice(
+        lang === "ar"
+          ? method === "bank_transfer"
+            ? "أدخل اسم البنك لإتمام بيانات التحويل البنكي."
+            : "أدخل اسم مزود الخدمة للوسيلة الأخرى."
+          : lang === "en"
+            ? method === "bank_transfer"
+              ? "Enter the bank name for a bank transfer."
+              : "Enter the provider name for the other method."
+            : method === "bank_transfer"
+              ? "Saisissez le nom de la banque pour un virement bancaire."
+              : "Saisissez le nom du prestataire pour l’autre moyen.",
       );
       return;
     }
@@ -270,8 +295,8 @@ function SellerPage() {
         method,
         account_holder_name: accountHolderName,
         account_identifier: accountIdentifier,
-        provider_name: String(values.get("provider_name") ?? "").trim() || null,
-        bank_name: String(values.get("bank_name") ?? "").trim() || null,
+        provider_name: providerName || null,
+        bank_name: bankName || null,
         additional_details: String(values.get("additional_details") ?? "").trim() || null,
         konnect_wallet_id: null,
       },
@@ -1036,12 +1061,16 @@ function SellerPage() {
             <div>
               <h2 className="text-xl font-bold">{m.payoutMethod}</h2>
               <p className="mt-2 font-semibold">{m.weeklyManual}</p>
+              <p className="mt-2 text-sm leading-7 text-muted-foreground">{m.payoutHelp}</p>
               <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                {m.payoutExternalFeesNote}
+              </p>
+              <p className="mt-2 text-xs leading-6 text-muted-foreground">
                 {lang === "ar"
-                  ? "تختار وسيلة استلام مستحقاتك. تُحوّل Algorea Bazaar مستحقاتك أسبوعياً يدوياً إلى هذه البيانات. لا تضع كلمة مرور أو رمز تحقق أو مفتاحاً سرياً."
+                  ? "لا تُدخل كلمة مرور أو رمز OTP أو رمز PIN أو أي مفتاح سري."
                   : lang === "en"
-                    ? "Choose how you receive your seller proceeds. Algorea Bazaar sends weekly manual transfers to these details. Never enter a password, OTP, or secret key."
-                    : "Choisissez votre moyen de réception. Algorea Bazaar effectue un virement manuel chaque semaine vers ces coordonnées. Ne saisissez jamais de mot de passe, code OTP ou clé secrète."}
+                    ? "Never enter a password, OTP, PIN, or secret key."
+                    : "Ne saisissez jamais de mot de passe, code OTP, code PIN ou clé secrète."}
               </p>
               <a
                 href="https://dashboard.konnect.network"
@@ -1069,8 +1098,10 @@ function SellerPage() {
                   <select
                     name="payout_method"
                     defaultValue={payoutPreferenceQuery.data?.method ?? "other"}
+                    onChange={(event) => setPayoutMethod(event.currentTarget.value)}
                     className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
                   >
+                    <option value="konnect">Konnect</option>
                     <option value="ipay">iPay</option>
                     <option value="wepay">WePay</option>
                     <option value="bank_transfer">
@@ -1113,36 +1144,47 @@ function SellerPage() {
                     name="account_identifier"
                     required
                     maxLength={200}
+                    placeholder={
+                      payoutMethod === "bank_transfer"
+                        ? lang === "ar"
+                          ? "رقم الحساب أو IBAN"
+                          : lang === "en"
+                            ? "Account number or IBAN"
+                            : "Numéro de compte ou IBAN"
+                        : undefined
+                    }
                     defaultValue={payoutPreferenceQuery.data?.account_identifier ?? ""}
                     className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
                   />
                 </label>
-                <label className="block text-sm font-medium">
-                  {lang === "ar"
-                    ? "اسم مزود الخدمة (اختياري)"
-                    : lang === "en"
-                      ? "Provider name (optional)"
-                      : "Nom du prestataire (facultatif)"}
-                  <input
-                    name="provider_name"
-                    maxLength={120}
-                    defaultValue={payoutPreferenceQuery.data?.provider_name ?? ""}
-                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
-                  />
-                </label>
-                <label className="block text-sm font-medium">
-                  {lang === "ar"
-                    ? "اسم البنك (اختياري)"
-                    : lang === "en"
-                      ? "Bank name (optional)"
-                      : "Nom de la banque (facultatif)"}
-                  <input
-                    name="bank_name"
-                    maxLength={160}
-                    defaultValue={payoutPreferenceQuery.data?.bank_name ?? ""}
-                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
-                  />
-                </label>
+                {payoutMethod === "other" && (
+                  <label className="block text-sm font-medium">
+                    {lang === "ar"
+                      ? "اسم مزود الخدمة"
+                      : lang === "en"
+                        ? "Provider name"
+                        : "Nom du prestataire"}
+                    <input
+                      name="provider_name"
+                      required
+                      maxLength={120}
+                      defaultValue={payoutPreferenceQuery.data?.provider_name ?? ""}
+                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
+                    />
+                  </label>
+                )}
+                {payoutMethod === "bank_transfer" && (
+                  <label className="block text-sm font-medium">
+                    {lang === "ar" ? "اسم البنك" : lang === "en" ? "Bank name" : "Nom de la banque"}
+                    <input
+                      name="bank_name"
+                      required
+                      maxLength={160}
+                      defaultValue={payoutPreferenceQuery.data?.bank_name ?? ""}
+                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
+                    />
+                  </label>
+                )}
                 <label className="block text-sm font-medium">
                   {lang === "ar"
                     ? "معلومات إضافية (اختياري)"

@@ -106,7 +106,7 @@ function AuthPage() {
               full_name: v("full_name").trim(),
               phone: v("phone").trim(),
               accepted_terms: true,
-              terms_version: "2026-11-04-v4",
+              terms_version: "2026-11-08-v5",
               terms_language: lang,
             },
           },

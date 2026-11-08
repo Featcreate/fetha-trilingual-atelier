@@ -79,15 +79,14 @@ The current checkout code is fail-closed and remains disabled until separate san
 
 Migration 0022 has been applied to the original Supabase project jgjcychkntsokhzeziqs and is recorded in its migration history. A transaction-wrapped dry run against the actual project schema succeeded before application. Post-application checks confirmed the ledger table, RLS, indexes, immutability triggers, currency constraints, and weekly/manual-only payout constraints. The ledger, orders, order items, payout batches and payout preferences remain empty. This database change does not activate checkout or move money.
 
-## Seller-borne external fees — implemented, manual evidence entry
+## External fees for receiving seller payouts
 
-- Migration 0023 adds `seller_external_fee_entries` and `seller_payout_fee_allocations`, both append-only and seller/admin readable under RLS.
-- An administrator records an actual fee only with a positive TND amount, category, source, external statement/receipt reference, description, and idempotency key. Seller-specific fees are recorded against one store. For a shared order-level fee, the administrator supplies the verified paid order ID and total actual fee; the database allocates it proportionally by each seller's discounted paid order-item payable amount using largest-remainder rounding, then records each seller share and a matching central-ledger debit.
-- Migration 0023 extends payout snapshots with `external_fees_millimes` and updates payout creation so outstanding fees are allocated exactly once and subtracted from the seller's final payable after commission. The existing sale ledger and payout-item records continue to preserve the pre-fee seller sale proceeds.
-- A payout is blocked if recorded external fees exceed the available seller proceeds; those fees remain outstanding until later proceeds are available. Failed payouts retain their allocation and may be retried as the same payout.
-- Sellers can view fee entries, allocated amounts, remaining amounts, and fee deductions on each payout. Administrators can record fees and prepare/confirm manual weekly transfers.
-- Fee totals are currently entered manually from evidence and recorded in TND. Shared order-level fee allocation is automatic once the verified paid order ID is supplied. Automatic provider API fee ingestion and non-TND fee conversion are not implemented. Do not record estimates or guessed amounts.
-- Migrations 0023 and 0024 were applied successfully to the original Supabase project after transaction-wrapped dry runs. No fee rows, allocations, orders, payouts or ledger rows were created by deployment.
+- Any external transfer or withdrawal fees charged by a seller's chosen bank or receiving provider are the seller's responsibility; Algorea Bazaar does not cover them.
+- These receiving/withdrawal fees are outside the platform's payout accounting. Algorea Bazaar does not record, allocate, deduct, reimburse, or display them in the seller payout statement.
+- Seller payout amounts are calculated from verified seller proceeds after the applicable platform commission only.
+- Migration 0031 supersedes the earlier fee-aware payout calculation. New payout batches set the legacy `external_fees_millimes` field to zero and do not read from the legacy seller external-fee allocation tables.
+- The seller payout history shows the payout amount, status, receiving method snapshot, and transfer reference; it does not include external receiving/withdrawal fees.
+- Migration 0038 adds Konnect as a supported seller receiving destination. Its source migration must be reviewed and separately applied before the new option can be saved in the live database.
 
 ## Migration verification boundary — 2026-11-04
 

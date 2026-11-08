@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { User } from "lucide-react";
+import { User, ShoppingCart } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -72,6 +72,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import heroBanner from "@/assets/1793464236433.jpg";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 import { localizedProductText } from "@/lib/product-translations";
+import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -98,6 +99,7 @@ function Index() {
   const { lang, setLang, t } = useLang();
   const [open, setOpen] = useState(false);
   const { session } = useSession();
+  const { count: cartCount } = useCart();
   type HomeProduct = {
     id: string;
     name: string;
@@ -266,6 +268,18 @@ function Index() {
             <a href="#home" aria-label="Algorea Bazaar" className="flex h-12 w-20 shrink-0 md:h-14 md:w-36">
               <BrandLogo slotLabel={t.logoSlot} className="h-full w-full" />
             </a>
+            <Link
+              to="/cart"
+              aria-label={lang === "ar" ? "سلة المشتريات" : lang === "fr" ? "Panier" : "Shopping cart"}
+              className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-red-200 bg-red-50 p-2 text-red-600 transition-colors hover:bg-red-100"
+            >
+              <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
             <Link
               to={session ? "/account" : "/auth"}
               aria-label={accountLabel}

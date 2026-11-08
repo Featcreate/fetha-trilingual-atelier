@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useRef } from "react";
 import { AuthShell } from "@/components/AuthShell";
 import { PaymentMethodsPreview } from "@/components/PaymentMethodsPreview";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +8,7 @@ import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { localizedProductText } from "@/lib/product-translations";
+import { getCartCheckoutAvailability, startCartCheckout } from "@/lib/shop.functions";
 
 export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
 
@@ -22,6 +24,9 @@ const copy = {
     loading: "Chargement…",
     error: "Impossible de charger la commande.",
     unavailable: "Un ou plusieurs produits ne sont plus disponibles. Retournez au panier.",
+    pay: "Payer le panier en une fois avec Konnect",
+    starting: "Préparation du paiement…",
+    paymentError: "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. Réessayez uniquement après vérification de l’état de la commande.",
   },
   ar: {
     title: "مراجعة الطلب",
@@ -33,6 +38,9 @@ const copy = {
     loading: "جارٍ التحميل…",
     error: "تعذر تحميل الطلب.",
     unavailable: "منتج أو أكثر لم يعد متاحاً. عودي إلى السلة.",
+    pay: "دفع كامل السلة دفعة واحدة عبر Konnect",
+    starting: "جارٍ إعداد الدفع…",
+    paymentError: "تعذر إعداد الدفع. لن تتم إعادة محاولة إنشاء عملية دفع تلقائياً. لا تعيدي المحاولة إلا بعد التحقق من حالة الطلب.",
   },
   en: {
     title: "Order summary",
@@ -45,6 +53,9 @@ const copy = {
     loading: "Loading…",
     error: "Could not load order.",
     unavailable: "One or more products are no longer available. Return to your cart.",
+    pay: "Pay the entire cart in one Konnect payment",
+    starting: "Preparing payment…",
+    paymentError: "Payment could not be initialized. Another payment will not be started automatically. Retry only after checking the order status.",
   },
 } as const;
 
@@ -52,6 +63,31 @@ function CheckoutPage() {
   const { lang, setLang } = useLang();
   const t = copy[lang];
   const { items } = useCart();
+  const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
+  const signature = items.map((line) => line.productId).sort().join(",");
+
+  const availability = useQuery({
+    queryKey: ["cart-checkout-availability"],
+    queryFn: () => getCartCheckoutAvailability(),
+    staleTime: 30_000,
+  });
+
+  const checkoutMutation = useMutation({
+    mutationFn: async () => {
+      if (!checkoutAttempt.current || checkoutAttempt.current.signature !== signature) {
+        checkoutAttempt.current = { signature, key: crypto.randomUUID() };
+      }
+      return startCartCheckout({
+        data: {
+          items: items.map(({ productId }) => ({ productId })),
+          checkoutKey: checkoutAttempt.current.key,
+        },
+      });
+    },
+    onSuccess: (result) => {
+      if (result.ok) window.location.assign(result.payUrl);
+    },
+  });
 
   const query = useQuery({
     queryKey: ["checkout-products", items.map((line) => line.productId).join(",")],
@@ -120,9 +156,26 @@ function CheckoutPage() {
               <PaymentMethodsPreview />
             </section>
           )}
-          <p role="status" className="mt-3 rounded-xl border border-border p-4 text-sm">
-            {t.disabled}
-          </p>
+          {availability.data?.enabled && !unavailable ? (
+            <button
+              type="button"
+              onClick={() => checkoutMutation.mutate()}
+              disabled={checkoutMutation.isPending}
+              className="mt-4 inline-flex w-full justify-center rounded-full bg-accent px-5 py-3 text-center font-semibold text-accent-foreground disabled:opacity-50"
+            >
+              {checkoutMutation.isPending ? t.starting : t.pay}
+            </button>
+          ) : (
+            <p role="status" className="mt-3 rounded-xl border border-border p-4 text-sm">
+              {availability.isPending ? t.loading : t.disabled}
+            </p>
+          )}
+          {checkoutMutation.isError ||
+          (checkoutMutation.data && !checkoutMutation.data.ok) ? (
+            <p role="alert" className="mt-3 rounded-xl border border-border p-4 text-sm">
+              {t.paymentError}
+            </p>
+          ) : null}
           <Link
             to="/cart"
             className="mt-5 inline-flex rounded-full border border-border px-5 py-3 text-sm font-semibold"

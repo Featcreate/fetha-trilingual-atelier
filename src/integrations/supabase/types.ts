@@ -1249,6 +1249,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_my_seller_ratings: {
+        Args: Record<PropertyKey, never>
+        Returns: { store_id: string; stars: number }[]
+      }
       get_top_rated_stores: {
         Args: Record<PropertyKey, never>
         Returns: {

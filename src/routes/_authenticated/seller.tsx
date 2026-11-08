@@ -1064,7 +1064,9 @@ function SellerPage() {
               <p className="mt-2 text-sm leading-7 text-muted-foreground">
                 {m.payoutHelp}
               </p>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">{m.payoutExternalFeesNote}</p>
+              <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                {m.payoutExternalFeesNote}
+              </p>
               <p className="mt-2 text-xs leading-6 text-muted-foreground">
                 {lang === "ar"
                   ? "لا تُدخل كلمة مرور أو رمز OTP أو رمز PIN أو أي مفتاح سري."
@@ -1175,7 +1177,11 @@ function SellerPage() {
                 )}
                 {payoutMethod === "bank_transfer" && (
                   <label className="block text-sm font-medium">
-                    {lang === "ar" ? "اسم البنك" : lang === "en" ? "Bank name" : "Nom de la banque"}
+                    {lang === "ar"
+                      ? "اسم البنك"
+                      : lang === "en"
+                        ? "Bank name"
+                        : "Nom de la banque"}
                     <input
                       name="bank_name"
                       required

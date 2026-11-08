@@ -19,7 +19,10 @@ export const Route = createFileRoute("/products/$id")({
       { title: "Produit numérique — Algorea Bazaar" },
       { name: "description", content: "Découvrez ce produit numérique sur Algorea Bazaar." },
       { property: "og:title", content: "Produit numérique — Algorea Bazaar" },
-      { property: "og:description", content: "Découvrez ce produit numérique sur Algorea Bazaar." },
+      {
+        property: "og:description",
+        content: "Découvrez ce produit numérique sur Algorea Bazaar.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

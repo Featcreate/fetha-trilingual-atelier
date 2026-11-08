@@ -40,25 +40,22 @@ export const dict = {
       vision: "Devenir une destination numérique fiable et diversifiée, permettant aux créateurs de présenter leurs réalisations et aux acheteurs de découvrir des produits adaptés à leurs besoins, sans frontières géographiques.",
       valuesTitle: "Nos valeurs",
       values: [
-        {
-          title: "Créativité",
-          text: "Nous valorisons les idées et les produits innovants." ,
-        },
+        { title: "Créativité", text: "Nous valorisons les idées et les produits innovants." },
         {
           title: "Savoir",
-          text: "Nous encourageons le partage de ressources éducatives et utiles." ,
+          text: "Nous encourageons le partage de ressources éducatives et utiles.",
         },
         {
           title: "Opportunités",
-          text: "Nous ouvrons aux créateurs un espace pour présenter leurs produits." ,
+          text: "Nous ouvrons aux créateurs un espace pour présenter leurs produits.",
         },
         {
           title: "Diversité",
-          text: "Nous proposons des produits numériques dans de nombreux domaines." ,
+          text: "Nous proposons des produits numériques dans de nombreux domaines.",
         },
         {
           title: "Confiance",
-          text: "Nous visons une expérience claire et simple pour les acheteurs et les vendeurs." ,
+          text: "Nous visons une expérience claire et simple pour les acheteurs et les vendeurs.",
         },
       ],
       closing: "Algorea Bazaar — Découvrez, créez et partagez vos idées avec le monde.",
@@ -371,26 +368,11 @@ export const dict = {
       vision: "أن تصبح Algorea Bazaar وجهة رقمية موثوقة ومتنوعة، تتيح للمبدعين عرض أعمالهم، وللمشترين اكتشاف منتجات رقمية تلبي احتياجاتهم، دون حدود جغرافية.",
       valuesTitle: "قيمنا",
       values: [
-        {
-          title: "الإبداع",
-          text: "نحتفي بالأفكار والمنتجات المبتكرة." ,
-        },
-        {
-          title: "المعرفة",
-          text: "نشجع مشاركة الموارد التعليمية والمفيدة." ,
-        },
-        {
-          title: "الفرص",
-          text: "نفتح المجال أمام المبدعين لعرض منتجاتهم." ,
-        },
-        {
-          title: "التنوع",
-          text: "نوفر منتجات رقمية في مجالات متعددة." ,
-        },
-        {
-          title: "الثقة",
-          text: "نسعى إلى تقديم تجربة واضحة وسهلة للمشترين والبائعين." ,
-        },
+        { title: "الإبداع", text: "نحتفي بالأفكار والمنتجات المبتكرة." },
+        { title: "المعرفة", text: "نشجع مشاركة الموارد التعليمية والمفيدة." },
+        { title: "الفرص", text: "نفتح المجال أمام المبدعين لعرض منتجاتهم." },
+        { title: "التنوع", text: "نوفر منتجات رقمية في مجالات متعددة." },
+        { title: "الثقة", text: "نسعى إلى تقديم تجربة واضحة وسهلة للمشترين والبائعين." },
       ],
       closing: "Algorea Bazaar — اكتشف، أبدع، وشارك أفكارك مع العالم.",
     },
@@ -696,25 +678,13 @@ export const dict = {
       vision: "To become a trusted and diverse digital destination where creators can showcase their work and buyers can discover digital products that meet their needs, without geographical boundaries.",
       valuesTitle: "Our Values",
       values: [
-        {
-          title: "Creativity",
-          text: "We celebrate innovative ideas and products." ,
-        },
-        {
-          title: "Knowledge",
-          text: "We encourage sharing useful and educational resources." ,
-        },
-        {
-          title: "Opportunity",
-          text: "We give creators room to showcase their products." ,
-        },
-        {
-          title: "Diversity",
-          text: "We offer digital products across a range of fields." ,
-        },
+        { title: "Creativity", text: "We celebrate innovative ideas and products." },
+        { title: "Knowledge", text: "We encourage sharing useful and educational resources." },
+        { title: "Opportunity", text: "We give creators room to showcase their products." },
+        { title: "Diversity", text: "We offer digital products across a range of fields." },
         {
           title: "Trust",
-          text: "We strive to provide a clear and simple experience for buyers and sellers." ,
+          text: "We strive to provide a clear and simple experience for buyers and sellers.",
         },
       ],
       closing: "Algorea Bazaar — Discover, create, and share your ideas with the world.",

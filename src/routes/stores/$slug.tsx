@@ -140,7 +140,9 @@ function StorefrontPage() {
                         </span>
                         <TndEquivalents
                           millimes={p.sale_price_millimes}
-                          locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                          locale={
+                          lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"
+                        }
                         />
                       </>
                     ) : (
@@ -148,7 +150,9 @@ function StorefrontPage() {
                         {formatTND(p.price_millimes)}
                         <TndEquivalents
                           millimes={p.price_millimes}
-                          locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
+                          locale={
+                          lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"
+                        }
                         />
                       </>
                     )}

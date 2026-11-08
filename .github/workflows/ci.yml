@@ -60,6 +60,12 @@ jobs:
             echo "No changed files require formatting."
           fi
 
+      - name: Diagnose product gallery formatting
+        if: failure()
+        run: |
+          bunx prettier 'src/routes/products/$id.tsx' > /tmp/product-gallery.formatted.tsx
+          diff -u 'src/routes/products/$id.tsx' /tmp/product-gallery.formatted.tsx || true
+
       - name: Lint
         shell: bash
         run: |

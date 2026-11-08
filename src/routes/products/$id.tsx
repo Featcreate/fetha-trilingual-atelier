@@ -174,9 +174,7 @@ function ProductPage() {
                       >
                         <ChevronRight className="h-6 w-6" />
                       </button>
-                      <span
-                        className="absolute bottom-3 right-3 rounded-full bg-petrol/80 px-3 py-1 text-xs font-semibold text-white"
-                      >
+                      <span className="absolute bottom-3 right-3 rounded-full bg-petrol/80 px-3 py-1 text-xs font-semibold text-white">
                         {activeImageIndex + 1} / {images.length}
                       </span>
                     </>
@@ -306,9 +304,7 @@ function ProductPage() {
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-base font-bold">{m.paymentMethodsTitle}</h2>
-              <span
-                className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground"
-              >
+              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">
                 {m.paymentMethodsPlanned}
               </span>
             </div>

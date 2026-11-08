@@ -36,6 +36,8 @@ const copy = {
     catalog: "Retour au catalogue",
     loading: "Vérification du paiement…",
     error: "Impossible de vérifier la commande pour le moment.",
+    recheck: "Vérifier à nouveau",
+    paused: "La vérification automatique est en pause. Vous pouvez relancer une vérification manuelle.",
   },
   ar: {
     title: "حالة طلبك",
@@ -50,6 +52,8 @@ const copy = {
     catalog: "العودة إلى الكتالوج",
     loading: "جارٍ التحقق من الدفع…",
     error: "تعذر التحقق من الطلب حالياً.",
+    recheck: "إعادة التحقق",
+    paused: "توقّف التحقق التلقائي مؤقتاً. يمكنك إعادة التحقق يدوياً.",
   },
   en: {
     title: "Order status",
@@ -64,6 +68,8 @@ const copy = {
     catalog: "Back to catalog",
     loading: "Checking payment…",
     error: "Unable to verify the order right now.",
+    recheck: "Check again",
+    paused: "Automatic checks are paused. You can manually check again.",
   },
 } as const;
 
@@ -85,11 +91,13 @@ function CheckoutReturnPage() {
   const t = copy[lang];
   const { remove } = useCart();
   const processedPaidOrder = useRef<string | null>(null);
+  const checkAttempts = useRef(0);
 
   const query = useQuery({
     queryKey: ["checkout-return-order", order],
     enabled: !!order,
     queryFn: async () => {
+      checkAttempts.current += 1;
       await checkOrderPayment({ data: { orderId: order! } });
       const { data, error } = await supabase
         .from("orders")
@@ -101,7 +109,8 @@ function CheckoutReturnPage() {
       if (error) throw error;
       return (data ?? null) as unknown as OrderSummary | null;
     },
-    refetchInterval: (q) => (q.state.data?.status === "pending" ? 5000 : false),
+    refetchInterval: (q) =>
+      q.state.data?.status === "pending" && checkAttempts.current < 12 ? 5000 : false,
   });
 
   useEffect(() => {
@@ -139,6 +148,24 @@ function CheckoutReturnPage() {
           >
             {message}
           </p>
+          {query.data?.status === "pending" && (
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              {checkAttempts.current >= 12 && (
+                <p className="w-full text-sm text-muted-foreground">{t.paused}</p>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  checkAttempts.current = 0;
+                  void query.refetch();
+                }}
+                disabled={query.isFetching}
+                className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50"
+              >
+                {query.isFetching ? t.loading : t.recheck}
+              </button>
+            </div>
+          )}
           {query.data && (
             <section className="mt-5 rounded-xl border border-border p-4">
               <div className="flex flex-wrap justify-between gap-2">

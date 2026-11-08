@@ -133,7 +133,13 @@ function ProductPage() {
                       <button
                         type="button"
                         onClick={showPrevious}
-                        aria-label={lang === "ar" ? "الصورة السابقة" : lang === "en" ? "Previous image" : "Image précédente"}
+                        aria-label={
+                          lang === "ar"
+                            ? "الصورة السابقة"
+                            : lang === "en"
+                              ? "Previous image"
+                              : "Image précédente"
+                        }
                         className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-petrol/85 text-white shadow-lg transition hover:bg-petrol"
                       >
                         <ChevronLeft className="h-6 w-6" />
@@ -141,7 +147,13 @@ function ProductPage() {
                       <button
                         type="button"
                         onClick={showNext}
-                        aria-label={lang === "ar" ? "الصورة التالية" : lang === "en" ? "Next image" : "Image suivante"}
+                        aria-label={
+                          lang === "ar"
+                            ? "الصورة التالية"
+                            : lang === "en"
+                              ? "Next image"
+                              : "Image suivante"
+                        }
                         className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-petrol/85 text-white shadow-lg transition hover:bg-petrol"
                       >
                         <ChevronRight className="h-6 w-6" />
@@ -155,19 +167,39 @@ function ProductPage() {
                 {images.length > 1 && (
                   <div
                     className="flex gap-3 overflow-x-auto pb-2"
-                    aria-label={lang === "ar" ? "صور معاينة المنتج" : lang === "en" ? "Product image previews" : "Aperçus du produit"}
+                    aria-label={
+                      lang === "ar"
+                        ? "صور معاينة المنتج"
+                        : lang === "en"
+                          ? "Product image previews"
+                          : "Aperçus du produit"
+                    }
                   >
                     {images.map((image, index) => (
                       <button
                         key={image.id}
                         type="button"
                         onClick={() => setActiveImageIndex(index)}
-                        aria-label={lang === "ar" ? `عرض الصورة ${index + 1}` : lang === "en" ? `Show image ${index + 1}` : `Afficher l’image ${index + 1}`}
+                        aria-label={
+                          lang === "ar"
+                            ? `عرض الصورة ${index + 1}`
+                            : lang === "en"
+                              ? `Show image ${index + 1}`
+                              : `Afficher l’image ${index + 1}`
+                        }
                         aria-pressed={activeImageIndex === index}
-                        className={`h-20 w-24 flex-none overflow-hidden rounded-lg border-2 bg-cream-light transition sm:h-24 sm:w-28 ${activeImageIndex === index ? "border-coral ring-2 ring-coral/20" : "border-border opacity-75 hover:opacity-100"}`}
+                        className={`h-20 w-24 flex-none overflow-hidden rounded-lg border-2 bg-cream-light transition sm:h-24 sm:w-28 ${
+                          activeImageIndex === index
+                            ? "border-coral ring-2 ring-coral/20"
+                            : "border-border opacity-75 hover:opacity-100"
+                        }`}
                       >
                         <img
-                          src={supabase.storage.from("product-images").getPublicUrl(image.image_path).data.publicUrl}
+                          src={
+                            supabase.storage
+                              .from("product-images")
+                              .getPublicUrl(image.image_path).data.publicUrl
+                          }
                           alt=""
                           loading="lazy"
                           className="h-full w-full object-contain"

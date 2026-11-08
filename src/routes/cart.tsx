@@ -16,6 +16,7 @@ type Product = {
   id: string;
   name: string;
   price_millimes: number;
+  sale_price_millimes: number | null;
   image_path: string | null;
   name_translations: unknown;
   store_id: string | null;
@@ -73,7 +74,7 @@ function CartPage() {
       const ids = items.map((line) => line.productId);
       const { data, error } = await supabase
         .from("products")
-        .select("id,name,name_translations,price_millimes,image_path,store_id")
+        .select("id,name,name_translations,price_millimes,sale_price_millimes,image_path,store_id")
         .in("id", ids)
         .eq("is_active", true);
       if (error) throw error;
@@ -104,7 +105,16 @@ function CartPage() {
     return items.flatMap((line) => {
       const product = productMap.get(line.productId);
       const store = product?.store_id ? storeMap.get(product.store_id) : undefined;
-      return product && store ? [{ ...line, product, store, total: product.price_millimes }] : [];
+      return product && store
+        ? [
+            {
+              ...line,
+              product,
+              store,
+              total: product.sale_price_millimes ?? product.price_millimes,
+            },
+          ]
+        : [];
     });
   }, [items, query.data]);
 
@@ -151,8 +161,20 @@ function CartPage() {
                     {localizedProductText(line.product.name, line.product.name_translations, lang)}
                   </Link>
                   <p className="text-xs text-muted-foreground">{line.store.name}</p>
-                  <p className="mt-1 text-sm font-semibold">
-                    {formatTND(line.product.price_millimes)}
+                  <p className="mt-1 flex flex-wrap items-center gap-2 text-sm font-semibold">
+                    {line.product.sale_price_millimes ? (
+                      <>
+                        <span className="text-xs font-bold text-red-600">PROMO</span>
+                        <span className="text-muted-foreground line-through">
+                          {formatTND(line.product.price_millimes)}
+                        </span>
+                        <span className="text-red-600">
+                          {formatTND(line.product.sale_price_millimes)}
+                        </span>
+                      </>
+                    ) : (
+                      formatTND(line.product.price_millimes)
+                    )}
                   </p>
                 </div>
                 <div className="text-end">

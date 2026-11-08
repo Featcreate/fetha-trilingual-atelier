@@ -138,8 +138,19 @@ function BuyerOrdersPage() {
                 </span>
               </div>
               <div className="mt-4 space-y-3 border-t border-border pt-3">
-                {Array.from(new Map(order.order_items.filter((item) => item.store_id).map((item) => [item.store_id!, { storeId: item.store_id!, storeName: item.stores?.name ?? m.store }])).values()).map((store) => {
-                  const currentStars = ratingsQuery.data?.find((rating) => rating.store_id === store.storeId)?.stars ?? 0;
+                {Array.from(
+                  new Map(
+                    order.order_items
+                      .filter((item) => item.store_id)
+                      .map((item) => [
+                        item.store_id!,
+                        { storeId: item.store_id!, storeName: item.stores?.name ?? m.store },
+                      ]),
+                  ).values(),
+                ).map((store) => {
+                  const currentStars =
+                    ratingsQuery.data?.find((rating) => rating.store_id === store.storeId)?.stars ??
+                    0;
                   return (
                     <div key={store.storeId} className="rounded-xl border border-border bg-cream-light p-3">
                       <p className="text-sm font-semibold">{m.rateSeller}: {store.storeName}</p>

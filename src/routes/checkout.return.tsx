@@ -93,7 +93,9 @@ function CheckoutReturnPage() {
       await checkOrderPayment({ data: { orderId: order! } });
       const { data, error } = await supabase
         .from("orders")
-        .select("id,status,total_millimes,order_items(id,product_id,product_name,unit_price_millimes)")
+        .select(
+          "id,status,total_millimes,order_items(id,product_id,product_name,unit_price_millimes)",
+        )
         .eq("id", order!)
         .maybeSingle();
       if (error) throw error;

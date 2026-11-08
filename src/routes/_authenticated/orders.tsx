@@ -179,7 +179,11 @@ function BuyerOrdersPage() {
                             </button>
                           );
                         })}
-                        {currentStars > 0 && <span className="ms-2 text-xs text-muted-foreground">{m.updateRating}</span>}
+                        {currentStars > 0 && (
+                          <span className="ms-2 text-xs text-muted-foreground">
+                            {m.updateRating}
+                          </span>
+                        )}
                       </div>
                     </div>
                   );

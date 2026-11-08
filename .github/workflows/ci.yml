@@ -41,6 +41,15 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Temporary formatting inspection
+        run: |
+          echo '=== SHOP FUNCTIONS ==='
+          bunx prettier src/lib/shop.functions.ts
+          echo '=== CHECKOUT RETURN ==='
+          bunx prettier src/routes/checkout.return.tsx
+          echo '=== CHECKOUT ==='
+          bunx prettier src/routes/checkout.tsx
+
       - name: Check formatting
         shell: bash
         run: |

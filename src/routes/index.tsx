@@ -99,7 +99,6 @@ function Index() {
   const { lang, setLang, t } = useLang();
   const [open, setOpen] = useState(false);
   const { session } = useSession();
-  const { count: cartCount } = useCart();
   type HomeProduct = {
     id: string;
     name: string;

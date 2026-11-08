@@ -158,7 +158,9 @@ function ProductPage() {
                       >
                         <ChevronRight className="h-6 w-6" />
                       </button>
-                      <span className="absolute bottom-3 right-3 rounded-full bg-petrol/80 px-3 py-1 text-xs font-semibold text-white">
+                      <span
+                        className="absolute bottom-3 right-3 rounded-full bg-petrol/80 px-3 py-1 text-xs font-semibold text-white"
+                      >
                         {activeImageIndex + 1} / {images.length}
                       </span>
                     </>
@@ -265,11 +267,7 @@ function ProductPage() {
                 : "bg-accent text-accent-foreground"
             }`}
           >
-            {lang === "ar"
-              ? "أضف إلى السلة"
-              : lang === "en"
-                ? "Add to cart"
-                : "Ajouter au panier"}
+            {lang === "ar" ? "أضف إلى السلة" : lang === "en" ? "Add to cart" : "Ajouter au panier"}
           </button>
           <Link
             to="/stores/$slug"

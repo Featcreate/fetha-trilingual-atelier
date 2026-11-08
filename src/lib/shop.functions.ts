@@ -146,7 +146,7 @@ export const startCartCheckout = createServerFn({ method: "POST" })
       .select("full_name,phone")
       .eq("id", context.userId)
       .maybeSingle();
-    const [firstName, ...rest] = (profile?.full_name ?? "").trim().split(/\\s+/);
+    const [firstName, ...rest] = (profile?.full_name ?? "").trim().split(/\s+/);
     const origin = siteOrigin();
 
     try {

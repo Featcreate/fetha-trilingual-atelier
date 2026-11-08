@@ -23,6 +23,15 @@ BEGIN
     RAISE EXCEPTION 'test_failed: payout destination snapshots must accept Konnect';
   END IF;
 
+  SELECT with_check INTO _policy_check
+  FROM pg_policies
+  WHERE schemaname = 'public'
+    AND tablename = 'seller_payout_preferences'
+    AND policyname = 'Sellers manage own payout preference';
+  IF _policy_check IS NULL OR position('konnect' IN lower(_policy_check)) = 0 THEN
+    RAISE EXCEPTION 'test_failed: seller RLS policy must allow the Konnect receiving destination';
+  END IF;
+
   SELECT pg_get_functiondef('public.guard_seller_payout_preference()'::regprocedure)
   INTO _preference_guard;
   IF position('konnect' IN lower(_preference_guard)) = 0

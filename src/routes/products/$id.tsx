@@ -29,7 +29,7 @@ function ProductPage() {
   const { id } = Route.useParams();
   const { lang, setLang, t } = useLang();
   const m = t.marketplace;
-  const { add, count } = useCart();
+  const { add, count, items } = useCart();
   const query = useQuery({
     queryKey: ["product-detail", id],
     queryFn: async () => {
@@ -147,7 +147,11 @@ function ProductPage() {
           <button
             type="button"
             onClick={() => add(query.data!.product.id)}
-            className="mt-4 rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground"
+            className={`mt-4 rounded-full px-6 py-3 font-semibold text-white transition-colors ${
+              items.some((item) => item.productId === query.data!.product.id)
+                ? "bg-green-600 hover:bg-green-700"
+                : "bg-accent text-accent-foreground"
+            }`}
           >
             {lang === "ar" ? "أضف إلى السلة" : lang === "en" ? "Add to cart" : "Ajouter au panier"}
           </button>

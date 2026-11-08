@@ -267,6 +267,7 @@ export type Database = {
           buyer_fx_quoted_at: string | null
           buyer_fx_rate: number | null
           buyer_fx_rate_source: string | null
+          cart_fingerprint: string | null
           checkout_key: string
           created_at: string
           currency: string
@@ -274,6 +275,7 @@ export type Database = {
           email_error: string | null
           email_sent_at: string | null
           id: string
+          konnect_init_claimed_at: string | null
           konnect_pay_url: string | null
           konnect_payment_ref: string | null
           ipay_payment_ref: string | null
@@ -296,6 +298,7 @@ export type Database = {
           buyer_fx_quoted_at?: string | null
           buyer_fx_rate?: number | null
           buyer_fx_rate_source?: string | null
+          cart_fingerprint?: string | null
           checkout_key: string
           created_at?: string
           currency?: string
@@ -303,6 +306,7 @@ export type Database = {
           email_error?: string | null
           email_sent_at?: string | null
           id?: string
+          konnect_init_claimed_at?: string | null
           konnect_pay_url?: string | null
           konnect_payment_ref?: string | null
           ipay_payment_ref?: string | null
@@ -325,6 +329,7 @@ export type Database = {
           buyer_fx_quoted_at?: string | null
           buyer_fx_rate?: number | null
           buyer_fx_rate_source?: string | null
+          cart_fingerprint?: string | null
           checkout_key?: string
           created_at?: string
           currency?: string
@@ -332,6 +337,7 @@ export type Database = {
           email_error?: string | null
           email_sent_at?: string | null
           id?: string
+          konnect_init_claimed_at?: string | null
           konnect_pay_url?: string | null
           konnect_payment_ref?: string | null
           ipay_payment_ref?: string | null
@@ -1302,6 +1308,14 @@ export type Database = {
       }
       create_order: {
         Args: { _checkout_key: string; _product_ids: string[] }
+        Returns: string
+      }
+      claim_order_konnect_init: {
+        Args: { _order_id: string }
+        Returns: { outcome: string; pay_url: string | null }[]
+      }
+      create_order_from_cart: {
+        Args: { _checkout_key: string; _items: Json }
         Returns: string
       }
       create_seller_store: {

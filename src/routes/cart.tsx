@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { Trash2 } from "lucide-react";
 import { AuthShell } from "@/components/AuthShell";
 import { ProductPreview } from "@/components/ProductPreview";
 import { supabase } from "@/integrations/supabase/client";
@@ -159,9 +160,10 @@ function CartPage() {
                   <button
                     type="button"
                     onClick={() => remove(line.productId)}
-                    className="mt-1 text-xs text-destructive hover:underline"
+                    className="mt-2 inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition-colors hover:border-red-400 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                   >
-                    {t.remove}
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    <span>{t.remove}</span>
                   </button>
                 </div>
               </article>

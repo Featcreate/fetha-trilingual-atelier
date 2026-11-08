@@ -60,12 +60,6 @@ jobs:
             echo "No changed files require formatting."
           fi
 
-      - name: Diagnose seller rating formatting
-        if: failure()
-        run: |
-          bunx prettier 'src/routes/_authenticated/orders.tsx' > /tmp/orders.formatted.tsx
-          diff -u 'src/routes/_authenticated/orders.tsx' /tmp/orders.formatted.tsx || true
-
       - name: Lint
         shell: bash
         run: |

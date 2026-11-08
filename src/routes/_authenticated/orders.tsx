@@ -70,9 +70,17 @@ function BuyerOrdersPage() {
   async function rateSeller(storeId: string, stars: number) {
     setRatingBusy(storeId);
     setNotice("");
-    const { error } = await supabase.rpc("submit_seller_rating", { _store_id: storeId, _stars: stars });
+    const { error } = await supabase.rpc("submit_seller_rating", {
+      _store_id: storeId,
+      _stars: stars,
+    });
     setRatingBusy(null);
-    if (error) { setNotice(error.message.includes("verified_purchase_required") ? m.verifiedPurchaseRating : m.error); return; }
+    if (error) {
+      setNotice(
+        error.message.includes("verified_purchase_required") ? m.verifiedPurchaseRating : m.error,
+      );
+      return;
+    }
     setNotice(m.ratingSaved);
     await qc.invalidateQueries({ queryKey: ["buyer-seller-ratings"] });
     await qc.invalidateQueries({ queryKey: ["homepage-top-rated-stores"] });

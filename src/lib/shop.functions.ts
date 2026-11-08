@@ -110,6 +110,12 @@ export const startCheckout = createServerFn({ method: "POST" })
     }
   });
 
+/** Public-safe status only; never exposes provider credentials. */
+export const getCartCheckoutAvailability = createServerFn({ method: "GET" }).handler(async () => {
+  const { konnectConfig } = await import("./konnect.server");
+  return { enabled: Boolean(konnectConfig(true)) };
+});
+
 /** Create one pending order with one entitlement per distinct digital product, then request one Konnect charge.
  * The activation gate is checked before an order is created; disabled payments fail closed. */
 export const startCartCheckout = createServerFn({ method: "POST" })

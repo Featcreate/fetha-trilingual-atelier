@@ -544,8 +544,15 @@ function Index() {
       </section>
 
       <footer id="contact" className="bg-petrol text-cream">
-        <div className="mx-auto max-w-6xl px-4 py-8 text-center text-sm">
-          © {new Date().getFullYear()} Algorea Bazaar. {t.footer}
+        <div className="mx-auto max-w-6xl space-y-3 px-4 py-8 text-center text-sm">
+          <div className="font-semibold">{lang === "ar" ? "للتواصل معنا" : lang === "fr" ? "Contactez-nous" : "Contact us"}</div>
+          <a
+            href="mailto:contact.algoreabazaar@gmail.com"
+            className="inline-flex items-center justify-center underline underline-offset-4 transition-colors hover:text-coral"
+          >
+            contact.algoreabazaar@gmail.com
+          </a>
+          <div>© {new Date().getFullYear()} Algorea Bazaar. {t.footer}</div>
         </div>
       </footer>
     </div>

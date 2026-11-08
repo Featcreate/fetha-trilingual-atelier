@@ -162,7 +162,22 @@ function BuyerOrdersPage() {
                       <div className="mt-2 flex items-center gap-1" dir="ltr">
                         {Array.from({ length: 5 }, (_, index) => {
                           const stars = index + 1;
-                          return <button key={stars} type="button" disabled={ratingBusy === store.storeId} onClick={() => rateSeller(store.storeId, stars)} aria-label={stars + " / 5"} aria-pressed={currentStars === stars} className="rounded p-1 text-amber-500 transition hover:scale-110 disabled:opacity-50"><Star className="h-6 w-6" fill={stars <= currentStars ? "currentColor" : "none"} /></button>;
+                          return (
+                            <button
+                              key={stars}
+                              type="button"
+                              disabled={ratingBusy === store.storeId}
+                              onClick={() => rateSeller(store.storeId, stars)}
+                              aria-label={stars + " / 5"}
+                              aria-pressed={currentStars === stars}
+                              className="rounded p-1 text-amber-500 transition hover:scale-110 disabled:opacity-50"
+                            >
+                              <Star
+                                className="h-6 w-6"
+                                fill={stars <= currentStars ? "currentColor" : "none"}
+                              />
+                            </button>
+                          );
                         })}
                         {currentStars > 0 && <span className="ms-2 text-xs text-muted-foreground">{m.updateRating}</span>}
                       </div>

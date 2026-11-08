@@ -335,6 +335,8 @@ function SellerPage() {
     const name = String(values.get("name") ?? "").trim();
     const description = String(values.get("description") ?? "").trim();
     const price = parseTNDToMillimes(String(values.get("price") ?? ""));
+    const salePriceInput = String(values.get("sale_price") ?? "").trim();
+    const salePrice = salePriceInput ? parseTNDToMillimes(salePriceInput) : null;
     const productType = String(values.get("product_type") ?? "other") as ProductType;
     const files = values
       .getAll("digital_files")
@@ -346,6 +348,7 @@ function SellerPage() {
       .filter((value): value is File => value instanceof File && value.size > 0);
     if (!name || !description) return setNotice(m.productRequired);
     if (!price) return setNotice(m.invalidPrice);
+    if (salePriceInput && (!salePrice || salePrice >= price)) return setNotice(m.invalidSalePrice);
     if (!files.length || files.some((file) => file.size < 1 || file.size > MAX_FILE_BYTES))
       return setNotice(m.invalidFile);
     if (
@@ -371,6 +374,7 @@ function SellerPage() {
         name_translations: translatedContent?.nameTranslations ?? {},
         description_translations: translatedContent?.descriptionTranslations ?? {},
         price_millimes: price,
+        sale_price_millimes: salePrice,
         product_type: productType,
         is_active: false,
       })
@@ -508,8 +512,11 @@ function SellerPage() {
     const name = String(f.get(`edit_name_${product.id}`) ?? "").trim();
     const description = String(f.get(`edit_description_${product.id}`) ?? "").trim();
     const price = parseTNDToMillimes(String(f.get(`edit_price_${product.id}`) ?? ""));
+    const salePriceInput = String(f.get(`edit_sale_price_${product.id}`) ?? "").trim();
+    const salePrice = salePriceInput ? parseTNDToMillimes(salePriceInput) : null;
     if (!name || !description) return setNotice(m.productRequired);
     if (!price) return setNotice(m.invalidPrice);
+    if (salePriceInput && (!salePrice || salePrice >= price)) return setNotice(m.invalidSalePrice);
     const productType = String(
       f.get(`edit_type_${product.id}`) ?? product.product_type,
     ) as ProductType;
@@ -538,6 +545,7 @@ function SellerPage() {
           name_translations: translatedContent?.nameTranslations ?? {},
           description_translations: translatedContent?.descriptionTranslations ?? {},
           price_millimes: price,
+          sale_price_millimes: salePrice,
           product_type: productType,
         })
         .eq("id", product.id)
@@ -729,13 +737,10 @@ function SellerPage() {
                 <p className="mt-1 text-xs text-muted-foreground">{m.automaticTranslation}</p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  id="price"
-                  label={m.price}
-                  required
-                  inputMode="decimal"
-                  placeholder="12.500"
-                />
+                <div className="space-y-2">
+                  <Field id="price" label={m.price} required inputMode="decimal" placeholder="12.500" />
+                  <Field id="sale_price" label={m.salePriceOptional} inputMode="decimal" placeholder="10.000" />
+                </div>
                 <div>
                   <label htmlFor="product_type" className="mb-1 block text-sm font-medium">
                     {m.productType}
@@ -865,12 +870,10 @@ function SellerPage() {
                             {m.automaticTranslation}
                           </p>
                         </div>
-                        <Field
-                          id={`edit_price_${product.id}`}
-                          label={m.price}
-                          defaultValue={(product.price_millimes / 1000).toFixed(3)}
-                          required
-                        />
+                        <div className="space-y-2">
+                          <Field id={`edit_price_${product.id}`} label={m.price} defaultValue={(product.price_millimes / 1000).toFixed(3)} required />
+                          <Field id={`edit_sale_price_${product.id}`} label={m.salePriceOptional} defaultValue={product.sale_price_millimes ? (product.sale_price_millimes / 1000).toFixed(3) : ""} />
+                        </div>
                         <label
                           className="block text-sm font-medium"
                           htmlFor={`edit_type_${product.id}`}
@@ -929,12 +932,8 @@ function SellerPage() {
                           <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                             {product.description}
                           </p>
-                          <p className="mt-2 text-sm font-bold">
-                            {formatTND(product.price_millimes)}
-                            <TndEquivalents
-                              millimes={product.price_millimes}
-                              locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
-                            />
+                          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm font-bold">
+                            {product.sale_price_millimes ? <><span className="text-xs font-bold text-red-600">PROMO</span><span className="text-muted-foreground line-through">{formatTND(product.price_millimes)}</span><span className="text-red-600">{formatTND(product.sale_price_millimes)}</span><TndEquivalents millimes={product.sale_price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></> : <>{formatTND(product.price_millimes)}<TndEquivalents millimes={product.price_millimes} locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"} /></>}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">

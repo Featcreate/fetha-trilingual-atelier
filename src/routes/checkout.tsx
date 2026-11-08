@@ -101,7 +101,7 @@ function CheckoutPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,name,name_translations,price_millimes")
+        .select("id,name,name_translations,price_millimes,sale_price_millimes")
         .in(
           "id",
           items.map((line) => line.productId),
@@ -116,7 +116,10 @@ function CheckoutPage() {
   const unavailable = !query.isPending && products.length !== items.length;
   const total = items.reduce(
     (sum, line) =>
-      sum + (products.find((product) => product.id === line.productId)?.price_millimes ?? 0),
+      sum +
+      (products.find((product) => product.id === line.productId)?.sale_price_millimes ??
+        products.find((product) => product.id === line.productId)?.price_millimes ??
+        0),
     0,
   );
 
@@ -135,13 +138,26 @@ function CheckoutPage() {
               const product = products.find((item) => item.id === line.productId);
               if (!product) return null;
 
+              const salePrice = product.sale_price_millimes;
               return (
                 <div
                   key={line.productId}
                   className="flex justify-between gap-3 border-b border-border pb-3"
                 >
                   <span>{localizedProductText(product.name, product.name_translations, lang)}</span>
-                  <strong>{formatTND(product.price_millimes)}</strong>
+                  {salePrice != null ? (
+                    <span className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                      <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">
+                        PROMO
+                      </span>
+                      <span className="text-sm text-muted-foreground line-through">
+                        {formatTND(product.price_millimes)}
+                      </span>
+                      <strong className="text-destructive">{formatTND(salePrice)}</strong>
+                    </span>
+                  ) : (
+                    <strong>{formatTND(product.price_millimes)}</strong>
+                  )}
                 </div>
               );
             })}

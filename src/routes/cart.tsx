@@ -153,7 +153,19 @@ function CartPage() {
                   </Link>
                   <p className="text-xs text-muted-foreground">{line.store.name}</p>
                   <p className="mt-1 flex flex-wrap items-center gap-2 text-sm font-semibold">
-                    {line.product.sale_price_millimes ? <><span className="text-xs font-bold text-red-600">PROMO</span><span className="text-muted-foreground line-through">{formatTND(line.product.price_millimes)}</span><span className="text-red-600">{formatTND(line.product.sale_price_millimes)}</span></> : formatTND(line.product.price_millimes)}
+                    {line.product.sale_price_millimes ? (
+                      <>
+                        <span className="text-xs font-bold text-red-600">PROMO</span>
+                        <span className="text-muted-foreground line-through">
+                          {formatTND(line.product.price_millimes)}
+                        </span>
+                        <span className="text-red-600">
+                          {formatTND(line.product.sale_price_millimes)}
+                        </span>
+                      </>
+                    ) : (
+                      formatTND(line.product.price_millimes)
+                    )}
                   </p>
                 </div>
                 <div className="text-end">

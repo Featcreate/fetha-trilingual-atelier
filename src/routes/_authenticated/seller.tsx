@@ -271,10 +271,7 @@ function SellerPage() {
       );
       return;
     }
-    if (
-      (method === "other" && !providerName) ||
-      (method === "bank_transfer" && !bankName)
-    ) {
+    if ((method === "other" && !providerName) || (method === "bank_transfer" && !bankName)) {
       setNotice(
         lang === "ar"
           ? method === "bank_transfer"
@@ -1064,9 +1061,7 @@ function SellerPage() {
             <div>
               <h2 className="text-xl font-bold">{m.payoutMethod}</h2>
               <p className="mt-2 font-semibold">{m.weeklyManual}</p>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                {m.payoutHelp}
-              </p>
+              <p className="mt-2 text-sm leading-7 text-muted-foreground">{m.payoutHelp}</p>
               <p className="mt-2 text-sm leading-7 text-muted-foreground">
                 {m.payoutExternalFeesNote}
               </p>
@@ -1180,11 +1175,7 @@ function SellerPage() {
                 )}
                 {payoutMethod === "bank_transfer" && (
                   <label className="block text-sm font-medium">
-                    {lang === "ar"
-                      ? "اسم البنك"
-                      : lang === "en"
-                        ? "Bank name"
-                        : "Nom de la banque"}
+                    {lang === "ar" ? "اسم البنك" : lang === "en" ? "Bank name" : "Nom de la banque"}
                     <input
                       name="bank_name"
                       required

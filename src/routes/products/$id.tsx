@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +34,7 @@ function ProductPage() {
   const { add, count, items } = useCart();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const didSwipeRef = useRef(false);
   const query = useQuery({
     queryKey: ["product-detail", id],
     queryFn: async () => {
@@ -96,7 +97,14 @@ function ProductPage() {
             return (
               <div className="space-y-4">
                 <div
-                  className="relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-2xl bg-cream-light text-4xl font-bold text-petrol/40"
+                  className="relative flex touch-pan-y aspect-[16/9] items-center justify-center overflow-hidden rounded-2xl bg-cream-light text-4xl font-bold text-petrol/40"
+                  onClickCapture={(event) => {
+                    if (didSwipeRef.current) {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      didSwipeRef.current = false;
+                    }
+                  }}
                   onTouchStart={(event) => setTouchStartX(event.touches[0]?.clientX ?? null)}
                   onTouchEnd={(event) => {
                     if (touchStartX === null || images.length < 2) return;
@@ -104,6 +112,7 @@ function ProductPage() {
                     if (delta === undefined) return;
                     const distance = delta - touchStartX;
                     if (Math.abs(distance) > 45) {
+                      didSwipeRef.current = true;
                       if (distance > 0) showPrevious();
                       else showNext();
                     }

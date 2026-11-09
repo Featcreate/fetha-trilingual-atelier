@@ -81,33 +81,57 @@ export const Route = createFileRoute("/api/download")({
           return new Response(reservation.outcome, { status });
         }
 
-        const { data: file, error: fileError } = await supabaseAdmin.storage
-          .from("product-files")
-          .download(reservation.storage_path);
-        if (fileError || !file || request.signal.aborted) {
+        const release = async () => {
           await supabaseAdmin.rpc("release_download", {
             _reservation_id: reservation.reservation_id,
           });
+        };
+
+        try {
+          if (request.signal.aborted) {
+            await release();
+            return new Response("request aborted", { status: 499 });
+          }
+
+          // The signed URL never leaves this server. Fetching its body directly
+          // preserves backpressure and avoids buffering the entire product in RAM.
+          const { data: signed, error: signError } = await supabaseAdmin.storage
+            .from("product-files")
+            .createSignedUrl(reservation.storage_path, 60, { download: reservation.file_name });
+          if (signError || !signed?.signedUrl) {
+            await release();
+            return new Response("file unavailable", { status: 503 });
+          }
+
+          const upstream = await fetch(signed.signedUrl, {
+            method: "GET",
+            cache: "no-store",
+            signal: request.signal,
+          });
+          if (!upstream.ok || !upstream.body) {
+            await release();
+            return new Response("file unavailable", { status: 503 });
+          }
+
+          return createDownloadResponse({
+            source: upstream.body,
+            fileName: reservation.file_name,
+            contentType: upstream.headers.get("content-type") ?? undefined,
+            contentLength: upstream.headers.get("content-length"),
+            finalize: async () => {
+              const { data, error } = await supabaseAdmin.rpc("finalize_download", {
+                _reservation_id: reservation.reservation_id,
+              });
+              return !error && data === true;
+            },
+            release,
+          });
+        } catch {
+          await release();
           return new Response(request.signal.aborted ? "request aborted" : "file unavailable", {
             status: request.signal.aborted ? 499 : 503,
           });
         }
-
-        return createDownloadResponse({
-          blob: file,
-          fileName: reservation.file_name,
-          finalize: async () => {
-            const { data, error } = await supabaseAdmin.rpc("finalize_download", {
-              _reservation_id: reservation.reservation_id,
-            });
-            return !error && data === true;
-          },
-          release: async () => {
-            await supabaseAdmin.rpc("release_download", {
-              _reservation_id: reservation.reservation_id,
-            });
-          },
-        });
       },
     },
   },

@@ -1,0 +1,33 @@
+name: One-time Prettier repair
+
+on:
+  push:
+    branches:
+      - feature/ipay-paid-advertising
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: startsWith(github.event.head_commit.message, 'chore(ci): add temporary formatter')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: feature/ipay-paid-advertising
+          persist-credentials: true
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - run: bun install --frozen-lockfile
+      - run: bunx prettier --write docs/paid-advertising-ipay-design.md src/routes/_authenticated/admin.tsx
+      - name: Commit formatted files
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add docs/paid-advertising-ipay-design.md src/routes/_authenticated/admin.tsx
+            git commit -m "style: apply Prettier formatting"
+            git push origin HEAD:feature/ipay-paid-advertising
+          fi

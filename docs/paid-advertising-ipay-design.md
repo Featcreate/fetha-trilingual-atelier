@@ -33,6 +33,7 @@ Use the platform's existing iPay organisation account and the existing server-on
 The repository's current iPay integration is only a server-side one-shot request builder. The documented readiness note says no iPay webhook handler, authoritative transaction reconciliation path, or webhook-authenticity verification has been implemented. Public iPay material also leaves unresolved whether a `transaction.completed` event for declared bank/postal transfers represents cleared funds or merely a customer declaration.
 
 Therefore:
+
 - Keep `IPAY_CHECKOUT_ENABLED` disabled.
 - Do not mark an advertising request paid from a browser redirect or unverified webhook.
 - Do not activate or display an ad based only on a submitted receipt or event name.
@@ -46,9 +47,9 @@ The central ledger table is `public.platform_financial_ledger_entries`. Its curr
 ## Package pricing (TND)
 
 | Duration | Launch price |
-| --- | ---: |
-| 7 days | 20.000 |
-| 14 days | 35.000 |
-| 30 days | 60.000 |
+| -------- | -----------: |
+| 7 days   |       20.000 |
+| 14 days  |       35.000 |
+| 30 days  |       60.000 |
 
 These are initial launch prices, not hard-coded permanent prices; administrators should be able to change future package prices without altering existing requests.

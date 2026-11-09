@@ -227,10 +227,10 @@ export const adminSetPaidAdvertisingPackage = createServerFn({ method: "POST" })
     const rpc = context.supabase.rpc as unknown as (
       name: string, args: Record<string, unknown>,
     ) => Promise<{ error: { message: string } | null }>;
-    const { error: roleError } = await context.supabase.rpc("has_role", {
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
       _user_id: context.userId, _role: "admin",
     });
-    if (roleError) return { ok: false as const, error: "forbidden" };
+    if (roleError || !isAdmin) return { ok: false as const, error: "forbidden" };
     const { error } = await rpc("admin_set_paid_advertising_package", {
       _duration_days: data.durationDays, _price_millimes: data.priceMillimes,
     });

@@ -66,6 +66,7 @@ type OrderRow = {
   id: string;
   user_id: string;
   status: string;
+  payment_mode: string | null;
   total_millimes: number;
   currency: string;
   created_at: string;
@@ -159,7 +160,7 @@ function AdminPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("id,user_id,status,total_millimes,currency,created_at")
+        .select("id,user_id,status,payment_mode,total_millimes,currency,created_at")
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -421,7 +422,7 @@ function AdminPage() {
   }
 
   const paidTotal = (orders.data ?? [])
-    .filter((o) => o.status === "paid")
+    .filter((o) => o.status === "paid" && o.payment_mode === "verified")
     .reduce((sum, o) => sum + o.total_millimes, 0);
   const activeStores = (stores.data ?? []).filter((s) => s.status === "active").length;
   const listedProducts = (products.data ?? []).filter((p) => p.is_active).length;
@@ -468,7 +469,7 @@ function AdminPage() {
           <p className="text-sm text-muted-foreground">{a.orders}</p>
           <p className="mt-1 text-2xl font-bold">{orders.data?.length ?? "—"}</p>
           <p className="text-xs text-muted-foreground">
-            {a.paidOrders}: {(orders.data ?? []).filter((o) => o.status === "paid").length}
+            {a.paidOrders}: {(orders.data ?? []).filter((o) => o.status === "paid" && o.payment_mode === "verified").length}
           </p>
         </div>
         <div className="rounded-xl border border-border p-4">

@@ -82,4 +82,30 @@ describe("buyer payment provider eligibility", () => {
       buyerCountry: "TN", currency: "TND", amountMillimes: 12500,
     })).toEqual([]);
   });
+  it("rejects providers whose method list contains only blank values", () => {
+    expect(eligibleBuyerPaymentProviders([{
+      ...providers[0],
+      methods: [" ", "\\t"],
+    }], {
+      buyerCountry: "TN", currency: "TND", amountMillimes: 12500,
+    })).toEqual([]);
+  });
+
+  it("normalizes whitespace and case in explicitly configured capabilities", () => {
+    expect(eligibleBuyerPaymentProviders([{
+      ...providers[0],
+      supportedCountries: [" tn "],
+      supportedCurrencies: [" tnd "],
+    }], {
+      buyerCountry: "TN", currency: "TND", amountMillimes: 12500,
+    })).toHaveLength(1);
+  });
+
+  it("rejects non-safe integer amounts", () => {
+    for (const amountMillimes of [-1, 1.5, Number.NaN, Number.MAX_SAFE_INTEGER + 1]) {
+      expect(eligibleBuyerPaymentProviders(providers, {
+        buyerCountry: "TN", currency: "TND", amountMillimes,
+      })).toEqual([]);
+    }
+  });
 });

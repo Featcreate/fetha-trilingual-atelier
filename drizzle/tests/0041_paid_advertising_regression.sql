@@ -7,6 +7,8 @@ DECLARE
   _ledger_ad_trigger boolean;
   _private_ad_bucket boolean;
   _activation_function boolean;
+  _package_rls boolean;
+  _package_client_write boolean;
 BEGIN
   SELECT c.relrowsecurity INTO _rls
   FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -63,6 +65,28 @@ BEGIN
     INTO _activation_function;
   IF NOT _activation_function THEN
     RAISE EXCEPTION 'paid_advertising_activation_function_missing';
+  END IF;
+
+  SELECT c.relrowsecurity INTO _package_rls
+  FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE n.nspname = 'public' AND c.relname = 'paid_advertising_packages';
+  IF _package_rls IS DISTINCT FROM true THEN
+    RAISE EXCEPTION 'paid_advertising_packages_rls_not_enabled';
+  END IF;
+
+  SELECT has_table_privilege('authenticated', 'public.paid_advertising_packages', 'INSERT')
+    OR has_table_privilege('authenticated', 'public.paid_advertising_packages', 'UPDATE')
+    INTO _package_client_write;
+  IF _package_client_write THEN
+    RAISE EXCEPTION 'paid_advertising_package_client_write_must_be_denied';
+  END IF;
+
+  IF (SELECT count(*) FROM public.paid_advertising_packages WHERE is_active) <> 3 THEN
+    RAISE EXCEPTION 'paid_advertising_default_packages_missing';
+  END IF;
+
+  IF to_regprocedure('public.admin_set_paid_advertising_package(smallint,bigint)') IS NULL THEN
+    RAISE EXCEPTION 'paid_advertising_package_admin_function_missing';
   END IF;
 END;
 $$;

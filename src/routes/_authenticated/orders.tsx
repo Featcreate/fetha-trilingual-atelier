@@ -5,7 +5,7 @@ import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
-import { getDownloadLink } from "@/lib/shop.functions";
+import { downloadPurchasedFile } from "@/lib/download-client";
 import { AuthShell } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/_authenticated/orders")({
@@ -30,6 +30,10 @@ type BuyerOrder = {
       id: string;
       file_name: string;
       download_entitlements:
+        | { id: string; expires_at: string; max_downloads: number; used_downloads: number }
+        | Array<{ id: string; expires_at: string; max_downloads: number; used_downloads: number }>
+        | null;
+      zip_download_entitlements:
         | { id: string; expires_at: string; max_downloads: number; used_downloads: number }
         | Array<{ id: string; expires_at: string; max_downloads: number; used_downloads: number }>
         | null;
@@ -62,7 +66,25 @@ function BuyerOrdersPage() {
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as unknown as BuyerOrder[];
+      const orders = data ?? [];
+      const orderIds = orders.map((order) => order.id);
+      if (!orderIds.length) return [] as unknown as BuyerOrder[];
+      const { data: zipRows, error: zipError } = await (supabase as any)
+        .from("zip_download_entitlements")
+        .select("id,order_item_file_id,expires_at,max_downloads,used_downloads")
+        .in("order_id", orderIds);
+      if (zipError) throw zipError;
+      const zipByFile = new Map((zipRows ?? []).map((row: any) => [row.order_item_file_id, row]));
+      return orders.map((order: any) => ({
+        ...order,
+        order_items: order.order_items.map((item: any) => ({
+          ...item,
+          order_item_files: item.order_item_files.map((file: any) => ({
+            ...file,
+            zip_download_entitlements: zipByFile.get(file.id) ?? null,
+          })),
+        })),
+      })) as unknown as BuyerOrder[];
     },
   });
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
@@ -86,13 +108,13 @@ function BuyerOrdersPage() {
     await qc.invalidateQueries({ queryKey: ["homepage-top-rated-stores"] });
   }
 
-  async function download(entitlementId: string) {
-    setBusy(entitlementId);
+  async function download(entitlementId: string, type: "original" | "zip") {
+    const key = `${type}:${entitlementId}`;
+    setBusy(key);
     setNotice("");
     try {
-      const result = await getDownloadLink({ data: { entitlementId } });
-      if (!result.ok) setNotice(m.downloadError);
-      else window.location.assign(result.url);
+      await downloadPurchasedFile(entitlementId, type);
+      await query.refetch();
     } catch {
       setNotice(m.downloadError);
     } finally {
@@ -197,37 +219,41 @@ function BuyerOrdersPage() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {item.order_item_files
-                        .flatMap((file) => {
-                          const entitlements = Array.isArray(file.download_entitlements)
-                            ? file.download_entitlements
-                            : file.download_entitlements
-                              ? [file.download_entitlements]
-                              : [];
-                          return entitlements.map((ent) => ({ file, ent }));
-                        })
-                        .map(({ file, ent }) => (
-                          <div key={ent.id} className="text-end">
-                            <button
-                              type="button"
-                              disabled={
-                                busy === ent.id ||
-                                ent.expires_at <= new Date().toISOString() ||
-                                ent.used_downloads >= ent.max_downloads
-                              }
-                              onClick={() => download(ent.id)}
-                              className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
-                            >
-                              {busy === ent.id ? m.loading : m.download}
-                            </button>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              {m.downloadsLeft}:{" "}
-                              {Math.max(0, ent.max_downloads - ent.used_downloads)} · {m.expires}{" "}
-                              {new Date(ent.expires_at).toLocaleDateString(locale)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">{file.file_name}</p>
-                          </div>
-                        ))}
+                      {item.order_item_files.flatMap((file) => {
+                        const originals = Array.isArray(file.download_entitlements)
+                          ? file.download_entitlements
+                          : file.download_entitlements ? [file.download_entitlements] : [];
+                        const zips = Array.isArray(file.zip_download_entitlements)
+                          ? file.zip_download_entitlements
+                          : file.zip_download_entitlements ? [file.zip_download_entitlements] : [];
+                        return [
+                          ...originals.map((ent) => ({ ent, type: "original" as const })),
+                          ...zips.map((ent) => ({ ent, type: "zip" as const })),
+                        ].map(({ ent, type }) => {
+                          const key = `${type}:${ent.id}`;
+                          const expired = ent.expires_at <= new Date().toISOString();
+                          const exhausted = ent.used_downloads >= ent.max_downloads;
+                          const label = type === "original"
+                            ? (lang === "ar" ? "تنزيل الملف الأصلي" : lang === "en" ? "Download original" : "Télécharger l’original")
+                            : (lang === "ar" ? "تنزيل ZIP" : lang === "en" ? "Download ZIP" : "Télécharger ZIP");
+                          return (
+                            <div key={key} className="text-end">
+                              <button
+                                type="button"
+                                disabled={busy === key || expired || exhausted}
+                                onClick={() => download(ent.id, type)}
+                                className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+                              >
+                                {busy === key ? m.loading : label}
+                              </button>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {m.downloadsLeft}: {Math.max(0, ent.max_downloads - ent.used_downloads)} · {m.expires} {new Date(ent.expires_at).toLocaleDateString(locale)}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{file.file_name}</p>
+                            </div>
+                          );
+                        });
+                      })}
                     </div>
                   </div>
                 ))}

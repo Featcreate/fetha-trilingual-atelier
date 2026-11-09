@@ -65,7 +65,7 @@ export const Route = createFileRoute("/api/download")({
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const reserveRpc = downloadType === "zip" ? "reserve_zip_download" : "reserve_download";
-        const { data: reservations, error: reserveError } = await supabaseAdmin.rpc(
+        const { data: reservations, error: reserveError } = await (supabaseAdmin as any).rpc(
           reserveRpc,
           { _user_id: userId, _entitlement_id: entitlementId },
         );
@@ -89,11 +89,11 @@ export const Route = createFileRoute("/api/download")({
 
         const release = async () => {
           if (downloadType === "zip") {
-            await supabaseAdmin.rpc("release_zip_download", {
+            await (supabaseAdmin as any).rpc("release_zip_download", {
               _reservation_id: reservation.reservation_id,
             });
           } else {
-            await supabaseAdmin.rpc("release_download", {
+            await (supabaseAdmin as any).rpc("release_download", {
               _reservation_id: reservation.reservation_id,
             });
           }
@@ -141,10 +141,10 @@ export const Route = createFileRoute("/api/download")({
               : null,
             finalize: async () => {
               const { data, error } = downloadType === "zip"
-                ? await supabaseAdmin.rpc("finalize_zip_download", {
+                ? await (supabaseAdmin as any).rpc("finalize_zip_download", {
                     _reservation_id: reservation.reservation_id,
                   })
-                : await supabaseAdmin.rpc("finalize_download", {
+                : await (supabaseAdmin as any).rpc("finalize_download", {
                     _reservation_id: reservation.reservation_id,
                   });
               return !error && data === true;

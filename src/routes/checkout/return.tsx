@@ -7,7 +7,7 @@ import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/checkout/return")({
   validateSearch: (search: Record<string, unknown>) => ({
-    order: typeof search.order === "string" ? search.order : "",
+    order: typeof search["order"] === "string" ? search["order"] : "",
   }),
   head: () => ({
     meta: [

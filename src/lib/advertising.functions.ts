@@ -117,3 +117,26 @@ export const adminActivatePaidAdvertisingRequest = createServerFn({ method: "POS
     }
     return { ok: true as const, outcome };
   });
+
+export const getMyPaidAdvertisingRequests = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as unknown as {
+      from: (table: string) => {
+        select: (columns: string) => {
+          eq: (column: string, value: string) => {
+            order: (column: string, options: { ascending: boolean }) => {
+              limit: (count: number) => Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>;
+            };
+          };
+        };
+      };
+    };
+    const { data, error } = await db.from("paid_advertising_orders")
+      .select("id,title,duration_days,price_millimes,status,payment_status,created_at,starts_at,ends_at")
+      .eq("advertiser_id", context.userId)
+      .order("created_at", { ascending: false }).limit(20);
+    if (error) return { ok: false as const, error: "load_failed" };
+    return { ok: true as const, requests: data ?? [] };
+  });

@@ -76,7 +76,7 @@ describe("buyer payment provider eligibility", () => {
 
   it("does not expose a provider without a confirmed payment method", () => {
     expect(eligibleBuyerPaymentProviders([{
-      ...providers[0],
+      ...providers[0]!,
       methods: [],
     }], {
       buyerCountry: "TN", currency: "TND", amountMillimes: 12500,

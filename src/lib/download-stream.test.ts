@@ -87,14 +87,23 @@ describe("completed download streaming", () => {
     expect(release).toHaveBeenCalledTimes(1);
   });
 
-  it("creates a ZIP archive incrementally with the original file bytes", async () => {
+  it("creates a compressed ZIP archive with the original file bytes", async () => {
     const zip = createSingleFileZipStream(sourceFrom("zip payload"), "guide.txt");
     const bytes = new Uint8Array(await new Response(zip).arrayBuffer());
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const centralOffset = view.getUint32(bytes.byteLength - 22 + 16, true);
+    const compressedSize = view.getUint32(centralOffset + 20, true);
+    const fileNameLength = view.getUint16(26, true);
+    const extraLength = view.getUint16(28, true);
+    const dataStart = 30 + fileNameLength + extraLength;
+    const compressedBytes = bytes.slice(dataStart, dataStart + compressedSize);
+    const decompressed = new Blob([compressedBytes])
+      .stream()
+      .pipeThrough(new DecompressionStream("deflate-raw" as CompressionFormat));
 
     expect(view.getUint32(0, true)).toBe(0x04034b50);
-    expect(new TextDecoder().decode(bytes)).toContain("guide.txt");
-    expect(new TextDecoder().decode(bytes)).toContain("zip payload");
+    expect(new TextDecoder().decode(bytes.slice(0, dataStart))).toContain("guide.txt");
+    expect(await new Response(decompressed).text()).toBe("zip payload");
     expect(view.getUint32(bytes.byteLength - 22, true)).toBe(0x06054b50);
   });
 });

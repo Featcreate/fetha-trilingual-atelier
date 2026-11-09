@@ -12,16 +12,16 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as CartRouteImport } from './routes/cart'
+import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as CheckoutRouteImport } from './routes/checkout'
-import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
 import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated/seller'
+import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ProductsIdRouteImport } from './routes/products/$id'
 import { Route as StoresSlugRouteImport } from './routes/stores/$slug'
 import { Route as ApiPublicKonnectWebhookRouteImport } from './routes/api/public/konnect.webhook'
@@ -40,24 +40,19 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CatalogRoute = CatalogRouteImport.update({
-  id: '/catalog',
-  path: '/catalog',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CartRoute = CartRouteImport.update({
   id: '/cart',
   path: '/cart',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CatalogRoute = CatalogRouteImport.update({
+  id: '/catalog',
+  path: '/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
-  id: '/checkout/return',
-  path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -90,6 +85,11 @@ const AuthenticatedSellerRoute = AuthenticatedSellerRouteImport.update({
   path: '/seller',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
+  id: '/return',
+  path: '/return',
+  getParentRoute: () => CheckoutRoute,
+} as any)
 const ProductsIdRoute = ProductsIdRouteImport.update({
   id: '/products/$id',
   path: '/products/$id',
@@ -109,16 +109,16 @@ const ApiPublicKonnectWebhookRoute = ApiPublicKonnectWebhookRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/catalog': typeof CatalogRoute
   '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
-  '/checkout/return': typeof CheckoutReturnRoute
+  '/catalog': typeof CatalogRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/orders': typeof AuthenticatedOrdersRoute
   '/seller': typeof AuthenticatedSellerRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/products/$id': typeof ProductsIdRoute
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
@@ -126,16 +126,16 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/catalog': typeof CatalogRoute
   '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
-  '/checkout/return': typeof CheckoutReturnRoute
+  '/catalog': typeof CatalogRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/orders': typeof AuthenticatedOrdersRoute
   '/seller': typeof AuthenticatedSellerRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/products/$id': typeof ProductsIdRoute
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
@@ -145,16 +145,16 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/catalog': typeof CatalogRoute
   '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
-  '/checkout/return': typeof CheckoutReturnRoute
+  '/catalog': typeof CatalogRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRoute
   '/_authenticated/seller': typeof AuthenticatedSellerRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/products/$id': typeof ProductsIdRoute
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
@@ -164,16 +164,16 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/catalog'
     | '/cart'
+    | '/catalog'
     | '/checkout'
-    | '/checkout/return'
     | '/reset-password'
     | '/terms'
     | '/account'
     | '/admin'
     | '/orders'
     | '/seller'
+    | '/checkout/return'
     | '/products/$id'
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
@@ -181,16 +181,16 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
-    | '/catalog'
     | '/cart'
+    | '/catalog'
     | '/checkout'
-    | '/checkout/return'
     | '/reset-password'
     | '/terms'
     | '/account'
     | '/admin'
     | '/orders'
     | '/seller'
+    | '/checkout/return'
     | '/products/$id'
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
@@ -199,16 +199,16 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/catalog'
     | '/cart'
+    | '/catalog'
     | '/checkout'
-    | '/checkout/return'
     | '/reset-password'
     | '/terms'
     | '/_authenticated/account'
     | '/_authenticated/admin'
     | '/_authenticated/orders'
     | '/_authenticated/seller'
+    | '/checkout/return'
     | '/products/$id'
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
@@ -218,10 +218,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  CatalogRoute: typeof CatalogRoute
   CartRoute: typeof CartRoute
-  CheckoutRoute: typeof CheckoutRoute
-  CheckoutReturnRoute: typeof CheckoutReturnRoute
+  CatalogRoute: typeof CatalogRoute
+  CheckoutRoute: typeof CheckoutRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
   ProductsIdRoute: typeof ProductsIdRoute
@@ -252,13 +251,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/catalog': {
-      id: '/catalog'
-      path: '/catalog'
-      fullPath: '/catalog'
-      preLoaderRoute: typeof CatalogRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/cart': {
       id: '/cart'
       path: '/cart'
@@ -266,18 +258,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/catalog': {
+      id: '/catalog'
+      path: '/catalog'
+      fullPath: '/catalog'
+      preLoaderRoute: typeof CatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout': {
       id: '/checkout'
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout/return': {
-      id: '/checkout/return'
-      path: '/checkout/return'
-      fullPath: '/checkout/return'
-      preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -322,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSellerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/checkout/return': {
+      id: '/checkout/return'
+      path: '/return'
+      fullPath: '/checkout/return'
+      preLoaderRoute: typeof CheckoutReturnRouteImport
+      parentRoute: typeof CheckoutRoute
+    }
     '/products/$id': {
       id: '/products/$id'
       path: '/products/$id'
@@ -363,14 +362,25 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface CheckoutRouteChildren {
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
+}
+
+const CheckoutRouteChildren: CheckoutRouteChildren = {
+  CheckoutReturnRoute: CheckoutReturnRoute,
+}
+
+const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
+  CheckoutRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  CatalogRoute: CatalogRoute,
   CartRoute: CartRoute,
-  CheckoutRoute: CheckoutRoute,
-  CheckoutReturnRoute: CheckoutReturnRoute,
+  CatalogRoute: CatalogRoute,
+  CheckoutRoute: CheckoutRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
   ProductsIdRoute: ProductsIdRoute,

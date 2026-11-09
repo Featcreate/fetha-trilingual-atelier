@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +8,6 @@ import { loadProductGallery } from "@/lib/product-previews";
 import { ProductPreview } from "@/components/ProductPreview";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
-import { Building2, CreditCard, Mail, Radio, Smartphone, Wallet } from "lucide-react";
 
 export const Route = createFileRoute("/products/$id")({
   head: () => ({
@@ -29,16 +27,6 @@ function ProductPage() {
   const { id } = Route.useParams();
   const { lang, setLang, t } = useLang();
   const m = t.marketplace;
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("clictopay");
-  const paymentMethods = [
-    { id: "clictopay", label: m.paymentClicToPay, Icon: CreditCard },
-    { id: "flouci", label: m.paymentFlouci, Icon: Wallet },
-    { id: "postal", label: m.paymentPostal, Icon: Mail },
-    { id: "ooredoo-sms", label: m.paymentOoredooSms, Icon: Smartphone },
-    { id: "tunisie-telecom-sms", label: m.paymentTunisieTelecomSms, Icon: Radio },
-    { id: "bank-transfer", label: m.paymentBankTransfer, Icon: Building2 },
-    { id: "winsms", label: m.paymentWinSms, Icon: Smartphone },
-  ];
   const query = useQuery({
     queryKey: ["product-detail", id],
     queryFn: async () => {
@@ -143,39 +131,7 @@ function ProductPage() {
                 {m.paymentMethodsPlanned}
               </span>
             </div>
-            <p className="mt-3 text-sm text-muted-foreground">{m.paymentSelectPrompt}</p>
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {paymentMethods.map(({ id, label, Icon }) => {
-                const selected = selectedPaymentMethod === id;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => setSelectedPaymentMethod(id)}
-                    className={`flex min-h-20 items-center gap-3 rounded-xl border p-4 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                      selected
-                        ? "border-petrol bg-cream-light ring-1 ring-petrol"
-                        : "border-border bg-background hover:bg-secondary"
-                    }`}
-                  >
-                    <Icon aria-hidden="true" className="h-6 w-6 shrink-0 text-petrol" />
-                    <span className="flex-1 text-sm font-semibold">{label}</span>
-                    <span
-                      aria-hidden="true"
-                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs ${
-                        selected
-                          ? "border-petrol bg-petrol text-white"
-                          : "border-muted-foreground/40 text-transparent"
-                      }`}
-                    >
-                      ✓
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            <p className="mt-4 rounded-xl bg-secondary p-4 text-sm leading-7">
+            <p className="mt-3 rounded-xl bg-secondary p-4 text-sm leading-7">
               {m.purchaseUnavailable}
             </p>
           </section>

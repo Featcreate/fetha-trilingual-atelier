@@ -302,6 +302,27 @@
       "when": 1794189600001,
       "tag": "0040_seller_star_ratings",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1794355200000,
+      "tag": "0041_verified_payment_download_gate",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1794355200001,
+      "tag": "0042_single_success_download_stream",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1794355200002,
+      "tag": "0043_independent_zip_download_entitlements",
+      "breakpoints": true
     }
   ]
 }

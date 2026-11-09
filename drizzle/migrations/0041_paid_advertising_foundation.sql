@@ -145,6 +145,9 @@ ALTER TABLE public.platform_financial_ledger_entries
 CREATE UNIQUE INDEX platform_ledger_advertising_order_revenue_unique
   ON public.platform_financial_ledger_entries(advertising_order_id)
   WHERE entry_type = 'advertising_revenue';
+CREATE UNIQUE INDEX platform_ledger_advertising_order_refund_unique
+  ON public.platform_financial_ledger_entries(advertising_order_id)
+  WHERE entry_type = 'refund' AND advertising_order_id IS NOT NULL;
 
 CREATE INDEX platform_ledger_advertising_order_idx
   ON public.platform_financial_ledger_entries(advertising_order_id)
@@ -178,7 +181,7 @@ BEGIN
         NEW.transaction_amount_minor <> _ad.price_millimes OR NEW.entry_side <> 'credit'
       ))
       OR (NEW.entry_type = 'refund' AND (
-        NEW.transaction_amount_minor > _ad.price_millimes OR NEW.entry_side <> 'debit'
+        NEW.transaction_amount_minor <> _ad.price_millimes OR NEW.entry_side <> 'debit'
       ))
     THEN
       RAISE EXCEPTION 'platform_ledger_advertising_entry_mismatch';

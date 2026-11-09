@@ -38,9 +38,7 @@ describe("authoritative provider payment matching", () => {
   });
 
   it("rejects invalid expected amounts", () => {
-    expect(isAuthoritativePaymentMatch({ ...expected, amountMillimes: 0 }, verified)).toBe(
-      false,
-    );
+    expect(isAuthoritativePaymentMatch({ ...expected, amountMillimes: 0 }, verified)).toBe(false);
   });
 
   it.each([0, -1, 1.25, Number.NaN, Number.POSITIVE_INFINITY, Number.MAX_SAFE_INTEGER + 1])(
@@ -58,10 +56,7 @@ describe("authoritative provider payment matching", () => {
   it("rejects missing order and provider references", () => {
     expect(isAuthoritativePaymentMatch({ ...expected, orderId: "" }, verified)).toBe(false);
     expect(
-      isAuthoritativePaymentMatch(
-        { ...expected, providerReference: "" },
-        verified,
-      ),
+      isAuthoritativePaymentMatch({ ...expected, providerReference: "" }, verified),
     ).toBe(false);
     expect(
       isAuthoritativePaymentMatch(expected, {

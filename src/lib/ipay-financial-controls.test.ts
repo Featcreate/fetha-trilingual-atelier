@@ -58,7 +58,9 @@ describe("iPay settlement evidence", () => {
     expect(evaluateIpaySettlementEvidence(expected, { ...evidence, orderReference: "other" })).toMatchObject({ reason: "order_reference_mismatch" });
     expect(evaluateIpaySettlementEvidence(expected, { ...evidence, productCode: "other" })).toMatchObject({ reason: "product_code_mismatch" });
     expect(evaluateIpaySettlementEvidence(expected, { ...evidence, currency: "EUR" })).toMatchObject({ reason: "currency_mismatch" });
+    expect(evaluateIpaySettlementEvidence(expected, { ...evidence, currencyExponent: 2 })).toMatchObject({ reason: "currency_mismatch" });
     expect(evaluateIpaySettlementEvidence(expected, { ...evidence, amountMinor: 12501 })).toMatchObject({ reason: "amount_mismatch" });
+    expect(evaluateIpaySettlementEvidence(expected, { ...evidence, amountMinor: Number.MAX_SAFE_INTEGER + 1 })).toMatchObject({ reason: "invalid_amount" });
   });
 
   it("also accepts a bank statement matched to the same exact transaction", () => {
@@ -91,6 +93,11 @@ describe("iPay refund calculations and state", () => {
       previouslyRefundedMillimes: 0,
       requestedRefundMillimes: 0,
     })).toMatchObject({ ok: false, reason: "invalid_refund_amount" });
+    expect(calculateIpayRefund({
+      originalPaidMillimes: 12500,
+      previouslyRefundedMillimes: -1,
+      requestedRefundMillimes: 1,
+    })).toMatchObject({ ok: false, reason: "invalid_previous_refunds" });
   });
 
   it("enforces an explicit refund state machine", () => {
@@ -106,11 +113,33 @@ describe("iPay refund calculations and state", () => {
     expect(validateIpayRefundCompletion({ state: "succeeded", manualEvidenceRef: "bank-slip-123" })).toBe(true);
   });
 
-  it("creates a stable idempotency key for the same refund instruction", () => {
+  it("creates a stable, unambiguous idempotency key", () => {
     const input = { orderId: "order-123", refundRequestId: "refund-req-1", amountMillimes: 2500 };
     expect(ipayRefundIdempotencyKey(input)).toBe(ipayRefundIdempotencyKey(input));
     expect(ipayRefundIdempotencyKey(input)).not.toBe(
       ipayRefundIdempotencyKey({ ...input, amountMillimes: 3000 }),
     );
+  });
+
+  it("does not collide when identifiers contain the old delimiter", () => {
+    const left = ipayRefundIdempotencyKey({
+      orderId: "order:a",
+      refundRequestId: "b",
+      amountMillimes: 2500,
+    });
+    const right = ipayRefundIdempotencyKey({
+      orderId: "order",
+      refundRequestId: "a:b",
+      amountMillimes: 2500,
+    });
+    expect(left).not.toBe(right);
+  });
+
+  it("rejects an idempotency key longer than the database column limit", () => {
+    expect(() => ipayRefundIdempotencyKey({
+      orderId: "x".repeat(100),
+      refundRequestId: "y".repeat(100),
+      amountMillimes: 1,
+    })).toThrow("ipay_refund_idempotency_key_too_long");
   });
 });

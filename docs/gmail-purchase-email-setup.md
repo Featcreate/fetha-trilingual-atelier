@@ -6,7 +6,7 @@ The purchase email outbox is enqueued only after an order transitions to `paid` 
 
 1. In Google Cloud Console, create or select a project and enable the Gmail API.
 2. Configure the OAuth consent screen. Keep the app in Testing while validating; add the Gmail account `contact.algoreabazaar@gmail.com` as a test user.
-3. Create an OAuth Client ID of type **Desktop app** for a controlled one-time authorization using Google's OAuth 2.0 Playground, or use a Web application client if your organization has a managed callback flow.
+3. Create an OAuth Client ID of type **Web application** and add Google's OAuth 2.0 Playground redirect URI: `https://developers.google.com/oauthplayground`.
 4. In OAuth 2.0 Playground settings, enable **Use your own OAuth credentials** and enter the client ID and client secret.
 5. Authorize only `https://www.googleapis.com/auth/gmail.send` while signed in as `contact.algoreabazaar@gmail.com`. Exchange the authorization code for tokens and retain the refresh token securely. Never commit or paste tokens into GitHub or chat.
 6. If the consent screen remains in Testing, Google may expire refresh tokens after seven days for non-basic scopes. For durable operation, configure the consent screen appropriately and complete Google's verification requirements if prompted.

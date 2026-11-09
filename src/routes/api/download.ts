@@ -7,7 +7,6 @@ function isNewApiKey(value: string) {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
 }
 
-// prettier-ignore
 export const Route = createFileRoute("/api/download")({
   server: {
     handlers: {

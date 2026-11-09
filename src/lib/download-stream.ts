@@ -8,7 +8,6 @@ export interface StreamDownloadDeps {
 }
 
 /** Wrap one upstream file in a DEFLATE-compressed ZIP archive without buffering it. */
-// prettier-ignore
 export function createSingleFileZipStream(
   source: ReadableStream<Uint8Array>,
   entryName: string,
@@ -145,7 +144,6 @@ export function createSingleFileZipStream(
  * consumed only after the upstream body reaches EOF and finalization succeeds.
  * Cancellation and upstream/finalization errors release the reservation.
  */
-// prettier-ignore
 export function createDownloadResponse(deps: StreamDownloadDeps): Response {
   const reader = deps.source.getReader();
   let settled = false;

@@ -29,7 +29,7 @@
 ## Accounting
 - Advertising income is recorded as a distinct `advertising_revenue` ledger entry, separate from product collections, commissions, seller payables, and seller payouts.
 - The admin activation function inserts the advertising revenue entry atomically with activation and uses an idempotency key.
-- Advertising refunds use a separate linked ledger reversal entry; only full refunds are currently supported by the draft schema.
+- The ledger schema reserves a separate linked refund entry and enforces a full-amount reversal; an operational iPay refund workflow is not implemented yet and must be added only after the provider confirms its refund API.
 - Reports aggregate advertising revenue and linked refunds separately from product sales.
 
 ## Safety and rollout

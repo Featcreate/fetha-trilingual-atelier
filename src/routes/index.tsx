@@ -387,11 +387,11 @@ function Index() {
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 {paidAdvertisementsQuery.data.advertisements.slice(0, 3).map((advertisement) => {
-                  const imageUrl = supabase.storage.from("advertising-assets").getPublicUrl(String(advertisement.image_path)).data.publicUrl;
+                  const imageUrl = String(advertisement.image_url ?? "");
                   return (
                     <article key={String(advertisement.id)} className="overflow-hidden rounded-xl border border-border bg-card">
                       <a href={String(advertisement.destination_url)} target="_blank" rel="sponsored noreferrer" className="block">
-                        <img src={imageUrl} alt={String(advertisement.title)} loading="lazy" className="aspect-[16/9] w-full object-cover" />
+                        {imageUrl && <img src={imageUrl} alt={String(advertisement.title)} loading="lazy" className="aspect-[16/9] w-full object-cover" />}
                         <div className="p-4">
                           <span className="text-[11px] font-bold uppercase tracking-wide text-coral">
                             {lang === "ar" ? "إعلان مدفوع" : lang === "en" ? "Paid ad" : "Publicité payante"}

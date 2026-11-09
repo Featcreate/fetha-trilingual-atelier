@@ -23,8 +23,16 @@ type PaidAdRequestRow = {
 };
 type AdvertiserAdRequestRow = Pick<
   PaidAdRequestRow,
-  "id" | "title" | "duration_days" | "price_millimes" | "status" |
-  "payment_status" | "created_at" | "starts_at" | "ends_at" | "rejection_reason"
+  | "id"
+  | "title"
+  | "duration_days"
+  | "price_millimes"
+  | "status"
+  | "payment_status"
+  | "created_at"
+  | "starts_at"
+  | "ends_at"
+  | "rejection_reason"
 >;
 type PublicPaidAdRow = Pick<
   PaidAdRequestRow,
@@ -40,7 +48,10 @@ type RevenueRow = {
 const requestInput = z.object({
   title: z.string().trim().min(3).max(120),
   description: z.string().trim().min(10).max(1000),
-  destinationUrl: z.string().url().refine((value) => new URL(value).protocol === "https:"),
+  destinationUrl: z
+    .string()
+    .url()
+    .refine((value) => new URL(value).protocol === "https:"),
   imagePath: z.string().min(5).max(500),
   durationDays: z.union([z.literal(7), z.literal(14), z.literal(30)]),
 });
@@ -66,8 +77,14 @@ export const createPaidAdvertisingRequest = createServerFn({ method: "POST" })
     const packageDb = supabaseAdmin as unknown as {
       from: (table: string) => {
         select: (columns: string) => {
-          eq: (column: string, value: number | boolean) => {
-            eq: (column: string, value: number | boolean) => {
+          eq: (
+            column: string,
+            value: number | boolean,
+          ) => {
+            eq: (
+              column: string,
+              value: number | boolean,
+            ) => {
               single: () => Promise<{
                 data: { price_millimes: number } | null;
                 error: { message: string } | null;
@@ -99,19 +116,23 @@ export const createPaidAdvertisingRequest = createServerFn({ method: "POST" })
         };
       };
     };
-    const { data: row, error } = await db.from("paid_advertising_orders").insert({
-      advertiser_id: context.userId,
-      title: data.title,
-      description: data.description,
-      image_path: data.imagePath,
-      destination_url: data.destinationUrl,
-      duration_days: data.durationDays,
-      price_millimes: packageRow.price_millimes,
-      currency: "TND",
-      status: "awaiting_payment",
-      payment_status: "pending",
-      payment_provider: "ipay",
-    }).select("id").single();
+    const { data: row, error } = await db
+      .from("paid_advertising_orders")
+      .insert({
+        advertiser_id: context.userId,
+        title: data.title,
+        description: data.description,
+        image_path: data.imagePath,
+        destination_url: data.destinationUrl,
+        duration_days: data.durationDays,
+        price_millimes: packageRow.price_millimes,
+        currency: "TND",
+        status: "awaiting_payment",
+        payment_status: "pending",
+        payment_provider: "ipay",
+      })
+      .select("id")
+      .single();
 
     if (error || !row) {
       console.error("Paid advertising request creation failed", error?.message ?? "unknown");
@@ -132,13 +153,20 @@ export const adminListPaidAdvertisingRequests = createServerFn({ method: "GET" }
       _role: "admin",
     });
     if (roleError || !isAdmin) {
-      return { ok: false as const, error: "forbidden", requests: [] as (PaidAdRequestRow & { image_url: string | null })[] };
+      return {
+        ok: false as const,
+        error: "forbidden",
+        requests: [] as (PaidAdRequestRow & { image_url: string | null })[],
+      };
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const db = supabaseAdmin as unknown as {
       from: (table: string) => {
         select: (columns: string) => {
-          order: (column: string, options: { ascending: boolean }) => {
+          order: (
+            column: string,
+            options: { ascending: boolean },
+          ) => {
             limit: (count: number) => Promise<{
               data: PaidAdRequestRow[] | null;
               error: { message: string } | null;
@@ -147,18 +175,28 @@ export const adminListPaidAdvertisingRequests = createServerFn({ method: "GET" }
         };
       };
     };
-    const { data, error } = await db.from("paid_advertising_orders")
-      .select("id,advertiser_id,title,description,image_path,destination_url,duration_days,price_millimes,status,payment_status,ipay_payment_ref,paid_at,created_at,starts_at,ends_at,rejection_reason")
-      .order("created_at", { ascending: false }).limit(100);
+    const { data, error } = await db
+      .from("paid_advertising_orders")
+      .select(
+        "id,advertiser_id,title,description,image_path,destination_url,duration_days,price_millimes,status,payment_status,ipay_payment_ref,paid_at,created_at,starts_at,ends_at,rejection_reason",
+      )
+      .order("created_at", { ascending: false })
+      .limit(100);
     if (error) {
-      return { ok: false as const, error: "load_failed", requests: [] as (PaidAdRequestRow & { image_url: string | null })[] };
+      return {
+        ok: false as const,
+        error: "load_failed",
+        requests: [] as (PaidAdRequestRow & { image_url: string | null })[],
+      };
     }
-    const requests = await Promise.all((data ?? []).map(async (request) => {
-      const { data: signed } = await supabaseAdmin.storage
-        .from("advertising-assets")
-        .createSignedUrl(request.image_path, 3600);
-      return { ...request, image_url: signed?.signedUrl ?? null };
-    }));
+    const requests = await Promise.all(
+      (data ?? []).map(async (request) => {
+        const { data: signed } = await supabaseAdmin.storage
+          .from("advertising-assets")
+          .createSignedUrl(request.image_path, 3600);
+        return { ...request, image_url: signed?.signedUrl ?? null };
+      }),
+    );
     return { ok: true as const, requests };
   });
 
@@ -203,8 +241,14 @@ export const getMyPaidAdvertisingRequests = createServerFn({ method: "GET" })
     const db = supabaseAdmin as unknown as {
       from: (table: string) => {
         select: (columns: string) => {
-          eq: (column: string, value: string) => {
-            order: (column: string, options: { ascending: boolean }) => {
+          eq: (
+            column: string,
+            value: string,
+          ) => {
+            order: (
+              column: string,
+              options: { ascending: boolean },
+            ) => {
               limit: (count: number) => Promise<{
                 data: AdvertiserAdRequestRow[] | null;
                 error: { message: string } | null;
@@ -214,32 +258,49 @@ export const getMyPaidAdvertisingRequests = createServerFn({ method: "GET" })
         };
       };
     };
-    const { data, error } = await db.from("paid_advertising_orders")
-      .select("id,title,duration_days,price_millimes,status,payment_status,created_at,starts_at,ends_at,rejection_reason")
+    const { data, error } = await db
+      .from("paid_advertising_orders")
+      .select(
+        "id,title,duration_days,price_millimes,status,payment_status,created_at,starts_at,ends_at,rejection_reason",
+      )
       .eq("advertiser_id", context.userId)
-      .order("created_at", { ascending: false }).limit(20);
+      .order("created_at", { ascending: false })
+      .limit(20);
     if (error) {
       return { ok: false as const, error: "load_failed", requests: [] as AdvertiserAdRequestRow[] };
     }
     return { ok: true as const, requests: data ?? [] };
   });
 
-export const getPublicPaidAdvertisements = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const db = supabaseAdmin as unknown as {
-      from: (table: string) => {
-        select: (columns: string) => {
-          eq: (column: string, value: string) => {
-            eq: (column: string, value: string) => {
-              lte: (column: string, value: string) => {
-                gt: (column: string, value: string) => {
-                  order: (column: string, options: { ascending: boolean }) => {
-                    limit: (count: number) => Promise<{
-                      data: PublicPaidAdRow[] | null;
-                      error: { message: string } | null;
-                    }>;
-                  };
+export const getPublicPaidAdvertisements = createServerFn({ method: "GET" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const db = supabaseAdmin as unknown as {
+    from: (table: string) => {
+      select: (columns: string) => {
+        eq: (
+          column: string,
+          value: string,
+        ) => {
+          eq: (
+            column: string,
+            value: string,
+          ) => {
+            lte: (
+              column: string,
+              value: string,
+            ) => {
+              gt: (
+                column: string,
+                value: string,
+              ) => {
+                order: (
+                  column: string,
+                  options: { ascending: boolean },
+                ) => {
+                  limit: (count: number) => Promise<{
+                    data: PublicPaidAdRow[] | null;
+                    error: { message: string } | null;
+                  }>;
                 };
               };
             };
@@ -247,60 +308,75 @@ export const getPublicPaidAdvertisements = createServerFn({ method: "GET" })
         };
       };
     };
-    const now = new Date().toISOString();
-    const { data, error } = await db.from("paid_advertising_orders")
-      .select("id,title,description,image_path,destination_url,starts_at,ends_at")
-      .eq("status", "active")
-      .eq("payment_status", "verified")
-      .lte("starts_at", now)
-      .gt("ends_at", now)
-      .order("starts_at", { ascending: true })
-      .limit(3);
-    if (error) {
-      return {
-        ok: false as const,
-        advertisements: [] as (PublicPaidAdRow & { image_url: string | null })[],
-      };
-    }
-    const advertisements = await Promise.all((data ?? []).map(async (advertisement) => {
+  };
+  const now = new Date().toISOString();
+  const { data, error } = await db
+    .from("paid_advertising_orders")
+    .select("id,title,description,image_path,destination_url,starts_at,ends_at")
+    .eq("status", "active")
+    .eq("payment_status", "verified")
+    .lte("starts_at", now)
+    .gt("ends_at", now)
+    .order("starts_at", { ascending: true })
+    .limit(3);
+  if (error) {
+    return {
+      ok: false as const,
+      advertisements: [] as (PublicPaidAdRow & { image_url: string | null })[],
+    };
+  }
+  const advertisements = await Promise.all(
+    (data ?? []).map(async (advertisement) => {
       const { data: signed } = await supabaseAdmin.storage
         .from("advertising-assets")
         .createSignedUrl(advertisement.image_path, 3600);
       return { ...advertisement, image_url: signed?.signedUrl ?? null };
-    }));
-    return { ok: true as const, advertisements };
-  });
+    }),
+  );
+  return { ok: true as const, advertisements };
+});
 
-export const getPaidAdvertisingPackages = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const db = supabaseAdmin as unknown as {
-      from: (table: string) => {
-        select: (columns: string) => {
-          eq: (column: string, value: boolean) => {
-            order: (column: string, options: { ascending: boolean }) => Promise<{
-              data: PackageRow[] | null;
-              error: { message: string } | null;
-            }>;
-          };
+export const getPaidAdvertisingPackages = createServerFn({ method: "GET" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const db = supabaseAdmin as unknown as {
+    from: (table: string) => {
+      select: (columns: string) => {
+        eq: (
+          column: string,
+          value: boolean,
+        ) => {
+          order: (
+            column: string,
+            options: { ascending: boolean },
+          ) => Promise<{
+            data: PackageRow[] | null;
+            error: { message: string } | null;
+          }>;
         };
       };
     };
-    const { data, error } = await db.from("paid_advertising_packages")
-      .select("duration_days,price_millimes").eq("is_active", true)
-      .order("duration_days", { ascending: true });
-    if (error) {
-      return { ok: false as const, packages: [] as PackageRow[] };
-    }
-    return { ok: true as const, packages: data ?? [] };
-  });
+  };
+  const { data, error } = await db
+    .from("paid_advertising_packages")
+    .select("duration_days,price_millimes")
+    .eq("is_active", true)
+    .order("duration_days", { ascending: true });
+  if (error) {
+    return { ok: false as const, packages: [] as PackageRow[] };
+  }
+  return { ok: true as const, packages: data ?? [] };
+});
 
 export const adminSetPaidAdvertisingPackage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({
-    durationDays: z.union([z.literal(7), z.literal(14), z.literal(30)]),
-    priceMillimes: z.number().int().positive().max(100_000_000),
-  }).parse(input))
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        durationDays: z.union([z.literal(7), z.literal(14), z.literal(30)]),
+        priceMillimes: z.number().int().positive().max(100_000_000),
+      })
+      .parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
       _user_id: context.userId,
@@ -341,9 +417,19 @@ export const adminGetAdvertisingRevenueReport = createServerFn({ method: "GET" }
     const db = supabaseAdmin as unknown as {
       from: (table: string) => {
         select: (columns: string) => {
-          not: (column: string, operator: string, value: null) => {
-            gte: (column: string, value: string) => {
-              order: (column: string, options: { ascending: boolean }) => {
+          not: (
+            column: string,
+            operator: string,
+            value: null,
+          ) => {
+            gte: (
+              column: string,
+              value: string,
+            ) => {
+              order: (
+                column: string,
+                options: { ascending: boolean },
+              ) => {
                 limit: (count: number) => Promise<{
                   data: RevenueRow[] | null;
                   error: { message: string } | null;
@@ -355,11 +441,13 @@ export const adminGetAdvertisingRevenueReport = createServerFn({ method: "GET" }
       };
     };
     const year = new Date().getUTCFullYear();
-    const { data, error } = await db.from("platform_financial_ledger_entries")
+    const { data, error } = await db
+      .from("platform_financial_ledger_entries")
       .select("created_at,entry_side,transaction_amount_minor,transaction_currency")
       .not("advertising_order_id", "is", null)
       .gte("created_at", `${year - 4}-01-01T00:00:00.000Z`)
-      .order("created_at", { ascending: true }).limit(5000);
+      .order("created_at", { ascending: true })
+      .limit(5000);
     if (error) {
       return {
         ok: false as const,
@@ -400,10 +488,14 @@ export const adminGetAdvertisingRevenueReport = createServerFn({ method: "GET" }
 
 export const adminRejectUnpaidPaidAdvertisingRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({
-    requestId: z.string().uuid(),
-    reason: z.string().trim().min(3).max(500),
-  }).parse(input))
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        requestId: z.string().uuid(),
+        reason: z.string().trim().min(3).max(500),
+      })
+      .parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
       _user_id: context.userId,

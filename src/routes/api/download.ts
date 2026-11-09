@@ -127,7 +127,7 @@ export const Route = createFileRoute("/api/download")({
             ? createSingleFileZipStream(upstream.body, reservation.file_name)
             : upstream.body;
           const fileName = downloadType === "zip"
-            ? `${reservation.file_name.replace(/\\.[^.]+$/, "") || reservation.file_name}.zip`
+            ? `${reservation.file_name.replace(/\.[^.]+$/, "") || reservation.file_name}.zip`
             : reservation.file_name;
 
           return createDownloadResponse({

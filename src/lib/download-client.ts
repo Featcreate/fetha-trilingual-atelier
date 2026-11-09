@@ -1,22 +1,24 @@
 import { supabase } from "@/integrations/supabase/client";
 
-/** Fetch the authenticated streaming endpoint, then hand the completed file to the browser. */
-export async function downloadPurchasedFile(entitlementId: string): Promise<void> {
+/** Fetch one authenticated download format and hand the completed file to the browser. */
+export async function downloadPurchasedFile(
+  entitlementId: string,
+  type: "original" | "zip" = "original",
+): Promise<void> {
   const { data, error } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   if (error || !token) throw new Error("not_authenticated");
 
-  const response = await fetch(
-    `/api/download?entitlementId=${encodeURIComponent(entitlementId)}`,
-    {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
-    },
-  );
+  const params = new URLSearchParams({ entitlementId, type });
+  const response = await fetch(`/api/download?${params.toString()}`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
   if (!response.ok) throw new Error("download_failed");
 
-  // Fetch resolves only after the complete response body has been received.
+  // Browser fetch buffers the completed response before triggering a native save.
+  // The server-to-storage leg remains streamed with backpressure.
   const file = await response.blob();
   const disposition = response.headers.get("content-disposition") ?? "";
   const utf8Name = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1];

@@ -23,6 +23,7 @@ import { Route as ProductsIdRouteImport } from './routes/products/$id'
 import { Route as StoresSlugRouteImport } from './routes/stores/$slug'
 import { Route as ApiPublicKonnectWebhookRouteImport } from './routes/api/public/konnect.webhook'
 import { Route as ApiDownloadRouteImport } from './routes/api/download'
+import { Route as ApiInternalEmailDispatchRouteImport } from './routes/api/internal/email/dispatch'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -93,6 +94,11 @@ const ApiDownloadRoute = ApiDownloadRouteImport.update({
   path: '/api/download',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInternalEmailDispatchRoute = ApiInternalEmailDispatchRouteImport.update({
+  id: '/api/internal/email/dispatch',
+  path: '/api/internal/email/dispatch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
   '/api/download': typeof ApiDownloadRoute
+  '/api/internal/email/dispatch': typeof ApiInternalEmailDispatchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
   '/api/download': typeof ApiDownloadRoute
+  '/api/internal/email/dispatch': typeof ApiInternalEmailDispatchRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
   '/api/download': typeof ApiDownloadRoute
+  '/api/internal/email/dispatch': typeof ApiInternalEmailDispatchRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
     | '/api/download'
+    | '/api/internal/email/dispatch'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
     | '/api/download'
+    | '/api/internal/email/dispatch'
   id:
     | '__root__'
     | '/'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
     | '/api/download'
+    | '/api/internal/email/dispatch'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -201,6 +213,7 @@ export interface RootRouteChildren {
   StoresSlugRoute: typeof StoresSlugRoute
   ApiPublicKonnectWebhookRoute: typeof ApiPublicKonnectWebhookRoute
   ApiDownloadRoute: typeof ApiDownloadRoute
+  ApiInternalEmailDispatchRoute: typeof ApiInternalEmailDispatchRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -303,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDownloadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/internal/email/dispatch': {
+      id: '/api/internal/email/dispatch'
+      path: '/api/internal/email/dispatch'
+      fullPath: '/api/internal/email/dispatch'
+      preLoaderRoute: typeof ApiInternalEmailDispatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -334,6 +354,7 @@ const rootRouteChildren: RootRouteChildren = {
   StoresSlugRoute: StoresSlugRoute,
   ApiPublicKonnectWebhookRoute: ApiPublicKonnectWebhookRoute,
   ApiDownloadRoute: ApiDownloadRoute,
+  ApiInternalEmailDispatchRoute: ApiInternalEmailDispatchRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

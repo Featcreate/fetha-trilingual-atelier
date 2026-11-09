@@ -86,7 +86,13 @@ export const adminListPaidAdvertisingRequests = createServerFn({ method: "GET" }
       .select("id,advertiser_id,title,description,image_path,destination_url,duration_days,price_millimes,status,payment_status,ipay_payment_ref,paid_at,created_at,starts_at,ends_at")
       .order("created_at", { ascending: false }).limit(100);
     if (error) return { ok: false as const, error: "load_failed" };
-    return { ok: true as const, requests: data ?? [] };
+    const requests = await Promise.all((data ?? []).map(async (request) => {
+      const { data: signed } = await supabaseAdmin.storage
+        .from("advertising-assets")
+        .createSignedUrl(String(request.image_path), 3600);
+      return { ...request, image_url: signed?.signedUrl ?? null };
+    }));
+    return { ok: true as const, requests };
   });
 
 export const adminActivatePaidAdvertisingRequest = createServerFn({ method: "POST" })
@@ -169,5 +175,11 @@ export const getPublicPaidAdvertisements = createServerFn({ method: "GET" })
       .order("starts_at", { ascending: true })
       .limit(3);
     if (error) return { ok: false as const, advertisements: [] as Record<string, unknown>[] };
-    return { ok: true as const, advertisements: data ?? [] };
+    const advertisements = await Promise.all((data ?? []).map(async (advertisement) => {
+      const { data: signed } = await supabaseAdmin.storage
+        .from("advertising-assets")
+        .createSignedUrl(String(advertisement.image_path), 3600);
+      return { ...advertisement, image_url: signed?.signedUrl ?? null };
+    }));
+    return { ok: true as const, advertisements };
   });

@@ -11,7 +11,7 @@ function requiredEnv(name: string): string {
 
 function encodeBase64Url(value: string): string {
   return Buffer.from(value, "utf8").toString("base64")
-    .replace(/=/g, "").replace(/\\+/g, "-").replace(/\\//g, "_");
+    .replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 }
 
 function escapeHtml(value: string): string {
@@ -51,7 +51,7 @@ export async function sendPurchaseAccessEmail(
 ): Promise<void> {
   const from = (process.env["GMAIL_SENDER_EMAIL"] || DEFAULT_FROM).trim().toLowerCase();
   if (from !== DEFAULT_FROM) throw new Error("gmail_sender_mismatch");
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(recipient)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) {
     throw new Error("invalid_recipient");
   }
   const base = new URL(appBaseUrl);
@@ -67,7 +67,7 @@ export async function sendPurchaseAccessEmail(
     "Si vous n’êtes pas à l’origine de cet achat, contactez-nous à contact.algoreabazaar@gmail.com.",
     "",
     "Algorea Bazaar",
-  ].join("\\r\\n");
+  ].join("\r\n");
   const html = `<!doctype html><html><body style="font-family:Arial,sans-serif;color:#0A2533">
     <h2>Merci pour votre achat !</h2>
     <p>Votre paiement a été confirmé. Votre produit numérique est disponible dans votre espace acheteur.</p>
@@ -92,7 +92,7 @@ export async function sendPurchaseAccessEmail(
     "",
     html,
     "--algorea-mail-boundary--",
-  ].join("\\r\\n");
+  ].join("\r\n");
   const response = await fetch(GMAIL_SEND_URL, {
     method: "POST",
     headers: {

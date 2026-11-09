@@ -40,6 +40,27 @@ CREATE TABLE public.paid_advertising_orders (
   )
 );
 
+CREATE OR REPLACE FUNCTION public.guard_paid_advertising_snapshot()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $
+BEGIN
+  IF NEW.advertiser_id IS DISTINCT FROM OLD.advertiser_id
+    OR NEW.duration_days IS DISTINCT FROM OLD.duration_days
+    OR NEW.price_millimes IS DISTINCT FROM OLD.price_millimes
+    OR NEW.currency IS DISTINCT FROM OLD.currency THEN
+    RAISE EXCEPTION 'paid_advertising_commercial_snapshot_immutable';
+  END IF;
+  RETURN NEW;
+END;
+$;
+
+CREATE TRIGGER paid_advertising_snapshot_guard
+  BEFORE UPDATE ON public.paid_advertising_orders
+  FOR EACH ROW EXECUTE FUNCTION public.guard_paid_advertising_snapshot();
+REVOKE ALL ON FUNCTION public.guard_paid_advertising_snapshot() FROM PUBLIC, anon, authenticated;
+
 CREATE INDEX paid_advertising_owner_created_idx
   ON public.paid_advertising_orders(advertiser_id, created_at DESC);
 CREATE INDEX paid_advertising_status_window_idx
@@ -114,11 +135,11 @@ ALTER TABLE public.platform_financial_ledger_entries
 
 ALTER TABLE public.platform_financial_ledger_entries
   ADD CONSTRAINT platform_ledger_advertising_scope_check CHECK (
-    (entry_type = 'advertising_revenue'
+    (entry_type IN ('advertising_revenue','refund')
       AND advertising_order_id IS NOT NULL
       AND order_id IS NULL AND order_item_id IS NULL
       AND seller_payout_id IS NULL AND seller_id IS NULL AND store_id IS NULL)
-    OR (entry_type <> 'advertising_revenue' AND advertising_order_id IS NULL)
+    OR (entry_type NOT IN ('advertising_revenue','refund') AND advertising_order_id IS NULL)
   );
 
 CREATE UNIQUE INDEX platform_ledger_advertising_order_revenue_unique
@@ -137,25 +158,30 @@ SET search_path = ''
 AS $$
 DECLARE _ad record;
 BEGIN
-  IF NEW.entry_type = 'advertising_revenue' THEN
+  IF NEW.entry_type IN ('advertising_revenue','refund')
+     AND NEW.advertising_order_id IS NOT NULL THEN
     SELECT id, payment_status, price_millimes, currency, ipay_payment_ref
       INTO _ad
     FROM public.paid_advertising_orders
     WHERE id = NEW.advertising_order_id;
     IF NOT FOUND
-      OR _ad.payment_status <> 'verified'
+      OR _ad.payment_status NOT IN ('verified','refunded')
       OR _ad.currency <> 'TND'
       OR NEW.transaction_currency <> 'TND'
       OR NEW.accounting_currency <> 'TND'
       OR NEW.transaction_currency_exponent <> 3
-      OR NEW.transaction_amount_minor <> _ad.price_millimes
-      OR NEW.accounting_amount_millimes <> _ad.price_millimes
-      OR NEW.entry_side <> 'credit'
+      OR NEW.accounting_amount_millimes <> NEW.transaction_amount_minor
       OR NEW.external_reference IS DISTINCT FROM _ad.ipay_payment_ref
       OR NEW.order_id IS NOT NULL OR NEW.order_item_id IS NOT NULL
       OR NEW.seller_id IS NOT NULL OR NEW.store_id IS NOT NULL
+      OR (NEW.entry_type = 'advertising_revenue' AND (
+        NEW.transaction_amount_minor <> _ad.price_millimes OR NEW.entry_side <> 'credit'
+      ))
+      OR (NEW.entry_type = 'refund' AND (
+        NEW.transaction_amount_minor > _ad.price_millimes OR NEW.entry_side <> 'debit'
+      ))
     THEN
-      RAISE EXCEPTION 'platform_ledger_advertising_revenue_mismatch';
+      RAISE EXCEPTION 'platform_ledger_advertising_entry_mismatch';
     END IF;
   END IF;
   RETURN NEW;

@@ -72,6 +72,7 @@ type PaidAdRequestRow = {
   title: string;
   description: string;
   image_path: string;
+  image_url: string | null;
   destination_url: string;
   duration_days: number;
   price_millimes: number;

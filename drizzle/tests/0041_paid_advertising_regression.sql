@@ -5,6 +5,8 @@ DECLARE
   _client_insert_privilege boolean;
   _ad_slot_trigger boolean;
   _ledger_ad_trigger boolean;
+  _private_ad_bucket boolean;
+  _activation_function boolean;
 BEGIN
   SELECT c.relrowsecurity INTO _rls
   FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -46,6 +48,21 @@ BEGIN
       AND conname = 'platform_ledger_advertising_scope_check'
   ) THEN
     RAISE EXCEPTION 'paid_advertising_ledger_scope_constraint_missing';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1 FROM storage.buckets
+    WHERE id = 'advertising-assets' AND public = false
+      AND file_size_limit = 10485760
+  ) INTO _private_ad_bucket;
+  IF NOT _private_ad_bucket THEN
+    RAISE EXCEPTION 'paid_advertising_bucket_must_be_private';
+  END IF;
+
+  SELECT to_regprocedure('public.admin_activate_paid_advertising_order(uuid)') IS NOT NULL
+    INTO _activation_function;
+  IF NOT _activation_function THEN
+    RAISE EXCEPTION 'paid_advertising_activation_function_missing';
   END IF;
 END;
 $$;

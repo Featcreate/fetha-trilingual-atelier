@@ -43,4 +43,35 @@ describe("authoritative provider payment matching", () => {
       verified,
     )).toBe(false);
   });
+  it.each([0, -1, 1.25, Number.NaN, Number.POSITIVE_INFINITY, Number.MAX_SAFE_INTEGER + 1])(
+    "rejects unsafe or non-positive verified amount %s",
+    (amountMillimes) => {
+      expect(isAuthoritativePaymentMatch(
+        expected,
+        { ...verified, amountMillimes },
+      )).toBe(false);
+    },
+  );
+
+  it("rejects missing order and provider references", () => {
+    expect(isAuthoritativePaymentMatch(
+      { ...expected, orderId: "" },
+      verified,
+    )).toBe(false);
+    expect(isAuthoritativePaymentMatch(
+      { ...expected, providerReference: "" },
+      verified,
+    )).toBe(false);
+    expect(isAuthoritativePaymentMatch(
+      expected,
+      { ...verified, providerReference: "" },
+    )).toBe(false);
+  });
+
+  it("rejects an expected non-TND currency even if both sides match", () => {
+    expect(isAuthoritativePaymentMatch(
+      { ...expected, currency: "EUR" as "TND" },
+      { ...verified, currency: "EUR" },
+    )).toBe(false);
+  });
 });

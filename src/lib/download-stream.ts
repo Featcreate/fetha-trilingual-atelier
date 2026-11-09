@@ -7,13 +7,12 @@ export interface StreamDownloadDeps {
   release: () => Promise<void>;
 }
 
-/** Wrap one upstream file in a ZIP Store archive without buffering the file. */
+/** Wrap one upstream file in a DEFLATE-compressed ZIP archive without buffering it. */
 export function createSingleFileZipStream(
   source: ReadableStream<Uint8Array>,
   entryName: string,
 ): ReadableStream<Uint8Array> {
-  const reader = source.getReader();
-  const name = new TextEncoder().encode(entryName.replace(/[\\/\\r\\n]/g, "_"));
+  const name = new TextEncoder().encode(entryName.replace(/[\/\\\r\n]/g, "_"));
   if (name.byteLength === 0 || name.byteLength > 0xffff) {
     throw new Error("invalid_zip_entry_name");
   }
@@ -25,15 +24,31 @@ export function createSingleFileZipStream(
     crcTable[n] = c >>> 0;
   }
   let crc = 0xffffffff;
-  let size = 0;
+  let uncompressedSize = 0;
+  let compressedSize = 0;
   let phase: "header" | "file" | "ending" | "done" = "header";
+
+  const trackedSource = source.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
+    transform(chunk, controller) {
+      uncompressedSize += chunk.byteLength;
+      if (uncompressedSize > 0xffffffff) throw new Error("zip64_not_supported");
+      for (const byte of chunk) {
+        crc = crcTable[(crc ^ byte) & 0xff]! ^ (crc >>> 8);
+      }
+      controller.enqueue(chunk);
+    },
+  }));
+  const compressed = trackedSource.pipeThrough(
+    new CompressionStream("deflate-raw" as CompressionFormat),
+  );
+  const reader = compressed.getReader();
 
   const localHeader = new Uint8Array(30 + name.byteLength);
   const local = new DataView(localHeader.buffer);
   local.setUint32(0, 0x04034b50, true);
   local.setUint16(4, 20, true);
   local.setUint16(6, 0x0808, true); // UTF-8 names + data descriptor
-  local.setUint16(8, 0, true); // Store, no compression
+  local.setUint16(8, 8, true); // DEFLATE
   local.setUint16(10, 0, true);
   local.setUint16(12, 0, true);
   local.setUint32(14, 0, true);
@@ -49,8 +64,8 @@ export function createSingleFileZipStream(
     const dd = new DataView(descriptor.buffer);
     dd.setUint32(0, 0x08074b50, true);
     dd.setUint32(4, finalCrc, true);
-    dd.setUint32(8, size, true);
-    dd.setUint32(12, size, true);
+    dd.setUint32(8, compressedSize, true);
+    dd.setUint32(12, uncompressedSize, true);
 
     const central = new Uint8Array(46 + name.byteLength);
     const cd = new DataView(central.buffer);
@@ -58,12 +73,12 @@ export function createSingleFileZipStream(
     cd.setUint16(4, 20, true);
     cd.setUint16(6, 20, true);
     cd.setUint16(8, 0x0808, true);
-    cd.setUint16(10, 0, true);
+    cd.setUint16(10, 8, true);
     cd.setUint16(12, 0, true);
     cd.setUint16(14, 0, true);
     cd.setUint32(16, finalCrc, true);
-    cd.setUint32(20, size, true);
-    cd.setUint32(24, size, true);
+    cd.setUint32(20, compressedSize, true);
+    cd.setUint32(24, uncompressedSize, true);
     cd.setUint16(28, name.byteLength, true);
     cd.setUint16(30, 0, true);
     cd.setUint16(32, 0, true);
@@ -73,7 +88,7 @@ export function createSingleFileZipStream(
     cd.setUint32(42, 0, true);
     central.set(name, 46);
 
-    const centralOffset = 30 + name.byteLength + size + descriptor.byteLength;
+    const centralOffset = 30 + name.byteLength + compressedSize + descriptor.byteLength;
     const eocd = new Uint8Array(22);
     const end = new DataView(eocd.buffer);
     end.setUint32(0, 0x06054b50, true);
@@ -98,11 +113,8 @@ export function createSingleFileZipStream(
         if (phase === "file") {
           const next = await reader.read();
           if (!next.done) {
-            size += next.value.byteLength;
-            if (size > 0xffffffff) throw new Error("zip64_not_supported");
-            for (const byte of next.value) {
-              crc = crcTable[(crc ^ byte) & 0xff]! ^ (crc >>> 8);
-            }
+            compressedSize += next.value.byteLength;
+            if (compressedSize > 0xffffffff) throw new Error("zip64_not_supported");
             controller.enqueue(next.value);
             return;
           }

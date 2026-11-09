@@ -1,0 +1,48 @@
+name: PR 70 validation
+
+on:
+  push:
+    branches:
+      - feature/multi-provider-payment-architecture
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr70-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Format, lint, test, typecheck, and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check migration journal
+        run: bun run check:migrations
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Check formatting
+        run: bunx prettier --check .
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Run tests
+        run: bun run test
+
+      - name: Production build
+        run: bun run build

@@ -94,7 +94,8 @@ AS $$
 DECLARE
   _active_count integer;
 BEGIN
-  IF NEW.status = 'active' AND OLD.status IS DISTINCT FROM 'active' THEN
+  IF NEW.status = 'active'
+     AND (TG_OP = 'INSERT' OR OLD.status IS DISTINCT FROM 'active') THEN
     PERFORM pg_advisory_xact_lock(hashtextextended('algorea-paid-ad-slots', 0));
     SELECT count(*) INTO _active_count
     FROM public.paid_advertising_orders
@@ -115,7 +116,7 @@ END;
 $$;
 
 CREATE TRIGGER paid_advertising_activation_guard
-  BEFORE UPDATE ON public.paid_advertising_orders
+  BEFORE INSERT OR UPDATE ON public.paid_advertising_orders
   FOR EACH ROW EXECUTE FUNCTION public.guard_paid_advertising_activation();
 REVOKE ALL ON FUNCTION public.guard_paid_advertising_activation() FROM PUBLIC, anon, authenticated;
 

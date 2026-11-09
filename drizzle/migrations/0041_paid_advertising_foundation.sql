@@ -121,7 +121,15 @@ DECLARE
   _active_count integer;
 BEGIN
   IF NEW.status = 'active' THEN
-    IF TG_OP = 'INSERT' OR OLD.status IS DISTINCT FROM 'active' THEN
+    IF TG_OP = 'INSERT' THEN
+      PERFORM pg_advisory_xact_lock(hashtextextended('algorea-paid-ad-slots', 0));
+      SELECT count(*) INTO _active_count
+      FROM public.paid_advertising_orders
+      WHERE status = 'active' AND ends_at > now() AND id <> NEW.id;
+      IF _active_count >= 3 THEN
+        RAISE EXCEPTION 'paid_advertising_slots_full';
+      END IF;
+    ELSIF OLD.status IS DISTINCT FROM 'active' THEN
       PERFORM pg_advisory_xact_lock(hashtextextended('algorea-paid-ad-slots', 0));
       SELECT count(*) INTO _active_count
       FROM public.paid_advertising_orders

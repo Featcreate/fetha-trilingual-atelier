@@ -85,6 +85,32 @@ CREATE POLICY "Public reads currently active paid ads"
     AND starts_at <= now() AND ends_at > now()
   );
 
+-- Creative files stay private; server functions issue short-lived URLs only for approved/public ads.
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('advertising-assets', 'advertising-assets', false, 10485760,
+  ARRAY['image/jpeg','image/png','image/webp','image/avif'])
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+CREATE POLICY "Advertisers upload own creative assets"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'advertising-assets'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+CREATE POLICY "Advertisers read own creative assets"
+  ON storage.objects FOR SELECT TO authenticated
+  USING (
+    bucket_id = 'advertising-assets'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+CREATE POLICY "Admins manage advertising creative assets"
+  ON storage.objects FOR ALL TO authenticated
+  USING (bucket_id = 'advertising-assets' AND public.has_role(auth.uid(), 'admin'))
+  WITH CHECK (bucket_id = 'advertising-assets' AND public.has_role(auth.uid(), 'admin'));
+
 -- Serialize activation attempts so concurrent approvals cannot exceed three active placements.
 CREATE OR REPLACE FUNCTION public.guard_paid_advertising_activation()
 RETURNS trigger

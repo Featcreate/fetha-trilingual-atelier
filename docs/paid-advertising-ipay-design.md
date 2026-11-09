@@ -83,7 +83,6 @@ The central ledger table is `public.platform_financial_ledger_entries`. Its curr
 
 These are initial launch prices, not hard-coded permanent prices; administrators should be able to change future package prices without altering existing requests.
 
-
 ## Authenticated iPay API details supplied for Algorea Bazaar (2026-11-09)
 
 The user supplied the documentation visible inside the authenticated iPay dashboard for the Algorea Bazaar organisation. This is more specific than the public documentation reviewed above.

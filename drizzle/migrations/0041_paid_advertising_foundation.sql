@@ -1,6 +1,55 @@
 -- Paid advertising foundation. Draft only until explicitly applied to Supabase.
 -- iPay checkout stays disabled; payment verification is implemented only after provider contract validation.
 
+
+-- Editable package prices; each submitted ad snapshots the price at request creation.
+CREATE TABLE public.paid_advertising_packages (
+  duration_days smallint PRIMARY KEY CHECK (duration_days IN (7,14,30)),
+  price_millimes bigint NOT NULL CHECK (price_millimes > 0 AND price_millimes <= 100000000),
+  is_active boolean NOT NULL DEFAULT true,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid REFERENCES auth.users(id) ON DELETE RESTRICT
+);
+INSERT INTO public.paid_advertising_packages (duration_days, price_millimes)
+VALUES (7, 20000), (14, 35000), (30, 60000)
+ON CONFLICT (duration_days) DO NOTHING;
+
+ALTER TABLE public.paid_advertising_packages ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.paid_advertising_packages FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.paid_advertising_packages TO anon, authenticated;
+GRANT ALL ON TABLE public.paid_advertising_packages TO service_role;
+CREATE POLICY "Public reads active advertising packages"
+  ON public.paid_advertising_packages FOR SELECT TO anon, authenticated
+  USING (is_active);
+
+CREATE OR REPLACE FUNCTION public.admin_set_paid_advertising_package(
+  _duration_days smallint,
+  _price_millimes bigint
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $package$
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.has_role(auth.uid(), 'admin') THEN
+    RAISE EXCEPTION 'forbidden';
+  END IF;
+  IF _duration_days NOT IN (7,14,30)
+    OR _price_millimes IS NULL
+    OR _price_millimes <= 0
+    OR _price_millimes > 100000000 THEN
+    RAISE EXCEPTION 'invalid_advertising_package';
+  END IF;
+  UPDATE public.paid_advertising_packages
+  SET price_millimes = _price_millimes, updated_at = now(), updated_by = auth.uid()
+  WHERE duration_days = _duration_days AND is_active = true;
+  IF NOT FOUND THEN RAISE EXCEPTION 'advertising_package_not_found'; END IF;
+END;
+$package$;
+REVOKE ALL ON FUNCTION public.admin_set_paid_advertising_package(smallint,bigint) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_set_paid_advertising_package(smallint,bigint) TO authenticated;
+
 CREATE TABLE public.paid_advertising_orders (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   advertiser_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
@@ -9,7 +58,7 @@ CREATE TABLE public.paid_advertising_orders (
   image_path text NOT NULL CHECK (length(trim(image_path)) BETWEEN 1 AND 500),
   destination_url text NOT NULL CHECK (destination_url ~ '^https://'),
   duration_days smallint NOT NULL CHECK (duration_days IN (7, 14, 30)),
-  price_millimes bigint NOT NULL CHECK (price_millimes IN (20000, 35000, 60000)),
+  price_millimes bigint NOT NULL CHECK (price_millimes > 0),
   currency text NOT NULL DEFAULT 'TND' CHECK (currency = 'TND'),
   status text NOT NULL DEFAULT 'awaiting_payment'
     CHECK (status IN ('awaiting_payment','payment_pending','pending_review','approved','rejected','active','expired','cancelled','refunded')),
@@ -26,11 +75,6 @@ CREATE TABLE public.paid_advertising_orders (
   ends_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT paid_advertising_price_duration_check CHECK (
-    (duration_days = 7 AND price_millimes = 20000) OR
-    (duration_days = 14 AND price_millimes = 35000) OR
-    (duration_days = 30 AND price_millimes = 60000)
-  ),
   CONSTRAINT paid_advertising_payment_state_check CHECK (
     (payment_status <> 'verified' OR (ipay_payment_ref IS NOT NULL AND paid_at IS NOT NULL))
   ),

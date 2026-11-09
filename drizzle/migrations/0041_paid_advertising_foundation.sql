@@ -94,14 +94,15 @@ AS $$
 DECLARE
   _active_count integer;
 BEGIN
-  IF NEW.status = 'active'
-     AND (TG_OP = 'INSERT' OR OLD.status IS DISTINCT FROM 'active') THEN
-    PERFORM pg_advisory_xact_lock(hashtextextended('algorea-paid-ad-slots', 0));
-    SELECT count(*) INTO _active_count
-    FROM public.paid_advertising_orders
-    WHERE status = 'active' AND ends_at > now() AND id <> NEW.id;
-    IF _active_count >= 3 THEN
-      RAISE EXCEPTION 'paid_advertising_slots_full';
+  IF NEW.status = 'active' THEN
+    IF TG_OP = 'INSERT' OR OLD.status IS DISTINCT FROM 'active' THEN
+      PERFORM pg_advisory_xact_lock(hashtextextended('algorea-paid-ad-slots', 0));
+      SELECT count(*) INTO _active_count
+      FROM public.paid_advertising_orders
+      WHERE status = 'active' AND ends_at > now() AND id <> NEW.id;
+      IF _active_count >= 3 THEN
+        RAISE EXCEPTION 'paid_advertising_slots_full';
+      END IF;
     END IF;
     IF NEW.payment_status <> 'verified' OR NEW.paid_at IS NULL THEN
       RAISE EXCEPTION 'paid_advertising_payment_not_verified';
@@ -200,6 +201,58 @@ CREATE TRIGGER platform_ledger_validate_advertising_insert
   BEFORE INSERT ON public.platform_financial_ledger_entries
   FOR EACH ROW EXECUTE FUNCTION public.guard_paid_advertising_ledger_entry();
 REVOKE ALL ON FUNCTION public.guard_paid_advertising_ledger_entry() FROM PUBLIC, anon, authenticated;
+
+
+-- Admin activation is atomic with the independent advertising revenue ledger entry.
+CREATE OR REPLACE FUNCTION public.admin_activate_paid_advertising_order(_ad_id uuid)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $activate$
+DECLARE
+  _ad public.paid_advertising_orders%ROWTYPE;
+  _now timestamptz := now();
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.has_role(auth.uid(), 'admin') THEN
+    RAISE EXCEPTION 'forbidden';
+  END IF;
+
+  SELECT * INTO _ad
+  FROM public.paid_advertising_orders
+  WHERE id = _ad_id
+  FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'paid_advertising_not_found'; END IF;
+  IF _ad.status = 'active' THEN RETURN 'already_active'; END IF;
+  IF _ad.payment_status <> 'verified' OR _ad.paid_at IS NULL OR _ad.ipay_payment_ref IS NULL THEN
+    RAISE EXCEPTION 'paid_advertising_payment_not_verified';
+  END IF;
+  IF _ad.status NOT IN ('pending_review','approved') THEN
+    RAISE EXCEPTION 'paid_advertising_not_reviewable';
+  END IF;
+
+  UPDATE public.paid_advertising_orders
+  SET status = 'active', reviewed_by = auth.uid(), reviewed_at = _now,
+      starts_at = _now, ends_at = _now + make_interval(days => duration_days)
+  WHERE id = _ad_id;
+
+  INSERT INTO public.platform_financial_ledger_entries (
+    entry_type, entry_side, transaction_currency, transaction_amount_minor,
+    transaction_currency_exponent, accounting_currency, accounting_amount_millimes,
+    source, external_reference, idempotency_key, advertising_order_id
+  ) VALUES (
+    'advertising_revenue', 'credit', 'TND', _ad.price_millimes,
+    3, 'TND', _ad.price_millimes, 'ipay_paid_advertising',
+    _ad.ipay_payment_ref, 'advertising-revenue:' || _ad.id::text, _ad.id
+  )
+  ON CONFLICT (idempotency_key) DO NOTHING;
+
+  RETURN 'activated';
+END;
+$activate$;
+
+REVOKE ALL ON FUNCTION public.admin_activate_paid_advertising_order(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_activate_paid_advertising_order(uuid) TO authenticated;
 
 COMMENT ON TABLE public.paid_advertising_orders IS
   'Paid advertising requests. iPay references are recorded separately from product orders; public visibility requires verified payment and an active approved schedule. Checkout remains gated by provider verification.';

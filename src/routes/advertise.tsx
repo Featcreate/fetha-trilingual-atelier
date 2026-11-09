@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   createPaidAdvertisingRequest,
   getMyPaidAdvertisingRequests,
+  getPaidAdvertisingPackages,
 } from "@/lib/advertising.functions";
 import { formatTND } from "@/lib/money";
 
@@ -20,12 +21,6 @@ export const Route = createFileRoute("/advertise")({
   }),
   component: AdvertisePage,
 });
-
-const packages = [
-  { days: 7, price: 20_000 },
-  { days: 14, price: 35_000 },
-  { days: 30, price: 60_000 },
-] as const;
 
 function AdvertisePage() {
   const { lang } = useLang();
@@ -61,6 +56,10 @@ function AdvertisePage() {
     durationDays: ar ? "أيام" : en ? "days" : "jours",
     required: ar ? "هذا الحقل مطلوب." : en ? "This field is required." : "Ce champ est obligatoire.",
   };
+  const packageQuery = useQuery({
+    queryKey: ["paid-advertising-packages"],
+    queryFn: () => getPaidAdvertisingPackages(),
+  });
   const history = useQuery({
     queryKey: ["my-paid-advertising-requests"],
     enabled: !!session?.user.id,
@@ -131,11 +130,11 @@ function AdvertisePage() {
           <h1 className="text-2xl font-extrabold text-petrol">{copy.title}</h1>
           <p className="mt-3 leading-7 text-muted-foreground">{copy.intro}</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            {packages.map((item) => (
-              <button key={item.days} type="button" onClick={() => setDurationDays(item.days)}
-                className={`rounded-xl border p-4 text-start transition ${durationDays === item.days ? "border-coral bg-coral/5 ring-1 ring-coral" : "border-border"}`}>
-                <span className="block text-sm text-muted-foreground">{item.days} {copy.durationDays}</span>
-                <span className="mt-1 block text-xl font-extrabold text-petrol">{formatTND(item.price)}</span>
+            {(packageQuery.data?.ok ? packageQuery.data.packages : []).map((item) => (
+              <button key={item.duration_days} type="button" onClick={() => setDurationDays(item.duration_days as 7 | 14 | 30)}
+                className={`rounded-xl border p-4 text-start transition ${durationDays === item.duration_days ? "border-coral bg-coral/5 ring-1 ring-coral" : "border-border"}`}>
+                <span className="block text-sm text-muted-foreground">{item.duration_days} {copy.durationDays}</span>
+                <span className="mt-1 block text-xl font-extrabold text-petrol">{formatTND(item.price_millimes)}</span>
               </button>
             ))}
           </div>
@@ -157,7 +156,7 @@ function AdvertisePage() {
                 <input required type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(e) => setCreative(e.target.files?.[0] ?? null)} className="mt-1 block w-full text-sm" />
               </label>
               <p className="rounded-lg bg-secondary p-3 text-sm leading-6 text-muted-foreground">{copy.paymentPending}</p>
-              <button type="submit" disabled={busy} className="w-full rounded-full bg-accent px-5 py-3 font-bold text-accent-foreground disabled:opacity-50">
+              <button type="submit" disabled={busy || !packageQuery.data?.ok || !packageQuery.data.packages.some((item) => item.duration_days === durationDays)} className="w-full rounded-full bg-accent px-5 py-3 font-bold text-accent-foreground disabled:opacity-50">
                 {busy ? copy.loading : copy.submit}
               </button>
             </form>

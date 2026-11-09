@@ -37,7 +37,7 @@ CREATE UNIQUE INDEX ipay_refund_manual_evidence_unique
 
 ALTER TABLE public.ipay_refund_reservations ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.ipay_refund_reservations FROM PUBLIC, anon, authenticated;
-GRANT ALL ON TABLE public.ipay_refund_reservations TO service_role;
+-- No direct table privileges are granted; service_role uses the guarded SECURITY DEFINER RPCs only.
 
 -- Reserve the requested amount while holding the parent order row lock.
 -- Active/failed reservations remain counted until explicitly cancelled;
@@ -169,7 +169,7 @@ DECLARE
   _order_id uuid;
   _current public.ipay_refund_reservations%ROWTYPE;
 BEGIN
-  IF _refund_id IS NULL OR _next_state NOT IN (
+  IF _refund_id IS NULL OR _next_state IS NULL OR _next_state NOT IN (
     'requested','approved','processing','succeeded','failed','cancelled'
   ) THEN
     RAISE EXCEPTION 'invalid_ipay_refund_transition';

@@ -157,22 +157,39 @@ export function calculateIpayRefund(input: {
 }
 
 /**
- * Stable key for one approved refund instruction. Retrying the same instruction
- * reuses the key; a different amount/request receives a different key.
+ * Stable, unambiguous key for one approved refund instruction.
+ * Each variable-length identifier is URI-encoded before delimiting, so
+ * separator characters inside an identifier cannot create tuple collisions.
+ * The SQL reservation table accepts keys up to 200 characters.
  */
 export function ipayRefundIdempotencyKey(input: {
   orderId: string;
   refundRequestId: string;
   amountMillimes: number;
 }): string {
+  const orderId = input.orderId.trim();
+  const refundRequestId = input.refundRequestId.trim();
   if (
-    !input.orderId.trim() ||
-    !input.refundRequestId.trim() ||
+    !orderId ||
+    !refundRequestId ||
     !positiveSafeInteger(input.amountMillimes)
   ) {
     throw new Error("invalid_refund_idempotency_input");
   }
-  return `ipay:refund:${input.orderId}:${input.refundRequestId}:${input.amountMillimes}`;
+
+  const key = [
+    "ipay",
+    "refund",
+    "v1",
+    encodeURIComponent(orderId),
+    encodeURIComponent(refundRequestId),
+    String(input.amountMillimes),
+  ].join(":");
+
+  if (key.length > 200) {
+    throw new Error("ipay_refund_idempotency_key_too_long");
+  }
+  return key;
 }
 
 /** A successful refund must have an auditable provider or manual reference. */

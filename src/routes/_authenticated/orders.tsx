@@ -4,7 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
-import { getDownloadLink } from "@/lib/shop.functions";
+import { downloadPurchasedFile } from "@/lib/download-client";
 import { AuthShell } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/_authenticated/orders")({
@@ -58,9 +58,8 @@ function BuyerOrdersPage() {
     setBusy(entitlementId);
     setNotice("");
     try {
-      const result = await getDownloadLink({ data: { entitlementId } });
-      if (!result.ok) setNotice(m.downloadError);
-      else window.location.assign(result.url);
+      await downloadPurchasedFile(entitlementId);
+      await query.refetch();
     } catch {
       setNotice(m.downloadError);
     } finally {

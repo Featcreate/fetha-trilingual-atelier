@@ -28,16 +28,18 @@ export function createSingleFileZipStream(
   let compressedSize = 0;
   let phase: "header" | "file" | "ending" | "done" = "header";
 
-  const trackedSource = source.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
-    transform(chunk, controller) {
-      uncompressedSize += chunk.byteLength;
-      if (uncompressedSize > 0xffffffff) throw new Error("zip64_not_supported");
-      for (const byte of chunk) {
-        crc = crcTable[(crc ^ byte) & 0xff]! ^ (crc >>> 8);
-      }
-      controller.enqueue(chunk);
-    },
-  }));
+  const trackedSource = source.pipeThrough(
+    new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        uncompressedSize += chunk.byteLength;
+        if (uncompressedSize > 0xffffffff) throw new Error("zip64_not_supported");
+        for (const byte of chunk) {
+          crc = crcTable[(crc ^ byte) & 0xff]! ^ (crc >>> 8);
+        }
+        controller.enqueue(chunk);
+      },
+    }),
+  );
   const deflater = new CompressionStream(
     "deflate-raw" as CompressionFormat,
   ) as unknown as ReadableWritablePair<Uint8Array, Uint8Array>;
@@ -103,40 +105,43 @@ export function createSingleFileZipStream(
     return [descriptor, central, eocd];
   };
 
-  return new ReadableStream<Uint8Array>({
-    async pull(controller) {
-      try {
-        if (phase === "header") {
-          phase = "file";
-          controller.enqueue(localHeader);
-          return;
-        }
-        if (phase === "file") {
-          const next = await reader.read();
-          if (!next.done) {
-            compressedSize += next.value.byteLength;
-            if (compressedSize > 0xffffffff) throw new Error("zip64_not_supported");
-            controller.enqueue(next.value);
+  return new ReadableStream<Uint8Array>(
+    {
+      async pull(controller) {
+        try {
+          if (phase === "header") {
+            phase = "file";
+            controller.enqueue(localHeader);
             return;
           }
-          phase = "ending";
-        }
-        if (phase === "ending") {
-          for (const part of makeEnding()) controller.enqueue(part);
-          phase = "done";
+          if (phase === "file") {
+            const next = await reader.read();
+            if (!next.done) {
+              compressedSize += next.value.byteLength;
+              if (compressedSize > 0xffffffff) throw new Error("zip64_not_supported");
+              controller.enqueue(next.value);
+              return;
+            }
+            phase = "ending";
+          }
+          if (phase === "ending") {
+            for (const part of makeEnding()) controller.enqueue(part);
+            phase = "done";
+            controller.close();
+            return;
+          }
           controller.close();
-          return;
+        } catch {
+          await reader.cancel().catch(() => undefined);
+          controller.error(new Error("zip_stream_failed"));
         }
-        controller.close();
-      } catch {
-        await reader.cancel().catch(() => undefined);
-        controller.error(new Error("zip_stream_failed"));
-      }
+      },
+      async cancel(reason) {
+        await reader.cancel(reason);
+      },
     },
-    async cancel(reason) {
-      await reader.cancel(reason);
-    },
-  }, { highWaterMark: 0 });
+    { highWaterMark: 0 },
+  );
 }
 
 /**
@@ -154,37 +159,40 @@ export function createDownloadResponse(deps: StreamDownloadDeps): Response {
     await deps.release().catch(() => undefined);
   };
 
-  const body = new ReadableStream<Uint8Array>({
-    async pull(controller) {
-      try {
-        const { done, value } = await reader.read();
-        if (!done) {
-          controller.enqueue(value);
-          return;
-        }
+  const body = new ReadableStream<Uint8Array>(
+    {
+      async pull(controller) {
+        try {
+          const { done, value } = await reader.read();
+          if (!done) {
+            controller.enqueue(value);
+            return;
+          }
 
-        if (settled) return;
-        const finalized = await deps.finalize();
-        if (!finalized) {
+          if (settled) return;
+          const finalized = await deps.finalize();
+          if (!finalized) {
+            await releaseOnce();
+            controller.error(new Error("download_finalize_failed"));
+            return;
+          }
+          settled = true;
+          controller.close();
+        } catch {
           await releaseOnce();
-          controller.error(new Error("download_finalize_failed"));
-          return;
+          controller.error(new Error("download_stream_failed"));
         }
-        settled = true;
-        controller.close();
-      } catch {
-        await releaseOnce();
-        controller.error(new Error("download_stream_failed"));
-      }
+      },
+      async cancel(reason) {
+        try {
+          await reader.cancel(reason);
+        } finally {
+          await releaseOnce();
+        }
+      },
     },
-    async cancel(reason) {
-      try {
-        await reader.cancel(reason);
-      } finally {
-        await releaseOnce();
-      }
-    },
-  }, { highWaterMark: 0 });
+    { highWaterMark: 0 },
+  );
 
   const safeName = deps.fileName.replace(/[\r\n"]/g, "_");
   const headers = new Headers({

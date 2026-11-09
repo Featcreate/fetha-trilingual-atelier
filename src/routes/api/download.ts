@@ -39,7 +39,8 @@ export const Route = createFileRoute("/api/download")({
               if (
                 isNewApiKey(publishableKey) &&
                 headers.get("Authorization") === `Bearer ${publishableKey}`
-              ) headers.delete("Authorization");
+              )
+                headers.delete("Authorization");
               headers.set("apikey", publishableKey);
               return fetch(input, { ...init, headers });
             },
@@ -56,7 +57,9 @@ export const Route = createFileRoute("/api/download")({
         const url = new URL(request.url);
         const entitlementId = url.searchParams.get("entitlementId") ?? "";
         const downloadType = url.searchParams.get("type") ?? "original";
-        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(entitlementId)) {
+        if (
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(entitlementId)
+        ) {
           return new Response("bad request", { status: 400 });
         }
         if (downloadType !== "original" && downloadType !== "zip") {
@@ -79,11 +82,16 @@ export const Route = createFileRoute("/api/download")({
           !reservation.storage_path ||
           !reservation.file_name
         ) {
-          const status = reservation.outcome === "forbidden" ? 403
-            : reservation.outcome === "busy" ? 409
-            : reservation.outcome === "quota_exhausted" ? 410
-            : reservation.outcome === "not_paid" ? 402
-            : 404;
+          const status =
+            reservation.outcome === "forbidden"
+              ? 403
+              : reservation.outcome === "busy"
+                ? 409
+                : reservation.outcome === "quota_exhausted"
+                  ? 410
+                  : reservation.outcome === "not_paid"
+                    ? 402
+                    : 404;
           return new Response(reservation.outcome, { status });
         }
 
@@ -123,30 +131,33 @@ export const Route = createFileRoute("/api/download")({
             return new Response("file unavailable", { status: 503 });
           }
 
-          const source = downloadType === "zip"
-            ? createSingleFileZipStream(upstream.body, reservation.file_name)
-            : upstream.body;
-          const fileName = downloadType === "zip"
-            ? `${reservation.file_name.replace(/\.[^.]+$/, "") || reservation.file_name}.zip`
-            : reservation.file_name;
+          const source =
+            downloadType === "zip"
+              ? createSingleFileZipStream(upstream.body, reservation.file_name)
+              : upstream.body;
+          const fileName =
+            downloadType === "zip"
+              ? `${reservation.file_name.replace(/\.[^.]+$/, "") || reservation.file_name}.zip`
+              : reservation.file_name;
 
           return createDownloadResponse({
             source,
             fileName,
-            contentType: downloadType === "zip"
-              ? "application/zip"
-              : upstream.headers.get("content-type") ?? "application/octet-stream",
-            contentLength: downloadType === "original"
-              ? upstream.headers.get("content-length")
-              : null,
+            contentType:
+              downloadType === "zip"
+                ? "application/zip"
+                : (upstream.headers.get("content-type") ?? "application/octet-stream"),
+            contentLength:
+              downloadType === "original" ? upstream.headers.get("content-length") : null,
             finalize: async () => {
-              const { data, error } = downloadType === "zip"
-                ? await (supabaseAdmin as any).rpc("finalize_zip_download", {
-                    _reservation_id: reservation.reservation_id,
-                  })
-                : await (supabaseAdmin as any).rpc("finalize_download", {
-                    _reservation_id: reservation.reservation_id,
-                  });
+              const { data, error } =
+                downloadType === "zip"
+                  ? await (supabaseAdmin as any).rpc("finalize_zip_download", {
+                      _reservation_id: reservation.reservation_id,
+                    })
+                  : await (supabaseAdmin as any).rpc("finalize_download", {
+                      _reservation_id: reservation.reservation_id,
+                    });
               return !error && data === true;
             },
             release,

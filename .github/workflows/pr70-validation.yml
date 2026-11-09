@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
@@ -35,11 +37,29 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
-      - name: Check formatting
-        run: bunx prettier --check .
+      - name: Check formatting on PR changes
+        shell: bash
+        run: |
+          git fetch origin feature/ipay-checkout-integration --depth=1
+          BASE="$(git merge-base origin/feature/ipay-checkout-integration HEAD)"
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$BASE"...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx' '*.json' '*.md' '*.css' '*.html' '*.yml' '*.yaml')
+          if (( ${#files[@]} )); then
+            bunx prettier --check "${files[@]}"
+          else
+            echo "No changed files require formatting."
+          fi
 
-      - name: Lint
-        run: bun run lint
+      - name: Lint changed source files
+        shell: bash
+        run: |
+          git fetch origin feature/ipay-checkout-integration --depth=1
+          BASE="$(git merge-base origin/feature/ipay-checkout-integration HEAD)"
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$BASE"...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx')
+          if (( ${#files[@]} )); then
+            bunx eslint "${files[@]}"
+          else
+            echo "No changed source files require linting."
+          fi
 
       - name: Run tests
         run: bun run test

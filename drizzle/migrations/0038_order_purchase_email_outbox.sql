@@ -39,9 +39,7 @@ BEGIN
       INSERT INTO public.order_email_outbox (order_id, recipient_email)
       VALUES (NEW.id, lower(trim(NEW.customer_email)))
       ON CONFLICT (order_id) DO NOTHING;
-      UPDATE public.orders
-         SET email_error = 'email_queued'
-       WHERE id = NEW.id AND email_sent_at IS NULL;
+      -- The outbox row is the delivery status; keep email_error reserved for failures.
     END IF;
   END IF;
   RETURN NEW;

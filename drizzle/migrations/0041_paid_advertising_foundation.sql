@@ -332,5 +332,37 @@ $activate$;
 REVOKE ALL ON FUNCTION public.admin_activate_paid_advertising_order(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_activate_paid_advertising_order(uuid) TO authenticated;
 
+
+CREATE OR REPLACE FUNCTION public.admin_reject_unpaid_paid_advertising_order(
+  _ad_id uuid,
+  _reason text
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $reject$
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.has_role(auth.uid(), 'admin') THEN
+    RAISE EXCEPTION 'forbidden';
+  END IF;
+  IF _reason IS NULL OR length(trim(_reason)) NOT BETWEEN 3 AND 500 THEN
+    RAISE EXCEPTION 'invalid_rejection_reason';
+  END IF;
+  UPDATE public.paid_advertising_orders
+  SET status = 'rejected', reviewed_by = auth.uid(), reviewed_at = now(),
+      rejection_reason = trim(_reason)
+  WHERE id = _ad_id
+    AND payment_status = 'pending'
+    AND paid_at IS NULL
+    AND status IN ('awaiting_payment','payment_pending');
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'paid_advertising_rejection_not_allowed';
+  END IF;
+END;
+$reject$;
+REVOKE ALL ON FUNCTION public.admin_reject_unpaid_paid_advertising_order(uuid,text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_reject_unpaid_paid_advertising_order(uuid,text) TO authenticated;
+
 COMMENT ON TABLE public.paid_advertising_orders IS
   'Paid advertising requests. iPay references are recorded separately from product orders; public visibility requires verified payment and an active approved schedule. Checkout remains gated by provider verification.';

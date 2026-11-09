@@ -196,8 +196,10 @@ BEGIN
   IF _current.state = _next_state THEN
     IF _next_state = 'succeeded'
        AND (
-         _current.provider_refund_ref IS DISTINCT FROM nullif(trim(_provider_refund_ref), '')
-         OR _current.manual_evidence_ref IS DISTINCT FROM nullif(trim(_manual_evidence_ref), '')
+         (nullif(trim(_provider_refund_ref), '') IS NOT NULL
+           AND _current.provider_refund_ref IS DISTINCT FROM nullif(trim(_provider_refund_ref), ''))
+         OR (nullif(trim(_manual_evidence_ref), '') IS NOT NULL
+           AND _current.manual_evidence_ref IS DISTINCT FROM nullif(trim(_manual_evidence_ref), ''))
        ) THEN
       RAISE EXCEPTION 'ipay_refund_completion_reference_conflict';
     END IF;

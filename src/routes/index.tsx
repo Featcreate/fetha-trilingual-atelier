@@ -73,6 +73,7 @@ import heroBanner from "@/assets/1793464236433.jpg";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 import { localizedProductText } from "@/lib/product-translations";
 import { HeaderCartLink } from "@/components/HeaderCartLink";
+import { getPublicPaidAdvertisements } from "@/lib/advertising.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -168,6 +169,11 @@ function Index() {
     }, 3500);
     return () => window.clearInterval(timer);
   }, [topRatedStoresQuery.data?.length]);
+
+  const paidAdvertisementsQuery = useQuery({
+    queryKey: ["homepage-paid-advertisements"],
+    queryFn: () => getPublicPaidAdvertisements(),
+  });
 
   const latestProductsQuery = useQuery({
     queryKey: ["homepage-latest-products"],
@@ -368,7 +374,39 @@ function Index() {
       </header>
 
       <main>
-
+        {paidAdvertisementsQuery.data?.ok && paidAdvertisementsQuery.data.advertisements.length > 0 && (
+          <section aria-labelledby="paid-advertisements-title" className="bg-background">
+            <div className="mx-auto max-w-6xl px-4 py-8">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 id="paid-advertisements-title" className="text-xl font-bold text-petrol">
+                  {lang === "ar" ? "إعلانات مدفوعة" : lang === "en" ? "Paid advertisements" : "Publicités payantes"}
+                </h2>
+                <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">
+                  {lang === "ar" ? "محتوى إعلاني" : lang === "en" ? "Sponsored" : "Sponsorisé"}
+                </span>
+              </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                {paidAdvertisementsQuery.data.advertisements.slice(0, 3).map((advertisement) => {
+                  const imageUrl = String(advertisement.image_url ?? "");
+                  return (
+                    <article key={String(advertisement.id)} className="overflow-hidden rounded-xl border border-border bg-card">
+                      <a href={String(advertisement.destination_url)} target="_blank" rel="sponsored noreferrer" className="block">
+                        {imageUrl && <img src={imageUrl} alt={String(advertisement.title)} loading="lazy" className="aspect-[16/9] w-full object-cover" />}
+                        <div className="p-4">
+                          <span className="text-[11px] font-bold uppercase tracking-wide text-coral">
+                            {lang === "ar" ? "إعلان مدفوع" : lang === "en" ? "Paid ad" : "Publicité payante"}
+                          </span>
+                          <h3 className="mt-1 font-bold text-petrol">{String(advertisement.title)}</h3>
+                          <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">{String(advertisement.description)}</p>
+                        </div>
+                      </a>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
 
         <section
           id="my-store-products"
@@ -584,6 +622,23 @@ function Index() {
             <p className="mt-6 text-center text-xs text-muted-foreground">
               {t.marketplace.tndNote}
             </p>
+          </div>
+        </section>
+
+        <section aria-labelledby="advertise-title" className="bg-cream-light">
+          <div className="mx-auto max-w-6xl px-4 py-10">
+            <div className="rounded-2xl border border-gold/40 bg-card p-6 text-center md:p-8">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold">Algorea Bazaar</p>
+              <h2 id="advertise-title" className="mt-2 text-xl font-extrabold text-petrol md:text-2xl">
+                {lang === "ar" ? "روّج لمنتجك بإعلان مميز" : lang === "en" ? "Promote your product with a featured ad" : "Mettez votre produit en avant"}
+              </h2>
+              <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
+                {lang === "ar" ? "مساحات إعلانية مدفوعة محدودة، مع مراجعة المحتوى قبل النشر." : lang === "en" ? "Limited paid advertising placements, with creative review before publication." : "Des emplacements publicitaires payants limités, avec vérification du contenu avant publication."}
+              </p>
+              <Link to="/advertise" className="mt-5 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground">
+                {lang === "ar" ? "اطلب إعلاناً" : lang === "en" ? "Request an advertisement" : "Demander une publicité"}
+              </Link>
+            </div>
           </div>
         </section>
       </main>

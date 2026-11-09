@@ -1,6 +1,6 @@
 // Server-only iPay one-shot API client. Import dynamically from server handlers.
-// Checkout remains disabled unless explicitly enabled. TND amounts default to millimes
-// (minor units), a provisional assumption pending a non-settling sandbox confirmation.
+// Checkout remains disabled unless explicitly enabled. The amount unit must be
+// explicitly configured and confirmed against iPay's account-specific contract.
 const IPAY_API = "https://api.ipay.tn";
 
 export type IpayConfig = {
@@ -14,7 +14,12 @@ export function ipayConfig(requireActivation = false): IpayConfig | null {
   const orgId = process.env["IPAY_ORG_ID"];
   const jwt = process.env["IPAY_JWT"];
   const productCode = process.env["IPAY_PRODUCT_CODE"];
-  const amountUnit = process.env["IPAY_AMOUNT_UNIT"] ?? "minor";
+  const amountUnit = process.env["IPAY_AMOUNT_UNIT"];
+
+  // The public API example does not settle whether TND amounts are dinars or millimes.
+  // Fail closed until the provider confirms the unit and the operator records that
+  // confirmation explicitly in the server environment.
+  if (process.env["IPAY_AMOUNT_UNIT_CONFIRMED"] !== "true") return null;
   if (!orgId || !jwt || !productCode) return null;
   if (amountUnit !== "major" && amountUnit !== "minor") return null;
   if (requireActivation && process.env["IPAY_CHECKOUT_ENABLED"] !== "true") {
@@ -23,7 +28,7 @@ export function ipayConfig(requireActivation = false): IpayConfig | null {
   return { orgId, jwt, productCode, amountUnit };
 }
 
-/** Convert canonical TND millimes to the configured iPay amount unit. */
+/** Convert canonical TND millimes to the provider's explicitly confirmed amount unit. */
 export function ipayAmountFromMillimes(
   amountMillimes: number,
   unit: IpayConfig["amountUnit"],

@@ -1,26 +1,20 @@
 // Server-only. Import dynamically from inside server handlers.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { decidePaymentOutcome, type KonnectPayment, type PaymentOutcome } from "./payment-rules";
-import { isKonnectPaymentEnabled } from "./payment-activation";
 
 const SANDBOX = "https://api.preprod.konnect.network/api/v2";
 const LIVE = "https://api.konnect.network/api/v2";
 
 export function konnectConfig(requireActivation = false) {
+  // Konnect is retained only for read-only reconciliation of legacy references.
+  // New buyer checkout is reserved for the approved iPay integration and remains
+  // disabled until its verification contract and sandbox tests are complete.
+  if (requireActivation) return null;
+
   const apiKey = process.env["KONNECT_API_KEY"];
   const walletId = process.env["KONNECT_WALLET_ID"];
   const mode = process.env["KONNECT_ENV"];
   if (mode !== undefined && mode !== "sandbox" && mode !== "live") return null;
-  if (
-    requireActivation &&
-    !isKonnectPaymentEnabled({
-      KONNECT_ENV: mode,
-      KONNECT_SANDBOX_PAYMENTS_ENABLED: process.env["KONNECT_SANDBOX_PAYMENTS_ENABLED"],
-      KONNECT_LIVE_PAYMENTS_ENABLED: process.env["KONNECT_LIVE_PAYMENTS_ENABLED"],
-    })
-  ) {
-    return null;
-  }
   if (!apiKey || !walletId) return null;
   const live = mode === "live";
   return { apiKey, walletId, base: live ? LIVE : SANDBOX, live };

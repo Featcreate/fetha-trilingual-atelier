@@ -32,7 +32,9 @@ export const createPaidAdvertisingRequest = createServerFn({ method: "POST" })
       from: (table: string) => {
         select: (columns: string) => {
           eq: (column: string, value: number | boolean) => {
-            single: () => Promise<{ data: { price_millimes: number } | null; error: { message: string } | null }>;
+            eq: (column: string, value: number | boolean) => {
+              single: () => Promise<{ data: { price_millimes: number } | null; error: { message: string } | null }>;
+            };
           };
         };
       };

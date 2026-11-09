@@ -112,6 +112,9 @@ export const Route = createFileRoute("/api/download")({
         const reservationId = reservation.reservation_id;
         const storagePath = reservation.storage_path;
         const fileName = reservation.file_name;
+        if (!reservationId || !storagePath || !fileName) {
+          return new Response("download unavailable", { status: 503 });
+        }
 
         const release = async () => {
           if (downloadType === "zip") {

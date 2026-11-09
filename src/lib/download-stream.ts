@@ -12,7 +12,7 @@ export function createSingleFileZipStream(
   source: ReadableStream<Uint8Array>,
   entryName: string,
 ): ReadableStream<Uint8Array> {
-  const name = new TextEncoder().encode(entryName.replace(/[\/\\\r\n]/g, "_"));
+  const name = new TextEncoder().encode(entryName.replace(/[/\\\r\n]/g, "_"));
   if (name.byteLength === 0 || name.byteLength > 0xffff) {
     throw new Error("invalid_zip_entry_name");
   }

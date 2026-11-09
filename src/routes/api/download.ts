@@ -3,6 +3,20 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { createDownloadResponse, createSingleFileZipStream } from "@/lib/download-stream";
 
+type DownloadReservation = {
+  outcome: string;
+  reservation_id: string | null;
+  storage_path: string | null;
+  file_name: string | null;
+};
+
+type AdminRpcClient = {
+  rpc<T>(
+    functionName: string,
+    args: Record<string, string>,
+  ): Promise<{ data: T | null; error: unknown }>;
+};
+
 function isNewApiKey(value: string) {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
 }
@@ -67,11 +81,11 @@ export const Route = createFileRoute("/api/download")({
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const adminRpc = supabaseAdmin as unknown as AdminRpcClient;
         const reserveRpc = downloadType === "zip" ? "reserve_zip_download" : "reserve_download";
-        const { data: reservations, error: reserveError } = await (supabaseAdmin as any).rpc(
-          reserveRpc,
-          { _user_id: userId, _entitlement_id: entitlementId },
-        );
+        const { data: reservations, error: reserveError } = await adminRpc.rpc<
+          DownloadReservation[]
+        >(reserveRpc, { _user_id: userId, _entitlement_id: entitlementId });
         const reservation = reservations?.[0];
         if (reserveError || !reservation) {
           return new Response("download unavailable", { status: 503 });
@@ -97,11 +111,11 @@ export const Route = createFileRoute("/api/download")({
 
         const release = async () => {
           if (downloadType === "zip") {
-            await (supabaseAdmin as any).rpc("release_zip_download", {
+            await adminRpc.rpc<null>("release_zip_download", {
               _reservation_id: reservation.reservation_id,
             });
           } else {
-            await (supabaseAdmin as any).rpc("release_download", {
+            await adminRpc.rpc<null>("release_download", {
               _reservation_id: reservation.reservation_id,
             });
           }
@@ -152,10 +166,10 @@ export const Route = createFileRoute("/api/download")({
             finalize: async () => {
               const { data, error } =
                 downloadType === "zip"
-                  ? await (supabaseAdmin as any).rpc("finalize_zip_download", {
+                  ? await adminRpc.rpc<boolean>("finalize_zip_download", {
                       _reservation_id: reservation.reservation_id,
                     })
-                  : await (supabaseAdmin as any).rpc("finalize_download", {
+                  : await adminRpc.rpc<boolean>("finalize_download", {
                       _reservation_id: reservation.reservation_id,
                     });
               return !error && data === true;

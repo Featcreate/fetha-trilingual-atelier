@@ -41,6 +41,34 @@ type BuyerOrder = {
   }>;
 };
 
+type ZipEntitlementRow = {
+  id: string;
+  order_item_file_id: string;
+  expires_at: string;
+  max_downloads: number;
+  used_downloads: number;
+};
+
+type RawBuyerOrder = {
+  [key: string]: unknown;
+  id: string;
+  order_items: Array<{
+    [key: string]: unknown;
+    order_item_files: Array<{ [key: string]: unknown; id: string }>;
+  }>;
+};
+
+type ZipEntitlementQueryClient = {
+  from: (table: "zip_download_entitlements") => {
+    select: (columns: string) => {
+      in: (
+        column: "order_id",
+        values: string[],
+      ) => Promise<{ data: ZipEntitlementRow[] | null; error: { message: string } | null }>;
+    };
+  };
+};
+
 function BuyerOrdersPage() {
   const { lang, setLang, t } = useLang();
   const m = t.marketplace;
@@ -66,20 +94,23 @@ function BuyerOrdersPage() {
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
-      const orders = data ?? [];
+      const orders = (data ?? []) as unknown as RawBuyerOrder[];
       const orderIds = orders.map((order) => order.id);
       if (!orderIds.length) return [] as unknown as BuyerOrder[];
-      const { data: zipRows, error: zipError } = await (supabase as any)
+      const zipClient = supabase as unknown as ZipEntitlementQueryClient;
+      const { data: zipRows, error: zipError } = await zipClient
         .from("zip_download_entitlements")
         .select("id,order_item_file_id,expires_at,max_downloads,used_downloads")
         .in("order_id", orderIds);
       if (zipError) throw zipError;
-      const zipByFile = new Map((zipRows ?? []).map((row: any) => [row.order_item_file_id, row]));
-      return orders.map((order: any) => ({
+      const zipByFile = new Map(
+        (zipRows ?? []).map((row) => [row.order_item_file_id, row]),
+      );
+      return orders.map((order) => ({
         ...order,
-        order_items: order.order_items.map((item: any) => ({
+        order_items: order.order_items.map((item) => ({
           ...item,
-          order_item_files: item.order_item_files.map((file: any) => ({
+          order_item_files: item.order_item_files.map((file) => ({
             ...file,
             zip_download_entitlements: zipByFile.get(file.id) ?? null,
           })),

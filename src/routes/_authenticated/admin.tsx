@@ -8,6 +8,9 @@ import { AuthShell, SubmitButton } from "@/components/AuthShell";
 import {
   adminActivatePaidAdvertisingRequest,
   adminListPaidAdvertisingRequests,
+  adminSetPaidAdvertisingPackage,
+  getPaidAdvertisingPackages,
+  adminGetAdvertisingRevenueReport,
 } from "@/lib/advertising.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -109,6 +112,7 @@ function AdminPage() {
   const [payoutStoreId, setPayoutStoreId] = useState("");
   const [payoutReference, setPayoutReference] = useState("");
   const [payoutFailure, setPayoutFailure] = useState("");
+  const [adPriceInputs, setAdPriceInputs] = useState<Record<string, string>>({});
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
 
   const settings = useQuery({
@@ -158,6 +162,14 @@ function AdminPage() {
       if (error) throw error;
       return (data ?? []) as OrderRow[];
     },
+  });
+  const advertisingPackages = useQuery({
+    queryKey: ["paid-advertising-packages"],
+    queryFn: () => getPaidAdvertisingPackages(),
+  });
+  const advertisingReport = useQuery({
+    queryKey: ["admin-advertising-revenue-report"],
+    queryFn: () => adminGetAdvertisingRevenueReport(),
   });
   const advertising = useQuery({
     queryKey: ["admin-paid-advertising"],
@@ -282,6 +294,25 @@ function AdminPage() {
     setPayoutFailure("");
     setNotice({ ok: true, text: a.payoutFailedNote });
     await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+  }
+
+  async function saveAdvertisingPackagePrice(durationDays: 7 | 14 | 30, currentPriceMillimes: number) {
+    const raw = adPriceInputs[String(durationDays)] ?? (currentPriceMillimes / 1000).toFixed(3);
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value <= 0 || Math.round(value * 1000) !== value * 1000) {
+      setNotice({ ok: false, text: lang === "ar" ? "أدخلي سعراً موجباً حتى ثلاث منازل عشرية." : lang === "en" ? "Enter a positive price with up to three decimal places." : "Saisissez un prix positif avec trois décimales maximum." });
+      return;
+    }
+    setBusy(`ad-price-${durationDays}`);
+    setNotice(null);
+    const result = await adminSetPaidAdvertisingPackage({ data: { durationDays, priceMillimes: Math.round(value * 1000) } });
+    setBusy(null);
+    if (!result.ok) {
+      setNotice({ ok: false, text: a.saveError });
+      return;
+    }
+    setNotice({ ok: true, text: a.saved });
+    await qc.invalidateQueries({ queryKey: ["paid-advertising-packages"] });
   }
 
   async function activateAdvertisement(request: PaidAdRequestRow) {
@@ -570,6 +601,72 @@ function AdminPage() {
         )}
       </section>
 
+
+
+      <section className="mb-8 rounded-xl border border-border p-5">
+        <h2 className="text-lg font-bold">
+          {lang === "ar" ? "أسعار الإعلانات" : lang === "en" ? "Advertising prices" : "Tarifs publicitaires"}
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {lang === "ar" ? "تغيير السعر يؤثر على الطلبات الجديدة فقط؛ تحتفظ الطلبات السابقة بالسعر المسجل عند إنشائها." : lang === "en" ? "Price changes apply to new requests only; existing requests keep their original price snapshot." : "Les changements concernent les nouvelles demandes uniquement ; les demandes existantes conservent leur prix initial."}
+        </p>
+        {advertisingPackages.isPending ? <p className="mt-3 text-sm">{a.loading}</p> : advertisingPackages.isError || !advertisingPackages.data?.ok ? (
+          <p className="mt-3 text-sm text-destructive">{a.loadError}</p>
+        ) : (
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {advertisingPackages.data.packages.map((item) => {
+              const days = item.duration_days as 7 | 14 | 30;
+              return (
+                <div key={days} className="rounded-lg border border-border p-3">
+                  <label className="block text-sm font-semibold">
+                    {days} {lang === "ar" ? "أيام" : lang === "en" ? "days" : "jours"}
+                    <input type="number" min="0.001" step="0.001" value={adPriceInputs[String(days)] ?? (item.price_millimes / 1000).toFixed(3)}
+                      onChange={(e) => setAdPriceInputs((old) => ({ ...old, [String(days)]: e.target.value }))}
+                      className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3" />
+                  </label>
+                  <button type="button" disabled={busy === `ad-price-${days}`} onClick={() => void saveAdvertisingPackagePrice(days, item.price_millimes)}
+                    className="mt-3 w-full rounded-full border border-border px-3 py-2 text-xs font-semibold disabled:opacity-50">
+                    {busy === `ad-price-${days}` ? a.saving : (lang === "ar" ? "حفظ السعر" : lang === "en" ? "Save price" : "Enregistrer le tarif")}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="mb-8 rounded-xl border border-border p-5">
+        <h2 className="text-lg font-bold">
+          {lang === "ar" ? "تقارير إيرادات الإعلانات" : lang === "en" ? "Advertising revenue reports" : "Rapports des revenus publicitaires"}
+        </h2>
+        {advertisingReport.isPending ? <p className="mt-3 text-sm">{a.loading}</p> : advertisingReport.isError || !advertisingReport.data?.ok ? (
+          <p className="mt-3 text-sm text-destructive">{a.loadError}</p>
+        ) : (
+          <>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {lang === "ar" ? "صافي الإيرادات بعد تسجيل الاستردادات، بالدينار التونسي." : lang === "en" ? "Net advertising revenue after recorded refunds, in TND." : "Revenu publicitaire net après remboursements enregistrés, en TND."}
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg bg-secondary p-4">
+                <p className="text-xs text-muted-foreground">{advertisingReport.data.currentYear}</p>
+                <p className="mt-1 text-2xl font-bold">{formatTND(advertisingReport.data.yearly.find((row) => row.year === advertisingReport.data.currentYear)?.amountMillimes ?? 0)}</p>
+              </div>
+              <div className="rounded-lg bg-secondary p-4">
+                <p className="text-xs text-muted-foreground">{lang === "ar" ? "إجمالي السنوات المعروضة" : lang === "en" ? "All reported years" : "Total des années affichées"}</p>
+                <p className="mt-1 text-2xl font-bold">{formatTND(advertisingReport.data.yearly.reduce((sum, row) => sum + row.amountMillimes, 0))}</p>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {advertisingReport.data.monthly.map((row) => (
+                <div key={row.month} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
+                  <span>{row.month}</span><strong>{formatTND(row.amountMillimes)}</strong>
+                </div>
+              ))}
+              {!advertisingReport.data.monthly.length && <p className="text-sm text-muted-foreground">{lang === "ar" ? "لا توجد إيرادات مسجلة هذا العام." : lang === "en" ? "No advertising revenue recorded this year." : "Aucun revenu publicitaire enregistré cette année."}</p>}
+            </div>
+          </>
+        )}
+      </section>
 
       <section className="mb-8 rounded-xl border border-border p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

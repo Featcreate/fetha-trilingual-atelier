@@ -172,7 +172,10 @@ function AdvertisePage() {
                 {history.data.requests.map((request) => (
                   <article key={String(request.id)} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4">
                     <div><p className="font-semibold">{String(request.title)}</p><p className="text-xs text-muted-foreground">{String(request.duration_days)} {copy.durationDays} · {formatTND(Number(request.price_millimes))} · {new Date(String(request.created_at)).toLocaleDateString(locale)}</p></div>
-                    <span className="rounded-full bg-secondary px-3 py-1 text-xs">{statusLabel(request.status) === "awaiting_payment" ? copy.pending : statusLabel(request.status)}</span>
+                    <div className="text-end">
+                      <span className="rounded-full bg-secondary px-3 py-1 text-xs">{statusLabel(request.status) === "awaiting_payment" ? copy.pending : statusLabel(request.status)}</span>
+                      {request.rejection_reason && <p className="mt-2 max-w-xs text-xs text-destructive">{String(request.rejection_reason)}</p>}
+                    </div>
                   </article>
                 ))}
               </div>

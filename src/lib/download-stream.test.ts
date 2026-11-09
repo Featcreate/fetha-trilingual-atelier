@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createDownloadResponse } from "./download-stream";
+import { createDownloadResponse, createSingleFileZipStream } from "./download-stream";
 
 function sourceFrom(text: string) {
   const bytes = new TextEncoder().encode(text);
@@ -85,5 +85,16 @@ describe("completed download streaming", () => {
     await expect(response.text()).rejects.toThrow();
     expect(finalize).not.toHaveBeenCalled();
     expect(release).toHaveBeenCalledTimes(1);
+  });
+
+  it("creates a ZIP archive incrementally with the original file bytes", async () => {
+    const zip = createSingleFileZipStream(sourceFrom("zip payload"), "guide.txt");
+    const bytes = new Uint8Array(await new Response(zip).arrayBuffer());
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
+    expect(view.getUint32(0, true)).toBe(0x04034b50);
+    expect(new TextDecoder().decode(bytes)).toContain("guide.txt");
+    expect(new TextDecoder().decode(bytes)).toContain("zip payload");
+    expect(view.getUint32(bytes.byteLength - 22, true)).toBe(0x06054b50);
   });
 });

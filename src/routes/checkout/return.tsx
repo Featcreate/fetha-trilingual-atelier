@@ -131,13 +131,22 @@ function CheckoutReturnPage() {
               {checking || payment.isFetching ? copy.checking : copy.retry}
             </button>
           )}
-          <Link
-            to={session ? "/orders" : "/auth"}
-            search={session ? undefined : { redirect: loginTarget }}
-            className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold hover:bg-secondary"
-          >
-            {session ? copy.orders : copy.login}
-          </Link>
+          {session ? (
+            <Link
+              to="/orders"
+              className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold hover:bg-secondary"
+            >
+              {copy.orders}
+            </Link>
+          ) : (
+            <Link
+              to="/auth"
+              search={{ redirect: loginTarget }}
+              className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold hover:bg-secondary"
+            >
+              {copy.login}
+            </Link>
+          )}
         </div>
       </section>
     </main>

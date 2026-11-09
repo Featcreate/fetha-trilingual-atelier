@@ -32,13 +32,13 @@ Use the platform's existing iPay organisation account and the existing server-on
 
 Reviewed the public iPay by Audasoft developer, one-shot payment, webhook/integration, and administration pages:
 
-- The public developer page documents `POST /api/admin/transactions/create-oneshot`, a transaction-list endpoint `GET /api/admin/transactions`, JWT bearer authentication, and the `X-Org-Id` header. It explicitly says full API field-level documentation is available inside the authenticated administration interface.
+- The authenticated API documentation supplied for the Algorea Bazaar iPay organisation confirms `POST /api/admin/transactions/create-oneshot`, JWT bearer authentication, and the `X-Org-Id` header. The supplied documentation excerpt does not specify a transaction-list or transaction-detail endpoint.
 - The public one-shot page describes `transaction.completed` and `transaction.failed`, with payload fields including `id`, `status`, `product_id`, `customer_id`, `amount`, `currency`, and `invoice_reference`.
 - Critically, the public webhook integration page says `transaction.completed` can be emitted when a customer declares a bank transfer or postal mandate, when an administrator manually changes a transaction to paid, or when a payment-gateway callback confirms payment. Therefore the event name alone is not proof that funds have cleared.
-- The public pages reviewed do not specify a verifiable webhook signature/HMAC contract, a transaction-detail lookup schema, exact list filters/pagination guarantees, the final settlement state for each payment method, or an API refund contract.
-- The current repository's `amount` unit remains provisional. Do not infer millimes/minor units from the currency code or public marketing pages.
+- The supplied authenticated documentation shows the webhook payload and health endpoint, but does not specify a verifiable webhook signature/HMAC contract, an authoritative transaction-detail lookup schema, the final settlement state for each payment method, or an API refund contract.
+- The authenticated one-shot example sends `amount` as a decimal number (for example, `149.99`) with `currency: "TND"`. The supplied schema still does not define TND decimal precision or explicitly state whether the value is dinars or millimes. The current code defaults to minor units (millimes), so this is a concrete unresolved mismatch; do not enable checkout or assume either unit until iPay confirms it and a sandbox test validates it.
 
-Public references:
+References:
 - https://www.ipay.tn/developpeurs
 - https://www.ipay.tn/produits/paiement-oneshot
 - https://www.ipay.tn/produits/webhooks-integrations
@@ -77,10 +77,85 @@ The central ledger table is `public.platform_financial_ledger_entries`. Its curr
 
 ## Package pricing (TND)
 
-| Duration | Launch price |
-| -------- | -----------: |
-| 7 days   |       20.000 |
-| 14 days  |       35.000 |
-| 30 days  |       60.000 |
+- 7 days: 20.000 TND
+- 14 days: 35.000 TND
+- 30 days: 60.000 TND
 
 These are initial launch prices, not hard-coded permanent prices; administrators should be able to change future package prices without altering existing requests.
+
+
+## Authenticated iPay API details supplied for Algorea Bazaar (2026-11-09)
+
+The user supplied the documentation visible inside the authenticated iPay dashboard for the Algorea Bazaar organisation. This is more specific than the public documentation reviewed above.
+
+### Authentication and secret handling
+
+- Base URL: `https://api.ipay.tn`.
+- External integrations require `X-Org-Id` and `Authorization: Bearer <jwt>`.
+- The JWT is generated from the organisation administration area and is valid for one year according to the supplied documentation.
+- The organisation identifier is an account identifier, not a credential. Never commit the JWT, place it in browser code, or expose it in logs.
+- Use server-side environment configuration only. The supplied organisation identifier is intentionally not copied into repository documentation.
+
+### One-shot transaction
+
+The confirmed create endpoint is:
+
+`POST /api/admin/transactions/create-oneshot`
+
+Required JSON fields:
+
+- `product_code`: iPay product code.
+- `amount`: positive number.
+- `currency`: `TND`.
+- `customer_name`: buyer name.
+- `customer_external_id`: unique order/reference identifier.
+- `invoice_reference`: optional display reference.
+
+The documented response contains `id`, `payment_url`, `amount`, `currency`, and `invoice_reference`. Redirect only to the validated HTTPS payment URL returned by iPay.
+
+The documentation example uses a decimal amount such as `149.99`. It does not define the exact TND precision or explicitly settle whether this is a major-unit or millime value. The existing implementation's default `IPAY_AMOUNT_UNIT=minor` therefore remains unsafe until confirmed. Keep checkout disabled.
+
+### Webhook events and payload
+
+The supplied documentation lists:
+
+- `transaction.created`: transaction created and pending.
+- `transaction.completed`: documented as paid/confirmed, but may also represent a declared bank transfer or postal mandate.
+- `transaction.expired`: expired without payment.
+- `transaction.failed`: failed payment.
+
+The documented payload includes `type`, `timestamp`, and `data` fields: `id`, `status`, `product_id`, `customer_id`, `month`, `amount`, `currency`, and `invoice_reference`.
+
+The documentation says to return HTTP 200 to acknowledge receipt and warns that iPay will not retry after an error. Therefore, a production handler must durably enqueue/store the event before returning 200, and separately reconcile it with an authoritative provider-side status. Do not treat the event name or a customer-declared transfer as cleared funds.
+
+The supplied material does not describe a webhook signature, HMAC, authentication header, signed payload, or replay-protection mechanism. Obtain the exact verification contract from Audasoft before accepting events as trusted.
+
+### Webhook health
+
+The supplied documentation confirms:
+
+`GET /api/admin/webhooks/health`
+
+Optional `probe=true` performs HEAD checks against configured success/failure webhook URLs. This checks reachability only; it does not authenticate webhook events or prove transaction settlement.
+
+### Invoices
+
+The supplied documentation confirms these server-side endpoints:
+
+- `GET /api/admin/invoices` — list invoices, optionally filtered by `customer_id`.
+- `GET /api/admin/invoices/:id` — invoice details.
+- `GET /api/admin/invoices/:id/pdf` — PDF download.
+
+The invoice record includes transaction/customer IDs, amount, currency, customer name, product code/name, invoice reference, and timestamps. Invoice availability is useful for reconciliation/audit, but an invoice alone must not be treated as proof that funds have cleared unless iPay confirms that semantic.
+
+### Still not documented in the supplied material
+
+The authenticated documentation provided here does not include:
+
+- A transaction-by-ID lookup endpoint or complete transaction-list schema.
+- A trusted settlement state that distinguishes completed card/Flouci payments from declared bank/postal transfers and manual dashboard status changes.
+- Webhook signing/authentication and replay protection.
+- Refund endpoint, request schema, and idempotency behavior.
+- Explicit TND amount precision/unit.
+
+These remain blocking questions for the provider. Do not invent endpoints or implement an unverified payment state machine.

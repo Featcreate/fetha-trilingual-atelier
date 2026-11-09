@@ -96,7 +96,7 @@ export const adminListPaidAdvertisingRequests = createServerFn({ method: "GET" }
       };
     };
     const { data, error } = await db.from("paid_advertising_orders")
-      .select("id,advertiser_id,title,description,image_path,destination_url,duration_days,price_millimes,status,payment_status,ipay_payment_ref,paid_at,created_at,starts_at,ends_at")
+      .select("id,advertiser_id,title,description,image_path,destination_url,duration_days,price_millimes,status,payment_status,ipay_payment_ref,paid_at,created_at,starts_at,ends_at,rejection_reason")
       .order("created_at", { ascending: false }).limit(100);
     if (error) return { ok: false as const, error: "load_failed" };
     const requests = await Promise.all((data ?? []).map(async (request) => {
@@ -153,7 +153,7 @@ export const getMyPaidAdvertisingRequests = createServerFn({ method: "GET" })
       };
     };
     const { data, error } = await db.from("paid_advertising_orders")
-      .select("id,title,duration_days,price_millimes,status,payment_status,created_at,starts_at,ends_at")
+      .select("id,title,duration_days,price_millimes,status,payment_status,created_at,starts_at,ends_at,rejection_reason")
       .eq("advertiser_id", context.userId)
       .order("created_at", { ascending: false }).limit(20);
     if (error) return { ok: false as const, error: "load_failed" };

@@ -140,3 +140,34 @@ export const getMyPaidAdvertisingRequests = createServerFn({ method: "GET" })
     if (error) return { ok: false as const, error: "load_failed" };
     return { ok: true as const, requests: data ?? [] };
   });
+
+export const getPublicPaidAdvertisements = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as unknown as {
+      from: (table: string) => {
+        select: (columns: string) => {
+          eq: (column: string, value: string) => {
+            lte: (column: string, value: string) => {
+              gt: (column: string, value: string) => {
+                order: (column: string, options: { ascending: boolean }) => {
+                  limit: (count: number) => Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>;
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    const now = new Date().toISOString();
+    const { data, error } = await db.from("paid_advertising_orders")
+      .select("id,title,description,image_path,destination_url,starts_at,ends_at")
+      .eq("status", "active")
+      .eq("payment_status", "verified")
+      .lte("starts_at", now)
+      .gt("ends_at", now)
+      .order("starts_at", { ascending: true })
+      .limit(3);
+    if (error) return { ok: false as const, advertisements: [] as Record<string, unknown>[] };
+    return { ok: true as const, advertisements: data ?? [] };
+  });

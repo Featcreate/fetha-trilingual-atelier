@@ -85,7 +85,7 @@ describe("buyer payment provider eligibility", () => {
 
   it("rejects providers whose method list contains only blank values", () => {
     expect(eligibleBuyerPaymentProviders([{
-      ...providers[0],
+      ...providers[0]!,
       methods: [" "],
     }], {
       buyerCountry: "TN", currency: "TND", amountMillimes: 12500,
@@ -94,7 +94,7 @@ describe("buyer payment provider eligibility", () => {
 
   it("normalizes whitespace and case in explicitly configured capabilities", () => {
     expect(eligibleBuyerPaymentProviders([{
-      ...providers[0],
+      ...providers[0]!,
       supportedCountries: [" tn "],
       supportedCurrencies: [" tnd "],
     }], {

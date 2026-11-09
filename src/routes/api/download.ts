@@ -156,14 +156,14 @@ export const Route = createFileRoute("/api/download")({
             downloadType === "zip"
               ? createSingleFileZipStream(upstream.body, fileName)
               : upstream.body;
-          const fileName =
+          const downloadFileName =
             downloadType === "zip"
               ? `${fileName.replace(/\.[^.]+$/, "") || fileName}.zip`
               : fileName;
 
           return createDownloadResponse({
             source,
-            fileName,
+            fileName: downloadFileName,
             contentType:
               downloadType === "zip"
                 ? "application/zip"

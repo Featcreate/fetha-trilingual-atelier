@@ -56,6 +56,7 @@ function BuyerOrdersPage() {
       return data ?? [];
     },
   });
+  // prettier-ignore
   const query = useQuery({
     queryKey: ["buyer-orders"],
     queryFn: async () => {
@@ -122,6 +123,7 @@ function BuyerOrdersPage() {
     }
   }
 
+  // prettier-ignore
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.myOrders} wide>
       <div className="mb-5 flex gap-4 text-sm">

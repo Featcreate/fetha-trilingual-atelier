@@ -11,6 +11,7 @@ import { getCartCheckoutAvailability, startCartCheckout } from "@/lib/shop.funct
 
 export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
 
+// prettier-ignore
 const copy = {
   fr: {
     title: "Récapitulatif de commande",

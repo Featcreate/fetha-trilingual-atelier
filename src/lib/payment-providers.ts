@@ -71,10 +71,20 @@ export function eligibleBuyerPaymentProviders(
   if (!Number.isSafeInteger(context.amountMillimes) || context.amountMillimes <= 0) return [];
 
   return providers.filter((provider) => {
-    if (!provider.enabled || !provider.methods.some((method) => method.trim().length > 0)) return false;
+    if (
+      !provider.enabled ||
+      !provider.methods.some((method) => method.trim().length > 0)
+    ) {
+      return false;
+    }
+
     return (
-      provider.supportedCountries.some((value) => value.trim().toUpperCase() === country) &&
-      provider.supportedCurrencies.some((value) => value.trim().toUpperCase() === currency)
+      provider.supportedCountries.some(
+        (value) => value.trim().toUpperCase() === country,
+      ) &&
+      provider.supportedCurrencies.some(
+        (value) => value.trim().toUpperCase() === currency,
+      )
     );
   });
 }
@@ -85,7 +95,8 @@ export function findEligibleBuyerPaymentProvider(
   context: BuyerCheckoutContext,
 ): BuyerPaymentProviderOption | null {
   return (
-    eligibleBuyerPaymentProviders(providers, context).find((provider) => provider.id === providerId) ??
-    null
+    eligibleBuyerPaymentProviders(providers, context).find(
+      (provider) => provider.id === providerId,
+    ) ?? null
   );
 }

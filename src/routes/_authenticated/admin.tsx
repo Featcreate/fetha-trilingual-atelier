@@ -299,16 +299,29 @@ function AdminPage() {
     await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
   }
 
-  async function saveAdvertisingPackagePrice(durationDays: 7 | 14 | 30, currentPriceMillimes: number) {
+  async function saveAdvertisingPackagePrice(
+    durationDays: 7 | 14 | 30,
+    currentPriceMillimes: number,
+  ) {
     const raw = adPriceInputs[String(durationDays)] ?? (currentPriceMillimes / 1000).toFixed(3);
     const value = Number(raw);
     if (!Number.isFinite(value) || value <= 0 || Math.round(value * 1000) !== value * 1000) {
-      setNotice({ ok: false, text: lang === "ar" ? "أدخلي سعراً موجباً حتى ثلاث منازل عشرية." : lang === "en" ? "Enter a positive price with up to three decimal places." : "Saisissez un prix positif avec trois décimales maximum." });
+      setNotice({
+        ok: false,
+        text:
+          lang === "ar"
+            ? "أدخلي سعراً موجباً حتى ثلاث منازل عشرية."
+            : lang === "en"
+              ? "Enter a positive price with up to three decimal places."
+              : "Saisissez un prix positif avec trois décimales maximum.",
+      });
       return;
     }
     setBusy(`ad-price-${durationDays}`);
     setNotice(null);
-    const result = await adminSetPaidAdvertisingPackage({ data: { durationDays, priceMillimes: Math.round(value * 1000) } });
+    const result = await adminSetPaidAdvertisingPackage({
+      data: { durationDays, priceMillimes: Math.round(value * 1000) },
+    });
     setBusy(null);
     if (!result.ok) {
       setNotice({ ok: false, text: a.saveError });
@@ -320,7 +333,15 @@ function AdminPage() {
 
   async function rejectUnpaidAdvertisement(request: PaidAdRequestRow) {
     if (adRejectionReason.trim().length < 3) {
-      setNotice({ ok: false, text: lang === "ar" ? "أدخلي سبب الرفض." : lang === "en" ? "Enter a rejection reason." : "Saisissez le motif du refus." });
+      setNotice({
+        ok: false,
+        text:
+          lang === "ar"
+            ? "أدخلي سبب الرفض."
+            : lang === "en"
+              ? "Enter a rejection reason."
+              : "Saisissez le motif du refus.",
+      });
       return;
     }
     setBusy(request.id);
@@ -344,11 +365,20 @@ function AdminPage() {
     const result = await adminActivatePaidAdvertisingRequest({ data: { requestId: request.id } });
     setBusy(null);
     if (!result.ok) {
-      const message = result.error === "payment_not_verified"
-        ? (lang === "ar" ? "لا يمكن تفعيل الإعلان قبل تأكيد الدفع عبر iPay." : lang === "en" ? "The iPay payment must be verified before activation." : "Le paiement iPay doit être vérifié avant l’activation.")
-        : result.error === "slots_full"
-          ? (lang === "ar" ? "تم بلوغ الحد الأقصى: ثلاثة إعلانات نشطة." : lang === "en" ? "The three active-ad slots are full." : "Les trois emplacements publicitaires sont déjà occupés.")
-          : a.saveError;
+      const message =
+        result.error === "payment_not_verified"
+          ? lang === "ar"
+            ? "لا يمكن تفعيل الإعلان قبل تأكيد الدفع عبر iPay."
+            : lang === "en"
+              ? "The iPay payment must be verified before activation."
+              : "Le paiement iPay doit être vérifié avant l’activation."
+          : result.error === "slots_full"
+            ? lang === "ar"
+              ? "تم بلوغ الحد الأقصى: ثلاثة إعلانات نشطة."
+              : lang === "en"
+                ? "The three active-ad slots are full."
+                : "Les trois emplacements publicitaires sont déjà occupés."
+            : a.saveError;
       setNotice({ ok: false, text: message });
       return;
     }
@@ -624,16 +654,24 @@ function AdminPage() {
         )}
       </section>
 
-
-
       <section className="mb-8 rounded-xl border border-border p-5">
         <h2 className="text-lg font-bold">
-          {lang === "ar" ? "أسعار الإعلانات" : lang === "en" ? "Advertising prices" : "Tarifs publicitaires"}
+          {lang === "ar"
+            ? "أسعار الإعلانات"
+            : lang === "en"
+              ? "Advertising prices"
+              : "Tarifs publicitaires"}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {lang === "ar" ? "تغيير السعر يؤثر على الطلبات الجديدة فقط؛ تحتفظ الطلبات السابقة بالسعر المسجل عند إنشائها." : lang === "en" ? "Price changes apply to new requests only; existing requests keep their original price snapshot." : "Les changements concernent les nouvelles demandes uniquement ; les demandes existantes conservent leur prix initial."}
+          {lang === "ar"
+            ? "تغيير السعر يؤثر على الطلبات الجديدة فقط؛ تحتفظ الطلبات السابقة بالسعر المسجل عند إنشائها."
+            : lang === "en"
+              ? "Price changes apply to new requests only; existing requests keep their original price snapshot."
+              : "Les changements concernent les nouvelles demandes uniquement ; les demandes existantes conservent leur prix initial."}
         </p>
-        {advertisingPackages.isPending ? <p className="mt-3 text-sm">{a.loading}</p> : advertisingPackages.isError || !advertisingPackages.data?.ok ? (
+        {advertisingPackages.isPending ? (
+          <p className="mt-3 text-sm">{a.loading}</p>
+        ) : advertisingPackages.isError || !advertisingPackages.data?.ok ? (
           <p className="mt-3 text-sm text-destructive">{a.loadError}</p>
         ) : (
           <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -643,13 +681,30 @@ function AdminPage() {
                 <div key={days} className="rounded-lg border border-border p-3">
                   <label className="block text-sm font-semibold">
                     {days} {lang === "ar" ? "أيام" : lang === "en" ? "days" : "jours"}
-                    <input type="number" min="0.001" step="0.001" value={adPriceInputs[String(days)] ?? (item.price_millimes / 1000).toFixed(3)}
-                      onChange={(e) => setAdPriceInputs((old) => ({ ...old, [String(days)]: e.target.value }))}
-                      className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3" />
+                    <input
+                      type="number"
+                      min="0.001"
+                      step="0.001"
+                      value={adPriceInputs[String(days)] ?? (item.price_millimes / 1000).toFixed(3)}
+                      onChange={(e) =>
+                        setAdPriceInputs((old) => ({ ...old, [String(days)]: e.target.value }))
+                      }
+                      className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3"
+                    />
                   </label>
-                  <button type="button" disabled={busy === `ad-price-${days}`} onClick={() => void saveAdvertisingPackagePrice(days, item.price_millimes)}
-                    className="mt-3 w-full rounded-full border border-border px-3 py-2 text-xs font-semibold disabled:opacity-50">
-                    {busy === `ad-price-${days}` ? a.saving : (lang === "ar" ? "حفظ السعر" : lang === "en" ? "Save price" : "Enregistrer le tarif")}
+                  <button
+                    type="button"
+                    disabled={busy === `ad-price-${days}`}
+                    onClick={() => void saveAdvertisingPackagePrice(days, item.price_millimes)}
+                    className="mt-3 w-full rounded-full border border-border px-3 py-2 text-xs font-semibold disabled:opacity-50"
+                  >
+                    {busy === `ad-price-${days}`
+                      ? a.saving
+                      : lang === "ar"
+                        ? "حفظ السعر"
+                        : lang === "en"
+                          ? "Save price"
+                          : "Enregistrer le tarif"}
                   </button>
                 </div>
               );
@@ -660,32 +715,72 @@ function AdminPage() {
 
       <section className="mb-8 rounded-xl border border-border p-5">
         <h2 className="text-lg font-bold">
-          {lang === "ar" ? "تقارير إيرادات الإعلانات" : lang === "en" ? "Advertising revenue reports" : "Rapports des revenus publicitaires"}
+          {lang === "ar"
+            ? "تقارير إيرادات الإعلانات"
+            : lang === "en"
+              ? "Advertising revenue reports"
+              : "Rapports des revenus publicitaires"}
         </h2>
-        {advertisingReport.isPending ? <p className="mt-3 text-sm">{a.loading}</p> : advertisingReport.isError || !advertisingReport.data?.ok ? (
+        {advertisingReport.isPending ? (
+          <p className="mt-3 text-sm">{a.loading}</p>
+        ) : advertisingReport.isError || !advertisingReport.data?.ok ? (
           <p className="mt-3 text-sm text-destructive">{a.loadError}</p>
         ) : (
           <>
             <p className="mt-3 text-sm text-muted-foreground">
-              {lang === "ar" ? "صافي الإيرادات بعد تسجيل الاستردادات، بالدينار التونسي." : lang === "en" ? "Net advertising revenue after recorded refunds, in TND." : "Revenu publicitaire net après remboursements enregistrés, en TND."}
+              {lang === "ar"
+                ? "صافي الإيرادات بعد تسجيل الاستردادات، بالدينار التونسي."
+                : lang === "en"
+                  ? "Net advertising revenue after recorded refunds, in TND."
+                  : "Revenu publicitaire net après remboursements enregistrés, en TND."}
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="rounded-lg bg-secondary p-4">
-                <p className="text-xs text-muted-foreground">{advertisingReport.data.currentYear}</p>
-                <p className="mt-1 text-2xl font-bold">{formatTND(advertisingReport.data.yearly.find((row) => row.year === advertisingReport.data.currentYear)?.amountMillimes ?? 0)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {advertisingReport.data.currentYear}
+                </p>
+                <p className="mt-1 text-2xl font-bold">
+                  {formatTND(
+                    advertisingReport.data.yearly.find(
+                      (row) => row.year === advertisingReport.data.currentYear,
+                    )?.amountMillimes ?? 0,
+                  )}
+                </p>
               </div>
               <div className="rounded-lg bg-secondary p-4">
-                <p className="text-xs text-muted-foreground">{lang === "ar" ? "إجمالي السنوات المعروضة" : lang === "en" ? "All reported years" : "Total des années affichées"}</p>
-                <p className="mt-1 text-2xl font-bold">{formatTND(advertisingReport.data.yearly.reduce((sum, row) => sum + row.amountMillimes, 0))}</p>
+                <p className="text-xs text-muted-foreground">
+                  {lang === "ar"
+                    ? "إجمالي السنوات المعروضة"
+                    : lang === "en"
+                      ? "All reported years"
+                      : "Total des années affichées"}
+                </p>
+                <p className="mt-1 text-2xl font-bold">
+                  {formatTND(
+                    advertisingReport.data.yearly.reduce((sum, row) => sum + row.amountMillimes, 0),
+                  )}
+                </p>
               </div>
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {advertisingReport.data.monthly.map((row) => (
-                <div key={row.month} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
-                  <span>{row.month}</span><strong>{formatTND(row.amountMillimes)}</strong>
+                <div
+                  key={row.month}
+                  className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
+                >
+                  <span>{row.month}</span>
+                  <strong>{formatTND(row.amountMillimes)}</strong>
                 </div>
               ))}
-              {!advertisingReport.data.monthly.length && <p className="text-sm text-muted-foreground">{lang === "ar" ? "لا توجد إيرادات مسجلة هذا العام." : lang === "en" ? "No advertising revenue recorded this year." : "Aucun revenu publicitaire enregistré cette année."}</p>}
+              {!advertisingReport.data.monthly.length && (
+                <p className="text-sm text-muted-foreground">
+                  {lang === "ar"
+                    ? "لا توجد إيرادات مسجلة هذا العام."
+                    : lang === "en"
+                      ? "No advertising revenue recorded this year."
+                      : "Aucun revenu publicitaire enregistré cette année."}
+                </p>
+              )}
             </div>
           </>
         )}
@@ -694,60 +789,133 @@ function AdminPage() {
       <section className="mb-8 rounded-xl border border-border p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-bold">
-            {lang === "ar" ? "الإعلانات المدفوعة" : lang === "en" ? "Paid advertisements" : "Publicités payantes"}
+            {lang === "ar"
+              ? "الإعلانات المدفوعة"
+              : lang === "en"
+                ? "Paid advertisements"
+                : "Publicités payantes"}
           </h2>
           <span className="text-xs text-muted-foreground">
-            {lang === "ar" ? "3 إعلانات نشطة كحد أقصى" : lang === "en" ? "Maximum 3 active ads" : "3 publicités actives maximum"}
+            {lang === "ar"
+              ? "3 إعلانات نشطة كحد أقصى"
+              : lang === "en"
+                ? "Maximum 3 active ads"
+                : "3 publicités actives maximum"}
           </span>
         </div>
         {advertising.isPending ? (
           <p className="text-sm">{a.loading}</p>
         ) : advertising.isError ? (
-          <p role="alert" className="text-sm text-destructive">{a.loadError}</p>
+          <p role="alert" className="text-sm text-destructive">
+            {a.loadError}
+          </p>
         ) : !advertising.data.length ? (
           <p className="rounded-lg bg-secondary p-4 text-sm">
-            {lang === "ar" ? "لا توجد طلبات إعلانية." : lang === "en" ? "No advertising requests." : "Aucune demande publicitaire."}
+            {lang === "ar"
+              ? "لا توجد طلبات إعلانية."
+              : lang === "en"
+                ? "No advertising requests."
+                : "Aucune demande publicitaire."}
           </p>
         ) : (
           <div className="space-y-3">
             <label className="block text-sm font-semibold">
-              {lang === "ar" ? "سبب رفض الطلب غير المدفوع" : lang === "en" ? "Reason for rejecting an unpaid request" : "Motif de refus d’une demande non payée"}
-              <input value={adRejectionReason} onChange={(e) => setAdRejectionReason(e.target.value)} maxLength={500}
-                className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 font-normal" />
+              {lang === "ar"
+                ? "سبب رفض الطلب غير المدفوع"
+                : lang === "en"
+                  ? "Reason for rejecting an unpaid request"
+                  : "Motif de refus d’une demande non payée"}
+              <input
+                value={adRejectionReason}
+                onChange={(e) => setAdRejectionReason(e.target.value)}
+                maxLength={500}
+                className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 font-normal"
+              />
             </label>
             {advertising.data.map((request) => {
               const imageUrl = request.image_url ?? "";
               return (
-                <article key={request.id} className="flex flex-wrap gap-4 rounded-xl border border-border p-4">
-                  <img src={imageUrl} alt="" className="h-24 w-32 rounded-lg border border-border object-cover" />
+                <article
+                  key={request.id}
+                  className="flex flex-wrap gap-4 rounded-xl border border-border p-4"
+                >
+                  <img
+                    src={imageUrl}
+                    alt=""
+                    className="h-24 w-32 rounded-lg border border-border object-cover"
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold">{request.title}</p>
-                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{request.description}</p>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      {request.duration_days} {lang === "ar" ? "أيام" : lang === "en" ? "days" : "jours"} · {formatTND(request.price_millimes)} · {request.status} · {request.payment_status}
+                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                      {request.description}
                     </p>
-                    <a href={request.destination_url} target="_blank" rel="noreferrer" className="mt-1 block truncate text-xs text-coral underline">{request.destination_url}</a>
-                    {request.rejection_reason && <p className="mt-2 text-xs text-destructive">{request.rejection_reason}</p>}
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {request.duration_days}{" "}
+                      {lang === "ar" ? "أيام" : lang === "en" ? "days" : "jours"} ·{" "}
+                      {formatTND(request.price_millimes)} · {request.status} ·{" "}
+                      {request.payment_status}
+                    </p>
+                    <a
+                      href={request.destination_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 block truncate text-xs text-coral underline"
+                    >
+                      {request.destination_url}
+                    </a>
+                    {request.rejection_reason && (
+                      <p className="mt-2 text-xs text-destructive">{request.rejection_reason}</p>
+                    )}
                     {request.payment_status === "verified" && request.status !== "active" ? (
-                      <button type="button" disabled={busy === request.id} onClick={() => void activateAdvertisement(request)} className="mt-3 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground disabled:opacity-50">
-                        {busy === request.id ? a.saving : (lang === "ar" ? "مراجعة وتفعيل الإعلان" : lang === "en" ? "Approve and activate" : "Approuver et activer")}
+                      <button
+                        type="button"
+                        disabled={busy === request.id}
+                        onClick={() => void activateAdvertisement(request)}
+                        className="mt-3 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground disabled:opacity-50"
+                      >
+                        {busy === request.id
+                          ? a.saving
+                          : lang === "ar"
+                            ? "مراجعة وتفعيل الإعلان"
+                            : lang === "en"
+                              ? "Approve and activate"
+                              : "Approuver et activer"}
                       </button>
                     ) : request.payment_status === "pending" && request.status !== "rejected" ? (
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <span className="text-xs text-muted-foreground">
-                          {lang === "ar" ? "بانتظار الدفع؛ لا يمكن النشر حالياً." : lang === "en" ? "Awaiting payment; publication is blocked." : "En attente du paiement ; publication bloquée."}
+                          {lang === "ar"
+                            ? "بانتظار الدفع؛ لا يمكن النشر حالياً."
+                            : lang === "en"
+                              ? "Awaiting payment; publication is blocked."
+                              : "En attente du paiement ; publication bloquée."}
                         </span>
-                        <button type="button" disabled={busy === request.id || adRejectionReason.trim().length < 3}
+                        <button
+                          type="button"
+                          disabled={busy === request.id || adRejectionReason.trim().length < 3}
                           onClick={() => void rejectUnpaidAdvertisement(request)}
-                          className="rounded-full border border-destructive/40 px-3 py-2 text-xs font-semibold text-destructive disabled:opacity-50">
-                          {lang === "ar" ? "رفض الطلب" : lang === "en" ? "Reject request" : "Refuser la demande"}
+                          className="rounded-full border border-destructive/40 px-3 py-2 text-xs font-semibold text-destructive disabled:opacity-50"
+                        >
+                          {lang === "ar"
+                            ? "رفض الطلب"
+                            : lang === "en"
+                              ? "Reject request"
+                              : "Refuser la demande"}
                         </button>
                       </div>
                     ) : (
                       <p className="mt-3 text-xs text-muted-foreground">
                         {request.status === "rejected"
-                          ? (lang === "ar" ? "مرفوض" : lang === "en" ? "Rejected" : "Refusée")
-                          : (lang === "ar" ? "الإعلان نشط." : lang === "en" ? "Advertisement is active." : "Publicité active.")}
+                          ? lang === "ar"
+                            ? "مرفوض"
+                            : lang === "en"
+                              ? "Rejected"
+                              : "Refusée"
+                          : lang === "ar"
+                            ? "الإعلان نشط."
+                            : lang === "en"
+                              ? "Advertisement is active."
+                              : "Publicité active."}
                       </p>
                     )}
                   </div>

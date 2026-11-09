@@ -73,6 +73,7 @@ import heroBanner from "@/assets/1793464236433.jpg";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 import { localizedProductText } from "@/lib/product-translations";
 import { HeaderCartLink } from "@/components/HeaderCartLink";
+import { getPublicPaidAdvertisements } from "@/lib/advertising.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -168,6 +169,11 @@ function Index() {
     }, 3500);
     return () => window.clearInterval(timer);
   }, [topRatedStoresQuery.data?.length]);
+
+  const paidAdvertisementsQuery = useQuery({
+    queryKey: ["homepage-paid-advertisements"],
+    queryFn: () => getPublicPaidAdvertisements(),
+  });
 
   const latestProductsQuery = useQuery({
     queryKey: ["homepage-latest-products"],
@@ -368,7 +374,39 @@ function Index() {
       </header>
 
       <main>
-
+        {paidAdvertisementsQuery.data?.ok && paidAdvertisementsQuery.data.advertisements.length > 0 && (
+          <section aria-labelledby="paid-advertisements-title" className="bg-background">
+            <div className="mx-auto max-w-6xl px-4 py-8">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 id="paid-advertisements-title" className="text-xl font-bold text-petrol">
+                  {lang === "ar" ? "إعلانات مدفوعة" : lang === "en" ? "Paid advertisements" : "Publicités payantes"}
+                </h2>
+                <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">
+                  {lang === "ar" ? "محتوى إعلاني" : lang === "en" ? "Sponsored" : "Sponsorisé"}
+                </span>
+              </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                {paidAdvertisementsQuery.data.advertisements.slice(0, 3).map((advertisement) => {
+                  const imageUrl = supabase.storage.from("advertising-assets").getPublicUrl(String(advertisement.image_path)).data.publicUrl;
+                  return (
+                    <article key={String(advertisement.id)} className="overflow-hidden rounded-xl border border-border bg-card">
+                      <a href={String(advertisement.destination_url)} target="_blank" rel="sponsored noreferrer" className="block">
+                        <img src={imageUrl} alt={String(advertisement.title)} loading="lazy" className="aspect-[16/9] w-full object-cover" />
+                        <div className="p-4">
+                          <span className="text-[11px] font-bold uppercase tracking-wide text-coral">
+                            {lang === "ar" ? "إعلان مدفوع" : lang === "en" ? "Paid ad" : "Publicité payante"}
+                          </span>
+                          <h3 className="mt-1 font-bold text-petrol">{String(advertisement.title)}</h3>
+                          <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">{String(advertisement.description)}</p>
+                        </div>
+                      </a>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
 
         <section
           id="my-store-products"

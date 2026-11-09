@@ -97,9 +97,9 @@ describe("completed download streaming", () => {
     const extraLength = view.getUint16(28, true);
     const dataStart = 30 + fileNameLength + extraLength;
     const compressedBytes = bytes.slice(dataStart, dataStart + compressedSize);
-    const decompressed = new Blob([compressedBytes])
-      .stream()
-      .pipeThrough(new DecompressionStream("deflate-raw" as CompressionFormat));
+    const decompressed = new Response(compressedBytes).body!.pipeThrough(
+      new DecompressionStream("deflate-raw" as CompressionFormat),
+    );
 
     expect(view.getUint32(0, true)).toBe(0x04034b50);
     expect(new TextDecoder().decode(bytes.slice(0, dataStart))).toContain("guide.txt");

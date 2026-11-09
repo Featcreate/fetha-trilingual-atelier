@@ -260,6 +260,34 @@
       "when": 1793804024010,
       "tag": "0034_ipay_checkout_reference",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1794240000000,
+      "tag": "0035_verified_payment_download_gate",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1794240000001,
+      "tag": "0036_single_success_download_stream",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1794240000002,
+      "tag": "0037_independent_zip_download_entitlements",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1794240000003,
+      "tag": "0038_order_purchase_email_outbox",
+      "breakpoints": true
     }
   ]
 }

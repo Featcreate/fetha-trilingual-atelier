@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CatalogRouteImport } from './routes/catalog'
+import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
@@ -22,6 +23,7 @@ import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated
 import { Route as ProductsIdRouteImport } from './routes/products/$id'
 import { Route as StoresSlugRouteImport } from './routes/stores/$slug'
 import { Route as ApiPublicKonnectWebhookRouteImport } from './routes/api/public/konnect.webhook'
+import { Route as ApiDownloadRouteImport } from './routes/api/download'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +42,11 @@ const AuthRoute = AuthRouteImport.update({
 const CatalogRoute = CatalogRouteImport.update({
   id: '/catalog',
   path: '/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
+  id: '/checkout/return',
+  path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -87,11 +94,17 @@ const ApiPublicKonnectWebhookRoute = ApiPublicKonnectWebhookRouteImport.update({
   path: '/api/public/konnect/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDownloadRoute = ApiDownloadRouteImport.update({
+  id: '/api/download',
+  path: '/api/download',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/catalog': typeof CatalogRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
@@ -101,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/products/$id': typeof ProductsIdRoute
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
+  '/api/download': typeof ApiDownloadRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -115,6 +129,7 @@ export interface FileRoutesByTo {
   '/products/$id': typeof ProductsIdRoute
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
+  '/api/download': typeof ApiDownloadRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -131,6 +146,7 @@ export interface FileRoutesById {
   '/products/$id': typeof ProductsIdRoute
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
+  '/api/download': typeof ApiDownloadRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,6 +154,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/catalog'
+    | '/checkout/return'
     | '/reset-password'
     | '/terms'
     | '/account'
@@ -147,6 +164,7 @@ export interface FileRouteTypes {
     | '/products/$id'
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
+    | '/api/download'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -161,6 +179,7 @@ export interface FileRouteTypes {
     | '/products/$id'
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
+    | '/api/download'
   id:
     | '__root__'
     | '/'
@@ -176,6 +195,7 @@ export interface FileRouteTypes {
     | '/products/$id'
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
+    | '/api/download'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -183,11 +203,13 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CatalogRoute: typeof CatalogRoute
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
   ProductsIdRoute: typeof ProductsIdRoute
   StoresSlugRoute: typeof StoresSlugRoute
   ApiPublicKonnectWebhookRoute: typeof ApiPublicKonnectWebhookRoute
+  ApiDownloadRoute: typeof ApiDownloadRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -218,6 +240,13 @@ declare module '@tanstack/react-router' {
       path: '/catalog'
       fullPath: '/catalog'
       preLoaderRoute: typeof CatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/return': {
+      id: '/checkout/return'
+      path: '/checkout/return'
+      fullPath: '/checkout/return'
+      preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -283,6 +312,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicKonnectWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/download': {
+      id: '/api/download'
+      path: '/api/download'
+      fullPath: '/api/download'
+      preLoaderRoute: typeof ApiDownloadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -308,11 +344,13 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CatalogRoute: CatalogRoute,
+  CheckoutReturnRoute: CheckoutReturnRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
   ProductsIdRoute: ProductsIdRoute,
   StoresSlugRoute: StoresSlugRoute,
   ApiPublicKonnectWebhookRoute: ApiPublicKonnectWebhookRoute,
+  ApiDownloadRoute: ApiDownloadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

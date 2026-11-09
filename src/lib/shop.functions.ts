@@ -123,43 +123,6 @@ export const checkOrderPayment = createServerFn({ method: "POST" })
     };
   });
 
-/**
- * Short-lived (300s) download link for the signed-in buyer of a paid order.
- * Reserve -> sign -> finalize; signing failure releases the reservation (no quota used).
- * Repeats within 5 minutes of a counted download re-sign without consuming an attempt.
- */
-export const getDownloadLink = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ entitlementId: z.string().uuid() }).parse(input))
-  .handler(async ({ data, context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { issueDownload } = await import("./download-flow");
-    return issueDownload({
-      reserve: async () => {
-        const { data: rows, error } = await supabaseAdmin.rpc("reserve_download", {
-          _user_id: context.userId,
-          _entitlement_id: data.entitlementId,
-        });
-        return error ? null : (rows?.[0] ?? null);
-      },
-      sign: async (path, seconds, fileName) => {
-        const { data: signed, error } = await supabaseAdmin.storage
-          .from("product-files")
-          .createSignedUrl(path, seconds, { download: fileName });
-        return error || !signed ? null : signed.signedUrl;
-      },
-      finalize: async (id) => {
-        const { data: ok, error } = await supabaseAdmin.rpc("finalize_download", {
-          _reservation_id: id,
-        });
-        return !error && ok === true;
-      },
-      release: async (id) => {
-        await supabaseAdmin.rpc("release_download", { _reservation_id: id });
-      },
-    });
-  });
-
 /** Admin test simulation: never produces seller ledger entries; blocked unless explicitly enabled and not live. */
 export const adminSimulatePayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

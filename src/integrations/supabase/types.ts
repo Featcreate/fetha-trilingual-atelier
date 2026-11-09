@@ -106,6 +106,98 @@ export type Database = {
           },
         ]
       }
+      zip_download_entitlements: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          max_downloads: number
+          order_id: string
+          order_item_file_id: string
+          starts_at: string
+          used_downloads: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          max_downloads?: number
+          order_id: string
+          order_item_file_id: string
+          starts_at: string
+          used_downloads?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          max_downloads?: number
+          order_id?: string
+          order_item_file_id?: string
+          starts_at?: string
+          used_downloads?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zip_download_entitlements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zip_download_entitlements_order_item_file_id_fkey"
+            columns: ["order_item_file_id"]
+            isOneToOne: true
+            referencedRelation: "order_item_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zip_download_reservations: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          entitlement_id: string
+          expires_at: string
+          finalized_at: string | null
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          entitlement_id: string
+          expires_at?: string
+          finalized_at?: string | null
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          entitlement_id?: string
+          expires_at?: string
+          finalized_at?: string | null
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zip_download_reservations_entitlement_id_fkey"
+            columns: ["entitlement_id"]
+            isOneToOne: false
+            referencedRelation: "zip_download_entitlements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       entitlement_renewals: {
         Row: {
           admin_id: string
@@ -182,6 +274,53 @@ export type Database = {
             columns: ["order_item_id"]
             isOneToOne: false
             referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_email_outbox: {
+        Row: {
+          attempt_count: number
+          created_at: string
+          id: string
+          last_error: string | null
+          locked_at: string | null
+          next_attempt_at: string
+          order_id: string
+          recipient_email: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          attempt_count?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          locked_at?: string | null
+          next_attempt_at?: string
+          order_id: string
+          recipient_email: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          attempt_count?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          locked_at?: string | null
+          next_attempt_at?: string
+          order_id?: string
+          recipient_email?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_email_outbox_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -1300,6 +1439,20 @@ export type Database = {
         Args: { _version_id: string }
         Returns: undefined
       }
+      claim_order_purchase_emails: {
+        Args: { _batch_size?: number }
+        Returns: {
+          attempt_count: number
+          id: string
+          order_id: string
+          recipient_email: string
+        }[]
+      }
+      complete_order_purchase_email: { Args: { _outbox_id: string }; Returns: boolean }
+      fail_order_purchase_email: {
+        Args: { _error: string; _outbox_id: string }
+        Returns: boolean
+      }
       create_order: {
         Args: { _checkout_key: string; _product_ids: string[] }
         Returns: string
@@ -1353,6 +1506,17 @@ export type Database = {
           storage_path: string
         }[]
       }
+      reserve_zip_download: {
+        Args: { _entitlement_id: string; _user_id: string }
+        Returns: {
+          file_name: string
+          outcome: string
+          reservation_id: string
+          storage_path: string
+        }[]
+      }
+      finalize_zip_download: { Args: { _reservation_id: string }; Returns: boolean }
+      release_zip_download: { Args: { _reservation_id: string }; Returns: undefined }
       settle_order_payment: {
         Args: {
           _amount_millimes: number

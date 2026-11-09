@@ -130,10 +130,6 @@ export async function applyPaymentRef(
     _source: source,
   });
   if (error) throw new Error("settlement_failed");
-  if (data === "paid")
-    await supabaseAdmin
-      .from("orders")
-      .update({ email_error: "email_not_configured" })
-      .eq("id", order.id);
+  // Verified settlement atomically enqueues the purchase email through the orders trigger.
   return { outcome: data as string };
 }

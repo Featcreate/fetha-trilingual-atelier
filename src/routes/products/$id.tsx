@@ -69,20 +69,14 @@ function ProductPage() {
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.products} wide>
       <div className="mb-5 flex justify-between gap-3">
-        <Link
-          to="/cart"
-          className="text-sm font-semibold text-coral hover:underline"
-        >
+        <Link to="/cart" className="text-sm font-semibold text-coral hover:underline">
           {lang === "ar"
             ? `السلة (${count})`
             : lang === "en"
               ? `Cart (${count})`
               : `Panier (${count})`}
         </Link>
-        <Link
-          to="/catalog"
-          className="text-sm font-semibold text-coral hover:underline"
-        >
+        <Link to="/catalog" className="text-sm font-semibold text-coral hover:underline">
           {m.viewCatalog}
         </Link>
       </div>
@@ -103,11 +97,8 @@ function ProductPage() {
             ];
             const activeImage = images[activeImageIndex] ?? images[0];
             const showPrevious = () =>
-              setActiveImageIndex(
-                (current) => (current - 1 + images.length) % images.length,
-              );
-            const showNext = () =>
-              setActiveImageIndex((current) => (current + 1) % images.length);
+              setActiveImageIndex((current) => (current - 1 + images.length) % images.length);
+            const showNext = () => setActiveImageIndex((current) => (current + 1) % images.length);
             return (
               <div className="space-y-4">
                 <div
@@ -119,9 +110,7 @@ function ProductPage() {
                       didSwipeRef.current = false;
                     }
                   }}
-                  onTouchStart={(event) =>
-                    setTouchStartX(event.touches[0]?.clientX ?? null)
-                  }
+                  onTouchStart={(event) => setTouchStartX(event.touches[0]?.clientX ?? null)}
                   onTouchEnd={(event) => {
                     if (touchStartX === null || images.length < 2) return;
                     const delta = event.changedTouches[0]?.clientX;
@@ -212,9 +201,8 @@ function ProductPage() {
                       >
                         <img
                           src={
-                            supabase.storage
-                              .from("product-images")
-                              .getPublicUrl(image.image_path).data.publicUrl
+                            supabase.storage.from("product-images").getPublicUrl(image.image_path)
+                              .data.publicUrl
                           }
                           alt=""
                           loading="lazy"
@@ -259,9 +247,7 @@ function ProductPage() {
                 </span>
                 <TndEquivalents
                   millimes={query.data.product.sale_price_millimes}
-                  locale={
-                    lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"
-                  }
+                  locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
                 />
               </>
             ) : (
@@ -269,9 +255,7 @@ function ProductPage() {
                 {formatTND(query.data.product.price_millimes)}
                 <TndEquivalents
                   millimes={query.data.product.price_millimes}
-                  locale={
-                    lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"
-                  }
+                  locale={lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR"}
                 />
               </>
             )}
@@ -285,11 +269,7 @@ function ProductPage() {
                 : "bg-accent text-accent-foreground"
             }`}
           >
-            {lang === "ar"
-              ? "أضف إلى السلة"
-              : lang === "en"
-                ? "Add to cart"
-                : "Ajouter au panier"}
+            {lang === "ar" ? "أضف إلى السلة" : lang === "en" ? "Add to cart" : "Ajouter au panier"}
           </button>
           <Link
             to="/stores/$slug"

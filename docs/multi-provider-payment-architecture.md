@@ -13,7 +13,7 @@ Algorea Bazaar supports a provider-neutral buyer checkout design. Konnect, iPay 
 3. The selected provider adapter creates a hosted checkout and returns its provider reference.
 4. The order records the provider ID and provider-specific reference. The client cannot choose an arbitrary provider or supply a trusted amount.
 5. The provider adapter verifies the transaction using an authoritative provider-side lookup or other approved settlement evidence. Browser return parameters and unverified webhooks are never proof of payment.
-6. A single idempotent marketplace settlement path validates order, provider reference, exact amount and currency, then posts the central ledger entries and seller payable.
+6. A single idempotent marketplace settlement path validates order, provider reference, exact amount and currency, then verifies the returned provider ID, order ID, provider reference, exact amount and currency before posting the central ledger entries and seller payable.
 7. The same verified-payment entitlement and in-account delivery flow is used regardless of provider.
 
 ## Provider adapter boundary
@@ -50,9 +50,9 @@ An empty or unknown capability list is not interpreted as global support. The se
 The initial code foundation adds:
 - a shared provider adapter contract;
 - a fail-closed provider eligibility resolver;
-- unit tests for country, currency, amount, method and disabled-provider cases.
+- unit tests for country, currency, amount, method and disabled-provider cases; and a settlement guard that rejects a verification result from a different provider.
 
-This foundation is not yet wired into the checkout UI or order creation. Existing Konnect checkout and iPay one-shot code remain provider-specific. The next implementation step is to add provider selection and persist the selected provider/reference on the order, then route status verification through the selected adapter without duplicating settlement.
+This foundation is not yet wired into the checkout UI or order creation. Existing Konnect checkout and iPay one-shot code remain provider-specific. The next implementation step is to add provider selection and persist the selected provider/reference on the order, then route status verification through the selected adapter without duplicating settlement. This requires a schema migration coordinated with PR #68's pending migration sequence and must not be applied to production until explicitly approved.
 
 ## Currency and settlement
 

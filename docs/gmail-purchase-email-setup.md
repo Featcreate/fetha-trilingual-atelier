@@ -10,6 +10,8 @@ The purchase email outbox is enqueued only after an order transitions to `paid` 
 4. In OAuth 2.0 Playground settings, enable **Use your own OAuth credentials** and enter the client ID and client secret.
 5. Authorize only `https://www.googleapis.com/auth/gmail.send` while signed in as `contact.algoreabazaar@gmail.com`. Exchange the authorization code for tokens and retain the refresh token securely. Never commit or paste tokens into GitHub or chat.
 6. If the consent screen remains in Testing, Google may expire refresh tokens after seven days for non-basic scopes. For durable operation, configure the consent screen appropriately and complete Google's verification requirements if prompted.
+7. Note that `gmail.send` is classified by Google as a **sensitive** scope. Testing with listed test users is appropriate for setup; a public production OAuth app may need Google's verification before general users can authorize it.
+
 
 ## Render environment variables
 

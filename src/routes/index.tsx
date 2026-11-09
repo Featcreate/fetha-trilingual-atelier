@@ -586,6 +586,23 @@ function Index() {
             </p>
           </div>
         </section>
+
+        <section aria-labelledby="advertise-title" className="bg-cream-light">
+          <div className="mx-auto max-w-6xl px-4 py-10">
+            <div className="rounded-2xl border border-gold/40 bg-card p-6 text-center md:p-8">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold">Algorea Bazaar</p>
+              <h2 id="advertise-title" className="mt-2 text-xl font-extrabold text-petrol md:text-2xl">
+                {lang === "ar" ? "روّج لمنتجك بإعلان مميز" : lang === "en" ? "Promote your product with a featured ad" : "Mettez votre produit en avant"}
+              </h2>
+              <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
+                {lang === "ar" ? "مساحات إعلانية مدفوعة محدودة، مع مراجعة المحتوى قبل النشر." : lang === "en" ? "Limited paid advertising placements, with creative review before publication." : "Des emplacements publicitaires payants limités, avec vérification du contenu avant publication."}
+              </p>
+              <Link to="/advertise" className="mt-5 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground">
+                {lang === "ar" ? "اطلب إعلاناً" : lang === "en" ? "Request an advertisement" : "Demander une publicité"}
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
 
       <section id="about" aria-labelledby="about-title" dir={lang === "ar" ? "rtl" : "ltr"} className="bg-cream-light">

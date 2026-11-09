@@ -39,8 +39,20 @@ export type BuyerPaymentProviderAdapter = {
     expectedAmountMillimes: number;
     currency: "TND";
   }): Promise<
-    | { status: "paid"; amountMillimes: number; currency: "TND"; providerReference: string }
-    | { status: "pending" | "failed" | "mismatch"; providerReference: string }
+    | {
+        providerId: BuyerPaymentProviderId;
+        status: "paid";
+        orderId: string;
+        amountMillimes: number;
+        currency: "TND";
+        providerReference: string;
+      }
+    | {
+        providerId: BuyerPaymentProviderId;
+        status: "pending" | "failed" | "mismatch";
+        orderId: string;
+        providerReference: string;
+      }
   >;
 };
 

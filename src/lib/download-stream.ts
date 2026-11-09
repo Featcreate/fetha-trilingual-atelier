@@ -10,7 +10,11 @@ export interface StreamDownloadDeps {
  * Cancelling or failing the stream releases the reservation so the buyer can retry.
  */
 export function createDownloadResponse(deps: StreamDownloadDeps): Response {
-  const reader = deps.blob.stream().getReader();
+  // Use Response's body stream rather than Blob.stream(): Bun's Blob implementation
+  // in the GitHub Actions runtime does not expose Blob.stream() consistently.
+  const source = new Response(deps.blob).body;
+  if (!source) throw new Error("download_stream_unavailable");
+  const reader = source.getReader();
   let settled = false;
 
   const releaseOnce = async () => {

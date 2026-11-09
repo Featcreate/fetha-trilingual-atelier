@@ -8,6 +8,7 @@ import { AuthShell, SubmitButton } from "@/components/AuthShell";
 import {
   adminActivatePaidAdvertisingRequest,
   adminListPaidAdvertisingRequests,
+  adminRejectUnpaidPaidAdvertisingRequest,
   adminSetPaidAdvertisingPackage,
   getPaidAdvertisingPackages,
   adminGetAdvertisingRevenueReport,
@@ -113,6 +114,7 @@ function AdminPage() {
   const [payoutReference, setPayoutReference] = useState("");
   const [payoutFailure, setPayoutFailure] = useState("");
   const [adPriceInputs, setAdPriceInputs] = useState<Record<string, string>>({});
+  const [adRejectionReason, setAdRejectionReason] = useState("");
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
 
   const settings = useQuery({
@@ -313,6 +315,26 @@ function AdminPage() {
     }
     setNotice({ ok: true, text: a.saved });
     await qc.invalidateQueries({ queryKey: ["paid-advertising-packages"] });
+  }
+
+  async function rejectUnpaidAdvertisement(request: PaidAdRequestRow) {
+    if (adRejectionReason.trim().length < 3) {
+      setNotice({ ok: false, text: lang === "ar" ? "أدخلي سبب الرفض." : lang === "en" ? "Enter a rejection reason." : "Saisissez le motif du refus." });
+      return;
+    }
+    setBusy(request.id);
+    setNotice(null);
+    const result = await adminRejectUnpaidPaidAdvertisingRequest({
+      data: { requestId: request.id, reason: adRejectionReason.trim() },
+    });
+    setBusy(null);
+    if (!result.ok) {
+      setNotice({ ok: false, text: a.saveError });
+      return;
+    }
+    setAdRejectionReason("");
+    setNotice({ ok: true, text: a.saved });
+    await qc.invalidateQueries({ queryKey: ["admin-paid-advertising"] });
   }
 
   async function activateAdvertisement(request: PaidAdRequestRow) {
@@ -687,6 +709,11 @@ function AdminPage() {
           </p>
         ) : (
           <div className="space-y-3">
+            <label className="block text-sm font-semibold">
+              {lang === "ar" ? "سبب رفض الطلب غير المدفوع" : lang === "en" ? "Reason for rejecting an unpaid request" : "Motif de refus d’une demande non payée"}
+              <input value={adRejectionReason} onChange={(e) => setAdRejectionReason(e.target.value)} maxLength={500}
+                className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 font-normal" />
+            </label>
             {advertising.data.map((request) => {
               const imageUrl = request.image_url ?? "";
               return (
@@ -703,10 +730,21 @@ function AdminPage() {
                       <button type="button" disabled={busy === request.id} onClick={() => void activateAdvertisement(request)} className="mt-3 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground disabled:opacity-50">
                         {busy === request.id ? a.saving : (lang === "ar" ? "مراجعة وتفعيل الإعلان" : lang === "en" ? "Approve and activate" : "Approuver et activer")}
                       </button>
+                    ) : request.payment_status === "pending" && request.status !== "rejected" ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {lang === "ar" ? "بانتظار الدفع؛ لا يمكن النشر حالياً." : lang === "en" ? "Awaiting payment; publication is blocked." : "En attente du paiement ; publication bloquée."}
+                        </span>
+                        <button type="button" disabled={busy === request.id || adRejectionReason.trim().length < 3}
+                          onClick={() => void rejectUnpaidAdvertisement(request)}
+                          className="rounded-full border border-destructive/40 px-3 py-2 text-xs font-semibold text-destructive disabled:opacity-50">
+                          {lang === "ar" ? "رفض الطلب" : lang === "en" ? "Reject request" : "Refuser la demande"}
+                        </button>
+                      </div>
                     ) : (
                       <p className="mt-3 text-xs text-muted-foreground">
-                        {request.payment_status !== "verified"
-                          ? (lang === "ar" ? "بانتظار تأكيد الدفع؛ لا يمكن النشر حالياً." : lang === "en" ? "Awaiting verified payment; publication is blocked." : "En attente du paiement vérifié ; publication bloquée.")
+                        {request.status === "rejected"
+                          ? (lang === "ar" ? "مرفوض" : lang === "en" ? "Rejected" : "Refusée")
                           : (lang === "ar" ? "الإعلان نشط." : lang === "en" ? "Advertisement is active." : "Publicité active.")}
                       </p>
                     )}

@@ -49,9 +49,9 @@ export function createDownloadResponse(deps: StreamDownloadDeps): Response {
         await releaseOnce();
       }
     },
-  });
+  }, { highWaterMark: 0 });
 
-  const safeName = deps.fileName.replace(/[\\r\\n"]/g, "_");
+  const safeName = deps.fileName.replace(/[\r\n"]/g, "_");
   return new Response(body, {
     status: 200,
     headers: {

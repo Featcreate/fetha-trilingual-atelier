@@ -88,7 +88,7 @@ CREATE OR REPLACE FUNCTION public.guard_paid_advertising_snapshot()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = ''
-AS $
+AS $snapshot$
 BEGIN
   IF NEW.advertiser_id IS DISTINCT FROM OLD.advertiser_id
     OR NEW.duration_days IS DISTINCT FROM OLD.duration_days
@@ -98,7 +98,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$snapshot$;
 
 CREATE TRIGGER paid_advertising_snapshot_guard
   BEFORE UPDATE ON public.paid_advertising_orders

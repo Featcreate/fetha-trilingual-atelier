@@ -5,6 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { AuthShell, SubmitButton } from "@/components/AuthShell";
+import {
+  adminActivatePaidAdvertisingRequest,
+  adminListPaidAdvertisingRequests,
+} from "@/lib/advertising.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async ({ location }) => {
@@ -61,6 +65,23 @@ type OrderRow = {
   total_millimes: number;
   currency: string;
   created_at: string;
+};
+type PaidAdRequestRow = {
+  id: string;
+  advertiser_id: string;
+  title: string;
+  description: string;
+  image_path: string;
+  destination_url: string;
+  duration_days: number;
+  price_millimes: number;
+  status: string;
+  payment_status: string;
+  ipay_payment_ref: string | null;
+  paid_at: string | null;
+  created_at: string;
+  starts_at: string | null;
+  ends_at: string | null;
 };
 type PayoutRow = {
   id: string;
@@ -135,6 +156,14 @@ function AdminPage() {
         .limit(100);
       if (error) throw error;
       return (data ?? []) as OrderRow[];
+    },
+  });
+  const advertising = useQuery({
+    queryKey: ["admin-paid-advertising"],
+    queryFn: async () => {
+      const result = await adminListPaidAdvertisingRequests();
+      if (!result.ok) throw new Error(result.error);
+      return result.requests as unknown as PaidAdRequestRow[];
     },
   });
   const payouts = useQuery({
@@ -252,6 +281,24 @@ function AdminPage() {
     setPayoutFailure("");
     setNotice({ ok: true, text: a.payoutFailedNote });
     await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+  }
+
+  async function activateAdvertisement(request: PaidAdRequestRow) {
+    setBusy(request.id);
+    setNotice(null);
+    const result = await adminActivatePaidAdvertisingRequest({ data: { requestId: request.id } });
+    setBusy(null);
+    if (!result.ok) {
+      const message = result.error === "payment_not_verified"
+        ? (lang === "ar" ? "لا يمكن تفعيل الإعلان قبل تأكيد الدفع عبر iPay." : lang === "en" ? "The iPay payment must be verified before activation." : "Le paiement iPay doit être vérifié avant l’activation.")
+        : result.error === "slots_full"
+          ? (lang === "ar" ? "تم بلوغ الحد الأقصى: ثلاثة إعلانات نشطة." : lang === "en" ? "The three active-ad slots are full." : "Les trois emplacements publicitaires sont déjà occupés.")
+          : a.saveError;
+      setNotice({ ok: false, text: message });
+      return;
+    }
+    setNotice({ ok: true, text: a.saved });
+    await qc.invalidateQueries({ queryKey: ["admin-paid-advertising"] });
   }
 
   async function setStoreStatus(store: StoreRow) {
@@ -518,6 +565,57 @@ function AdminPage() {
                 )}
               </article>
             ))}
+          </div>
+        )}
+      </section>
+
+
+      <section className="mb-8 rounded-xl border border-border p-5">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-bold">
+            {lang === "ar" ? "الإعلانات المدفوعة" : lang === "en" ? "Paid advertisements" : "Publicités payantes"}
+          </h2>
+          <span className="text-xs text-muted-foreground">
+            {lang === "ar" ? "3 إعلانات نشطة كحد أقصى" : lang === "en" ? "Maximum 3 active ads" : "3 publicités actives maximum"}
+          </span>
+        </div>
+        {advertising.isPending ? (
+          <p className="text-sm">{a.loading}</p>
+        ) : advertising.isError ? (
+          <p role="alert" className="text-sm text-destructive">{a.loadError}</p>
+        ) : !advertising.data.length ? (
+          <p className="rounded-lg bg-secondary p-4 text-sm">
+            {lang === "ar" ? "لا توجد طلبات إعلانية." : lang === "en" ? "No advertising requests." : "Aucune demande publicitaire."}
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {advertising.data.map((request) => {
+              const imageUrl = supabase.storage.from("advertising-assets").getPublicUrl(request.image_path).data.publicUrl;
+              return (
+                <article key={request.id} className="flex flex-wrap gap-4 rounded-xl border border-border p-4">
+                  <img src={imageUrl} alt="" className="h-24 w-32 rounded-lg border border-border object-cover" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold">{request.title}</p>
+                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{request.description}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {request.duration_days} {lang === "ar" ? "أيام" : lang === "en" ? "days" : "jours"} · {formatTND(request.price_millimes)} · {request.status} · {request.payment_status}
+                    </p>
+                    <a href={request.destination_url} target="_blank" rel="noreferrer" className="mt-1 block truncate text-xs text-coral underline">{request.destination_url}</a>
+                    {request.payment_status === "verified" && request.status !== "active" ? (
+                      <button type="button" disabled={busy === request.id} onClick={() => void activateAdvertisement(request)} className="mt-3 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground disabled:opacity-50">
+                        {busy === request.id ? a.saving : (lang === "ar" ? "مراجعة وتفعيل الإعلان" : lang === "en" ? "Approve and activate" : "Approuver et activer")}
+                      </button>
+                    ) : (
+                      <p className="mt-3 text-xs text-muted-foreground">
+                        {request.payment_status !== "verified"
+                          ? (lang === "ar" ? "بانتظار تأكيد الدفع؛ لا يمكن النشر حالياً." : lang === "en" ? "Awaiting verified payment; publication is blocked." : "En attente du paiement vérifié ; publication bloquée.")
+                          : (lang === "ar" ? "الإعلان نشط." : lang === "en" ? "Advertisement is active." : "Publicité active.")}
+                      </p>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
       </section>

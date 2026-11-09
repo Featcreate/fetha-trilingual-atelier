@@ -1,14 +1,25 @@
-import { Blob } from "node:buffer";
 import { describe, expect, it, vi } from "vitest";
 import { createDownloadResponse } from "./download-stream";
 
+function sourceFrom(text: string) {
+  const bytes = new TextEncoder().encode(text);
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(bytes);
+      controller.close();
+    },
+  });
+}
+
 describe("completed download streaming", () => {
-  it("finalizes only after the complete response body is read", async () => {
+  it("finalizes only after the complete upstream response reaches EOF", async () => {
     const finalize = vi.fn(async () => true);
     const release = vi.fn(async () => {});
     const response = createDownloadResponse({
-      blob: new Blob(["digital product"]),
+      source: sourceFrom("digital product"),
       fileName: "guide.pdf",
+      contentType: "application/pdf",
+      contentLength: String("digital product".length),
       finalize,
       release,
     });
@@ -18,13 +29,18 @@ describe("completed download streaming", () => {
     expect(finalize).toHaveBeenCalledTimes(1);
     expect(release).not.toHaveBeenCalled();
     expect(response.headers.get("content-disposition")).toContain("guide.pdf");
+    expect(response.headers.get("content-type")).toBe("application/pdf");
   });
 
   it("releases rather than finalizing when the stream is cancelled", async () => {
     const finalize = vi.fn(async () => true);
     const release = vi.fn(async () => {});
     const response = createDownloadResponse({
-      blob: new Blob(["x".repeat(1024 * 32)]),
+      source: new ReadableStream<Uint8Array>({
+        pull(controller) {
+          controller.enqueue(new Uint8Array(32 * 1024));
+        },
+      }),
       fileName: "file.bin",
       finalize,
       release,
@@ -37,11 +53,11 @@ describe("completed download streaming", () => {
     expect(release).toHaveBeenCalledTimes(1);
   });
 
-  it("errors the response if finalization fails", async () => {
+  it("errors the response and releases when finalization fails", async () => {
     const finalize = vi.fn(async () => false);
     const release = vi.fn(async () => {});
     const response = createDownloadResponse({
-      blob: new Blob(["content"]),
+      source: sourceFrom("content"),
       fileName: "file.bin",
       finalize,
       release,
@@ -49,6 +65,25 @@ describe("completed download streaming", () => {
 
     await expect(response.text()).rejects.toThrow();
     expect(finalize).toHaveBeenCalledTimes(1);
+    expect(release).toHaveBeenCalledTimes(1);
+  });
+
+  it("releases when the upstream stream errors", async () => {
+    const finalize = vi.fn(async () => true);
+    const release = vi.fn(async () => {});
+    const response = createDownloadResponse({
+      source: new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.error(new Error("upstream interrupted"));
+        },
+      }),
+      fileName: "file.bin",
+      finalize,
+      release,
+    });
+
+    await expect(response.text()).rejects.toThrow();
+    expect(finalize).not.toHaveBeenCalled();
     expect(release).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,3 +1,4 @@
+import { Blob } from "node:buffer";
 import { describe, expect, it, vi } from "vitest";
 import { createDownloadResponse } from "./download-stream";
 

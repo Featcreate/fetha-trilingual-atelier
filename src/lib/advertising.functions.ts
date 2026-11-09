@@ -2,12 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const packagePrices: Record<number, number> = {
-  7: 20_000,
-  14: 35_000,
-  30: 60_000,
-};
-
 const requestInput = z.object({
   title: z.string().trim().min(3).max(120),
   description: z.string().trim().min(10).max(1000),
@@ -34,6 +28,23 @@ export const createPaidAdvertisingRequest = createServerFn({ method: "POST" })
       return { ok: false as const, error: "creative_not_found" };
     }
 
+    const packageDb = supabaseAdmin as unknown as {
+      from: (table: string) => {
+        select: (columns: string) => {
+          eq: (column: string, value: number | boolean) => {
+            single: () => Promise<{ data: { price_millimes: number } | null; error: { message: string } | null }>;
+          };
+        };
+      };
+    };
+    const { data: packageRow, error: packageError } = await packageDb
+      .from("paid_advertising_packages")
+      .select("price_millimes")
+      .eq("duration_days", data.durationDays)
+      .eq("is_active", true)
+      .single();
+    if (packageError || !packageRow) return { ok: false as const, error: "package_unavailable" };
+
     const db = supabaseAdmin as unknown as {
       from: (table: string) => {
         insert: (row: Record<string, unknown>) => {
@@ -50,7 +61,7 @@ export const createPaidAdvertisingRequest = createServerFn({ method: "POST" })
       image_path: data.imagePath,
       destination_url: data.destinationUrl,
       duration_days: data.durationDays,
-      price_millimes: packagePrices[data.durationDays],
+      price_millimes: packageRow.price_millimes,
       currency: "TND",
       status: "awaiting_payment",
       payment_status: "pending",
@@ -61,7 +72,7 @@ export const createPaidAdvertisingRequest = createServerFn({ method: "POST" })
       console.error("Paid advertising request creation failed", error?.message ?? "unknown");
       return { ok: false as const, error: "request_creation_failed" };
     }
-    return { ok: true as const, requestId: row.id, priceMillimes: packagePrices[data.durationDays] };
+    return { ok: true as const, requestId: row.id, priceMillimes: packageRow.price_millimes };
   });
 
 export const adminListPaidAdvertisingRequests = createServerFn({ method: "GET" })
@@ -182,4 +193,102 @@ export const getPublicPaidAdvertisements = createServerFn({ method: "GET" })
       return { ...advertisement, image_url: signed?.signedUrl ?? null };
     }));
     return { ok: true as const, advertisements };
+  });
+
+export const getPaidAdvertisingPackages = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as unknown as {
+      from: (table: string) => {
+        select: (columns: string) => {
+          eq: (column: string, value: boolean) => {
+            order: (column: string, options: { ascending: boolean }) => Promise<{
+              data: { duration_days: number; price_millimes: number }[] | null;
+              error: { message: string } | null;
+            }>;
+          };
+        };
+      };
+    };
+    const { data, error } = await db.from("paid_advertising_packages")
+      .select("duration_days,price_millimes").eq("is_active", true)
+      .order("duration_days", { ascending: true });
+    if (error) return { ok: false as const, packages: [] as { duration_days: number; price_millimes: number }[] };
+    return { ok: true as const, packages: data ?? [] };
+  });
+
+export const adminSetPaidAdvertisingPackage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({
+    durationDays: z.union([z.literal(7), z.literal(14), z.literal(30)]),
+    priceMillimes: z.number().int().positive().max(100_000_000),
+  }).parse(input))
+  .handler(async ({ data, context }) => {
+    const rpc = context.supabase.rpc as unknown as (
+      name: string, args: Record<string, unknown>,
+    ) => Promise<{ error: { message: string } | null }>;
+    const { error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId, _role: "admin",
+    });
+    if (roleError) return { ok: false as const, error: "forbidden" };
+    const { error } = await rpc("admin_set_paid_advertising_package", {
+      _duration_days: data.durationDays, _price_millimes: data.priceMillimes,
+    });
+    if (error) return { ok: false as const, error: "save_failed" };
+    return { ok: true as const };
+  });
+
+export const adminGetAdvertisingRevenueReport = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId, _role: "admin",
+    });
+    if (roleError || !isAdmin) return { ok: false as const, error: "forbidden" };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as unknown as {
+      from: (table: string) => {
+        select: (columns: string) => {
+          not: (column: string, operator: string, value: null) => {
+            gte: (column: string, value: string) => {
+              order: (column: string, options: { ascending: boolean }) => {
+                limit: (count: number) => Promise<{
+                  data: { created_at: string; entry_type: string; entry_side: string; transaction_amount_minor: number; transaction_currency: string }[] | null;
+                  error: { message: string } | null;
+                }>;
+              };
+            };
+          };
+        };
+      };
+    };
+    const year = new Date().getUTCFullYear();
+    const { data, error } = await db.from("platform_financial_ledger_entries")
+      .select("created_at,entry_type,entry_side,transaction_amount_minor,transaction_currency")
+      .not("advertising_order_id", "is", null)
+      .gte("created_at", `${year - 4}-01-01T00:00:00.000Z`)
+      .order("created_at", { ascending: true }).limit(5000);
+    if (error) return { ok: false as const, error: "report_load_failed" };
+    const entries = data ?? [];
+    const net = (entry: typeof entries[number]) => {
+      const amount = Number(entry.transaction_amount_minor);
+      return entry.entry_side === "debit" ? -amount : amount;
+    };
+    const yearly = new Map<number, number>();
+    const monthly = new Map<string, number>();
+    for (const entry of entries) {
+      if (entry.transaction_currency !== "TND") continue;
+      const date = new Date(entry.created_at);
+      const y = date.getUTCFullYear();
+      const key = `${y}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+      yearly.set(y, (yearly.get(y) ?? 0) + net(entry));
+      monthly.set(key, (monthly.get(key) ?? 0) + net(entry));
+    }
+    return {
+      ok: true as const,
+      currentYear: year,
+      yearly: Array.from(yearly, ([year, amountMillimes]) => ({ year, amountMillimes })),
+      monthly: Array.from(monthly, ([month, amountMillimes]) => ({ month, amountMillimes }))
+        .filter((row) => row.month.startsWith(`${year}-`)),
+    };
   });

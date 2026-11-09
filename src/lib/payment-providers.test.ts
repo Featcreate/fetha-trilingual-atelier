@@ -54,59 +54,110 @@ describe("buyer payment provider eligibility", () => {
   });
 
   it("fails closed for unsupported currencies, invalid countries and invalid amounts", () => {
-    expect(eligibleBuyerPaymentProviders(providers, {
-      buyerCountry: "TN", currency: "EUR", amountMillimes: 12500,
-    })).toEqual([]);
-    expect(eligibleBuyerPaymentProviders(providers, {
-      buyerCountry: "TUN", currency: "TND", amountMillimes: 12500,
-    })).toEqual([]);
-    expect(eligibleBuyerPaymentProviders(providers, {
-      buyerCountry: "TN", currency: "TND", amountMillimes: 0,
-    })).toEqual([]);
+    expect(
+      eligibleBuyerPaymentProviders(providers, {
+        buyerCountry: "TN",
+        currency: "EUR",
+        amountMillimes: 12500,
+      }),
+    ).toEqual([]);
+    expect(
+      eligibleBuyerPaymentProviders(providers, {
+        buyerCountry: "TUN",
+        currency: "TND",
+        amountMillimes: 12500,
+      }),
+    ).toEqual([]);
+    expect(
+      eligibleBuyerPaymentProviders(providers, {
+        buyerCountry: "TN",
+        currency: "TND",
+        amountMillimes: 0,
+      }),
+    ).toEqual([]);
   });
 
   it("does not allow a client to select a provider that is not eligible", () => {
-    expect(findEligibleBuyerPaymentProvider(providers, "ipay", {
-      buyerCountry: "FR", currency: "TND", amountMillimes: 12500,
-    })).toBeNull();
-    expect(findEligibleBuyerPaymentProvider(providers, "konnect", {
-      buyerCountry: "TN", currency: "TND", amountMillimes: 12500,
-    })?.id).toBe("konnect");
+    expect(
+      findEligibleBuyerPaymentProvider(providers, "ipay", {
+        buyerCountry: "FR",
+        currency: "TND",
+        amountMillimes: 12500,
+      }),
+    ).toBeNull();
+    expect(
+      findEligibleBuyerPaymentProvider(providers, "konnect", {
+        buyerCountry: "TN",
+        currency: "TND",
+        amountMillimes: 12500,
+      })?.id,
+    ).toBe("konnect");
   });
 
   it("does not expose a provider without a confirmed payment method", () => {
-    expect(eligibleBuyerPaymentProviders([{
-      ...providers[0]!,
-      methods: [],
-    }], {
-      buyerCountry: "TN", currency: "TND", amountMillimes: 12500,
-    })).toEqual([]);
+    expect(
+      eligibleBuyerPaymentProviders(
+        [
+          {
+            ...providers[0]!,
+            methods: [],
+          },
+        ],
+        {
+          buyerCountry: "TN",
+          currency: "TND",
+          amountMillimes: 12500,
+        },
+      ),
+    ).toEqual([]);
   });
 
   it("rejects providers whose method list contains only blank values", () => {
-    expect(eligibleBuyerPaymentProviders([{
-      ...providers[0]!,
-      methods: [" "],
-    }], {
-      buyerCountry: "TN", currency: "TND", amountMillimes: 12500,
-    })).toEqual([]);
+    expect(
+      eligibleBuyerPaymentProviders(
+        [
+          {
+            ...providers[0]!,
+            methods: [" "],
+          },
+        ],
+        {
+          buyerCountry: "TN",
+          currency: "TND",
+          amountMillimes: 12500,
+        },
+      ),
+    ).toEqual([]);
   });
 
   it("normalizes whitespace and case in explicitly configured capabilities", () => {
-    expect(eligibleBuyerPaymentProviders([{
-      ...providers[0]!,
-      supportedCountries: [" tn "],
-      supportedCurrencies: [" tnd "],
-    }], {
-      buyerCountry: "TN", currency: "TND", amountMillimes: 12500,
-    })).toHaveLength(1);
+    expect(
+      eligibleBuyerPaymentProviders(
+        [
+          {
+            ...providers[0]!,
+            supportedCountries: [" tn "],
+            supportedCurrencies: [" tnd "],
+          },
+        ],
+        {
+          buyerCountry: "TN",
+          currency: "TND",
+          amountMillimes: 12500,
+        },
+      ),
+    ).toHaveLength(1);
   });
 
   it("rejects non-safe integer amounts", () => {
     for (const amountMillimes of [-1, 1.5, Number.NaN, Number.MAX_SAFE_INTEGER + 1]) {
-      expect(eligibleBuyerPaymentProviders(providers, {
-        buyerCountry: "TN", currency: "TND", amountMillimes,
-      })).toEqual([]);
+      expect(
+        eligibleBuyerPaymentProviders(providers, {
+          buyerCountry: "TN",
+          currency: "TND",
+          amountMillimes,
+        }),
+      ).toEqual([]);
     }
   });
 });

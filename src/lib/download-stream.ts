@@ -15,24 +15,24 @@ const DOWNLOAD_CHUNK_BYTES = 64 * 1024;
 export function createDownloadResponse(deps: StreamDownloadDeps): Response {
   let offset = 0;
   let settled = false;
+  let sourceBytes: ArrayBuffer | null = null;
 
   const releaseOnce = async () => {
     if (settled) return;
     settled = true;
+    sourceBytes = null;
     await deps.release().catch(() => undefined);
   };
 
   const body = new ReadableStream<Uint8Array>({
     async pull(controller) {
       try {
-        if (offset < deps.blob.size) {
-          const end = Math.min(offset + DOWNLOAD_CHUNK_BYTES, deps.blob.size);
-          const bytes = await deps.blob.slice(offset, end).arrayBuffer();
-          if (bytes.byteLength !== end - offset) {
-            throw new Error("download_chunk_incomplete");
-          }
+        if (sourceBytes === null) sourceBytes = await deps.blob.arrayBuffer();
+
+        if (offset < sourceBytes.byteLength) {
+          const end = Math.min(offset + DOWNLOAD_CHUNK_BYTES, sourceBytes.byteLength);
+          controller.enqueue(new Uint8Array(sourceBytes, offset, end - offset));
           offset = end;
-          controller.enqueue(new Uint8Array(bytes));
           return;
         }
 
@@ -44,6 +44,7 @@ export function createDownloadResponse(deps: StreamDownloadDeps): Response {
           return;
         }
         settled = true;
+        sourceBytes = null;
         controller.close();
       } catch {
         await releaseOnce();

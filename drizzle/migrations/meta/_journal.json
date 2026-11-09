@@ -2,45 +2,285 @@
   "version": "7",
   "dialect": "postgresql",
   "entries": [
-    {"idx":0,"version":"7","when":1792811754893,"tag":"0000_migration","breakpoints":true},
-    {"idx":1,"version":"7","when":1792811781201,"tag":"0001_migration","breakpoints":true},
-    {"idx":2,"version":"7","when":1792811814199,"tag":"0002_migration","breakpoints":true},
-    {"idx":3,"version":"7","when":1793145152691,"tag":"0003_sub_batch_1a_marketplace_security","breakpoints":true},
-    {"idx":4,"version":"7","when":1793232326124,"tag":"0004_download_reservation_states_45s","breakpoints":true},
-    {"idx":5,"version":"7","when":1793232369365,"tag":"0005_revoke_client_writes_trusted_tables","breakpoints":true},
-    {"idx":6,"version":"7","when":1793404800000,"tag":"0006_configurable_commission_and_terms_acceptance","breakpoints":true},
-    {"idx":7,"version":"7","when":1793408400000,"tag":"0007_seller_order_visibility","breakpoints":true},
-    {"idx":8,"version":"7","when":1793412000000,"tag":"0008_expand_digital_product_types","breakpoints":true},
-    {"idx":9,"version":"7","when":1793466000000,"tag":"0009_verified_seller_storage_quota","breakpoints":true},
-    {"idx":10,"version":"7","when":1793466600000,"tag":"0010_seller_payouts","breakpoints":true},
-    {"idx":11,"version":"7","when":1793467200000,"tag":"0011_seller_payout_preference_access","breakpoints":true},
-    {"idx":12,"version":"7","when":1793467800000,"tag":"0012_manual_payout_workflow","breakpoints":true},
-    {"idx":13,"version":"7","when":1793468100000,"tag":"0012a_storage_bucket_bootstrap","breakpoints":true},
-    {"idx":14,"version":"7","when":1793468400000,"tag":"0013_storage_bucket_size_limits","breakpoints":true},
-    {"idx":15,"version":"7","when":1793469000000,"tag":"0014_public_product_images","breakpoints":true},
-    {"idx":16,"version":"7","when":1793555400000,"tag":"0015_product_image_gallery","breakpoints":true},
-    {"idx":17,"version":"7","when":1793555401000,"tag":"0016_product_trilingual_content","breakpoints":true},
-    {"idx":18,"version":"7","when":1793555402000,"tag":"0017_store_branding_assets","breakpoints":true},
-    {"idx":19,"version":"7","when":1793555403000,"tag":"0018_product_soft_delete","breakpoints":true},
-    {"idx":20,"version":"7","when":1793555404000,"tag":"0019_seller_legal_acceptance","breakpoints":true},
-    {"idx":21,"version":"7","when":1793555405000,"tag":"0020_secure_rls_auto_enable_function","breakpoints":true},
-    {"idx":22,"version":"7","when":1793555405000,"tag":"0021_restrict_trigger_helper_execution","breakpoints":true},
-    {"idx":23,"version":"7","when":1793737769033,"tag":"0022_platform_central_financial_ledger","breakpoints":true},
-    {"idx":24,"version":"7","when":1793743452708,"tag":"0023_seller_external_fee_allocation","breakpoints":true},
-    {"idx":25,"version":"7","when":1793743495968,"tag":"0024_seller_external_fee_fk_indexes","breakpoints":true},
-    {"idx":26,"version":"7","when":1793743612511,"tag":"0025_shared_seller_fee_proportional_allocation","breakpoints":true},
-    {"idx":27,"version":"7","when":1793743700000,"tag":"0026_fee_idempotency_and_mixed_rate_payouts","breakpoints":true},
-    {"idx":28,"version":"7","when":1793752581651,"tag":"0027_order_scoped_seller_fee_idempotency","breakpoints":true},
-    {"idx":29,"version":"7","when":1793752581652,"tag":"0028_seller_fee_idempotency_key_precedence","breakpoints":true},
-    {"idx":30,"version":"7","when":1793753752858,"tag":"0029_has_role_security_invoker","breakpoints":true},
-    {"idx":31,"version":"7","when":1793755000000,"tag":"0030_seller_payout_destinations","breakpoints":true},
-    {"idx":32,"version":"7","when":1793803440439,"tag":"0031_rls_initplan_and_foreign_key_indexes","breakpoints":true},
-    {"idx":33,"version":"7","when":1793803440440,"tag":"0031_platform_payouts_ignore_seller_withdrawal_fees","breakpoints":true},
-    {"idx":34,"version":"7","when":1793803900000,"tag":"0032_restrict_email_verification_helper","breakpoints":true},
-    {"idx":35,"version":"7","when":1793804024009,"tag":"0033_align_legal_document_versions","breakpoints":true},
-    {"idx":36,"version":"7","when":1793804024010,"tag":"0034_ipay_checkout_reference","breakpoints":true},
-    {"idx":37,"version":"7","when":1794240000000,"tag":"0035_verified_payment_download_gate","breakpoints":true},
-    {"idx":38,"version":"7","when":1794240000001,"tag":"0036_single_success_download_stream","breakpoints":true},
-    {"idx":39,"version":"7","when":1794240000002,"tag":"0037_independent_zip_download_entitlements","breakpoints":true}
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792811754893,
+      "tag": "0000_migration",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792811781201,
+      "tag": "0001_migration",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792811814199,
+      "tag": "0002_migration",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793145152691,
+      "tag": "0003_sub_batch_1a_marketplace_security",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793232326124,
+      "tag": "0004_download_reservation_states_45s",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793232369365,
+      "tag": "0005_revoke_client_writes_trusted_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793404800000,
+      "tag": "0006_configurable_commission_and_terms_acceptance",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793408400000,
+      "tag": "0007_seller_order_visibility",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793412000000,
+      "tag": "0008_expand_digital_product_types",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793466000000,
+      "tag": "0009_verified_seller_storage_quota",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793466600000,
+      "tag": "0010_seller_payouts",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793467200000,
+      "tag": "0011_seller_payout_preference_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793467800000,
+      "tag": "0012_manual_payout_workflow",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793468100000,
+      "tag": "0012a_storage_bucket_bootstrap",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793468400000,
+      "tag": "0013_storage_bucket_size_limits",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1793469000000,
+      "tag": "0014_public_product_images",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1793555400000,
+      "tag": "0015_product_image_gallery",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793555401000,
+      "tag": "0016_product_trilingual_content",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793555402000,
+      "tag": "0017_store_branding_assets",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793555403000,
+      "tag": "0018_product_soft_delete",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793555404000,
+      "tag": "0019_seller_legal_acceptance",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793555405000,
+      "tag": "0020_secure_rls_auto_enable_function",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793555405000,
+      "tag": "0021_restrict_trigger_helper_execution",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793737769033,
+      "tag": "0022_platform_central_financial_ledger",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793743452708,
+      "tag": "0023_seller_external_fee_allocation",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793743495968,
+      "tag": "0024_seller_external_fee_fk_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793743612511,
+      "tag": "0025_shared_seller_fee_proportional_allocation",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1793743700000,
+      "tag": "0026_fee_idempotency_and_mixed_rate_payouts",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1793752581651,
+      "tag": "0027_order_scoped_seller_fee_idempotency",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1793752581652,
+      "tag": "0028_seller_fee_idempotency_key_precedence",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1793753752858,
+      "tag": "0029_has_role_security_invoker",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793755000000,
+      "tag": "0030_seller_payout_destinations",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793803440439,
+      "tag": "0031_rls_initplan_and_foreign_key_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793803440440,
+      "tag": "0031_platform_payouts_ignore_seller_withdrawal_fees",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793803900000,
+      "tag": "0032_restrict_email_verification_helper",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793804024009,
+      "tag": "0033_align_legal_document_versions",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793804024010,
+      "tag": "0034_ipay_checkout_reference",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1794240000000,
+      "tag": "0035_verified_payment_download_gate",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1794240000001,
+      "tag": "0036_single_success_download_stream",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1794240000002,
+      "tag": "0037_independent_zip_download_entitlements",
+      "breakpoints": true
+    }
   ]
 }

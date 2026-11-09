@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { createDownloadResponse } from "@/lib/download-stream";
+import { createDownloadResponse, createSingleFileZipStream } from "@/lib/download-stream";
 
 function isNewApiKey(value: string) {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
@@ -53,14 +53,20 @@ export const Route = createFileRoute("/api/download")({
           return new Response("unauthorized", { status: 401 });
         }
 
-        const entitlementId = new URL(request.url).searchParams.get("entitlementId") ?? "";
+        const url = new URL(request.url);
+        const entitlementId = url.searchParams.get("entitlementId") ?? "";
+        const downloadType = url.searchParams.get("type") ?? "original";
         if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(entitlementId)) {
           return new Response("bad request", { status: 400 });
         }
+        if (downloadType !== "original" && downloadType !== "zip") {
+          return new Response("bad download type", { status: 400 });
+        }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const reserveRpc = downloadType === "zip" ? "reserve_zip_download" : "reserve_download";
         const { data: reservations, error: reserveError } = await supabaseAdmin.rpc(
-          "reserve_download",
+          reserveRpc,
           { _user_id: userId, _entitlement_id: entitlementId },
         );
         const reservation = reservations?.[0];
@@ -82,9 +88,15 @@ export const Route = createFileRoute("/api/download")({
         }
 
         const release = async () => {
-          await supabaseAdmin.rpc("release_download", {
-            _reservation_id: reservation.reservation_id,
-          });
+          if (downloadType === "zip") {
+            await supabaseAdmin.rpc("release_zip_download", {
+              _reservation_id: reservation.reservation_id,
+            });
+          } else {
+            await supabaseAdmin.rpc("release_download", {
+              _reservation_id: reservation.reservation_id,
+            });
+          }
         };
 
         try {
@@ -93,8 +105,8 @@ export const Route = createFileRoute("/api/download")({
             return new Response("request aborted", { status: 499 });
           }
 
-          // The signed URL never leaves this server. Fetching its body directly
-          // preserves backpressure and avoids buffering the entire product in RAM.
+          // The signed URL remains server-side; stream the private object directly
+          // with backpressure rather than buffering the complete file in memory.
           const { data: signed, error: signError } = await supabaseAdmin.storage
             .from("product-files")
             .createSignedUrl(reservation.storage_path, 60, { download: reservation.file_name });
@@ -113,15 +125,30 @@ export const Route = createFileRoute("/api/download")({
             return new Response("file unavailable", { status: 503 });
           }
 
+          const source = downloadType === "zip"
+            ? createSingleFileZipStream(upstream.body, reservation.file_name)
+            : upstream.body;
+          const fileName = downloadType === "zip"
+            ? `${reservation.file_name.replace(/\\.[^.]+$/, "") || reservation.file_name}.zip`
+            : reservation.file_name;
+
           return createDownloadResponse({
-            source: upstream.body,
-            fileName: reservation.file_name,
-            contentType: upstream.headers.get("content-type") ?? undefined,
-            contentLength: upstream.headers.get("content-length"),
+            source,
+            fileName,
+            contentType: downloadType === "zip"
+              ? "application/zip"
+              : upstream.headers.get("content-type") ?? undefined,
+            contentLength: downloadType === "original"
+              ? upstream.headers.get("content-length")
+              : null,
             finalize: async () => {
-              const { data, error } = await supabaseAdmin.rpc("finalize_download", {
-                _reservation_id: reservation.reservation_id,
-              });
+              const { data, error } = downloadType === "zip"
+                ? await supabaseAdmin.rpc("finalize_zip_download", {
+                    _reservation_id: reservation.reservation_id,
+                  })
+                : await supabaseAdmin.rpc("finalize_download", {
+                    _reservation_id: reservation.reservation_id,
+                  });
               return !error && data === true;
             },
             release,

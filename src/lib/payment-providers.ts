@@ -71,10 +71,10 @@ export function eligibleBuyerPaymentProviders(
   if (!Number.isSafeInteger(context.amountMillimes) || context.amountMillimes <= 0) return [];
 
   return providers.filter((provider) => {
-    if (!provider.enabled || provider.methods.length === 0) return false;
+    if (!provider.enabled || !provider.methods.some((method) => method.trim().length > 0)) return false;
     return (
-      provider.supportedCountries.some((value) => value.toUpperCase() === country) &&
-      provider.supportedCurrencies.some((value) => value.toUpperCase() === currency)
+      provider.supportedCountries.some((value) => value.trim().toUpperCase() === country) &&
+      provider.supportedCurrencies.some((value) => value.trim().toUpperCase() === currency)
     );
   });
 }

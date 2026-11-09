@@ -1,38 +1,33 @@
 export interface StreamDownloadDeps {
-  blob: Blob;
+  source: ReadableStream<Uint8Array>;
   fileName: string;
+  contentType?: string;
+  contentLength?: string | null;
   finalize: () => Promise<boolean>;
   release: () => Promise<void>;
 }
 
-const DOWNLOAD_CHUNK_BYTES = 64 * 1024;
-
 /**
- * Emit a reserved Blob in bounded chunks and finalize only after every byte has
- * been enqueued and the consumer requests the terminal EOF. Cancellation or
- * read/finalization failure releases the reservation so the buyer can retry.
+ * Proxy the private storage response with backpressure. A reservation is
+ * consumed only after the upstream body reaches EOF and finalization succeeds.
+ * Cancellation and upstream/finalization errors release the reservation.
  */
 export function createDownloadResponse(deps: StreamDownloadDeps): Response {
-  let offset = 0;
+  const reader = deps.source.getReader();
   let settled = false;
-  let sourceBytes: ArrayBuffer | null = null;
 
   const releaseOnce = async () => {
     if (settled) return;
     settled = true;
-    sourceBytes = null;
     await deps.release().catch(() => undefined);
   };
 
   const body = new ReadableStream<Uint8Array>({
     async pull(controller) {
       try {
-        if (sourceBytes === null) sourceBytes = await deps.blob.arrayBuffer();
-
-        if (offset < sourceBytes.byteLength) {
-          const end = Math.min(offset + DOWNLOAD_CHUNK_BYTES, sourceBytes.byteLength);
-          controller.enqueue(new Uint8Array(sourceBytes, offset, end - offset));
-          offset = end;
+        const { done, value } = await reader.read();
+        if (!done) {
+          controller.enqueue(value);
           return;
         }
 
@@ -44,28 +39,32 @@ export function createDownloadResponse(deps: StreamDownloadDeps): Response {
           return;
         }
         settled = true;
-        sourceBytes = null;
         controller.close();
       } catch {
         await releaseOnce();
         controller.error(new Error("download_stream_failed"));
       }
     },
-    async cancel() {
-      await releaseOnce();
+    async cancel(reason) {
+      try {
+        await reader.cancel(reason);
+      } finally {
+        await releaseOnce();
+      }
     },
   }, { highWaterMark: 0 });
 
   const safeName = deps.fileName.replace(/[\r\n"]/g, "_");
-  return new Response(body, {
-    status: 200,
-    headers: {
-      "Content-Type": deps.blob.type || "application/octet-stream",
-      "Content-Length": String(deps.blob.size),
-      "Content-Disposition": `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(deps.fileName)}`,
-      "Cache-Control": "private, no-store, max-age=0",
-      "X-Content-Type-Options": "nosniff",
-      "Accept-Ranges": "none",
-    },
+  const headers = new Headers({
+    "Content-Type": deps.contentType || "application/octet-stream",
+    "Content-Disposition": `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(deps.fileName)}`,
+    "Cache-Control": "private, no-store, max-age=0",
+    "X-Content-Type-Options": "nosniff",
+    "Accept-Ranges": "none",
   });
+  if (deps.contentLength && /^\d+$/.test(deps.contentLength)) {
+    headers.set("Content-Length", deps.contentLength);
+  }
+
+  return new Response(body, { status: 200, headers });
 }

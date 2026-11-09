@@ -55,7 +55,9 @@ describe("authoritative provider payment matching", () => {
 
   it("rejects missing order and provider references", () => {
     expect(isAuthoritativePaymentMatch({ ...expected, orderId: "" }, verified)).toBe(false);
-    expect(isAuthoritativePaymentMatch({ ...expected, providerReference: "" }, verified)).toBe(false);
+    expect(isAuthoritativePaymentMatch({ ...expected, providerReference: "" }, verified)).toBe(
+      false,
+    );
     expect(
       isAuthoritativePaymentMatch(expected, {
         ...verified,

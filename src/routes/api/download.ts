@@ -84,11 +84,13 @@ export const Route = createFileRoute("/api/download")({
         const { data: file, error: fileError } = await supabaseAdmin.storage
           .from("product-files")
           .download(reservation.storage_path);
-        if (fileError || !file) {
+        if (fileError || !file || request.signal.aborted) {
           await supabaseAdmin.rpc("release_download", {
             _reservation_id: reservation.reservation_id,
           });
-          return new Response("file unavailable", { status: 503 });
+          return new Response(request.signal.aborted ? "request aborted" : "file unavailable", {
+            status: request.signal.aborted ? 499 : 503,
+          });
         }
 
         return createDownloadResponse({

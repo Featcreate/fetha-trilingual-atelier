@@ -10,6 +10,7 @@ const expected: ExpectedProviderPayment = {
   currency: "TND",
 };
 const verified: ProviderVerification = {
+  providerId: "konnect",
   status: "paid",
   orderId: "order-123",
   providerReference: "provider-ref-123",
@@ -18,7 +19,7 @@ const verified: ProviderVerification = {
 };
 
 describe("authoritative provider payment matching", () => {
-  it("accepts an exact paid match", () => {
+  it("accepts an exact paid match from the selected provider", () => {
     expect(isAuthoritativePaymentMatch(expected, verified)).toBe(true);
   });
 
@@ -26,6 +27,7 @@ describe("authoritative provider payment matching", () => {
     ["pending", { ...verified, status: "pending" }],
     ["failed", { ...verified, status: "failed" }],
     ["mismatch", { ...verified, status: "mismatch" }],
+    ["wrong provider", { ...verified, providerId: "ipay" }],
     ["wrong order", { ...verified, orderId: "another-order" }],
     ["wrong reference", { ...verified, providerReference: "another-ref" }],
     ["wrong amount", { ...verified, amountMillimes: 12501 }],

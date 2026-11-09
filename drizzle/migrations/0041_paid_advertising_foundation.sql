@@ -150,6 +150,12 @@ CREATE POLICY "Advertisers read own creative assets"
     bucket_id = 'advertising-assets'
     AND (storage.foldername(name))[1] = auth.uid()::text
   );
+CREATE POLICY "Advertisers delete own creative assets"
+  ON storage.objects FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'advertising-assets'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
 CREATE POLICY "Admins manage advertising creative assets"
   ON storage.objects FOR ALL TO authenticated
   USING (bucket_id = 'advertising-assets' AND public.has_role(auth.uid(), 'admin'))

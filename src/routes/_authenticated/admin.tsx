@@ -590,7 +590,7 @@ function AdminPage() {
         ) : (
           <div className="space-y-3">
             {advertising.data.map((request) => {
-              const imageUrl = supabase.storage.from("advertising-assets").getPublicUrl(request.image_path).data.publicUrl;
+              const imageUrl = request.image_url ?? "";
               return (
                 <article key={request.id} className="flex flex-wrap gap-4 rounded-xl border border-border p-4">
                   <img src={imageUrl} alt="" className="h-24 w-32 rounded-lg border border-border object-cover" />

@@ -109,14 +109,18 @@ export const Route = createFileRoute("/api/download")({
           return new Response(reservation.outcome, { status });
         }
 
+        const reservationId = reservation.reservation_id;
+        const storagePath = reservation.storage_path;
+        const fileName = reservation.file_name;
+
         const release = async () => {
           if (downloadType === "zip") {
             await adminRpc.rpc<null>("release_zip_download", {
-              _reservation_id: reservation.reservation_id,
+              _reservation_id: reservationId,
             });
           } else {
             await adminRpc.rpc<null>("release_download", {
-              _reservation_id: reservation.reservation_id,
+              _reservation_id: reservationId,
             });
           }
         };
@@ -129,7 +133,7 @@ export const Route = createFileRoute("/api/download")({
 
           const { data: signed, error: signError } = await supabaseAdmin.storage
             .from("product-files")
-            .createSignedUrl(reservation.storage_path, 60, { download: reservation.file_name });
+            .createSignedUrl(storagePath, 60, { download: fileName });
           if (signError || !signed?.signedUrl) {
             await release();
             return new Response("file unavailable", { status: 503 });
@@ -147,12 +151,12 @@ export const Route = createFileRoute("/api/download")({
 
           const source =
             downloadType === "zip"
-              ? createSingleFileZipStream(upstream.body, reservation.file_name)
+              ? createSingleFileZipStream(upstream.body, fileName)
               : upstream.body;
           const fileName =
             downloadType === "zip"
-              ? `${reservation.file_name.replace(/\.[^.]+$/, "") || reservation.file_name}.zip`
-              : reservation.file_name;
+              ? `${fileName.replace(/\.[^.]+$/, "") || fileName}.zip`
+              : fileName;
 
           return createDownloadResponse({
             source,
@@ -167,10 +171,10 @@ export const Route = createFileRoute("/api/download")({
               const { data, error } =
                 downloadType === "zip"
                   ? await adminRpc.rpc<boolean>("finalize_zip_download", {
-                      _reservation_id: reservation.reservation_id,
+                      _reservation_id: reservationId,
                     })
                   : await adminRpc.rpc<boolean>("finalize_download", {
-                      _reservation_id: reservation.reservation_id,
+                      _reservation_id: reservationId,
                     });
               return !error && data === true;
             },

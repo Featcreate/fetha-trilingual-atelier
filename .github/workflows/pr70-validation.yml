@@ -1,0 +1,59 @@
+name: PR 70 validation
+
+on:
+  push:
+    branches:
+      - feature/multi-provider-payment-architecture
+  pull_request:
+    branches:
+      - feature/digital-product-delivery-hardening
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr70-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Lint, test, typecheck, and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check migration journal
+        run: bun run check:migrations
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Lint changed source files
+        shell: bash
+        run: |
+          git fetch origin feature/digital-product-delivery-hardening --depth=1
+          BASE="$(git merge-base origin/feature/digital-product-delivery-hardening HEAD)"
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$BASE"...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx')
+          if (( ${#files[@]} )); then
+            bunx eslint "${files[@]}"
+          else
+            echo "No changed source files require linting."
+          fi
+
+      - name: Run tests
+        run: bun run test
+
+      - name: Production build
+        run: bun run build

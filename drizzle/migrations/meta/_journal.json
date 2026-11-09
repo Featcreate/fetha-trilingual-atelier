@@ -267,6 +267,13 @@
       "when": 1794240000000,
       "tag": "0035_verified_payment_download_gate",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1794240000001,
+      "tag": "0036_single_success_download_stream",
+      "breakpoints": true
     }
   ]
 }

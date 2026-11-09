@@ -294,3 +294,24 @@ export const adminGetAdvertisingRevenueReport = createServerFn({ method: "GET" }
         .filter((row) => row.month.startsWith(`${year}-`)),
     };
   });
+
+export const adminRejectUnpaidPaidAdvertisingRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({
+    requestId: z.string().uuid(),
+    reason: z.string().trim().min(3).max(500),
+  }).parse(input))
+  .handler(async ({ data, context }) => {
+    const rpc = context.supabase.rpc as unknown as (
+      name: string, args: Record<string, unknown>,
+    ) => Promise<{ error: { message: string } | null }>;
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId, _role: "admin",
+    });
+    if (roleError || !isAdmin) return { ok: false as const, error: "forbidden" };
+    const { error } = await rpc("admin_reject_unpaid_paid_advertising_order", {
+      _ad_id: data.requestId, _reason: data.reason,
+    });
+    if (error) return { ok: false as const, error: "rejection_not_allowed" };
+    return { ok: true as const };
+  });

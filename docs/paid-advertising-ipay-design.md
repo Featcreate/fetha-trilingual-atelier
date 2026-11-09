@@ -39,6 +39,7 @@ Reviewed the public iPay by Audasoft developer, one-shot payment, webhook/integr
 - The authenticated one-shot example sends `amount` as a decimal number (for example, `149.99`) with `currency: "TND"`. The supplied schema still does not define TND decimal precision or explicitly state whether the value is dinars or millimes. The current code defaults to minor units (millimes), so this is a concrete unresolved mismatch; do not enable checkout or assume either unit until iPay confirms it and a sandbox test validates it.
 
 References:
+
 - https://www.ipay.tn/developpeurs
 - https://www.ipay.tn/produits/paiement-oneshot
 - https://www.ipay.tn/produits/webhooks-integrations

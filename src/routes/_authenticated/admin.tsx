@@ -469,7 +469,12 @@ function AdminPage() {
           <p className="text-sm text-muted-foreground">{a.orders}</p>
           <p className="mt-1 text-2xl font-bold">{orders.data?.length ?? "—"}</p>
           <p className="text-xs text-muted-foreground">
-            {a.paidOrders}: {(orders.data ?? []).filter((o) => o.status === "paid" && o.payment_mode === "verified").length}
+            {a.paidOrders}:{" "}
+            {
+              (orders.data ?? []).filter(
+                (o) => o.status === "paid" && o.payment_mode === "verified",
+              ).length
+            }
           </p>
         </div>
         <div className="rounded-xl border border-border p-4">

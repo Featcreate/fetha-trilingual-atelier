@@ -4,7 +4,7 @@ import { getGmailAccessToken, sendPurchaseAccessEmail } from "@/lib/gmail.server
 
 function isAuthorized(request: Request): boolean {
   const expected = process.env["EMAIL_WORKER_SECRET"];
-  const supplied = request.headers.get("authorization")?.replace(/^Bearer\\s+/i, "") ?? "";
+  const supplied = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
   if (!expected || supplied.length !== expected.length) return false;
   return timingSafeEqual(Buffer.from(supplied), Buffer.from(expected));
 }

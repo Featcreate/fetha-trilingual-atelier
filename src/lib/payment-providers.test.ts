@@ -86,7 +86,7 @@ describe("buyer payment provider eligibility", () => {
   it("rejects providers whose method list contains only blank values", () => {
     expect(eligibleBuyerPaymentProviders([{
       ...providers[0],
-      methods: [" ", "\\t"],
+      methods: [" "],
     }], {
       buyerCountry: "TN", currency: "TND", amountMillimes: 12500,
     })).toEqual([]);

@@ -88,5 +88,9 @@ BEGIN
   IF to_regprocedure('public.admin_set_paid_advertising_package(smallint,bigint)') IS NULL THEN
     RAISE EXCEPTION 'paid_advertising_package_admin_function_missing';
   END IF;
+
+  IF to_regprocedure('public.admin_reject_unpaid_paid_advertising_order(uuid,text)') IS NULL THEN
+    RAISE EXCEPTION 'paid_advertising_rejection_function_missing';
+  END IF;
 END;
 $$;

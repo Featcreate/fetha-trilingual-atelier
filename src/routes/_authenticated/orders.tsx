@@ -4,7 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
-import { getDownloadLink } from "@/lib/shop.functions";
+import { downloadPurchasedFile } from "@/lib/download-client";
 import { AuthShell } from "@/components/AuthShell";
 
 export const Route = createFileRoute("/_authenticated/orders")({
@@ -13,6 +13,13 @@ export const Route = createFileRoute("/_authenticated/orders")({
   }),
   component: BuyerOrdersPage,
 });
+
+type DownloadEntitlement = {
+  id: string;
+  expires_at: string;
+  max_downloads: number;
+  used_downloads: number;
+};
 
 type BuyerOrder = {
   id: string;
@@ -26,10 +33,8 @@ type BuyerOrder = {
     order_item_files: Array<{
       id: string;
       file_name: string;
-      download_entitlements:
-        | { id: string; expires_at: string; max_downloads: number; used_downloads: number }
-        | Array<{ id: string; expires_at: string; max_downloads: number; used_downloads: number }>
-        | null;
+      download_entitlements: DownloadEntitlement | DownloadEntitlement[] | null;
+      zip_download_entitlements: DownloadEntitlement | DownloadEntitlement[] | null;
     }>;
   }>;
 };
@@ -49,23 +54,72 @@ function BuyerOrdersPage() {
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as unknown as BuyerOrder[];
+      const orders = data ?? [];
+      const orderIds = orders.map((order) => order.id);
+      if (orderIds.length === 0) return [] as unknown as BuyerOrder[];
+
+      const { data: zipRows, error: zipError } = await supabase
+        .from("zip_download_entitlements")
+        .select("id,order_item_file_id,expires_at,max_downloads,used_downloads")
+        .in("order_id", orderIds);
+      if (zipError) throw zipError;
+      const zipByFile = new Map((zipRows ?? []).map((row) => [row.order_item_file_id, row]));
+
+      return orders.map((order) => ({
+        ...order,
+        order_items: order.order_items.map((item) => ({
+          ...item,
+          order_item_files: item.order_item_files.map((file) => ({
+            ...file,
+            zip_download_entitlements: zipByFile.get(file.id) ?? null,
+          })),
+        })),
+      })) as unknown as BuyerOrder[];
     },
   });
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
+  const originalLabel = lang === "ar" ? "تنزيل الملف الأصلي" : lang === "en" ? "Download original" : "Télécharger l’original";
+  const zipLabel = lang === "ar" ? "تنزيل ZIP" : lang === "en" ? "Download ZIP" : "Télécharger ZIP";
 
-  async function download(entitlementId: string) {
-    setBusy(entitlementId);
+  async function download(entitlementId: string, type: "original" | "zip") {
+    const busyKey = `${type}:${entitlementId}`;
+    setBusy(busyKey);
     setNotice("");
     try {
-      const result = await getDownloadLink({ data: { entitlementId } });
-      if (!result.ok) setNotice(m.downloadError);
-      else window.location.assign(result.url);
+      await downloadPurchasedFile(entitlementId, type);
+      await query.refetch();
     } catch {
       setNotice(m.downloadError);
     } finally {
       setBusy(null);
     }
+  }
+
+  function renderDownloadButton(entitlement: DownloadEntitlement | null, type: "original" | "zip", fileName: string) {
+    if (!entitlement) return null;
+    const busyKey = `${type}:${entitlement.id}`;
+    const expired = entitlement.expires_at <= new Date().toISOString();
+    const exhausted = entitlement.used_downloads >= entitlement.max_downloads;
+    const label = type === "original" ? originalLabel : zipLabel;
+    return (
+      <div key={busyKey} className="text-end">
+        <button
+          type="button"
+          disabled={busy === busyKey || expired || exhausted}
+          onClick={() => download(entitlement.id, type)}
+          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+        >
+          {busy === busyKey ? m.loading : label}
+        </button>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {m.downloadsLeft}: {Math.max(0, entitlement.max_downloads - entitlement.used_downloads)}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {type === "zip" ? "ZIP" : fileName} · {m.expires}{" "}
+          {new Date(entitlement.expires_at).toLocaleDateString(locale)}
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -115,37 +169,20 @@ function BuyerOrdersPage() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {item.order_item_files
-                        .flatMap((file) => {
-                          const entitlements = Array.isArray(file.download_entitlements)
-                            ? file.download_entitlements
-                            : file.download_entitlements
-                              ? [file.download_entitlements]
-                              : [];
-                          return entitlements.map((ent) => ({ file, ent }));
-                        })
-                        .map(({ file, ent }) => (
-                          <div key={ent.id} className="text-end">
-                            <button
-                              type="button"
-                              disabled={
-                                busy === ent.id ||
-                                ent.expires_at <= new Date().toISOString() ||
-                                ent.used_downloads >= ent.max_downloads
-                              }
-                              onClick={() => download(ent.id)}
-                              className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
-                            >
-                              {busy === ent.id ? m.loading : m.download}
-                            </button>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              {m.downloadsLeft}:{" "}
-                              {Math.max(0, ent.max_downloads - ent.used_downloads)} · {m.expires}{" "}
-                              {new Date(ent.expires_at).toLocaleDateString(locale)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">{file.file_name}</p>
+                      {item.order_item_files.map((file) => {
+                        const original = Array.isArray(file.download_entitlements)
+                          ? file.download_entitlements[0] ?? null
+                          : file.download_entitlements;
+                        const zip = Array.isArray(file.zip_download_entitlements)
+                          ? file.zip_download_entitlements[0] ?? null
+                          : file.zip_download_entitlements;
+                        return (
+                          <div key={file.id} className="flex flex-wrap gap-2">
+                            {renderDownloadButton(original, "original", file.file_name)}
+                            {renderDownloadButton(zip, "zip", file.file_name)}
                           </div>
-                        ))}
+                        );
+                      })}
                     </div>
                   </div>
                 ))}

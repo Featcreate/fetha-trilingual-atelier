@@ -38,9 +38,10 @@ export function createSingleFileZipStream(
       controller.enqueue(chunk);
     },
   }));
-  const compressed = trackedSource.pipeThrough(
-    new CompressionStream("deflate-raw" as CompressionFormat),
-  );
+  const deflater = new CompressionStream(
+    "deflate-raw" as CompressionFormat,
+  ) as unknown as ReadableWritablePair<Uint8Array, Uint8Array>;
+  const compressed = trackedSource.pipeThrough(deflater);
   const reader = compressed.getReader();
 
   const localHeader = new Uint8Array(30 + name.byteLength);

@@ -278,6 +278,53 @@ export type Database = {
           },
         ]
       }
+      order_email_outbox: {
+        Row: {
+          attempt_count: number
+          created_at: string
+          id: string
+          last_error: string | null
+          locked_at: string | null
+          next_attempt_at: string
+          order_id: string
+          recipient_email: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          attempt_count?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          locked_at?: string | null
+          next_attempt_at?: string
+          order_id: string
+          recipient_email: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          attempt_count?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          locked_at?: string | null
+          next_attempt_at?: string
+          order_id?: string
+          recipient_email?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_email_outbox_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           commission_bps: number | null
@@ -1391,6 +1438,20 @@ export type Database = {
       archive_file_version: {
         Args: { _version_id: string }
         Returns: undefined
+      }
+      claim_order_purchase_emails: {
+        Args: { _batch_size?: number }
+        Returns: {
+          attempt_count: number
+          id: string
+          order_id: string
+          recipient_email: string
+        }[]
+      }
+      complete_order_purchase_email: { Args: { _outbox_id: string }; Returns: boolean }
+      fail_order_purchase_email: {
+        Args: { _error: string; _outbox_id: string }
+        Returns: boolean
       }
       create_order: {
         Args: { _checkout_key: string; _product_ids: string[] }

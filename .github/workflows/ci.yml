@@ -41,6 +41,9 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Emit Prettier-formatted gallery source
+        run: bunx prettier 'src/routes/products/$id.tsx'
+
       - name: Check formatting
         shell: bash
         run: |

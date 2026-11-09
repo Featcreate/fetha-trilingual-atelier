@@ -5,16 +5,15 @@ export interface StreamDownloadDeps {
   release: () => Promise<void>;
 }
 
+const DOWNLOAD_CHUNK_BYTES = 64 * 1024;
+
 /**
- * Stream a reserved file and finalize only after the server-side Blob stream is exhausted.
- * Cancelling or failing the stream releases the reservation so the buyer can retry.
+ * Emit a reserved Blob in bounded chunks and finalize only after every byte has
+ * been enqueued and the consumer requests the terminal EOF. Cancellation or
+ * read/finalization failure releases the reservation so the buyer can retry.
  */
 export function createDownloadResponse(deps: StreamDownloadDeps): Response {
-  // Use Response's body stream rather than Blob.stream(): Bun's Blob implementation
-  // in the GitHub Actions runtime does not expose Blob.stream() consistently.
-  const source = new Response(deps.blob).body;
-  if (!source) throw new Error("download_stream_unavailable");
-  const reader = source.getReader();
+  let offset = 0;
   let settled = false;
 
   const releaseOnce = async () => {
@@ -26,13 +25,18 @@ export function createDownloadResponse(deps: StreamDownloadDeps): Response {
   const body = new ReadableStream<Uint8Array>({
     async pull(controller) {
       try {
-        const { done, value } = await reader.read();
-        if (!done) {
-          controller.enqueue(value);
+        if (offset < deps.blob.size) {
+          const end = Math.min(offset + DOWNLOAD_CHUNK_BYTES, deps.blob.size);
+          const bytes = await deps.blob.slice(offset, end).arrayBuffer();
+          if (bytes.byteLength !== end - offset) {
+            throw new Error("download_chunk_incomplete");
+          }
+          offset = end;
+          controller.enqueue(new Uint8Array(bytes));
           return;
         }
-        if (settled) return;
 
+        if (settled) return;
         const finalized = await deps.finalize();
         if (!finalized) {
           await releaseOnce();
@@ -47,11 +51,7 @@ export function createDownloadResponse(deps: StreamDownloadDeps): Response {
       }
     },
     async cancel() {
-      try {
-        await reader.cancel();
-      } finally {
-        await releaseOnce();
-      }
+      await releaseOnce();
     },
   }, { highWaterMark: 0 });
 

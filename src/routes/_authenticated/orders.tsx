@@ -103,9 +103,7 @@ function BuyerOrdersPage() {
         .select("id,order_item_file_id,expires_at,max_downloads,used_downloads")
         .in("order_id", orderIds);
       if (zipError) throw zipError;
-      const zipByFile = new Map(
-        (zipRows ?? []).map((row) => [row.order_item_file_id, row]),
-      );
+      const zipByFile = new Map((zipRows ?? []).map((row) => [row.order_item_file_id, row]));
       return orders.map((order) => ({
         ...order,
         order_items: order.order_items.map((item) => ({

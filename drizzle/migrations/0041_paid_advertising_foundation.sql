@@ -136,11 +136,15 @@ ALTER TABLE public.platform_financial_ledger_entries
 
 ALTER TABLE public.platform_financial_ledger_entries
   ADD CONSTRAINT platform_ledger_advertising_scope_check CHECK (
-    (entry_type IN ('advertising_revenue','refund')
+    (entry_type = 'advertising_revenue'
       AND advertising_order_id IS NOT NULL
       AND order_id IS NULL AND order_item_id IS NULL
       AND seller_payout_id IS NULL AND seller_id IS NULL AND store_id IS NULL)
-    OR (entry_type NOT IN ('advertising_revenue','refund') AND advertising_order_id IS NULL)
+    OR (entry_type <> 'advertising_revenue' AND advertising_order_id IS NULL)
+    OR (entry_type = 'refund'
+      AND advertising_order_id IS NOT NULL
+      AND order_id IS NULL AND order_item_id IS NULL
+      AND seller_payout_id IS NULL AND seller_id IS NULL AND store_id IS NULL)
   );
 
 CREATE UNIQUE INDEX platform_ledger_advertising_order_revenue_unique

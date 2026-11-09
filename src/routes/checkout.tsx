@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 import { AuthShell } from "@/components/AuthShell";
-import { PaymentMethodsPreview } from "@/components/PaymentMethodsPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
@@ -20,6 +19,7 @@ const copy = {
       "Le paiement en ligne est temporairement désactivé. Votre panier est conservé ; aucune commande ni aucun débit ne sera créé.",
     back: "Retour au panier",
     methods: "Un seul paiement couvrira l'ensemble du panier lorsque le service sera activé.",
+    providerNotice: "Konnect est actuellement le seul prestataire acheteur relié au parcours de commande. Les moyens réellement disponibles seront affichés sur la page sécurisée de Konnect. iPay ne sera proposé qu’après vérification fiable de ses transactions.",
     empty: "Votre panier est vide.",
     loading: "Chargement…",
     error: "Impossible de charger la commande.",
@@ -35,6 +35,7 @@ const copy = {
     disabled: "الدفع الإلكتروني معطّل مؤقتاً. ستبقى سلتك محفوظة، ولن يتم إنشاء طلب أو خصم أي مبلغ.",
     back: "العودة إلى السلة",
     methods: "ستكون هناك دفعة واحدة لكامل محتويات السلة عند تفعيل الخدمة.",
+    providerNotice: "Konnect هو مزود الدفع الوحيد المرتبط حالياً بمسار الشراء. ستظهر وسائل الدفع المتاحة فعلياً في صفحة Konnect الآمنة. لن نعرض iPay حتى نتحقق من معاملاته بطريقة موثوقة.",
     empty: "السلة فارغة.",
     loading: "جارٍ التحميل…",
     error: "تعذر تحميل الطلب.",
@@ -51,6 +52,7 @@ const copy = {
       "Online payment is temporarily disabled. Your cart is preserved; no order or charge will be created.",
     back: "Back to cart",
     methods: "One payment will cover the entire cart when checkout is activated.",
+    providerNotice: "Konnect is currently the only buyer-payment provider connected to checkout. The methods actually available will be shown on Konnect’s secure payment page. iPay will not be offered until authoritative transaction verification is in place.",
     empty: "Your cart is empty.",
     loading: "Loading…",
     error: "Could not load order.",
@@ -175,7 +177,7 @@ function CheckoutPage() {
             </p>
           ) : (
             <section className="mt-5 rounded-xl border border-border p-4">
-              <PaymentMethodsPreview />
+              <p className="text-sm leading-7 text-muted-foreground">{t.providerNotice}</p>
             </section>
           )}
           {availability.data?.enabled && !unavailable ? (

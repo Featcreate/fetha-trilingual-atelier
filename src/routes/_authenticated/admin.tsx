@@ -84,6 +84,7 @@ type PaidAdRequestRow = {
   payment_status: string;
   ipay_payment_ref: string | null;
   paid_at: string | null;
+  rejection_reason: string | null;
   created_at: string;
   starts_at: string | null;
   ends_at: string | null;
@@ -726,6 +727,7 @@ function AdminPage() {
                       {request.duration_days} {lang === "ar" ? "أيام" : lang === "en" ? "days" : "jours"} · {formatTND(request.price_millimes)} · {request.status} · {request.payment_status}
                     </p>
                     <a href={request.destination_url} target="_blank" rel="noreferrer" className="mt-1 block truncate text-xs text-coral underline">{request.destination_url}</a>
+                    {request.rejection_reason && <p className="mt-2 text-xs text-destructive">{request.rejection_reason}</p>}
                     {request.payment_status === "verified" && request.status !== "active" ? (
                       <button type="button" disabled={busy === request.id} onClick={() => void activateAdvertisement(request)} className="mt-3 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground disabled:opacity-50">
                         {busy === request.id ? a.saving : (lang === "ar" ? "مراجعة وتفعيل الإعلان" : lang === "en" ? "Approve and activate" : "Approuver et activer")}

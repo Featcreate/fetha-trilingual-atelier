@@ -118,41 +118,71 @@ END $$;
 
 CREATE OR REPLACE FUNCTION public.finalize_zip_download(_reservation_id uuid)
 RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE r record;
+DECLARE
+  _entitlement_id uuid;
+  _entitlement_expires_at timestamptz;
+  _used_downloads integer;
+  _order_status text;
+  _payment_mode text;
+  _reservation_status text;
+  _reservation_expires_at timestamptz;
 BEGIN
-  -- Lock the reservation first so concurrent/retried finalization is idempotent.
-  SELECT zr.id, zr.entitlement_id, zr.status, zr.expires_at
-    INTO r FROM public.zip_download_reservations zr
-   WHERE zr.id = _reservation_id
-   FOR UPDATE;
+  -- Keep the same lock order as reserve_zip_download: entitlement, order, reservation.
+  -- The initial lookup is intentionally unlocked; all mutable checks are repeated
+  -- after the entitlement and reservation rows have been locked.
+  SELECT zr.entitlement_id
+    INTO _entitlement_id
+    FROM public.zip_download_reservations zr
+   WHERE zr.id = _reservation_id;
   IF NOT FOUND THEN RETURN false; END IF;
-  IF r.status = 'finalized' THEN RETURN true; END IF;
-  IF r.status <> 'reserved' THEN RETURN false; END IF;
-  PERFORM 1
+
+  SELECT ze.expires_at, ze.used_downloads, o.status, o.payment_mode
+    INTO _entitlement_expires_at, _used_downloads, _order_status, _payment_mode
     FROM public.zip_download_entitlements ze
     JOIN public.orders o ON o.id = ze.order_id
-   WHERE ze.id = r.entitlement_id
-     AND ze.expires_at > now()
-     AND ze.used_downloads = 0
-     AND o.status = 'paid'
-     AND o.payment_mode = 'verified'
+   WHERE ze.id = _entitlement_id
    FOR UPDATE OF ze, o;
+  IF NOT FOUND THEN RETURN false; END IF;
+
+  SELECT zr.status, zr.expires_at
+    INTO _reservation_status, _reservation_expires_at
+    FROM public.zip_download_reservations zr
+   WHERE zr.id = _reservation_id
+     AND zr.entitlement_id = _entitlement_id
+   FOR UPDATE;
+  IF NOT FOUND THEN RETURN false; END IF;
+  IF _reservation_status = 'finalized' THEN RETURN true; END IF;
+  IF _reservation_status <> 'reserved' THEN RETURN false; END IF;
+
+  IF _order_status <> 'paid'
+     OR _payment_mode IS DISTINCT FROM 'verified'
+     OR _entitlement_expires_at <= now()
+     OR _used_downloads <> 0 THEN
+    UPDATE public.zip_download_reservations
+       SET status = 'released', closed_at = now()
+     WHERE id = _reservation_id AND status = 'reserved';
+    RETURN false;
+  END IF;
+
+  IF _reservation_expires_at <= now() THEN
+    UPDATE public.zip_download_reservations
+       SET status = 'expired', closed_at = now()
+     WHERE id = _reservation_id AND status = 'reserved';
+    RETURN false;
+  END IF;
+
+  UPDATE public.zip_download_entitlements
+     SET used_downloads = 1
+   WHERE id = _entitlement_id
+     AND used_downloads = 0
+     AND expires_at > now();
   IF NOT FOUND THEN
     UPDATE public.zip_download_reservations
        SET status = 'released', closed_at = now()
      WHERE id = _reservation_id AND status = 'reserved';
     RETURN false;
   END IF;
-  IF r.expires_at <= now() THEN
-    UPDATE public.zip_download_reservations
-       SET status = 'expired', closed_at = now()
-     WHERE id = _reservation_id AND status = 'reserved';
-    RETURN false;
-  END IF;
-  UPDATE public.zip_download_entitlements
-     SET used_downloads = 1
-   WHERE id = r.entitlement_id AND used_downloads = 0 AND expires_at > now();
-  IF NOT FOUND THEN RETURN false; END IF;
+
   UPDATE public.zip_download_reservations
      SET status = 'finalized', finalized_at = now()
    WHERE id = _reservation_id AND status = 'reserved';

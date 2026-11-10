@@ -106,4 +106,19 @@ describe("completed download streaming", () => {
     expect(await new Response(decompressed).text()).toBe("zip payload");
     expect(view.getUint32(bytes.byteLength - 22, true)).toBe(0x06054b50);
   });
+
+  it("supports Unicode filenames with an ASCII fallback header", async () => {
+    const response = createDownloadResponse({
+      source: sourceFrom("content"),
+      fileName: "دليل.pdf",
+      finalize: async () => true,
+      release: async () => {},
+    });
+
+    const disposition = response.headers.get("content-disposition") ?? "";
+    expect(disposition).toContain('filename="_._.pdf"');
+    expect(disposition).toContain("filename*=UTF-8''");
+    expect(await response.text()).toBe("content");
+  });
+
 });

@@ -122,8 +122,7 @@ export const getCartCheckoutAvailability = createServerFn({ method: "GET" }).han
   return { enabled: provider !== null, provider };
 });
 
-/** Create one pending order with one entitlement per distinct digital product, then request one Konnect charge.
- * The activation gate is checked before an order is created; disabled payments fail closed. */
+/** Create one pending cart order, then request one provider checkout link. iPay takes priority when explicitly enabled. */
 export const startCartCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -164,7 +163,9 @@ export const startCartCheckout = createServerFn({ method: "POST" })
 
     const { data: order } = await context.supabase
       .from("orders")
-      .select("id,status,total_millimes,konnect_pay_url,konnect_payment_ref,konnect_init_claimed_at,ipay_payment_url,ipay_payment_ref,ipay_init_claimed_at,customer_email")
+      .select(
+        "id,status,total_millimes,konnect_pay_url,konnect_payment_ref,konnect_init_claimed_at,ipay_payment_url,ipay_payment_ref,ipay_init_claimed_at,customer_email",
+      )
       .eq("id", orderId)
       .single();
     if (!order) return { ok: false as const, error: "order_failed" };
@@ -173,7 +174,13 @@ export const startCartCheckout = createServerFn({ method: "POST" })
     }
 
     if (useIpay) {
-      if (order.ipay_payment_ref && order.ipay_payment_url) {
+      if (
+        order.ipay_payment_ref &&
+        order.ipay_payment_url &&
+        !order.konnect_payment_ref &&
+        !order.konnect_pay_url &&
+        !order.konnect_init_claimed_at
+      ) {
         return { ok: true as const, orderId, payUrl: order.ipay_payment_url };
       }
       const { data: claimRows, error: claimError } = await context.supabase.rpc(

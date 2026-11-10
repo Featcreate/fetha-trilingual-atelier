@@ -55,17 +55,17 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 1. **Marketplace eligibility and documents:** Confirm in writing that this organisation/account can process payments for a digital-goods marketplace where buyers pay the platform and the platform separately accounts for and manually pays sellers. Confirm any required business registration, KYC, or supporting documents.
 1. **Fees:** Confirm the 1% monthly-billed commission capped at 5 TND for this organisation and identify every additional acquirer/provider fee by payment method, including refunds and declared transfers.
 
-## Implementation status on feature/ipay-checkout-integration
+## Implementation status on current mainline
 
-A first, deliberately incomplete server-side scaffold has been added:
+A first, deliberately incomplete server-side scaffold is present on `main` and has been carried into the fresh `feature/ipay-checkout-mainline` branch:
 
 - `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and Bearer JWT headers.
 - The one-shot client validates the order/customer input, requires `IPAY_CHECKOUT_ENABLED=true`, and rejects provider responses with empty references or checkout URLs outside HTTPS iPay domains (including URLs containing embedded credentials).
 - `IPAY_AMOUNT_UNIT` defaults to `minor` (integer TND millimes); `major` remains an explicit override only if Audasoft confirms decimal dinars in writing. This is an adopted but unverified assumption, not an official confirmation.
 - `drizzle/migrations/0034_ipay_checkout_reference.sql` adds separate nullable iPay reference/URL fields and a unique partial index. It does not alter the Konnect columns, order settlement, commission, ledger, or payout rules.
-- `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard and hosted checkout URL/reference validation.
+- `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard and hosted checkout URL/reference validation, including malformed payloads, numeric references, lookalike domains, non-standard ports, and oversized references. The new hardening tests are in `feature/ipay-checkout-mainline`.
 
-The iPay client is not yet wired into buyer checkout. No iPay webhook handler or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
+The current buyer checkout remains Konnect-only. The iPay client is not yet wired into buyer checkout. No iPay webhook handler or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
 
 ## Implementation gate
 

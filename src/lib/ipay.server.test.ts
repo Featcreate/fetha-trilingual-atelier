@@ -180,3 +180,49 @@ describe("iPay amount-unit configuration", () => {
   });
 });
 
+
+describe("iPay one-shot request safety", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it("uses the explicit amount unit and a bounded POST request", async () => {
+    vi.stubEnv("IPAY_ORG_ID", "org-test");
+    vi.stubEnv("IPAY_JWT", "jwt-test");
+    vi.stubEnv("IPAY_PRODUCT_CODE", "algorea-bazaar");
+    vi.stubEnv("IPAY_AMOUNT_UNIT", "major");
+    vi.stubEnv("IPAY_CHECKOUT_ENABLED", "true");
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        id: "txn-test",
+        payment_url: "https://checkout.ipay.tn/pay/txn-test",
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      ipayCreateOneShot({
+        amountMillimes: 10500,
+        orderId: "order-test",
+        customerName: "Test Buyer",
+      }),
+    ).resolves.toEqual({
+      paymentRef: "txn-test",
+      paymentUrl: "https://checkout.ipay.tn/pay/txn-test",
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string | URL, RequestInit];
+    expect(String(url)).toBe("https://api.ipay.tn/api/admin/transactions/create-oneshot");
+    expect(init.method).toBe("POST");
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+    const payload = JSON.parse(String(init.body)) as { amount: number; currency: string };
+    expect(payload.amount).toBe(10.5);
+    expect(payload.currency).toBe("TND");
+  });
+});
+

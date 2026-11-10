@@ -60,7 +60,7 @@ BEGIN
     ON CONFLICT (order_item_file_id) DO NOTHING;
   END IF;
   RETURN NEW;
-END $;
+END $$;
 REVOKE ALL ON FUNCTION public.create_zip_entitlement_for_original() FROM PUBLIC, anon, authenticated;
 CREATE TRIGGER create_zip_entitlement_after_original
   AFTER INSERT ON public.download_entitlements

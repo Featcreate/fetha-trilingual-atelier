@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 import { AuthShell } from "@/components/AuthShell";
-import { PaymentMethodsPreview } from "@/components/PaymentMethodsPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
@@ -20,11 +19,16 @@ const copy = {
       "Le paiement en ligne est temporairement désactivé. Votre panier est conservé ; aucune commande ni aucun débit ne sera créé.",
     back: "Retour au panier",
     methods: "Un seul paiement couvrira l'ensemble du panier lorsque le service sera activé.",
+    providerNoticeIpay:
+      "iPay est relié pour tester la création du lien de paiement. Le retour du navigateur et les notifications ne confirment pas encore le règlement final ; aucun téléchargement n'est débloqué par ces signaux.",
+    providerNoticeKonnect:
+      "Le paiement est préparé via Konnect. Les moyens réellement disponibles seront affichés sur sa page de paiement sécurisée.",
+    payIpay: "Continuer vers le paiement iPay",
+    payKonnect: "Payer le panier en une fois avec Konnect",
     empty: "Votre panier est vide.",
     loading: "Chargement…",
     error: "Impossible de charger la commande.",
     unavailable: "Un ou plusieurs produits ne sont plus disponibles. Retournez au panier.",
-    pay: "Payer le panier en une fois avec Konnect",
     starting: "Préparation du paiement…",
     paymentError:
       "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. Réessayez uniquement après vérification de l’état de la commande.",
@@ -35,11 +39,16 @@ const copy = {
     disabled: "الدفع الإلكتروني معطّل مؤقتاً. ستبقى سلتك محفوظة، ولن يتم إنشاء طلب أو خصم أي مبلغ.",
     back: "العودة إلى السلة",
     methods: "ستكون هناك دفعة واحدة لكامل محتويات السلة عند تفعيل الخدمة.",
+    providerNoticeIpay:
+      "تم ربط iPay لاختبار إنشاء رابط الدفع. عودة المتصفح وإشعارات الدفع لا تثبت التسوية النهائية بعد؛ ولن تُفتح التنزيلات اعتماداً على هذه الإشارات.",
+    providerNoticeKonnect:
+      "يتم إعداد الدفع عبر Konnect، وستظهر وسائل الدفع المتاحة فعلياً في صفحة الدفع الآمنة الخاصة به.",
+    payIpay: "المتابعة إلى الدفع عبر iPay",
+    payKonnect: "دفع كامل السلة دفعة واحدة عبر Konnect",
     empty: "السلة فارغة.",
     loading: "جارٍ التحميل…",
     error: "تعذر تحميل الطلب.",
     unavailable: "منتج أو أكثر لم يعد متاحاً. عودي إلى السلة.",
-    pay: "دفع كامل السلة دفعة واحدة عبر Konnect",
     starting: "جارٍ إعداد الدفع…",
     paymentError:
       "تعذر إعداد الدفع. لن تتم إعادة محاولة إنشاء عملية دفع تلقائياً. لا تعيدي المحاولة إلا بعد التحقق من حالة الطلب.",
@@ -51,11 +60,16 @@ const copy = {
       "Online payment is temporarily disabled. Your cart is preserved; no order or charge will be created.",
     back: "Back to cart",
     methods: "One payment will cover the entire cart when checkout is activated.",
+    providerNoticeIpay:
+      "iPay is connected to test payment-link creation. Browser returns and notifications do not yet prove final settlement; downloads remain locked until authoritative verification is implemented.",
+    providerNoticeKonnect:
+      "Checkout is prepared through Konnect. The payment methods actually available will be shown on its secure payment page.",
+    payIpay: "Continue to iPay payment",
+    payKonnect: "Pay the entire cart in one Konnect payment",
     empty: "Your cart is empty.",
     loading: "Loading…",
     error: "Could not load order.",
     unavailable: "One or more products are no longer available. Return to your cart.",
-    pay: "Pay the entire cart in one Konnect payment",
     starting: "Preparing payment…",
     paymentError:
       "Payment could not be initialized. Another payment will not be started automatically. Retry only after checking the order status.",
@@ -122,6 +136,9 @@ function CheckoutPage() {
         0),
     0,
   );
+  const provider = availability.data?.provider;
+  const providerNotice = provider === "ipay" ? t.providerNoticeIpay : t.providerNoticeKonnect;
+  const payLabel = provider === "ipay" ? t.payIpay : t.payKonnect;
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={t.title} wide>
@@ -175,7 +192,7 @@ function CheckoutPage() {
             </p>
           ) : (
             <section className="mt-5 rounded-xl border border-border p-4">
-              <PaymentMethodsPreview />
+              <p className="text-sm leading-7 text-muted-foreground">{providerNotice}</p>
             </section>
           )}
           {availability.data?.enabled && !unavailable ? (
@@ -185,7 +202,7 @@ function CheckoutPage() {
               disabled={checkoutMutation.isPending}
               className="mt-4 inline-flex w-full justify-center rounded-full bg-accent px-5 py-3 text-center font-semibold text-accent-foreground disabled:opacity-50"
             >
-              {checkoutMutation.isPending ? t.starting : t.pay}
+              {checkoutMutation.isPending ? t.starting : payLabel}
             </button>
           ) : (
             <p role="status" className="mt-3 rounded-xl border border-border p-4 text-sm">

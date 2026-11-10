@@ -55,28 +55,29 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 1. **Marketplace eligibility and documents:** Confirm in writing that this organisation/account can process payments for a digital-goods marketplace where buyers pay the platform and the platform separately accounts for and manually pays sellers. Confirm any required business registration, KYC, or supporting documents.
 1. **Fees:** Confirm the 1% monthly-billed commission capped at 5 TND for this organisation and identify every additional acquirer/provider fee by payment method, including refunds and declared transfers.
 
-## Implementation status on feature/ipay-checkout-integration
+## Implementation status on feature/checkout-delivery-main-integration
 
-A first, deliberately incomplete server-side scaffold has been added:
+The iPay one-shot client is now connected to the authenticated cart checkout path for payment-link testing:
 
-- `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and Bearer JWT headers.
-- The one-shot client validates the order/customer input, requires `IPAY_CHECKOUT_ENABLED=true`, and rejects provider responses with empty references or checkout URLs outside HTTPS iPay domains (including URLs containing embedded credentials).
-- `IPAY_AMOUNT_UNIT` defaults to `minor` (integer TND millimes); `major` remains an explicit override only if Audasoft confirms decimal dinars in writing. This is an adopted but unverified assumption, not an official confirmation.
-- `drizzle/migrations/0034_ipay_checkout_reference.sql` adds separate nullable iPay reference/URL fields and a unique partial index. It does not alter the Konnect columns, order settlement, commission, ledger, or payout rules.
-- `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard and hosted checkout URL/reference validation.
+- `src/lib/ipay.server.ts` builds the documented `POST /api/admin/transactions/create-oneshot` request using `X-Org-Id` and Bearer JWT headers.
+- The checkout page selects iPay when its server-side configuration and activation flag are present; otherwise it preserves the existing Konnect path. The Konnect integration and its provider-specific fields remain intact.
+- iPay transaction reference and hosted URL are stored separately in `orders.ipay_payment_ref` and `orders.ipay_payment_url`.
+- `0044_ipay_checkout_init_claim.sql` adds an independent, owner-checked initialization claim. It blocks duplicate external attempts after an uncertain provider response and prevents mixing iPay with a Konnect attempt on the same order.
+- `IPAY_AMOUNT_UNIT` is now required explicitly as either `major` or `minor`. The code no longer silently assumes millimes or decimal dinars.
+- The new migration was applied only to the disposable test Supabase project `algorea-bazaar-test` (`iblfizhtvzfnfuntnazk`). The new column and RPC are present there; production Supabase was not changed.
 
-The iPay client is not yet wired into buyer checkout. No iPay webhook handler or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
+This integration currently creates and persists an iPay payment link only. It does **not** yet verify final payment, process iPay webhooks, settle orders, post ledger entries, credit seller balances, or release downloads. A browser return or `transaction.completed` notification is not treated as proof of cleared funds. No real iPay transaction has been initiated yet.
 
 ## Implementation gate
 
-Until Audasoft confirms the open questions above:
+Until the account's test-mode credentials and amount-unit convention are confirmed:
 
-- do not set `IPAY_CHECKOUT_ENABLED=true`;
-- do not apply migration 0034 to Supabase;
+- keep `IPAY_CHECKOUT_ENABLED` unset or `false` on production;
+- enable the feature only on the dedicated test service, using test credentials/product configuration from the iPay dashboard;
+- set `IPAY_AMOUNT_UNIT` explicitly only after Audasoft confirms the convention or a controlled non-settling sandbox check establishes it;
 - do not settle an order based only on a webhook, redirect, or browser query parameter;
 - do not release downloads for declared bank/postal transfers without confirmed cleared funds;
-- keep the adopted `minor` default provisional until a non-settling sandbox test confirms that `amount: 1000` displays exactly `1.000 TND`; do not enable live checkout based on this assumption;
 - do not claim international-card or foreign-currency support;
 - do not assume webhook authenticity or retry behaviour.
 
-Next engineering steps after written confirmation: implement authoritative transaction lookup, authenticated/idempotent webhook reconciliation, exact order/amount/currency/product matching, safe settlement through the existing trusted RPC, and sandbox integration tests. Then run the repository typecheck, unit tests, migration-journal check, and production build on the branch. Review the full diff before any merge or deployment.
+Next engineering steps: configure the dedicated test service with the iPay test organisation token and product code; verify that a small controlled test order is displayed in exactly the expected TND amount; then obtain Audasoft's authoritative transaction lookup and webhook-authenticity contract before implementing reconciliation, settlement, ledger posting, or download release.

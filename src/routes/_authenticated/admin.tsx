@@ -381,7 +381,11 @@ function AdminPage() {
 
       <section className="mb-8 rounded-xl border border-border p-5">
         <h2 className="text-lg font-bold">
-          {lang === "ar" ? "التحكم في الدفع عبر iPay" : lang === "en" ? "iPay checkout control" : "Contrôle du paiement iPay"}
+          {lang === "ar"
+            ? "التحكم في الدفع عبر iPay"
+            : lang === "en"
+              ? "iPay checkout control"
+              : "Contrôle du paiement iPay"}
         </h2>
         <p className="mt-2 text-sm leading-7 text-muted-foreground">
           {lang === "ar"
@@ -393,27 +397,47 @@ function AdminPage() {
         {settings.isPending ? (
           <p className="mt-3 text-sm">{a.loading}</p>
         ) : settings.isError ? (
-          <p role="alert" className="mt-3 text-sm text-destructive">{a.loadError}</p>
+          <p role="alert" className="mt-3 text-sm text-destructive">
+            {a.loadError}
+          </p>
         ) : (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <span className="text-sm font-semibold">
               {settings.data.ipay_checkout_enabled
-                ? lang === "ar" ? "مفتاح الإدارة: مفعّل" : lang === "en" ? "Admin switch: ON" : "Commutateur admin : ACTIVÉ"
-                : lang === "ar" ? "مفتاح الإدارة: متوقف" : lang === "en" ? "Admin switch: OFF" : "Commutateur admin : ARRÊTÉ"}
+                ? lang === "ar"
+                  ? "مفتاح الإدارة: مفعّل"
+                  : lang === "en"
+                    ? "Admin switch: ON"
+                    : "Commutateur admin : ACTIVÉ"
+                : lang === "ar"
+                  ? "مفتاح الإدارة: متوقف"
+                  : lang === "en"
+                    ? "Admin switch: OFF"
+                    : "Commutateur admin : ARRÊTÉ"}
             </span>
             <button
               type="button"
               disabled={busy === "ipay-switch"}
               onClick={() => void setIpayCheckoutEnabled(!settings.data.ipay_checkout_enabled)}
-              className={settings.data.ipay_checkout_enabled
-                ? "rounded-full border border-destructive px-4 py-2 text-sm font-semibold text-destructive disabled:opacity-50"
-                : "rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"}
+              className={
+                settings.data.ipay_checkout_enabled
+                  ? "rounded-full border border-destructive px-4 py-2 text-sm font-semibold text-destructive disabled:opacity-50"
+                  : "rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+              }
             >
               {busy === "ipay-switch"
                 ? a.saving
                 : settings.data.ipay_checkout_enabled
-                  ? lang === "ar" ? "إيقاف عمليات الدفع الجديدة" : lang === "en" ? "Stop new payment attempts" : "Bloquer les nouveaux paiements"
-                  : lang === "ar" ? "تشغيل المفتاح الإداري" : lang === "en" ? "Enable admin switch" : "Activer le commutateur"}
+                  ? lang === "ar"
+                    ? "إيقاف عمليات الدفع الجديدة"
+                    : lang === "en"
+                      ? "Stop new payment attempts"
+                      : "Bloquer les nouveaux paiements"
+                  : lang === "ar"
+                    ? "تشغيل المفتاح الإداري"
+                    : lang === "en"
+                      ? "Enable admin switch"
+                      : "Activer le commutateur"}
             </button>
           </div>
         )}

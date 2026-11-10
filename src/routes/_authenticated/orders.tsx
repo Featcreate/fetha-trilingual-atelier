@@ -18,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/orders")({
 type BuyerOrder = {
   id: string;
   status: string;
+  payment_mode: string | null;
   total_millimes: number;
   created_at: string;
   order_items: Array<{
@@ -90,7 +91,7 @@ function BuyerOrdersPage() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id,status,total_millimes,created_at,order_items(id,product_name,unit_price_millimes,store_id,stores(name),order_item_files(id,file_name,download_entitlements(id,expires_at,max_downloads,used_downloads)))",
+          "id,status,payment_mode,total_millimes,created_at,order_items(id,product_name,unit_price_millimes,store_id,stores(name),order_item_files(id,file_name,download_entitlements(id,expires_at,max_downloads,used_downloads)))",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -248,7 +249,7 @@ function BuyerOrdersPage() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {item.order_item_files.flatMap((file) => {
+                      {(order.payment_mode === "verified" ? item.order_item_files.flatMap((file) => {
                         const originals = Array.isArray(file.download_entitlements)
                           ? file.download_entitlements
                           : file.download_entitlements
@@ -297,7 +298,7 @@ function BuyerOrdersPage() {
                             </div>
                           );
                         });
-                      })}
+                      }) : [])}
                     </div>
                   </div>
                 ))}

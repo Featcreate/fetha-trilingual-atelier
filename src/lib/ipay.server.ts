@@ -8,26 +8,21 @@ export type IpayConfig = {
   orgId: string;
   jwt: string;
   productCode: string;
-  amountUnit: "major";
 };
 
 export function ipayConfig(requireActivation = false): IpayConfig | null {
   const orgId = process.env["IPAY_ORG_ID"];
   const jwt = process.env["IPAY_JWT"];
   const productCode = process.env["IPAY_PRODUCT_CODE"];
-  const amountUnit = "major" as const;
   if (!orgId || !jwt || !productCode) return null;
   if (requireActivation && process.env["IPAY_CHECKOUT_ENABLED"] !== "true") {
     return null;
   }
-  return { orgId, jwt, productCode, amountUnit };
+  return { orgId, jwt, productCode };
 }
 
 /** Convert canonical TND millimes to the configured iPay amount unit. */
-export function ipayAmountFromMillimes(
-  amountMillimes: number,
-  unit: IpayConfig["amountUnit"],
-): number {
+export function ipayAmountFromMillimes(amountMillimes: number): number {
   if (!Number.isSafeInteger(amountMillimes) || amountMillimes <= 0) {
     throw new Error("invalid_order_amount");
   }
@@ -104,7 +99,7 @@ export async function ipayCreateOneShot(input: {
     },
     body: JSON.stringify({
       product_code: cfg.productCode,
-      amount: ipayAmountFromMillimes(input.amountMillimes, cfg.amountUnit),
+      amount: ipayAmountFromMillimes(input.amountMillimes),
       currency: "TND",
       customer_name: customerName,
       customer_external_id: input.orderId,

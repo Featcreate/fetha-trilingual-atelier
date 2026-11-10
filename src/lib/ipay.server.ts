@@ -151,3 +151,19 @@ export async function ipayGetWebhookHealth(probe = false): Promise<unknown> {
     throw new Error("ipay_invalid_health_response");
   }
 }
+
+/** Keep ambiguous initialization states explicit; callers must never retry them automatically. */
+export function ipayInitClaimError(outcome: unknown): string {
+  switch (outcome) {
+    case "not_found":
+      return "order_not_found";
+    case "order_closed":
+      return "order_closed";
+    case "provider_conflict":
+      return "provider_conflict";
+    case "in_progress":
+      return "payment_initialization_in_progress";
+    default:
+      return "payment_initialization_uncertain";
+  }
+}

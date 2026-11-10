@@ -68,7 +68,8 @@ export function parseIpayOneShotResponse(payload: unknown): {
   }
 
   const allowedHost =
-    paymentUrl.hostname === "ipay.tn" || paymentUrl.hostname.endsWith(".ipay.tn");
+    paymentUrl.hostname === "ipay.tn" ||
+    paymentUrl.hostname.endsWith(".ipay.tn");
   if (
     paymentUrl.protocol !== "https:" ||
     !allowedHost ||

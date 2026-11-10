@@ -39,7 +39,6 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 
 ## Provider contact status
 
-- A complete French technical confirmation request is prepared in `docs/ipay-audasoft-technical-confirmation-fr.md`. It covers amount units, authoritative transaction lookup, webhook authenticity/retries, declared transfer semantics, international acceptance, marketplace eligibility, fees, product configuration, and Sandbox access. It is a draft in the repository only; it has **not** been sent.
 
 - A one-question email was attempted to `support@ipay.tn` on 2026-11-07, asking whether `create-oneshot.amount` uses integer millimes or decimal dinars.
 - Gmail returned a delivery failure: `554 5.7.1 Relay access denied`. The message did not reach iPay; no provider response or confirmation has been received.

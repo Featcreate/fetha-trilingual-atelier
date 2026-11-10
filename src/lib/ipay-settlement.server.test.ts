@@ -45,7 +45,7 @@ describe("iPay authoritative transaction lookup", () => {
     const [url, init] = fetchMock.mock.calls[0] as [URL, RequestInit];
     expect(String(url)).toBe("https://api.ipay.tn/api/admin/transactions/tx-1");
     expect(init.method).toBe("GET");
-    expect((init.headers as Record<string, string>).Authorization).toBe("Bearer jwt-test");
+    expect((init.headers as Record<string, string>)["Authorization"]).toBe("Bearer jwt-test");
     expect((init.headers as Record<string, string>)["X-Org-Id"]).toBe("org-test");
   });
 

@@ -116,7 +116,7 @@ describe("completed download streaming", () => {
     });
 
     const disposition = response.headers.get("content-disposition") ?? "";
-    expect(disposition).toContain('filename="_._.pdf"');
+    expect(disposition).toContain('filename="____.pdf"');
     expect(disposition).toContain("filename*=UTF-8''");
     expect(await response.text()).toBe("content");
   });

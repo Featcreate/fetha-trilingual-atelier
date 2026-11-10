@@ -118,11 +118,16 @@ export const getCartCheckoutAvailability = createServerFn({ method: "GET" }).han
     import("./ipay.server"),
     import("./konnect.server"),
   ]);
-  const provider = ipayConfig(true) ? "ipay" : konnectConfig(true) ? "konnect" : null;
+  const provider = ipayConfig(true)
+    ? "ipay"
+    : konnectConfig(true)
+      ? "konnect"
+      : null;
   return { enabled: provider !== null, provider };
 });
 
-/** Create one pending cart order, then request one provider checkout link. iPay takes priority when explicitly enabled. */
+/** Create one pending cart order, then request a provider checkout link.
+ * iPay takes priority when explicitly enabled. */
 export const startCartCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>

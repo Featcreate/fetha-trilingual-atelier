@@ -89,7 +89,6 @@ export const startCheckout = createServerFn({ method: "POST" })
         phoneNumber: profile?.phone,
         email: order.customer_email ?? undefined,
       });
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { error: saveError } = await supabaseAdmin
         .from("orders")
         .update({ konnect_payment_ref: paymentRef, konnect_pay_url: payUrl })
@@ -368,9 +367,18 @@ export const adminRecheckPayment = createServerFn({ method: "POST" })
 /** Initialize one iPay hosted checkout for the authenticated buyer's entire cart.
  * The returned URL only redirects to iPay; it never marks an order as paid. */
 export const getIpayCheckoutAvailability = createServerFn({ method: "GET" }).handler(async () => {
-  const { ipayConfig } = await import("./ipay.server");
+  const { ipayConfig, isIpayCheckoutEnabled } = await import("./ipay.server");
   const cfg = ipayConfig(true);
-  return { enabled: Boolean(cfg) };
+  if (!cfg) return { enabled: false };
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: settings, error } = await supabaseAdmin
+    .from("platform_settings")
+    .select("ipay_checkout_enabled")
+    .eq("id", true)
+    .maybeSingle();
+  return {
+    enabled: !error && isIpayCheckoutEnabled(settings?.ipay_checkout_enabled === true),
+  };
 });
 
 export const startCartIpayCheckout = createServerFn({ method: "POST" })
@@ -387,9 +395,21 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { ipayConfig, ipayCreateOneShot } = await import("./ipay.server");
+    const { ipayConfig, ipayCreateOneShot, isIpayCheckoutEnabled } = await import("./ipay.server");
     const cfg = ipayConfig(true);
     if (!cfg) return { ok: false as const, error: "ipay_not_configured" };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings, error: settingsError } = await supabaseAdmin
+      .from("platform_settings")
+      .select("ipay_checkout_enabled")
+      .eq("id", true)
+      .maybeSingle();
+    if (
+      settingsError ||
+      !isIpayCheckoutEnabled(settings?.ipay_checkout_enabled === true)
+    ) {
+      return { ok: false as const, error: "ipay_checkout_disabled" };
+    }
 
     const { data: orderId, error } = await context.supabase.rpc("create_order_from_cart", {
       _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),

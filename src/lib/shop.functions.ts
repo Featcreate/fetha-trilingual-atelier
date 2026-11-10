@@ -367,20 +367,21 @@ export const adminRecheckPayment = createServerFn({ method: "POST" })
 
 /** Initialize one iPay hosted checkout for the authenticated buyer's entire cart.
  * The returned URL only redirects to iPay; it never marks an order as paid. */
-export const getIpayCheckoutAvailability = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const { ipayConfig } = await import("./ipay.server");
-    const cfg = ipayConfig(true);
-    return { enabled: Boolean(cfg) };
-  },
-);
+export const getIpayCheckoutAvailability = createServerFn({ method: "GET" }).handler(async () => {
+  const { ipayConfig } = await import("./ipay.server");
+  const cfg = ipayConfig(true);
+  return { enabled: Boolean(cfg) };
+});
 
 export const startCartIpayCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
-        items: z.array(z.object({ productId: z.string().uuid() })).min(1).max(50),
+        items: z
+          .array(z.object({ productId: z.string().uuid() }))
+          .min(1)
+          .max(50),
         checkoutKey: z.string().min(8).max(100),
       })
       .parse(input),

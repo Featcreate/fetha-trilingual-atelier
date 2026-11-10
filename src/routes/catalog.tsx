@@ -76,8 +76,8 @@ function CatalogPage() {
     const q = search
       .normalize("NFKC")
       .toLocaleLowerCase()
-      .replace(/\\p{M}/gu, "")
-      .replace(/[^\\p{L}\\p{N}]+/gu, " ")
+      .replace(/\p{M}/gu, "")
+      .replace(/[^\p{L}\p{N}]+/gu, " ")
       .trim();
     const searchTerms = q ? q.split(/\\s+/) : [];
     const storeMap = new Map((catalog.data?.stores ?? []).map((s) => [s.id, s]));
@@ -93,8 +93,8 @@ function CatalogPage() {
           .join(" ")
           .normalize("NFKC")
           .toLocaleLowerCase()
-          .replace(/\\p{M}/gu, "")
-          .replace(/[^\\p{L}\\p{N}]+/gu, " ");
+          .replace(/\p{M}/gu, "")
+          .replace(/[^\p{L}\p{N}]+/gu, " ");
         const matchesText = searchTerms.every((term) => searchableText.includes(term));
         return matchesType && matchesText && !!store;
       })

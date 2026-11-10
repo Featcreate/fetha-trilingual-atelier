@@ -146,7 +146,9 @@ function CheckoutPage() {
                   <span>{localizedProductText(product.name, product.name_translations, lang)}</span>
                   {salePrice != null ? (
                     <span className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                      <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">
+                      <span
+                        className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground"
+                      >
                         PROMO
                       </span>
                       <span className="text-sm text-muted-foreground line-through">

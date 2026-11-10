@@ -19,8 +19,12 @@ const copy = {
       "Le paiement en ligne est temporairement désactivé. Votre panier est conservé ; aucune commande ni aucun débit ne sera créé.",
     back: "Retour au panier",
     methods: "Un seul paiement couvrira l'ensemble du panier lorsque le service sera activé.",
-    providerNotice:
-      "Konnect est actuellement le seul prestataire acheteur relié au parcours de commande. Les moyens réellement disponibles seront affichés sur la page sécurisée de Konnect. iPay ne sera proposé qu’après vérification fiable de ses transactions.",
+    providerNoticeIpay:
+      "iPay est relié pour tester la création du lien de paiement. Le retour du navigateur et les notifications ne confirment pas encore le règlement final ; aucun téléchargement n'est débloqué par ces signaux.",
+    providerNoticeKonnect:
+      "Le paiement est préparé via Konnect. Les moyens réellement disponibles seront affichés sur sa page de paiement sécurisée.",
+    payIpay: "Continuer vers le paiement iPay",
+    payKonnect: "Payer le panier en une fois avec Konnect",
     empty: "Votre panier est vide.",
     loading: "Chargement…",
     error: "Impossible de charger la commande.",
@@ -36,8 +40,12 @@ const copy = {
     disabled: "الدفع الإلكتروني معطّل مؤقتاً. ستبقى سلتك محفوظة، ولن يتم إنشاء طلب أو خصم أي مبلغ.",
     back: "العودة إلى السلة",
     methods: "ستكون هناك دفعة واحدة لكامل محتويات السلة عند تفعيل الخدمة.",
-    providerNotice:
-      "Konnect هو مزود الدفع الوحيد المرتبط حالياً بمسار الشراء. ستظهر وسائل الدفع المتاحة فعلياً في صفحة Konnect الآمنة. لن نعرض iPay حتى نتحقق من معاملاته بطريقة موثوقة.",
+    providerNoticeIpay:
+      "تم ربط iPay لاختبار إنشاء رابط الدفع. عودة المتصفح وإشعارات الدفع لا تثبت التسوية النهائية بعد؛ ولن تُفتح التنزيلات اعتماداً على هذه الإشارات.",
+    providerNoticeKonnect:
+      "يتم إعداد الدفع عبر Konnect، وستظهر وسائل الدفع المتاحة فعلياً في صفحة الدفع الآمنة الخاصة به.",
+    payIpay: "المتابعة إلى الدفع عبر iPay",
+    payKonnect: "دفع كامل السلة دفعة واحدة عبر Konnect",
     empty: "السلة فارغة.",
     loading: "جارٍ التحميل…",
     error: "تعذر تحميل الطلب.",
@@ -54,8 +62,12 @@ const copy = {
       "Online payment is temporarily disabled. Your cart is preserved; no order or charge will be created.",
     back: "Back to cart",
     methods: "One payment will cover the entire cart when checkout is activated.",
-    providerNotice:
-      "Konnect is currently the only buyer-payment provider connected to checkout. The methods actually available will be shown on Konnect’s secure payment page. iPay will not be offered until authoritative transaction verification is in place.",
+    providerNoticeIpay:
+      "iPay is connected to test payment-link creation. Browser returns and notifications do not yet prove final settlement; downloads remain locked until authoritative verification is implemented.",
+    providerNoticeKonnect:
+      "Checkout is prepared through Konnect. The payment methods actually available will be shown on its secure payment page.",
+    payIpay: "Continue to iPay payment",
+    payKonnect: "Pay the entire cart in one Konnect payment",
     empty: "Your cart is empty.",
     loading: "Loading…",
     error: "Could not load order.",
@@ -180,7 +192,9 @@ function CheckoutPage() {
             </p>
           ) : (
             <section className="mt-5 rounded-xl border border-border p-4">
-              <p className="text-sm leading-7 text-muted-foreground">{t.providerNotice}</p>
+              <p className="text-sm leading-7 text-muted-foreground">
+                {availability.data?.provider === "ipay" ? t.providerNoticeIpay : t.providerNoticeKonnect}
+              </p>
             </section>
           )}
           {availability.data?.enabled && !unavailable ? (
@@ -190,7 +204,11 @@ function CheckoutPage() {
               disabled={checkoutMutation.isPending}
               className="mt-4 inline-flex w-full justify-center rounded-full bg-accent px-5 py-3 text-center font-semibold text-accent-foreground disabled:opacity-50"
             >
-              {checkoutMutation.isPending ? t.starting : t.pay}
+              {checkoutMutation.isPending
+                ? t.starting
+                : availability.data?.provider === "ipay"
+                  ? t.payIpay
+                  : t.payKonnect}
             </button>
           ) : (
             <p role="status" className="mt-3 rounded-xl border border-border p-4 text-sm">

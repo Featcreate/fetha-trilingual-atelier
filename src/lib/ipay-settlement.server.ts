@@ -152,7 +152,12 @@ export async function processIpaySettlementNotice(
     throw new Error("ipay_invoice_reference_mismatch");
   }
   if (transaction.status !== "completed") {
-    return { outcome: transaction.status === "declared" || transaction.status === "pending" ? "pending" : "not_completed" };
+    return {
+      outcome:
+        transaction.status === "declared" || transaction.status === "pending"
+          ? "pending"
+          : "not_completed",
+    };
   }
   if (transaction.currency !== "TND") throw new Error("ipay_currency_mismatch");
 

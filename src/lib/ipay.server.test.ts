@@ -16,18 +16,12 @@ describe("iPay amount conversion", () => {
   });
 
   it("rejects zero, negative, fractional, and unsafe amounts", () => {
-    expect(() => ipayAmountFromMillimes(0, "major")).toThrow(
+    expect(() => ipayAmountFromMillimes(0, "major")).toThrow("invalid_order_amount");
+    expect(() => ipayAmountFromMillimes(-1, "minor")).toThrow("invalid_order_amount");
+    expect(() => ipayAmountFromMillimes(1.5, "major")).toThrow("invalid_order_amount");
+    expect(() => ipayAmountFromMillimes(Number.MAX_SAFE_INTEGER + 1, "minor")).toThrow(
       "invalid_order_amount",
     );
-    expect(() => ipayAmountFromMillimes(-1, "minor")).toThrow(
-      "invalid_order_amount",
-    );
-    expect(() => ipayAmountFromMillimes(1.5, "major")).toThrow(
-      "invalid_order_amount",
-    );
-    expect(() =>
-      ipayAmountFromMillimes(Number.MAX_SAFE_INTEGER + 1, "minor"),
-    ).toThrow("invalid_order_amount");
   });
 });
 
@@ -50,16 +44,16 @@ describe("iPay one-shot response validation", () => {
       "https://user@ipay.tn/pay",
       "http://ipay.tn/pay",
     ]) {
-      expect(() =>
-        parseIpayOneShotResponse({ id: "txn-123", payment_url }),
-      ).toThrow("ipay_invalid_payment_url");
+      expect(() => parseIpayOneShotResponse({ id: "txn-123", payment_url })).toThrow(
+        "ipay_invalid_payment_url",
+      );
     }
   });
 
   it("rejects missing or empty transaction references", () => {
-    expect(() =>
-      parseIpayOneShotResponse({ payment_url: "https://ipay.tn/pay" }),
-    ).toThrow("ipay_invalid_response");
+    expect(() => parseIpayOneShotResponse({ payment_url: "https://ipay.tn/pay" })).toThrow(
+      "ipay_invalid_response",
+    );
     expect(() =>
       parseIpayOneShotResponse({ id: "  ", payment_url: "https://ipay.tn/pay" }),
     ).toThrow("ipay_invalid_response");
@@ -88,9 +82,7 @@ describe("iPay one-shot response hardening", () => {
       { id: "txn-1", payment_url: 123 },
       { id: {}, payment_url: "https://ipay.tn/pay" },
     ]) {
-      expect(() => parseIpayOneShotResponse(payload)).toThrow(
-        "ipay_invalid_response",
-      );
+      expect(() => parseIpayOneShotResponse(payload)).toThrow("ipay_invalid_response");
     }
   });
 
@@ -106,13 +98,11 @@ describe("iPay one-shot response hardening", () => {
           ? "https://checkout.ipay.tn/pay"
           : undefined;
       if (expected) {
-        expect(
-          parseIpayOneShotResponse({ id: "txn-1", payment_url }).paymentUrl,
-        ).toBe(expected);
+        expect(parseIpayOneShotResponse({ id: "txn-1", payment_url }).paymentUrl).toBe(expected);
       } else {
-        expect(() =>
-          parseIpayOneShotResponse({ id: "txn-1", payment_url }),
-        ).toThrow("ipay_invalid_payment_url");
+        expect(() => parseIpayOneShotResponse({ id: "txn-1", payment_url })).toThrow(
+          "ipay_invalid_payment_url",
+        );
       }
     }
   });
@@ -126,7 +116,6 @@ describe("iPay one-shot response hardening", () => {
     ).toThrow("ipay_invalid_response");
   });
 });
-
 
 describe("iPay read-only webhook health check", () => {
   afterEach(() => {
@@ -149,18 +138,12 @@ describe("iPay read-only webhook health check", () => {
     await expect(ipayGetWebhookHealth(true)).resolves.toEqual({ overall_healthy: true });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] as [string | URL, RequestInit];
-    expect(String(url)).toBe(
-      "https://api.ipay.tn/api/admin/webhooks/health?probe=true",
-    );
+    expect(String(url)).toBe("https://api.ipay.tn/api/admin/webhooks/health?probe=true");
     expect(init.method).toBe("GET");
     expect(init.signal).toBeInstanceOf(AbortSignal);
     expect(init.signal?.aborted).toBe(false);
-    expect((init.headers as Record<string, string>)["X-Org-Id"]).toBe(
-      "org-test",
-    );
-    expect((init.headers as Record<string, string>)["Authorization"]).toBe(
-      "Bearer jwt-test",
-    );
+    expect((init.headers as Record<string, string>)["X-Org-Id"]).toBe("org-test");
+    expect((init.headers as Record<string, string>)["Authorization"]).toBe("Bearer jwt-test");
   });
 
   it("fails closed when credentials are not configured", async () => {
@@ -171,14 +154,9 @@ describe("iPay read-only webhook health check", () => {
     vi.stubEnv("IPAY_ORG_ID", "org-test");
     vi.stubEnv("IPAY_JWT", "jwt-test");
     vi.stubEnv("IPAY_PRODUCT_CODE", "algorea-bazaar");
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(new Response("forbidden", { status: 403 })),
-    );
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("forbidden", { status: 403 })));
 
-    await expect(ipayGetWebhookHealth()).rejects.toThrow(
-      "ipay_health_check_failed",
-    );
+    await expect(ipayGetWebhookHealth()).rejects.toThrow("ipay_health_check_failed");
   });
 });
 
@@ -206,7 +184,6 @@ describe("iPay amount-unit configuration", () => {
   });
 });
 
-
 describe("iPay one-shot request safety", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -220,13 +197,16 @@ describe("iPay one-shot request safety", () => {
     vi.stubEnv("IPAY_AMOUNT_UNIT", "major");
     vi.stubEnv("IPAY_CHECKOUT_ENABLED", "true");
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({
-        id: "txn-test",
-        payment_url: "https://checkout.ipay.tn/pay/txn-test",
-      }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
+      new Response(
+        JSON.stringify({
+          id: "txn-test",
+          payment_url: "https://checkout.ipay.tn/pay/txn-test",
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -243,9 +223,7 @@ describe("iPay one-shot request safety", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] as [string | URL, RequestInit];
-    expect(String(url)).toBe(
-      "https://api.ipay.tn/api/admin/transactions/create-oneshot",
-    );
+    expect(String(url)).toBe("https://api.ipay.tn/api/admin/transactions/create-oneshot");
     expect(init.method).toBe("POST");
     expect(init.signal).toBeInstanceOf(AbortSignal);
     const payload = JSON.parse(String(init.body)) as {
@@ -256,7 +234,6 @@ describe("iPay one-shot request safety", () => {
     expect(payload.currency).toBe("TND");
   });
 });
-
 
 describe("iPay invalid configuration and input guards", () => {
   afterEach(() => {

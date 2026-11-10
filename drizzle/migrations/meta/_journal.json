@@ -323,6 +323,13 @@
       "when": 1794355200001,
       "tag": "0043_ipay_verified_settlement",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1794441600000,
+      "tag": "0044_ipay_reconciliation_cooldown",
+      "breakpoints": true
     }
   ]
 }

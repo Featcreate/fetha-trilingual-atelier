@@ -279,6 +279,7 @@ export type Database = {
           konnect_pay_url: string | null
           konnect_payment_ref: string | null
           ipay_init_claimed_at: string | null
+          ipay_last_checked_at: string | null
           ipay_payment_ref: string | null
           ipay_payment_url: string | null
           paid_at: string | null
@@ -311,6 +312,7 @@ export type Database = {
           konnect_pay_url?: string | null
           konnect_payment_ref?: string | null
           ipay_init_claimed_at?: string | null
+          ipay_last_checked_at?: string | null
           ipay_payment_ref?: string | null
           ipay_payment_url?: string | null
           paid_at?: string | null
@@ -342,6 +344,7 @@ export type Database = {
           konnect_init_claimed_at?: string | null
           konnect_pay_url?: string | null
           konnect_payment_ref?: string | null
+          ipay_last_checked_at?: string | null
           ipay_payment_ref?: string | null
           ipay_payment_url?: string | null
           paid_at?: string | null

@@ -1,5 +1,9 @@
+import { timingSafeEqual } from "node:crypto";
 import { createFileRoute } from "@tanstack/react-router";
-import { processIpaySettlementNotice } from "@/lib/ipay-settlement.server";
+import {
+  processIpayReconciliationBatch,
+  processIpaySettlementNotice,
+} from "@/lib/ipay-settlement.server";
 
 /**
  * iPay sends unsigned notifications. Treat the body as an untrusted trigger only;
@@ -9,6 +13,39 @@ export const Route = createFileRoute("/api/public/ipay/webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Scheduled reconciliation uses a separate high-entropy secret.
+        // The public iPay webhook remains unsigned and is only an untrusted trigger.
+        const suppliedSecret = request.headers.get("x-ipay-reconcile-secret");
+        if (suppliedSecret !== null) {
+          const expectedSecret = process.env["IPAY_RECONCILE_CRON_SECRET"];
+          if (
+            !expectedSecret ||
+            Buffer.byteLength(suppliedSecret) !== Buffer.byteLength(expectedSecret) ||
+            !timingSafeEqual(Buffer.from(suppliedSecret), Buffer.from(expectedSecret))
+          ) {
+            return new Response("Unauthorized", {
+              status: 401,
+              headers: { "Cache-Control": "no-store" },
+            });
+          }
+
+          try {
+            const summary = await processIpayReconciliationBatch();
+            return Response.json(
+              { ok: true, summary },
+              { status: 200, headers: { "Cache-Control": "no-store" } },
+            );
+          } catch (error) {
+            console.error(
+              "iPay scheduled reconciliation failed",
+              error instanceof Error ? error.message : "unknown",
+            );
+            return new Response("Reconciliation temporarily unavailable", {
+              status: 503,
+              headers: { "Cache-Control": "no-store" },
+            });
+          }
+        }
         let notice: unknown;
         try {
           const body = await request.text();

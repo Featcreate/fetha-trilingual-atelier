@@ -190,3 +190,87 @@ export async function processIpaySettlementNotice(
   }
   return { outcome: String(data) };
 }
+
+/**
+ * Reconcile a bounded batch of pending iPay orders.
+ * Each order is claimed for a 55-minute cooldown before contacting iPay, preventing
+ * overlapping cron runs from multiplying provider requests. A failed check
+ * remains pending and becomes eligible again after the cooldown.
+ */
+export async function processIpayReconciliationBatch(): Promise<{
+  scanned: number;
+  claimed: number;
+  settled: number;
+  pending: number;
+  notCompleted: number;
+  errors: number;
+}> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const now = new Date();
+  const checkedAt = now.toISOString();
+  const retryBefore = new Date(now.getTime() - 55 * 60 * 1000).toISOString();
+
+  const { data: candidates, error: listError } = await supabaseAdmin
+    .from("orders")
+    .select("id")
+    .eq("status", "pending")
+    .not("ipay_payment_ref", "is", null)
+    .or(`ipay_last_checked_at.is.null,ipay_last_checked_at.lte.${retryBefore}`)
+    .order("ipay_last_checked_at", { ascending: true, nullsFirst: true })
+    .order("created_at", { ascending: true })
+    .limit(20);
+
+  if (listError) throw new Error("ipay_reconciliation_list_failed");
+
+  const summary = {
+    scanned: candidates?.length ?? 0,
+    claimed: 0,
+    settled: 0,
+    pending: 0,
+    notCompleted: 0,
+    errors: 0,
+  };
+
+  for (const candidate of candidates ?? []) {
+    // Compare-and-set claim: only one concurrent worker can claim this order.
+    const { data: claimedOrder, error: claimError } = await supabaseAdmin
+      .from("orders")
+      .update({ ipay_last_checked_at: checkedAt })
+      .eq("id", candidate.id)
+      .eq("status", "pending")
+      .not("ipay_payment_ref", "is", null)
+      .or(`ipay_last_checked_at.is.null,ipay_last_checked_at.lte.${retryBefore}`)
+      .select("ipay_payment_ref")
+      .maybeSingle();
+
+    if (claimError) {
+      summary.errors += 1;
+      console.error("iPay reconciliation claim failed");
+      continue;
+    }
+    if (!claimedOrder?.ipay_payment_ref) continue;
+
+    summary.claimed += 1;
+    try {
+      const result = await processIpaySettlementNotice(
+        { id: claimedOrder.ipay_payment_ref },
+        "polling",
+      );
+      if (result.outcome === "paid" || result.outcome === "already_processed") {
+        summary.settled += 1;
+      } else if (result.outcome === "pending") {
+        summary.pending += 1;
+      } else {
+        summary.notCompleted += 1;
+      }
+    } catch (error) {
+      summary.errors += 1;
+      console.error(
+        "iPay reconciliation verification failed",
+        error instanceof Error ? error.message : "unknown",
+      );
+    }
+  }
+
+  return summary;
+}

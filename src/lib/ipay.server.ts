@@ -8,18 +8,14 @@ export type IpayConfig = {
   orgId: string;
   jwt: string;
   productCode: string;
-  amountUnit: "major" | "minor" | null;
+  amountUnit: "major";
 };
 
 export function ipayConfig(requireActivation = false): IpayConfig | null {
   const orgId = process.env["IPAY_ORG_ID"];
   const jwt = process.env["IPAY_JWT"];
   const productCode = process.env["IPAY_PRODUCT_CODE"];
-  const configuredAmountUnit = process.env["IPAY_AMOUNT_UNIT"];
-  const amountUnit =
-    configuredAmountUnit === "major" || configuredAmountUnit === "minor"
-      ? configuredAmountUnit
-      : null;
+  const amountUnit = "major" as const;
   if (!orgId || !jwt || !productCode) return null;
   if (requireActivation && process.env["IPAY_CHECKOUT_ENABLED"] !== "true") {
     return null;
@@ -30,12 +26,12 @@ export function ipayConfig(requireActivation = false): IpayConfig | null {
 /** Convert canonical TND millimes to the configured iPay amount unit. */
 export function ipayAmountFromMillimes(
   amountMillimes: number,
-  unit: Exclude<IpayConfig["amountUnit"], null>,
+  unit: IpayConfig["amountUnit"],
 ): number {
   if (!Number.isSafeInteger(amountMillimes) || amountMillimes <= 0) {
     throw new Error("invalid_order_amount");
   }
-  return unit === "minor" ? amountMillimes : amountMillimes / 1000;
+  return amountMillimes / 1000;
 }
 
 /** Validate the provider response before exposing its hosted URL to a buyer. */

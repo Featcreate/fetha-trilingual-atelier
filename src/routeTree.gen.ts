@@ -25,6 +25,7 @@ import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ProductsIdRouteImport } from './routes/products/$id'
 import { Route as StoresSlugRouteImport } from './routes/stores/$slug'
 import { Route as ApiPublicKonnectWebhookRouteImport } from './routes/api/public/konnect.webhook'
+import { Route as ApiPublicIpayWebhookRouteImport } from './routes/api/public/ipay.webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -105,6 +106,11 @@ const ApiPublicKonnectWebhookRoute = ApiPublicKonnectWebhookRouteImport.update({
   path: '/api/public/konnect/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicIpayWebhookRoute = ApiPublicIpayWebhookRouteImport.update({
+  id: '/api/public/ipay/webhook',
+  path: '/api/public/ipay/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/products/$id': typeof ProductsIdRoute
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
+  '/api/public/ipay/webhook': typeof ApiPublicIpayWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -177,6 +184,9 @@ export interface FileRouteTypes {
     | '/products/$id'
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
+    | '/api/public/ipay/webhook'
+    | '/api/public/ipay/webhook'
+    | '/api/public/ipay/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -226,6 +236,7 @@ export interface RootRouteChildren {
   ProductsIdRoute: typeof ProductsIdRoute
   StoresSlugRoute: typeof StoresSlugRoute
   ApiPublicKonnectWebhookRoute: typeof ApiPublicKonnectWebhookRoute
+  ApiPublicIpayWebhookRoute: typeof ApiPublicIpayWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -342,6 +353,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicKonnectWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/ipay/webhook': {
+      id: '/api/public/ipay/webhook'
+      path: '/api/public/ipay/webhook'
+      fullPath: '/api/public/ipay/webhook'
+      preLoaderRoute: typeof ApiPublicIpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -386,6 +404,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsIdRoute: ProductsIdRoute,
   StoresSlugRoute: StoresSlugRoute,
   ApiPublicKonnectWebhookRoute: ApiPublicKonnectWebhookRoute,
+  ApiPublicIpayWebhookRoute: ApiPublicIpayWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

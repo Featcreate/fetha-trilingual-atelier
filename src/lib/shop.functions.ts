@@ -160,8 +160,7 @@ export const startCartCheckout = createServerFn({ method: "POST" })
       return { ok: false as const, error: code };
     }
 
-    const orderColumns =
-      "id,status,total_millimes,konnect_pay_url,konnect_payment_ref,konnect_init_claimed_at,ipay_payment_url,ipay_payment_ref,ipay_init_claimed_at,customer_email";
+    const orderColumns = "id,status,total_millimes,konnect_pay_url,konnect_payment_ref,konnect_init_claimed_at,ipay_payment_url,ipay_payment_ref,ipay_init_claimed_at,customer_email";
     const { data: order } = await context.supabase
       .from("orders")
       .select(orderColumns)

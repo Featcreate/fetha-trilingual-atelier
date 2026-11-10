@@ -316,6 +316,13 @@
       "when": 1794355200000,
       "tag": "0042_ipay_checkout_admin_kill_switch",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1794355200001,
+      "tag": "0043_ipay_verified_settlement",
+      "breakpoints": true
     }
   ]
 }

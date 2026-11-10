@@ -136,6 +136,10 @@ function CheckoutPage() {
         0),
     0,
   );
+  const provider = availability.data?.provider;
+  const providerNotice =
+    provider === "ipay" ? t.providerNoticeIpay : t.providerNoticeKonnect;
+  const payLabel = provider === "ipay" ? t.payIpay : t.payKonnect;
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={t.title} wide>
@@ -190,7 +194,7 @@ function CheckoutPage() {
           ) : (
             <section className="mt-5 rounded-xl border border-border p-4">
               <p className="text-sm leading-7 text-muted-foreground">
-                {availability.data?.provider === "ipay" ? t.providerNoticeIpay : t.providerNoticeKonnect}
+                {providerNotice}
               </p>
             </section>
           )}
@@ -201,11 +205,7 @@ function CheckoutPage() {
               disabled={checkoutMutation.isPending}
               className="mt-4 inline-flex w-full justify-center rounded-full bg-accent px-5 py-3 text-center font-semibold text-accent-foreground disabled:opacity-50"
             >
-              {checkoutMutation.isPending
-                ? t.starting
-                : availability.data?.provider === "ipay"
-                  ? t.payIpay
-                  : t.payKonnect}
+              {checkoutMutation.isPending ? t.starting : payLabel}
             </button>
           ) : (
             <p role="status" className="mt-3 rounded-xl border border-border p-4 text-sm">

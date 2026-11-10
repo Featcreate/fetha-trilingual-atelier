@@ -605,7 +605,8 @@ function AdminPage() {
                       </>
                     ) : (
                       formatTND(product.price_millimes)
-                    )}{" "}· {product.store_id?.slice(0, 8) ?? "—"}
+                    )}{" "}
+                    · {product.store_id?.slice(0, 8) ?? "—"}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {new Date(product.created_at).toLocaleDateString(locale)}

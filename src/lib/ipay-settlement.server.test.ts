@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ipayAmountToMillimes, ipayGetTransaction, processIpaySettlementNotice } from "./ipay-settlement.server";
+import {
+  ipayAmountToMillimes,
+  ipayGetTransaction,
+  processIpaySettlementNotice,
+} from "./ipay-settlement.server";
 
 describe("iPay exact TND amount parsing", () => {
   it("converts decimal strings to integer millimes without floating point", () => {

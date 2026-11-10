@@ -39,7 +39,6 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 
 ## Provider contact status
 
-
 - A one-question email was attempted to `support@ipay.tn` on 2026-11-07, asking whether `create-oneshot.amount` uses integer millimes or decimal dinars.
 - Gmail returned a delivery failure: `554 5.7.1 Relay access denied`. The message did not reach iPay; no provider response or confirmation has been received.
 - The published general/commercial contact is `contact@audasoft.co`. A follow-up to that alternate address has not been sent pending the account owner's approval.

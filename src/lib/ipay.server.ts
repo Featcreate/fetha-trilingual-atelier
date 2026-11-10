@@ -1,6 +1,5 @@
 // Server-only iPay one-shot API client. Import dynamically from server handlers.
-// Checkout remains disabled unless explicitly enabled. No TND amount unit is assumed;
-// one-shot creation fails closed until IPAY_AMOUNT_UNIT is explicitly configured.
+// Checkout remains disabled unless explicitly enabled. TND amounts are sent in dinars.
 const IPAY_API = "https://api.ipay.tn";
 const IPAY_REQUEST_TIMEOUT_MS = 15_000;
 
@@ -21,7 +20,7 @@ export function ipayConfig(requireActivation = false): IpayConfig | null {
   return { orgId, jwt, productCode };
 }
 
-/** Convert canonical TND millimes to the configured iPay amount unit. */
+/** Convert the canonical TND millime total to the dinar amount expected by iPay. */
 export function ipayAmountFromMillimes(amountMillimes: number): number {
   if (!Number.isSafeInteger(amountMillimes) || amountMillimes <= 0) {
     throw new Error("invalid_order_amount");

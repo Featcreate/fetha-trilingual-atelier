@@ -51,8 +51,9 @@ export const startCheckout = createServerFn({ method: "POST" })
       { _order_id: order.id },
     );
     const claim = claimRows?.[0] as { outcome?: string; pay_url?: string | null } | undefined;
-    if (claimError || !claim)
+    if (claimError || !claim) {
       return { ok: false as const, error: "payment_initialization_uncertain", orderId };
+    }
     if (claim.outcome === "existing" && claim.pay_url) {
       return { ok: true as const, orderId, payUrl: claim.pay_url };
     }
@@ -405,7 +406,9 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       .single();
     if (!order) return { ok: false as const, error: "order_failed" };
     if (order.status !== "pending") return { ok: false as const, error: "order_closed", orderId };
-    if (order.ipay_payment_url) return { ok: true as const, orderId, payUrl: order.ipay_payment_url };
+    if (order.ipay_payment_url) {
+      return { ok: true as const, orderId, payUrl: order.ipay_payment_url };
+    }
 
     const { data: claims, error: claimError } = await context.supabase.rpc(
       "claim_order_ipay_init",
@@ -414,10 +417,17 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
     const claim = claims?.[0] as { outcome?: string; pay_url?: string | null } | undefined;
     if (claimError || !claim)
       return { ok: false as const, error: "payment_initialization_uncertain", orderId };
-    if (claim.outcome === "existing" && claim.pay_url)
+    if (claim.outcome === "existing" && claim.pay_url) {
       return { ok: true as const, orderId, payUrl: claim.pay_url };
-    if (claim.outcome !== "claimed")
-      return { ok: false as const, error: claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain", orderId };
+    }
+    if (claim.outcome !== "claimed") {
+      return {
+        ok: false as const,
+        error:
+          claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain",
+        orderId,
+      };
+    }
 
     const { data: profile } = await context.supabase
       .from("profiles")
@@ -448,12 +458,18 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
         .eq("id", order.id)
         .single();
       if (saveError || readError || !saved?.ipay_payment_ref || !saved.ipay_payment_url) {
-        console.error("iPay checkout reference could not be persisted", saveError?.message ?? readError?.message ?? "missing_reference");
+        console.error(
+          "iPay checkout reference could not be persisted",
+          saveError?.message ?? readError?.message ?? "missing_reference",
+        );
         return { ok: false as const, error: "payment_reference_save_failed", orderId };
       }
       return { ok: true as const, orderId, payUrl: saved.ipay_payment_url };
     } catch (e) {
-      console.error("iPay checkout initialization failed", e instanceof Error ? e.message : "unknown");
+      console.error(
+        "iPay checkout initialization failed",
+        e instanceof Error ? e.message : "unknown",
+      );
       return { ok: false as const, error: "payment_provider_error", orderId };
     }
   });

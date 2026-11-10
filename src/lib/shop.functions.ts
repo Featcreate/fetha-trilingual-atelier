@@ -112,19 +112,16 @@ export const startCheckout = createServerFn({ method: "POST" })
     }
   });
 
-/** Public-safe status only; never exposes provider credentials.
- * iPay takes priority when explicitly enabled. */
+/** Public-safe status only; never exposes provider credentials. */
 export const getCartCheckoutAvailability = createServerFn({ method: "GET" }).handler(async () => {
-  const [{ ipayConfig }, { konnectConfig }] = await Promise.all([
-    import("./ipay.server"),
-    import("./konnect.server"),
-  ]);
-  const provider = ipayConfig(true) ? "ipay" : konnectConfig(true) ? "konnect" : null;
+  const { ipayConfig } = await import("./ipay.server");
+  const { konnectConfig } = await import("./konnect.server");
+  let provider: "ipay" | "konnect" | null = null;
+  if (ipayConfig(true)) provider = "ipay";
+  else if (konnectConfig(true)) provider = "konnect";
   return { enabled: provider !== null, provider };
 });
 
-/** Create one pending cart order, then request a provider checkout link.
- * iPay takes priority when explicitly enabled. */
 export const startCartCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -143,8 +140,8 @@ export const startCartCheckout = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const [{ ipayConfig, ipayCreateOneShot }, { konnectConfig, konnectInitPayment }] =
-      await Promise.all([import("./ipay.server"), import("./konnect.server")]);
+    const { ipayConfig, ipayCreateOneShot } = await import("./ipay.server");
+    const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
     const useIpay = Boolean(ipayConfig(true));
     if (!useIpay && !konnectConfig(true)) {
       return { ok: false as const, error: "payments_not_configured" };
@@ -163,11 +160,21 @@ export const startCartCheckout = createServerFn({ method: "POST" })
       return { ok: false as const, error: code };
     }
 
+    const orderColumns = [
+      "id",
+      "status",
+      "total_millimes",
+      "konnect_pay_url",
+      "konnect_payment_ref",
+      "konnect_init_claimed_at",
+      "ipay_payment_url",
+      "ipay_payment_ref",
+      "ipay_init_claimed_at",
+      "customer_email",
+    ].join(",");
     const { data: order } = await context.supabase
       .from("orders")
-      .select(
-        "id,status,total_millimes,konnect_pay_url,konnect_payment_ref,konnect_init_claimed_at,ipay_payment_url,ipay_payment_ref,ipay_init_claimed_at,customer_email",
-      )
+      .select(orderColumns)
       .eq("id", orderId)
       .single();
     if (!order) return { ok: false as const, error: "order_failed" };

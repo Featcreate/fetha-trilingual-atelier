@@ -50,8 +50,7 @@ const copy = {
     disabled:
       "Online payment is temporarily disabled. Your cart is preserved; no order or charge will be created.",
     back: "Back to cart",
-    methods:
-      "You will be redirected to iPay’s secure page to choose an available payment method.",
+    methods: "You will be redirected to iPay’s secure page to choose an available payment method.",
     empty: "Your cart is empty.",
     loading: "Loading…",
     error: "Could not load order.",
@@ -148,9 +147,7 @@ function CheckoutPage() {
                   <span>{localizedProductText(product.name, product.name_translations, lang)}</span>
                   {salePrice != null ? (
                     <span className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                      <span
-                        className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground"
-                      >
+                      <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">
                         PROMO
                       </span>
                       <span className="text-sm text-muted-foreground line-through">

@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Print formatted shop functions
+        run: bunx prettier src/lib/shop.functions.ts
+
       - name: Check migration journal
         run: bun run check:migrations
 

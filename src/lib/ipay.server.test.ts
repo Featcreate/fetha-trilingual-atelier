@@ -139,7 +139,7 @@ describe("iPay read-only webhook health check", () => {
     expect(init.signal).toBeInstanceOf(AbortSignal);
     expect(init.signal?.aborted).toBe(false);
     expect((init.headers as Record<string, string>)["X-Org-Id"]).toBe("org-test");
-    expect((init.headers as Record<string, string>).Authorization).toBe("Bearer jwt-test");
+    expect((init.headers as Record<string, string>)["Authorization"]).toBe("Bearer jwt-test");
   });
 
   it("fails closed when credentials are not configured", async () => {

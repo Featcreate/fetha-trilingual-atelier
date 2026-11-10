@@ -112,17 +112,14 @@ export const startCheckout = createServerFn({ method: "POST" })
     }
   });
 
-/** Public-safe status only; never exposes provider credentials. iPay takes priority when explicitly enabled. */
+/** Public-safe status only; never exposes provider credentials.
+ * iPay takes priority when explicitly enabled. */
 export const getCartCheckoutAvailability = createServerFn({ method: "GET" }).handler(async () => {
   const [{ ipayConfig }, { konnectConfig }] = await Promise.all([
     import("./ipay.server"),
     import("./konnect.server"),
   ]);
-  const provider = ipayConfig(true)
-    ? "ipay"
-    : konnectConfig(true)
-      ? "konnect"
-      : null;
+  const provider = ipayConfig(true) ? "ipay" : konnectConfig(true) ? "konnect" : null;
   return { enabled: provider !== null, provider };
 });
 

@@ -1,6 +1,5 @@
 // Server-only iPay one-shot API client. Import dynamically from server handlers.
-// Checkout remains disabled unless explicitly enabled. No TND amount unit is assumed;
-// one-shot creation fails closed until IPAY_AMOUNT_UNIT is explicitly configured.
+// Checkout remains disabled unless explicitly enabled. TND amounts are sent in dinars.
 const IPAY_API = "https://api.ipay.tn";
 const IPAY_REQUEST_TIMEOUT_MS = 15_000;
 
@@ -8,34 +7,25 @@ export type IpayConfig = {
   orgId: string;
   jwt: string;
   productCode: string;
-  amountUnit: "major" | "minor" | null;
 };
 
 export function ipayConfig(requireActivation = false): IpayConfig | null {
   const orgId = process.env["IPAY_ORG_ID"];
   const jwt = process.env["IPAY_JWT"];
   const productCode = process.env["IPAY_PRODUCT_CODE"];
-  const configuredAmountUnit = process.env["IPAY_AMOUNT_UNIT"];
-  const amountUnit =
-    configuredAmountUnit === "major" || configuredAmountUnit === "minor"
-      ? configuredAmountUnit
-      : null;
   if (!orgId || !jwt || !productCode) return null;
   if (requireActivation && process.env["IPAY_CHECKOUT_ENABLED"] !== "true") {
     return null;
   }
-  return { orgId, jwt, productCode, amountUnit };
+  return { orgId, jwt, productCode };
 }
 
-/** Convert canonical TND millimes to the configured iPay amount unit. */
-export function ipayAmountFromMillimes(
-  amountMillimes: number,
-  unit: Exclude<IpayConfig["amountUnit"], null>,
-): number {
+/** Convert the canonical TND millime total to the dinar amount expected by iPay. */
+export function ipayAmountFromMillimes(amountMillimes: number): number {
   if (!Number.isSafeInteger(amountMillimes) || amountMillimes <= 0) {
     throw new Error("invalid_order_amount");
   }
-  return unit === "minor" ? amountMillimes : amountMillimes / 1000;
+  return amountMillimes / 1000;
 }
 
 /** Validate the provider response before exposing its hosted URL to a buyer. */
@@ -88,7 +78,6 @@ export async function ipayCreateOneShot(input: {
 }): Promise<{ paymentUrl: string; paymentRef: string }> {
   const cfg = ipayConfig(true);
   if (!cfg) throw new Error("ipay_not_configured");
-  if (!cfg.amountUnit) throw new Error("ipay_amount_unit_not_configured");
   if (!input.orderId.trim() || input.orderId.length > 100) {
     throw new Error("invalid_order_reference");
   }
@@ -108,7 +97,7 @@ export async function ipayCreateOneShot(input: {
     },
     body: JSON.stringify({
       product_code: cfg.productCode,
-      amount: ipayAmountFromMillimes(input.amountMillimes, cfg.amountUnit),
+      amount: ipayAmountFromMillimes(input.amountMillimes),
       currency: "TND",
       customer_name: customerName,
       customer_external_id: input.orderId,

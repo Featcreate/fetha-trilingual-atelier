@@ -51,6 +51,7 @@ type ProductRow = {
   name: string;
   product_type: string;
   price_millimes: number;
+  sale_price_millimes: number | null;
   is_active: boolean;
   created_at: string;
 };
@@ -118,7 +119,7 @@ function AdminPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,store_id,name,product_type,price_millimes,is_active,created_at")
+        .select("id,store_id,name,product_type,price_millimes,sale_price_millimes,is_active,created_at")
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -589,8 +590,15 @@ function AdminPage() {
                 <div className="min-w-0">
                   <p className="font-semibold">{product.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {product.product_type} · {formatTND(product.price_millimes)} ·{" "}
-                    {product.store_id?.slice(0, 8) ?? "—"}
+                    {product.product_type} ·{" "}
+                    {product.sale_price_millimes ? (
+                      <>
+                        <span className="line-through">{formatTND(product.price_millimes)}</span>{" "}
+                        <span className="font-semibold text-red-600">PROMO {formatTND(product.sale_price_millimes)}</span>
+                      </>
+                    ) : (
+                      formatTND(product.price_millimes)
+                    )}{" "}· {product.store_id?.slice(0, 8) ?? "—"}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {new Date(product.created_at).toLocaleDateString(locale)}

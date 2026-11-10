@@ -2,13 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 import { AuthShell } from "@/components/AuthShell";
-import { PaymentMethodsPreview } from "@/components/PaymentMethodsPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { localizedProductText } from "@/lib/product-translations";
-import { getCartCheckoutAvailability, startCartCheckout } from "@/lib/shop.functions";
+import { getIpayCheckoutAvailability, startCartIpayCheckout } from "@/lib/shop.functions";
 
 export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
 
@@ -19,12 +18,12 @@ const copy = {
     disabled:
       "Le paiement en ligne est temporairement désactivé. Votre panier est conservé ; aucune commande ni aucun débit ne sera créé.",
     back: "Retour au panier",
-    methods: "Un seul paiement couvrira l'ensemble du panier lorsque le service sera activé.",
+    methods: "Vous serez redirigé vers la page sécurisée iPay pour choisir le moyen de paiement disponible.",
     empty: "Votre panier est vide.",
     loading: "Chargement…",
     error: "Impossible de charger la commande.",
     unavailable: "Un ou plusieurs produits ne sont plus disponibles. Retournez au panier.",
-    pay: "Payer le panier en une fois avec Konnect",
+    pay: "Continuer vers le paiement iPay",
     starting: "Préparation du paiement…",
     paymentError:
       "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. Réessayez uniquement après vérification de l’état de la commande.",
@@ -34,12 +33,12 @@ const copy = {
     total: "الإجمالي المستحق",
     disabled: "الدفع الإلكتروني معطّل مؤقتاً. ستبقى سلتك محفوظة، ولن يتم إنشاء طلب أو خصم أي مبلغ.",
     back: "العودة إلى السلة",
-    methods: "ستكون هناك دفعة واحدة لكامل محتويات السلة عند تفعيل الخدمة.",
+    methods: "سيتم تحويلك إلى صفحة iPay الآمنة لاختيار وسيلة الدفع المتاحة.",
     empty: "السلة فارغة.",
     loading: "جارٍ التحميل…",
     error: "تعذر تحميل الطلب.",
     unavailable: "منتج أو أكثر لم يعد متاحاً. عودي إلى السلة.",
-    pay: "دفع كامل السلة دفعة واحدة عبر Konnect",
+    pay: "المتابعة إلى الدفع عبر iPay",
     starting: "جارٍ إعداد الدفع…",
     paymentError:
       "تعذر إعداد الدفع. لن تتم إعادة محاولة إنشاء عملية دفع تلقائياً. لا تعيدي المحاولة إلا بعد التحقق من حالة الطلب.",
@@ -50,12 +49,12 @@ const copy = {
     disabled:
       "Online payment is temporarily disabled. Your cart is preserved; no order or charge will be created.",
     back: "Back to cart",
-    methods: "One payment will cover the entire cart when checkout is activated.",
+    methods: "You will be redirected to iPay’s secure page to choose an available payment method.",
     empty: "Your cart is empty.",
     loading: "Loading…",
     error: "Could not load order.",
     unavailable: "One or more products are no longer available. Return to your cart.",
-    pay: "Pay the entire cart in one Konnect payment",
+    pay: "Continue to iPay payment",
     starting: "Preparing payment…",
     paymentError:
       "Payment could not be initialized. Another payment will not be started automatically. Retry only after checking the order status.",
@@ -74,7 +73,7 @@ function CheckoutPage() {
 
   const availability = useQuery({
     queryKey: ["cart-checkout-availability"],
-    queryFn: () => getCartCheckoutAvailability(),
+    queryFn: () => getIpayCheckoutAvailability(),
     staleTime: 30_000,
   });
 
@@ -83,7 +82,7 @@ function CheckoutPage() {
       if (!checkoutAttempt.current || checkoutAttempt.current.signature !== signature) {
         checkoutAttempt.current = { signature, key: crypto.randomUUID() };
       }
-      return startCartCheckout({
+      return startCartIpayCheckout({
         data: {
           items: items.map(({ productId }) => ({ productId })),
           checkoutKey: checkoutAttempt.current.key,
@@ -175,7 +174,7 @@ function CheckoutPage() {
             </p>
           ) : (
             <section className="mt-5 rounded-xl border border-border p-4">
-              <PaymentMethodsPreview />
+              <p className="text-sm text-muted-foreground">{t.methods}</p>
             </section>
           )}
           {availability.data?.enabled && !unavailable ? (

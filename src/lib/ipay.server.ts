@@ -1,6 +1,6 @@
 // Server-only iPay one-shot API client. Import dynamically from server handlers.
-// Checkout remains disabled unless explicitly enabled. TND amounts default to millimes
-// (minor units), a provisional assumption pending a non-settling sandbox confirmation.
+// Checkout remains disabled unless explicitly enabled. No TND amount unit is assumed;
+// one-shot creation fails closed until IPAY_AMOUNT_UNIT is explicitly configured.
 const IPAY_API = "https://api.ipay.tn";
 
 export type IpayConfig = {
@@ -28,7 +28,7 @@ export function ipayConfig(requireActivation = false): IpayConfig | null {
 /** Convert canonical TND millimes to the configured iPay amount unit. */
 export function ipayAmountFromMillimes(
   amountMillimes: number,
-  unit: IpayConfig["amountUnit"],
+  unit: Exclude<IpayConfig["amountUnit"], null>,
 ): number {
   if (!Number.isSafeInteger(amountMillimes) || amountMillimes <= 0) {
     throw new Error("invalid_order_amount");

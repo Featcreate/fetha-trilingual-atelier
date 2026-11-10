@@ -226,3 +226,56 @@ describe("iPay one-shot request safety", () => {
   });
 });
 
+
+describe("iPay invalid configuration and input guards", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it("rejects unsupported amount-unit values before contacting iPay", async () => {
+    vi.stubEnv("IPAY_ORG_ID", "org-test");
+    vi.stubEnv("IPAY_JWT", "jwt-test");
+    vi.stubEnv("IPAY_PRODUCT_CODE", "algorea-bazaar");
+    vi.stubEnv("IPAY_AMOUNT_UNIT", "millimes");
+    vi.stubEnv("IPAY_CHECKOUT_ENABLED", "true");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      ipayCreateOneShot({
+        amountMillimes: 10500,
+        orderId: "order-test",
+        customerName: "Test Buyer",
+      }),
+    ).rejects.toThrow("ipay_amount_unit_not_configured");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects blank order references and customer names before contacting iPay", async () => {
+    vi.stubEnv("IPAY_ORG_ID", "org-test");
+    vi.stubEnv("IPAY_JWT", "jwt-test");
+    vi.stubEnv("IPAY_PRODUCT_CODE", "algorea-bazaar");
+    vi.stubEnv("IPAY_AMOUNT_UNIT", "major");
+    vi.stubEnv("IPAY_CHECKOUT_ENABLED", "true");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      ipayCreateOneShot({
+        amountMillimes: 10500,
+        orderId: "   ",
+        customerName: "Test Buyer",
+      }),
+    ).rejects.toThrow("invalid_order_reference");
+
+    await expect(
+      ipayCreateOneShot({
+        amountMillimes: 10500,
+        orderId: "order-test",
+        customerName: "   ",
+      }),
+    ).rejects.toThrow("invalid_customer_name");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});

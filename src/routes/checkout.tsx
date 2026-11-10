@@ -174,11 +174,7 @@ function CheckoutPage() {
             <p role="alert" className="mt-3 rounded-xl border border-border p-4 text-sm">
               {t.unavailable}
             </p>
-          ) : (
-            <section className="mt-5 rounded-xl border border-border p-4">
-              <p className="text-sm text-muted-foreground">{t.methods}</p>
-            </section>
-          )}
+          ) : null}
           {availability.data?.enabled && !unavailable ? (
             <button
               type="button"

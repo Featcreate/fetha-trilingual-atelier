@@ -249,7 +249,7 @@ function BuyerOrdersPage() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {(order.payment_mode === "verified" ? item.order_item_files.flatMap((file) => {
+                      {order.payment_mode === "verified" && item.order_item_files.flatMap((file) => {
                         const originals = Array.isArray(file.download_entitlements)
                           ? file.download_entitlements
                           : file.download_entitlements
@@ -298,7 +298,7 @@ function BuyerOrdersPage() {
                             </div>
                           );
                         });
-                      }) : [])}
+                      })}
                     </div>
                   </div>
                 ))}

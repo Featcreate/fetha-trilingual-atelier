@@ -67,9 +67,7 @@ export function parseIpayOneShotResponse(payload: unknown): {
     throw new Error("ipay_invalid_payment_url");
   }
 
-  const allowedHost =
-    paymentUrl.hostname === "ipay.tn" ||
-    paymentUrl.hostname.endsWith(".ipay.tn");
+  const allowedHost = paymentUrl.hostname === "ipay.tn" || paymentUrl.hostname.endsWith(".ipay.tn");
   if (
     paymentUrl.protocol !== "https:" ||
     !allowedHost ||
@@ -99,9 +97,7 @@ export async function ipayCreateOneShot(input: {
     throw new Error("invalid_customer_name");
   }
 
-  const response = await fetch(
-    `${IPAY_API}/api/admin/transactions/create-oneshot`,
-    {
+  const response = await fetch(`${IPAY_API}/api/admin/transactions/create-oneshot`, {
     method: "POST",
     signal: AbortSignal.timeout(IPAY_REQUEST_TIMEOUT_MS),
     headers: {
@@ -110,16 +106,15 @@ export async function ipayCreateOneShot(input: {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-      body: JSON.stringify({
-        product_code: cfg.productCode,
-        amount: ipayAmountFromMillimes(input.amountMillimes, cfg.amountUnit),
-        currency: "TND",
-        customer_name: customerName,
-        customer_external_id: input.orderId,
-        invoice_reference: input.orderId,
-      }),
-    },
-  );
+    body: JSON.stringify({
+      product_code: cfg.productCode,
+      amount: ipayAmountFromMillimes(input.amountMillimes, cfg.amountUnit),
+      currency: "TND",
+      customer_name: customerName,
+      customer_external_id: input.orderId,
+      invoice_reference: input.orderId,
+    }),
+  });
 
   if (!response.ok) {
     console.error("iPay create-oneshot failed", response.status);
@@ -134,7 +129,6 @@ export async function ipayCreateOneShot(input: {
   }
   return parseIpayOneShotResponse(payload);
 }
-
 
 /**
  * Read-only provider-side webhook configuration health check.

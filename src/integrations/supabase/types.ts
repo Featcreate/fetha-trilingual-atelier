@@ -516,6 +516,7 @@ export type Database = {
         Update: {
           commission_bps?: number
           id?: boolean
+          ipay_checkout_enabled?: boolean
           konnect_direct_payouts_enabled?: boolean
           updated_at?: string
           updated_by?: string | null

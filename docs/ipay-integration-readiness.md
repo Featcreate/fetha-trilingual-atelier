@@ -55,17 +55,17 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 1. **Marketplace eligibility and documents:** Confirm in writing that this organisation/account can process payments for a digital-goods marketplace where buyers pay the platform and the platform separately accounts for and manually pays sellers. Confirm any required business registration, KYC, or supporting documents.
 1. **Fees:** Confirm the 1% monthly-billed commission capped at 5 TND for this organisation and identify every additional acquirer/provider fee by payment method, including refunds and declared transfers.
 
-## Implementation status on feature/ipay-checkout-integration
+## Implementation status on current mainline
 
-A first, deliberately incomplete server-side scaffold has been added:
+A first, deliberately incomplete server-side scaffold is present on `main` and has been carried into the fresh `feature/ipay-checkout-mainline` branch:
 
 - `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and Bearer JWT headers.
 - The one-shot client validates the order/customer input, requires `IPAY_CHECKOUT_ENABLED=true`, and rejects provider responses with empty references or checkout URLs outside HTTPS iPay domains (including URLs containing embedded credentials).
-- `IPAY_AMOUNT_UNIT` defaults to `minor` (integer TND millimes); `major` remains an explicit override only if Audasoft confirms decimal dinars in writing. This is an adopted but unverified assumption, not an official confirmation.
+- `IPAY_AMOUNT_UNIT` must be explicitly set to `major` or `minor`; there is no default. If it is absent or invalid, the one-shot client fails closed before making a provider request. Neither unit is treated as confirmed until Audasoft provides the amount convention in writing and a non-settling test verifies it.
 - `drizzle/migrations/0034_ipay_checkout_reference.sql` adds separate nullable iPay reference/URL fields and a unique partial index. It does not alter the Konnect columns, order settlement, commission, ledger, or payout rules.
-- `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard and hosted checkout URL/reference validation.
+- `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard, hosted checkout URL/reference validation, read-only webhook health requests, fail-closed behaviour when the amount unit is not explicitly configured, and the one-shot POST's explicit amount conversion plus bounded request signal. Coverage includes malformed payloads, numeric references, lookalike domains, non-standard ports, and oversized references. GitHub Actions run 618 passed on 2026-11-10: migration journal, TypeScript typecheck, Prettier, ESLint, all 55 tests across 8 test files, and production build.
 
-The iPay client is not yet wired into buyer checkout. No iPay webhook handler or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
+The current buyer checkout remains Konnect-only. The iPay client is not yet wired into buyer checkout. A server-only, read-only `ipayGetWebhookHealth(probe)` helper now calls the documented `GET /api/admin/webhooks/health` endpoint (and optional `?probe=true`) without creating a transaction or enabling checkout. Both the one-shot POST and health GET have a 15-second abort timeout. No iPay webhook receiver or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
 
 ## Implementation gate
 
@@ -75,7 +75,7 @@ Until Audasoft confirms the open questions above:
 - do not apply migration 0034 to Supabase;
 - do not settle an order based only on a webhook, redirect, or browser query parameter;
 - do not release downloads for declared bank/postal transfers without confirmed cleared funds;
-- keep the adopted `minor` default provisional until a non-settling sandbox test confirms that `amount: 1000` displays exactly `1.000 TND`; do not enable live checkout based on this assumption;
+- keep `IPAY_AMOUNT_UNIT` unset until Audasoft confirms the amount convention and a non-settling sandbox test verifies it; do not enable live checkout based on an assumption;
 - do not claim international-card or foreign-currency support;
 - do not assume webhook authenticity or retry behaviour.
 

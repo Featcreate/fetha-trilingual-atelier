@@ -33,12 +33,10 @@ Last reviewed against the repository and the in-dashboard iPay API documentation
 
 The dashboard documentation says iPay sends POST requests to the product's configured webhook URL on each transaction status change. The documented event types are:
 
-| Event | Documented meaning |
-|---|---|
-| `transaction.created` | New transaction created; payment pending |
-| `transaction.completed` | Payment validated; the listed statuses include paid, bank transfer declared, and postal mandate declared |
-| `transaction.expired` | Transaction expired without payment |
-| `transaction.failed` | Payment failed |
+- `transaction.created`: New transaction created; payment pending.
+- `transaction.completed`: Payment validated; the listed statuses include paid, bank transfer declared, and postal mandate declared.
+- `transaction.expired`: Transaction expired without payment.
+- `transaction.failed`: Payment failed.
 
 The documented payload shape is:
 

@@ -123,3 +123,36 @@ export async function ipayCreateOneShot(input: {
   }
   return parseIpayOneShotResponse(payload);
 }
+
+
+/**
+ * Read-only provider-side webhook configuration health check.
+ * This never creates a transaction and does not enable checkout.
+ */
+export async function ipayGetWebhookHealth(probe = false): Promise<unknown> {
+  const cfg = ipayConfig(false);
+  if (!cfg) throw new Error("ipay_not_configured");
+
+  const url = new URL("/api/admin/webhooks/health", IPAY_API);
+  if (probe) url.searchParams.set("probe", "true");
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "X-Org-Id": cfg.orgId,
+      Authorization: `Bearer ${cfg.jwt}`,
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    console.error("iPay webhook health check failed", response.status);
+    throw new Error("ipay_health_check_failed");
+  }
+
+  try {
+    return await response.json();
+  } catch {
+    throw new Error("ipay_invalid_health_response");
+  }
+}

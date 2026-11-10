@@ -18,7 +18,8 @@ const copy = {
     disabled:
       "Le paiement en ligne est temporairement désactivé. Votre panier est conservé ; aucune commande ni aucun débit ne sera créé.",
     back: "Retour au panier",
-    methods: "Vous serez redirigé vers la page sécurisée iPay pour choisir le moyen de paiement disponible.",
+    methods:
+      "Vous serez redirigé vers la page sécurisée iPay pour choisir le moyen de paiement disponible.",
     empty: "Votre panier est vide.",
     loading: "Chargement…",
     error: "Impossible de charger la commande.",
@@ -49,7 +50,8 @@ const copy = {
     disabled:
       "Online payment is temporarily disabled. Your cart is preserved; no order or charge will be created.",
     back: "Back to cart",
-    methods: "You will be redirected to iPay’s secure page to choose an available payment method.",
+    methods:
+      "You will be redirected to iPay’s secure page to choose an available payment method.",
     empty: "Your cart is empty.",
     loading: "Loading…",
     error: "Could not load order.",

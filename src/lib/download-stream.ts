@@ -194,7 +194,8 @@ export function createDownloadResponse(deps: StreamDownloadDeps): Response {
     { highWaterMark: 0 },
   );
 
-  const safeName = deps.fileName.replace(/[\r\n"]/g, "_");
+  // Keep the legacy filename parameter ASCII-only; filename* carries the UTF-8 name.
+  const safeName = deps.fileName.replace(/[^\x20-\x7E]|[\r\n"\\/]/g, "_");
   const headers = new Headers({
     "Content-Type": deps.contentType || "application/octet-stream",
     "Content-Disposition": `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(deps.fileName)}`,

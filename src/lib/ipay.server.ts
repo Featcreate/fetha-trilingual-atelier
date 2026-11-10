@@ -9,6 +9,14 @@ export type IpayConfig = {
   productCode: string;
 };
 
+/** Both the admin switch and the independent server-side environment gate must be on. */
+export function isIpayCheckoutEnabled(
+  adminEnabled: boolean,
+  envEnabled = process.env["IPAY_CHECKOUT_ENABLED"],
+): boolean {
+  return adminEnabled && envEnabled === "true";
+}
+
 export function ipayConfig(requireActivation = false): IpayConfig | null {
   const orgId = process.env["IPAY_ORG_ID"];
   const jwt = process.env["IPAY_JWT"];
@@ -149,5 +157,21 @@ export async function ipayGetWebhookHealth(probe = false): Promise<unknown> {
     return await response.json();
   } catch {
     throw new Error("ipay_invalid_health_response");
+  }
+}
+
+/** Keep ambiguous initialization states explicit; callers must never retry them automatically. */
+export function ipayInitClaimError(outcome: unknown): string {
+  switch (outcome) {
+    case "not_found":
+      return "order_not_found";
+    case "order_closed":
+      return "order_closed";
+    case "provider_conflict":
+      return "provider_conflict";
+    case "in_progress":
+      return "payment_initialization_in_progress";
+    default:
+      return "payment_initialization_uncertain";
   }
 }

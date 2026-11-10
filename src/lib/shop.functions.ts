@@ -368,9 +368,18 @@ export const adminRecheckPayment = createServerFn({ method: "POST" })
 /** Initialize one iPay hosted checkout for the authenticated buyer's entire cart.
  * The returned URL only redirects to iPay; it never marks an order as paid. */
 export const getIpayCheckoutAvailability = createServerFn({ method: "GET" }).handler(async () => {
-  const { ipayConfig } = await import("./ipay.server");
+  const { ipayConfig, isIpayCheckoutEnabled } = await import("./ipay.server");
   const cfg = ipayConfig(true);
-  return { enabled: Boolean(cfg) };
+  if (!cfg) return { enabled: false };
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: settings, error } = await supabaseAdmin
+    .from("platform_settings")
+    .select("ipay_checkout_enabled")
+    .eq("id", true)
+    .maybeSingle();
+  return {
+    enabled: !error && isIpayCheckoutEnabled(settings?.ipay_checkout_enabled === true),
+  };
 });
 
 export const startCartIpayCheckout = createServerFn({ method: "POST" })
@@ -387,9 +396,18 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { ipayConfig, ipayCreateOneShot } = await import("./ipay.server");
+    const { ipayConfig, ipayCreateOneShot, isIpayCheckoutEnabled } = await import("./ipay.server");
     const cfg = ipayConfig(true);
     if (!cfg) return { ok: false as const, error: "ipay_not_configured" };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings, error: settingsError } = await supabaseAdmin
+      .from("platform_settings")
+      .select("ipay_checkout_enabled")
+      .eq("id", true)
+      .maybeSingle();
+    if (settingsError || !isIpayCheckoutEnabled(settings?.ipay_checkout_enabled === true)) {
+      return { ok: false as const, error: "ipay_checkout_disabled" };
+    }
 
     const { data: orderId, error } = await context.supabase.rpc("create_order_from_cart", {
       _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),
@@ -410,7 +428,9 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       .eq("id", orderId)
       .single();
     if (!order) return { ok: false as const, error: "order_failed" };
-    if (order.status !== "pending") return { ok: false as const, error: "order_closed", orderId };
+    if (order.status !== "pending") {
+      return { ok: false as const, error: "order_closed", orderId };
+    }
     if (order.ipay_payment_url) {
       return { ok: true as const, orderId, payUrl: order.ipay_payment_url };
     }
@@ -437,12 +457,8 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       return { ok: true as const, orderId, payUrl: claim.pay_url };
     }
     if (claim.outcome !== "claimed") {
-      return {
-        ok: false as const,
-        error:
-          claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain",
-        orderId,
-      };
+      const { ipayInitClaimError } = await import("./ipay.server");
+      return { ok: false as const, error: ipayInitClaimError(claim.outcome), orderId };
     }
 
     try {
@@ -473,8 +489,10 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       }
       return { ok: true as const, orderId, payUrl: saved.ipay_payment_url };
     } catch (e) {
+      // Keep the initialization claim locked: a timeout may mean iPay created a
+      // transaction but its response was lost. Never retry automatically.
       console.error(
-        "iPay checkout initialization failed",
+        "iPay checkout initialization outcome is uncertain; manual reconciliation required",
         e instanceof Error ? e.message : "unknown",
       );
       return { ok: false as const, error: "payment_provider_error", orderId };

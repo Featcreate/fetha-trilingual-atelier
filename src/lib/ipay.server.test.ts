@@ -1,10 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ipayAmountFromMillimes,
+  isIpayCheckoutEnabled,
   ipayCreateOneShot,
   ipayGetWebhookHealth,
+  ipayInitClaimError,
   parseIpayOneShotResponse,
 } from "./ipay.server";
+
+describe("iPay checkout kill switch", () => {
+  it("requires both the admin switch and the independent environment gate", () => {
+    expect(isIpayCheckoutEnabled(false, "true")).toBe(false);
+    expect(isIpayCheckoutEnabled(true, "false")).toBe(false);
+    expect(isIpayCheckoutEnabled(true, undefined)).toBe(false);
+    expect(isIpayCheckoutEnabled(true, "true")).toBe(true);
+  });
+});
 
 describe("iPay TND dinar conversion", () => {
   it("converts canonical TND millimes to dinars", () => {
@@ -237,5 +248,15 @@ describe("iPay invalid input guards", () => {
       }),
     ).rejects.toThrow("invalid_customer_name");
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("iPay initialization claim outcomes", () => {
+  it("keeps conflict and uncertain states distinct so callers cannot auto-retry", () => {
+    expect(ipayInitClaimError("not_found")).toBe("order_not_found");
+    expect(ipayInitClaimError("order_closed")).toBe("order_closed");
+    expect(ipayInitClaimError("provider_conflict")).toBe("provider_conflict");
+    expect(ipayInitClaimError("in_progress")).toBe("payment_initialization_in_progress");
+    expect(ipayInitClaimError("unexpected")).toBe("payment_initialization_uncertain");
   });
 });

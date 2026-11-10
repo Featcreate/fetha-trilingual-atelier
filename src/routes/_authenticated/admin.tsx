@@ -95,7 +95,7 @@ function AdminPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("platform_settings")
-        .select("commission_bps,updated_at,updated_by")
+        .select("commission_bps,ipay_checkout_enabled,updated_at,updated_by")
         .eq("id", true)
         .single();
       if (error) throw error;
@@ -181,6 +181,36 @@ function AdminPage() {
     setCommission("");
     await qc.invalidateQueries({ queryKey: ["admin-settings"] });
     await qc.invalidateQueries({ queryKey: ["platform-commission"] });
+  }
+
+  async function setIpayCheckoutEnabled(enabled: boolean) {
+    setBusy("ipay-switch");
+    setNotice(null);
+    const { error } = await supabase.rpc("admin_set_ipay_checkout_enabled", {
+      _enabled: enabled,
+    });
+    setBusy(null);
+    if (error) {
+      setNotice({ ok: false, text: a.saveError });
+      return;
+    }
+    setNotice({
+      ok: true,
+      text:
+        lang === "ar"
+          ? enabled
+            ? "تم تشغيل مفتاح iPay الإداري. يظل مفتاح الخادم المستقل مطلوباً."
+            : "تم إيقاف الدفع عبر iPay."
+          : lang === "en"
+            ? enabled
+              ? "The iPay admin switch is on. The independent server gate is still required."
+              : "iPay checkout has been switched off."
+            : enabled
+              ? "Le commutateur iPay est activé. La validation serveur indépendante reste obligatoire."
+              : "Le paiement iPay est désactivé.",
+    });
+    await qc.invalidateQueries({ queryKey: ["admin-settings"] });
+    await qc.invalidateQueries({ queryKey: ["cart-checkout-availability"] });
   }
 
   async function createSellerPayout() {
@@ -347,6 +377,70 @@ function AdminPage() {
           <p className="mt-1 text-2xl font-bold">{formatTND(paidTotal)}</p>
           <p className="text-xs text-muted-foreground">{a.latest100}</p>
         </div>
+      </section>
+
+      <section className="mb-8 rounded-xl border border-border p-5">
+        <h2 className="text-lg font-bold">
+          {lang === "ar"
+            ? "التحكم في الدفع عبر iPay"
+            : lang === "en"
+              ? "iPay checkout control"
+              : "Contrôle du paiement iPay"}
+        </h2>
+        <p className="mt-2 text-sm leading-7 text-muted-foreground">
+          {lang === "ar"
+            ? "مفتاح إداري يوقف إنشاء عمليات دفع جديدة. لا يعمل الدفع إلا إذا كان هذا المفتاح ومفتاح الخادم IPAY_CHECKOUT_ENABLED مفعّلين معاً. لا يلغي روابط الدفع التي أنشأها iPay مسبقاً."
+            : lang === "en"
+              ? "Admin switch that blocks new payment initializations. Checkout requires this switch and the independent IPAY_CHECKOUT_ENABLED server gate. It cannot revoke iPay payment links already created."
+              : "Interrupteur admin bloquant les nouvelles initialisations. Le paiement exige aussi la variable serveur IPAY_CHECKOUT_ENABLED. Les liens iPay déjà créés ne sont pas révoqués."}
+        </p>
+        {settings.isPending ? (
+          <p className="mt-3 text-sm">{a.loading}</p>
+        ) : settings.isError ? (
+          <p role="alert" className="mt-3 text-sm text-destructive">
+            {a.loadError}
+          </p>
+        ) : (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-sm font-semibold">
+              {settings.data.ipay_checkout_enabled
+                ? lang === "ar"
+                  ? "مفتاح الإدارة: مفعّل"
+                  : lang === "en"
+                    ? "Admin switch: ON"
+                    : "Commutateur admin : ACTIVÉ"
+                : lang === "ar"
+                  ? "مفتاح الإدارة: متوقف"
+                  : lang === "en"
+                    ? "Admin switch: OFF"
+                    : "Commutateur admin : ARRÊTÉ"}
+            </span>
+            <button
+              type="button"
+              disabled={busy === "ipay-switch"}
+              onClick={() => void setIpayCheckoutEnabled(!settings.data.ipay_checkout_enabled)}
+              className={
+                settings.data.ipay_checkout_enabled
+                  ? "rounded-full border border-destructive px-4 py-2 text-sm font-semibold text-destructive disabled:opacity-50"
+                  : "rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+              }
+            >
+              {busy === "ipay-switch"
+                ? a.saving
+                : settings.data.ipay_checkout_enabled
+                  ? lang === "ar"
+                    ? "إيقاف عمليات الدفع الجديدة"
+                    : lang === "en"
+                      ? "Stop new payment attempts"
+                      : "Bloquer les nouveaux paiements"
+                  : lang === "ar"
+                    ? "تشغيل المفتاح الإداري"
+                    : lang === "en"
+                      ? "Enable admin switch"
+                      : "Activer le commutateur"}
+            </button>
+          </div>
+        )}
       </section>
 
       <section className="mb-8 rounded-xl border border-border p-5">

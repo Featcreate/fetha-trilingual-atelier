@@ -55,9 +55,9 @@ Last reviewed against the public iPay by Audasoft website: 2026-11-07.
 1. **Marketplace eligibility and documents:** Confirm in writing that this organisation/account can process payments for a digital-goods marketplace where buyers pay the platform and the platform separately accounts for and manually pays sellers. Confirm any required business registration, KYC, or supporting documents.
 1. **Fees:** Confirm the 1% monthly-billed commission capped at 5 TND for this organisation and identify every additional acquirer/provider fee by payment method, including refunds and declared transfers.
 
-## Implementation status on feature/ipay-checkout-integration
+## Implementation status on main (reviewed 2026-11-10)
 
-A first, deliberately incomplete server-side scaffold has been added:
+The initial, deliberately incomplete server-side scaffold is already present on the current `main` branch. The older PR #46 branch is divergent from `main` and must not be merged wholesale or used as the integration base:
 
 - `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and Bearer JWT headers.
 - The one-shot client validates the order/customer input, requires `IPAY_CHECKOUT_ENABLED=true`, and rejects provider responses with empty references or checkout URLs outside HTTPS iPay domains (including URLs containing embedded credentials).
@@ -65,7 +65,7 @@ A first, deliberately incomplete server-side scaffold has been added:
 - `drizzle/migrations/0034_ipay_checkout_reference.sql` adds separate nullable iPay reference/URL fields and a unique partial index. It does not alter the Konnect columns, order settlement, commission, ledger, or payout rules.
 - `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard and hosted checkout URL/reference validation.
 
-The iPay client is not yet wired into buyer checkout. No iPay webhook handler or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
+The current `main` checkout remains Konnect-only. The iPay client is not wired into buyer checkout. No iPay webhook handler or settlement/reconciliation path has been added. The product page's iPay payment-method list is a preview/selection UI only and does not initiate an iPay charge. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
 
 ## Implementation gate
 
@@ -79,4 +79,4 @@ Until Audasoft confirms the open questions above:
 - do not claim international-card or foreign-currency support;
 - do not assume webhook authenticity or retry behaviour.
 
-Next engineering steps after written confirmation: implement authoritative transaction lookup, authenticated/idempotent webhook reconciliation, exact order/amount/currency/product matching, safe settlement through the existing trusted RPC, and sandbox integration tests. Then run the repository typecheck, unit tests, migration-journal check, and production build on the branch. Review the full diff before any merge or deployment.
+Next engineering steps after written confirmation: implement authoritative transaction lookup, authenticated/idempotent webhook reconciliation, exact order/amount/currency/product matching, safe settlement through the existing trusted RPC, and sandbox integration tests. Then run the repository typecheck, unit tests, migration-journal check, and production build on a fresh branch created from the then-current `main`. Do not merge PR #46 wholesale: its branch is 50 commits ahead and 23 behind the reviewed `main`, and its migration journal/types/UI changes must be reconciled selectively if any are still missing. Review the full diff before any merge or deployment.

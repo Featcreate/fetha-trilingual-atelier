@@ -500,6 +500,7 @@ export type Database = {
         Row: {
           commission_bps: number
           id: boolean
+          ipay_checkout_enabled: boolean
           konnect_direct_payouts_enabled: boolean
           updated_at: string
           updated_by: string | null
@@ -507,6 +508,7 @@ export type Database = {
         Insert: {
           commission_bps?: number
           id?: boolean
+          ipay_checkout_enabled?: boolean
           konnect_direct_payouts_enabled?: boolean
           updated_at?: string
           updated_by?: string | null
@@ -1327,6 +1329,7 @@ export type Database = {
         Returns: undefined
       }
       admin_set_commission_bps: { Args: { _bps: number }; Returns: undefined }
+      admin_set_ipay_checkout_enabled: { Args: { _enabled: boolean }; Returns: undefined }
       archive_file_version: {
         Args: { _version_id: string }
         Returns: undefined

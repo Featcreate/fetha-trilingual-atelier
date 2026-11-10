@@ -1,6 +1,6 @@
 // Server-only iPay one-shot API client. Import dynamically from server handlers.
-// Checkout remains disabled unless explicitly enabled. TND amounts default to millimes
-// (minor units), a provisional assumption pending a non-settling sandbox confirmation.
+// Checkout remains disabled unless explicitly enabled. Amount units must be configured
+// explicitly; the public provider docs do not confirm whether this endpoint expects millimes or dinars.
 const IPAY_API = "https://api.ipay.tn";
 
 export type IpayConfig = {
@@ -14,7 +14,7 @@ export function ipayConfig(requireActivation = false): IpayConfig | null {
   const orgId = process.env["IPAY_ORG_ID"];
   const jwt = process.env["IPAY_JWT"];
   const productCode = process.env["IPAY_PRODUCT_CODE"];
-  const amountUnit = process.env["IPAY_AMOUNT_UNIT"] ?? "minor";
+  const amountUnit = process.env["IPAY_AMOUNT_UNIT"];
   if (!orgId || !jwt || !productCode) return null;
   if (amountUnit !== "major" && amountUnit !== "minor") return null;
   if (requireActivation && process.env["IPAY_CHECKOUT_ENABLED"] !== "true") {

@@ -28,16 +28,21 @@ describe("iPay authoritative transaction lookup", () => {
   it("uses transaction id lookup with Bearer and organization headers", async () => {
     vi.stubEnv("IPAY_ORG_ID", "org-test");
     vi.stubEnv("IPAY_JWT", "jwt-test");
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
-      success: true,
-      data: {
-        id: "tx-1",
-        invoice_reference: "order-1",
-        amount: "45.000",
-        currency: "TND",
-        status: "completed",
-      },
-    }), { status: 200 }));
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            id: "tx-1",
+            invoice_reference: "order-1",
+            amount: "45.000",
+            currency: "TND",
+            status: "completed",
+          },
+        }),
+        { status: 200 },
+      ),
+    );
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(ipayGetTransaction({ transactionId: "tx-1" })).resolves.toMatchObject({
@@ -56,16 +61,26 @@ describe("iPay authoritative transaction lookup", () => {
   it("requires exactly one result for invoice-reference lookup", async () => {
     vi.stubEnv("IPAY_ORG_ID", "org-test");
     vi.stubEnv("IPAY_JWT", "jwt-test");
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({
-      success: true,
-      data: [{
-        id: "tx-1",
-        invoice_reference: "order-1",
-        amount: "45.000",
-        currency: "TND",
-        status: "declared",
-      }],
-    }), { status: 200 })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: true,
+            data: [
+              {
+                id: "tx-1",
+                invoice_reference: "order-1",
+                amount: "45.000",
+                currency: "TND",
+                status: "declared",
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      ),
+    );
     await expect(ipayGetTransaction({ invoiceReference: "order-1" })).resolves.toMatchObject({
       status: "declared",
     });
@@ -81,37 +96,52 @@ describe("iPay settlement notice safety", () => {
   it("does not trust a webhook status and only uses the provider GET result", async () => {
     vi.stubEnv("IPAY_ORG_ID", "org-test");
     vi.stubEnv("IPAY_JWT", "jwt-test");
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
-      success: true,
-      data: {
-        id: "tx-1",
-        invoice_reference: "order-1",
-        amount: "45.000",
-        currency: "TND",
-        status: "declared",
-      },
-    }), { status: 200 }));
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            id: "tx-1",
+            invoice_reference: "order-1",
+            amount: "45.000",
+            currency: "TND",
+            status: "declared",
+          },
+        }),
+        { status: 200 },
+      ),
+    );
     vi.stubGlobal("fetch", fetchMock);
-    await expect(processIpaySettlementNotice(
-      { id: "tx-1", invoice_reference: "order-1", status: "completed" },
-      "webhook",
-    )).resolves.toEqual({ outcome: "pending" });
+    await expect(
+      processIpaySettlementNotice(
+        { id: "tx-1", invoice_reference: "order-1", status: "completed" },
+        "webhook",
+      ),
+    ).resolves.toEqual({ outcome: "pending" });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("rejects a mismatched webhook transaction id", async () => {
     vi.stubEnv("IPAY_ORG_ID", "org-test");
     vi.stubEnv("IPAY_JWT", "jwt-test");
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({
-      success: true,
-      data: {
-        id: "tx-other",
-        invoice_reference: "order-1",
-        amount: "45.000",
-        currency: "TND",
-        status: "completed",
-      },
-    }), { status: 200 })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: true,
+            data: {
+              id: "tx-other",
+              invoice_reference: "order-1",
+              amount: "45.000",
+              currency: "TND",
+              status: "completed",
+            },
+          }),
+          { status: 200 },
+        ),
+      ),
+    );
     await expect(processIpaySettlementNotice({ id: "tx-1" }, "webhook")).rejects.toThrow(
       "ipay_transaction_id_mismatch",
     );

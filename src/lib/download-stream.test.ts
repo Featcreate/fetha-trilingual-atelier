@@ -120,5 +120,4 @@ describe("completed download streaming", () => {
     expect(disposition).toContain("filename*=UTF-8''");
     expect(await response.text()).toBe("content");
   });
-
 });

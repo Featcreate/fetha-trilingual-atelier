@@ -9,6 +9,14 @@ export type IpayConfig = {
   productCode: string;
 };
 
+/** Both the admin switch and the independent server-side environment gate must be on. */
+export function isIpayCheckoutEnabled(
+  adminEnabled: boolean,
+  envEnabled = process.env["IPAY_CHECKOUT_ENABLED"],
+): boolean {
+  return adminEnabled && envEnabled === "true";
+}
+
 export function ipayConfig(requireActivation = false): IpayConfig | null {
   const orgId = process.env["IPAY_ORG_ID"];
   const jwt = process.env["IPAY_JWT"];

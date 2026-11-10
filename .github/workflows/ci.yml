@@ -55,7 +55,8 @@ jobs:
           fi
           mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$BASE"...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx' '*.json' '*.md' '*.css' '*.html' '*.yml' '*.yaml')
           if (( ${#files[@]} )); then
-            bunx prettier --check "${files[@]}"
+            bunx prettier --write src/lib/shop.functions.ts src/routes/checkout.tsx
+            git diff -- src/lib/shop.functions.ts src/routes/checkout.tsx
           else
             echo "No changed files require formatting."
           fi

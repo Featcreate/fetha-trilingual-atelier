@@ -409,6 +409,16 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       return { ok: true as const, orderId, payUrl: order.ipay_payment_url };
     }
 
+    const { data: profile } = await context.supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", context.userId)
+      .maybeSingle();
+    const customerName = (profile?.full_name ?? "").trim();
+    if (!customerName) {
+      return { ok: false as const, error: "customer_name_required", orderId };
+    }
+
     const { data: claims, error: claimError } = await context.supabase.rpc(
       "claim_order_ipay_init",
       { _order_id: order.id },
@@ -427,16 +437,6 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
           claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain",
         orderId,
       };
-    }
-
-    const { data: profile } = await context.supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", context.userId)
-      .maybeSingle();
-    const customerName = (profile?.full_name ?? "").trim();
-    if (!customerName) {
-      return { ok: false as const, error: "customer_name_required", orderId };
     }
 
     try {

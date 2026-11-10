@@ -54,3 +54,60 @@ describe("iPay one-shot response validation", () => {
     ).toThrow("ipay_invalid_response");
   });
 });
+
+describe("iPay one-shot response hardening", () => {
+  it("accepts a numeric provider transaction id and normalizes it to a string", () => {
+    expect(
+      parseIpayOneShotResponse({
+        id: 987654,
+        payment_url: "https://ipay.tn/checkout/987654",
+      }),
+    ).toEqual({
+      paymentRef: "987654",
+      paymentUrl: "https://ipay.tn/checkout/987654",
+    });
+  });
+
+  it("rejects malformed payloads and non-string checkout URLs", () => {
+    for (const payload of [
+      null,
+      undefined,
+      "not-an-object",
+      {},
+      { id: "txn-1", payment_url: 123 },
+      { id: {}, payment_url: "https://ipay.tn/pay" },
+    ]) {
+      expect(() => parseIpayOneShotResponse(payload)).toThrow("ipay_invalid_response");
+    }
+  });
+
+  it("rejects lookalike hosts and non-standard ports", () => {
+    for (const payment_url of [
+      "https://notipay.tn/pay",
+      "https://ipay.tn.attacker.example/pay",
+      "https://checkout.ipay.tn:444/pay",
+      "https://checkout.ipay.tn:443/pay",
+    ]) {
+      const expected =
+        payment_url === "https://checkout.ipay.tn:443/pay"
+          ? "https://checkout.ipay.tn/pay"
+          : undefined;
+      if (expected) {
+        expect(parseIpayOneShotResponse({ id: "txn-1", payment_url }).paymentUrl).toBe(expected);
+      } else {
+        expect(() => parseIpayOneShotResponse({ id: "txn-1", payment_url })).toThrow(
+          "ipay_invalid_payment_url",
+        );
+      }
+    }
+  });
+
+  it("rejects oversized transaction references", () => {
+    expect(() =>
+      parseIpayOneShotResponse({
+        id: "x".repeat(201),
+        payment_url: "https://ipay.tn/pay",
+      }),
+    ).toThrow("ipay_invalid_response");
+  });
+});

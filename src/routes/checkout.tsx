@@ -29,7 +29,6 @@ const copy = {
     loading: "Chargement…",
     error: "Impossible de charger la commande.",
     unavailable: "Un ou plusieurs produits ne sont plus disponibles. Retournez au panier.",
-    pay: "Payer le panier en une fois avec Konnect",
     starting: "Préparation du paiement…",
     paymentError:
       "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. Réessayez uniquement après vérification de l’état de la commande.",
@@ -50,7 +49,6 @@ const copy = {
     loading: "جارٍ التحميل…",
     error: "تعذر تحميل الطلب.",
     unavailable: "منتج أو أكثر لم يعد متاحاً. عودي إلى السلة.",
-    pay: "دفع كامل السلة دفعة واحدة عبر Konnect",
     starting: "جارٍ إعداد الدفع…",
     paymentError:
       "تعذر إعداد الدفع. لن تتم إعادة محاولة إنشاء عملية دفع تلقائياً. لا تعيدي المحاولة إلا بعد التحقق من حالة الطلب.",
@@ -72,7 +70,6 @@ const copy = {
     loading: "Loading…",
     error: "Could not load order.",
     unavailable: "One or more products are no longer available. Return to your cart.",
-    pay: "Pay the entire cart in one Konnect payment",
     starting: "Preparing payment…",
     paymentError:
       "Payment could not be initialized. Another payment will not be started automatically. Retry only after checking the order status.",

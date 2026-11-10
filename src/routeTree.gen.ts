@@ -146,6 +146,7 @@ export interface FileRoutesByTo {
   '/products/$id': typeof ProductsIdRoute
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
+  '/api/public/ipay/webhook': typeof ApiPublicIpayWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -165,6 +166,7 @@ export interface FileRoutesById {
   '/products/$id': typeof ProductsIdRoute
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
+  '/api/public/ipay/webhook': typeof ApiPublicIpayWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -185,8 +187,6 @@ export interface FileRouteTypes {
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
     | '/api/public/ipay/webhook'
-    | '/api/public/ipay/webhook'
-    | '/api/public/ipay/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -204,6 +204,7 @@ export interface FileRouteTypes {
     | '/products/$id'
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
+    | '/api/public/ipay/webhook'
   id:
     | '__root__'
     | '/'
@@ -222,6 +223,7 @@ export interface FileRouteTypes {
     | '/products/$id'
     | '/stores/$slug'
     | '/api/public/konnect/webhook'
+    | '/api/public/ipay/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {

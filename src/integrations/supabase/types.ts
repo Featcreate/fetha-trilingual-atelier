@@ -1330,7 +1330,19 @@ export type Database = {
         Returns: undefined
       }
       admin_set_commission_bps: { Args: { _bps: number }; Returns: undefined }
-      admin_set_ipay_checkout_enabled: { Args: { _enabled: boolean }; Returns: undefined }
+      admin_set_ipay_checkout_enabled: { Args: { _enabled: boolean }; Returns: undefined },
+      settle_ipay_verified_payment: {
+        Args: {
+          _amount_millimes: number
+          _currency: string
+          _invoice_reference: string
+          _order_id: string
+          _provider_status: string
+          _provider_transaction_id: string
+          _source: string
+        }
+        Returns: string
+      }
       archive_file_version: {
         Args: { _version_id: string }
         Returns: undefined

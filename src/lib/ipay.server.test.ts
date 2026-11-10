@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { ipayAmountFromMillimes, parseIpayOneShotResponse } from "./ipay.server";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { ipayAmountFromMillimes, ipayGetWebhookHealth, parseIpayOneShotResponse } from "./ipay.server";
 
 describe("iPay amount conversion", () => {
   it("converts canonical TND millimes to major TND units only when explicitly configured", () => {
@@ -109,5 +109,47 @@ describe("iPay one-shot response hardening", () => {
         payment_url: "https://ipay.tn/pay",
       }),
     ).toThrow("ipay_invalid_response");
+  });
+});
+
+
+describe("iPay read-only webhook health check", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it("calls only the documented GET health endpoint and optionally probes URLs", async () => {
+    vi.stubEnv("IPAY_ORG_ID", "org-test");
+    vi.stubEnv("IPAY_JWT", "jwt-test");
+    vi.stubEnv("IPAY_PRODUCT_CODE", "algorea-bazaar");
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ overall_healthy: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(ipayGetWebhookHealth(true)).resolves.toEqual({ overall_healthy: true });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string | URL, RequestInit];
+    expect(String(url)).toBe("https://api.ipay.tn/api/admin/webhooks/health?probe=true");
+    expect(init.method).toBe("GET");
+    expect((init.headers as Record<string, string>)["X-Org-Id"]).toBe("org-test");
+    expect((init.headers as Record<string, string>).Authorization).toBe("Bearer jwt-test");
+  });
+
+  it("fails closed when credentials are not configured", async () => {
+    await expect(ipayGetWebhookHealth()).rejects.toThrow("ipay_not_configured");
+  });
+
+  it("does not treat provider errors as a healthy integration", async () => {
+    vi.stubEnv("IPAY_ORG_ID", "org-test");
+    vi.stubEnv("IPAY_JWT", "jwt-test");
+    vi.stubEnv("IPAY_PRODUCT_CODE", "algorea-bazaar");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("forbidden", { status: 403 })));
+
+    await expect(ipayGetWebhookHealth()).rejects.toThrow("ipay_health_check_failed");
   });
 });

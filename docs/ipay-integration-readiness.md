@@ -65,7 +65,7 @@ A first, deliberately incomplete server-side scaffold is present on `main` and h
 - `drizzle/migrations/0034_ipay_checkout_reference.sql` adds separate nullable iPay reference/URL fields and a unique partial index. It does not alter the Konnect columns, order settlement, commission, ledger, or payout rules.
 - `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard and hosted checkout URL/reference validation, including malformed payloads, numeric references, lookalike domains, non-standard ports, and oversized references. The new hardening tests are in `feature/ipay-checkout-mainline`.
 
-The current buyer checkout remains Konnect-only. The iPay client is not yet wired into buyer checkout. No iPay webhook handler or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
+The current buyer checkout remains Konnect-only. The iPay client is not yet wired into buyer checkout. A server-only, read-only `ipayGetWebhookHealth(probe)` helper now calls the documented `GET /api/admin/webhooks/health` endpoint (and optional `?probe=true`) without creating a transaction or enabling checkout. No iPay webhook receiver or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
 
 ## Implementation gate
 

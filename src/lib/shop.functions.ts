@@ -369,7 +369,7 @@ export const adminRecheckPayment = createServerFn({ method: "POST" })
 export const getIpayCheckoutAvailability = createServerFn({ method: "GET" }).handler(async () => {
   const { ipayConfig } = await import("./ipay.server");
   const cfg = ipayConfig(true);
-  return { enabled: Boolean(cfg && cfg.amountUnit) };
+  return { enabled: Boolean(cfg) };
 });
 
 export const startCartIpayCheckout = createServerFn({ method: "POST" })
@@ -384,7 +384,6 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
     const { ipayConfig, ipayCreateOneShot } = await import("./ipay.server");
     const cfg = ipayConfig(true);
     if (!cfg) return { ok: false as const, error: "ipay_not_configured" };
-    if (!cfg.amountUnit) return { ok: false as const, error: "ipay_amount_unit_not_configured" };
 
     const { data: orderId, error } = await context.supabase.rpc("create_order_from_cart", {
       _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),
@@ -415,8 +414,9 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       { _order_id: order.id },
     );
     const claim = claims?.[0] as { outcome?: string; pay_url?: string | null } | undefined;
-    if (claimError || !claim)
+    if (claimError || !claim) {
       return { ok: false as const, error: "payment_initialization_uncertain", orderId };
+    }
     if (claim.outcome === "existing" && claim.pay_url) {
       return { ok: true as const, orderId, payUrl: claim.pay_url };
     }
@@ -435,8 +435,9 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       .eq("id", context.userId)
       .maybeSingle();
     const customerName = (profile?.full_name ?? "").trim();
-    if (!customerName)
+    if (!customerName) {
       return { ok: false as const, error: "customer_name_required", orderId };
+    }
 
     try {
       const { paymentUrl, paymentRef } = await ipayCreateOneShot({

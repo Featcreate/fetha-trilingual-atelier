@@ -3,6 +3,7 @@ import {
   ipayAmountFromMillimes,
   ipayCreateOneShot,
   ipayGetWebhookHealth,
+  ipayInitClaimError,
   parseIpayOneShotResponse,
 } from "./ipay.server";
 
@@ -237,5 +238,15 @@ describe("iPay invalid input guards", () => {
       }),
     ).rejects.toThrow("invalid_customer_name");
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("iPay initialization claim outcomes", () => {
+  it("keeps conflict and uncertain states distinct so callers cannot auto-retry", () => {
+    expect(ipayInitClaimError("not_found")).toBe("order_not_found");
+    expect(ipayInitClaimError("order_closed")).toBe("order_closed");
+    expect(ipayInitClaimError("provider_conflict")).toBe("provider_conflict");
+    expect(ipayInitClaimError("in_progress")).toBe("payment_initialization_in_progress");
+    expect(ipayInitClaimError("unexpected")).toBe("payment_initialization_uncertain");
   });
 });

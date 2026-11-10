@@ -595,9 +595,12 @@ function AdminPage() {
                     {product.product_type} ·{" "}
                     {product.sale_price_millimes ? (
                       <>
-                        <span className="line-through">{formatTND(product.price_millimes)}</span>{" "}
+                        <span className="text-xs font-bold text-red-600">PROMO</span>
+                        <span className="text-muted-foreground line-through">
+                          {formatTND(product.price_millimes)}
+                        </span>
                         <span className="font-semibold text-red-600">
-                          PROMO {formatTND(product.sale_price_millimes)}
+                          {formatTND(product.sale_price_millimes)}
                         </span>
                       </>
                     ) : (

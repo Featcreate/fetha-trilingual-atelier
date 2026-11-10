@@ -1,0 +1,36 @@
+name: iPay hourly reconciliation
+
+on:
+  schedule:
+    # GitHub Actions schedules are UTC; the service limits each run to 20 orders.
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ipay-hourly-reconciliation
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Validate reconciliation secret
+        env:
+          RECONCILE_SECRET: ${{ secrets.IPAY_RECONCILE_CRON_SECRET }}
+        run: |
+          if [[ -z "$RECONCILE_SECRET" ]]; then
+            echo "Missing repository secret IPAY_RECONCILE_CRON_SECRET"
+            exit 1
+          fi
+      - name: Request bounded reconciliation batch
+        env:
+          RECONCILE_SECRET: ${{ secrets.IPAY_RECONCILE_CRON_SECRET }}
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 120 \
+            -X POST \
+            -H "x-ipay-reconcile-secret: ${RECONCILE_SECRET}" \
+            "https://algorea-bazaar.onrender.com/api/public/ipay/webhook"

@@ -89,6 +89,7 @@ export const startCheckout = createServerFn({ method: "POST" })
         phoneNumber: profile?.phone,
         email: order.customer_email ?? undefined,
       });
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { error: saveError } = await supabaseAdmin
         .from("orders")
         .update({ konnect_payment_ref: paymentRef, konnect_pay_url: payUrl })

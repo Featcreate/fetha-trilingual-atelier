@@ -1339,6 +1339,10 @@ export type Database = {
         Args: { _order_id: string }
         Returns: { outcome: string; pay_url: string | null }[]
       }
+      claim_order_ipay_init: {
+        Args: { _order_id: string }
+        Returns: { outcome: string; pay_url: string | null }[]
+      }
       create_order_from_cart: {
         Args: { _checkout_key: string; _items: Json }
         Returns: string

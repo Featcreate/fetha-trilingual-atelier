@@ -1,6 +1,4 @@
 // Server-only iPay transaction verification and settlement.
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
-
 const IPAY_API = "https://api.ipay.tn";
 const IPAY_REQUEST_TIMEOUT_MS = 15_000;
 
@@ -158,6 +156,7 @@ export async function processIpaySettlementNotice(
   if (transaction.currency !== "TND") throw new Error("ipay_currency_mismatch");
 
   const amountMillimes = ipayAmountToMillimes(transaction.amount);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: order, error: orderError } = await supabaseAdmin
     .from("orders")
     .select("id, total_millimes, ipay_payment_ref")

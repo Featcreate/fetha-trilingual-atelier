@@ -60,8 +60,12 @@ export const startCheckout = createServerFn({ method: "POST" })
       return { ok: true as const, orderId, payUrl: claim.pay_url };
     }
     if (claim.outcome !== "claimed") {
-      const { ipayInitClaimError } = await import("./ipay.server");
-      return { ok: false as const, error: ipayInitClaimError(claim.outcome), orderId };
+      return {
+        ok: false as const,
+        error:
+          claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain",
+        orderId,
+      };
     }
 
     const { data: profile } = await context.supabase
@@ -433,12 +437,8 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       return { ok: true as const, orderId, payUrl: claim.pay_url };
     }
     if (claim.outcome !== "claimed") {
-      return {
-        ok: false as const,
-        error:
-          claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain",
-        orderId,
-      };
+      const { ipayInitClaimError } = await import("./ipay.server");
+      return { ok: false as const, error: ipayInitClaimError(claim.outcome), orderId };
     }
 
     try {

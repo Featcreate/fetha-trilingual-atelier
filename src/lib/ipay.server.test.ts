@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ipayAmountFromMillimes, ipayGetWebhookHealth, parseIpayOneShotResponse } from "./ipay.server";
+import { ipayAmountFromMillimes, ipayCreateOneShot, ipayGetWebhookHealth, parseIpayOneShotResponse } from "./ipay.server";
 
 describe("iPay amount conversion", () => {
   it("converts canonical TND millimes to major TND units only when explicitly configured", () => {
@@ -153,3 +153,28 @@ describe("iPay read-only webhook health check", () => {
     await expect(ipayGetWebhookHealth()).rejects.toThrow("ipay_health_check_failed");
   });
 });
+
+describe("iPay amount-unit configuration", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it("does not assume major units or millimes when the provider contract is unconfirmed", async () => {
+    vi.stubEnv("IPAY_ORG_ID", "org-test");
+    vi.stubEnv("IPAY_JWT", "jwt-test");
+    vi.stubEnv("IPAY_PRODUCT_CODE", "algorea-bazaar");
+    vi.stubEnv("IPAY_CHECKOUT_ENABLED", "true");
+    vi.stubGlobal("fetch", vi.fn());
+
+    await expect(
+      ipayCreateOneShot({
+        amountMillimes: 12500,
+        orderId: "order-test",
+        customerName: "Test Buyer",
+      }),
+    ).rejects.toThrow("ipay_amount_unit_not_configured");
+    expect(fetch).not.toHaveBeenCalled();
+  });
+});
+

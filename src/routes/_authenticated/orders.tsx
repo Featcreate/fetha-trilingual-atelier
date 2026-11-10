@@ -249,57 +249,57 @@ function BuyerOrdersPage() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {order.payment_mode === "verified" &&
-                        item.order_item_files.flatMap((file) => {
-                          const originals = Array.isArray(file.download_entitlements)
-                            ? file.download_entitlements
-                            : file.download_entitlements
-                              ? [file.download_entitlements]
-                              : [];
-                          const zips = Array.isArray(file.zip_download_entitlements)
-                            ? file.zip_download_entitlements
-                            : file.zip_download_entitlements
-                              ? [file.zip_download_entitlements]
-                              : [];
-                          return [
-                            ...originals.map((ent) => ({ ent, type: "original" as const })),
-                            ...zips.map((ent) => ({ ent, type: "zip" as const })),
-                          ].map(({ ent, type }) => {
-                            const key = `${type}:${ent.id}`;
-                            const expired = ent.expires_at <= new Date().toISOString();
-                            const exhausted = ent.used_downloads >= ent.max_downloads;
-                            const label =
-                              type === "original"
-                                ? lang === "ar"
-                                  ? "تنزيل الملف الأصلي"
-                                  : lang === "en"
-                                    ? "Download original"
-                                    : "Télécharger l’original"
-                                : lang === "ar"
-                                  ? "تنزيل ZIP"
-                                  : lang === "en"
-                                    ? "Download ZIP"
-                                    : "Télécharger ZIP";
-                            return (
-                              <div key={key} className="text-end">
-                                <button
-                                  type="button"
-                                  disabled={busy === key || expired || exhausted}
-                                  onClick={() => download(ent.id, type)}
-                                  className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
-                                >
-                                  {busy === key ? m.loading : label}
-                                </button>
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                  {m.downloadsLeft}:{" "}
-                                  {Math.max(0, ent.max_downloads - ent.used_downloads)} · {m.expires}{" "}
-                                  {new Date(ent.expires_at).toLocaleDateString(locale)}
-                                </p>
-                                <p className="text-xs text-muted-foreground">{file.file_name}</p>
-                              </div>
-                            );
-                          });
-                        })}
+                      {item.order_item_files.flatMap((file) => {
+                        if (order.payment_mode !== "verified") return [];
+                        const originals = Array.isArray(file.download_entitlements)
+                          ? file.download_entitlements
+                          : file.download_entitlements
+                            ? [file.download_entitlements]
+                            : [];
+                        const zips = Array.isArray(file.zip_download_entitlements)
+                          ? file.zip_download_entitlements
+                          : file.zip_download_entitlements
+                            ? [file.zip_download_entitlements]
+                            : [];
+                        return [
+                          ...originals.map((ent) => ({ ent, type: "original" as const })),
+                          ...zips.map((ent) => ({ ent, type: "zip" as const })),
+                        ].map(({ ent, type }) => {
+                          const key = `${type}:${ent.id}`;
+                          const expired = ent.expires_at <= new Date().toISOString();
+                          const exhausted = ent.used_downloads >= ent.max_downloads;
+                          const label =
+                            type === "original"
+                              ? lang === "ar"
+                                ? "تنزيل الملف الأصلي"
+                                : lang === "en"
+                                  ? "Download original"
+                                  : "Télécharger l’original"
+                              : lang === "ar"
+                                ? "تنزيل ZIP"
+                                : lang === "en"
+                                  ? "Download ZIP"
+                                  : "Télécharger ZIP";
+                          return (
+                            <div key={key} className="text-end">
+                              <button
+                                type="button"
+                                disabled={busy === key || expired || exhausted}
+                                onClick={() => download(ent.id, type)}
+                                className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+                              >
+                                {busy === key ? m.loading : label}
+                              </button>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {m.downloadsLeft}:{" "}
+                                {Math.max(0, ent.max_downloads - ent.used_downloads)} · {m.expires}{" "}
+                                {new Date(ent.expires_at).toLocaleDateString(locale)}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{file.file_name}</p>
+                            </div>
+                          );
+                        });
+                      })}
                     </div>
                   </div>
                 ))}

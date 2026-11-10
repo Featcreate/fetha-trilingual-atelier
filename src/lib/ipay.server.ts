@@ -2,6 +2,7 @@
 // Checkout remains disabled unless explicitly enabled. No TND amount unit is assumed;
 // one-shot creation fails closed until IPAY_AMOUNT_UNIT is explicitly configured.
 const IPAY_API = "https://api.ipay.tn";
+const IPAY_REQUEST_TIMEOUT_MS = 15_000;
 
 export type IpayConfig = {
   orgId: string;
@@ -97,6 +98,7 @@ export async function ipayCreateOneShot(input: {
 
   const response = await fetch(`${IPAY_API}/api/admin/transactions/create-oneshot`, {
     method: "POST",
+    signal: AbortSignal.timeout(IPAY_REQUEST_TIMEOUT_MS),
     headers: {
       "X-Org-Id": cfg.orgId,
       Authorization: `Bearer ${cfg.jwt}`,
@@ -141,6 +143,7 @@ export async function ipayGetWebhookHealth(probe = false): Promise<unknown> {
 
   const response = await fetch(url, {
     method: "GET",
+    signal: AbortSignal.timeout(IPAY_REQUEST_TIMEOUT_MS),
     headers: {
       "X-Org-Id": cfg.orgId,
       Authorization: `Bearer ${cfg.jwt}`,

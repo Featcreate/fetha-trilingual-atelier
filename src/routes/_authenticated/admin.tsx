@@ -385,10 +385,10 @@ function AdminPage() {
         </h2>
         <p className="mt-2 text-sm leading-7 text-muted-foreground">
           {lang === "ar"
-            ? "مفتاح إيقاف إداري فوري. لا يعمل الدفع إلا إذا كان هذا المفتاح ومفتاح الخادم IPAY_CHECKOUT_ENABLED مفعّلين معاً."
+            ? "مفتاح إداري يوقف إنشاء عمليات دفع جديدة. لا يعمل الدفع إلا إذا كان هذا المفتاح ومفتاح الخادم IPAY_CHECKOUT_ENABLED مفعّلين معاً. لا يلغي روابط الدفع التي أنشأها iPay مسبقاً."
             : lang === "en"
-              ? "Immediate admin kill switch. Checkout requires this switch and the independent IPAY_CHECKOUT_ENABLED server gate."
-              : "Interrupteur d’arrêt immédiat. Le paiement exige cet interrupteur et la variable serveur indépendante IPAY_CHECKOUT_ENABLED."}
+              ? "Admin switch that blocks new payment initializations. Checkout requires this switch and the independent IPAY_CHECKOUT_ENABLED server gate. It cannot revoke iPay payment links already created."
+              : "Interrupteur admin bloquant les nouvelles initialisations. Le paiement exige aussi la variable serveur IPAY_CHECKOUT_ENABLED. Les liens iPay déjà créés ne sont pas révoqués."}
         </p>
         {settings.isPending ? (
           <p className="mt-3 text-sm">{a.loading}</p>
@@ -412,7 +412,7 @@ function AdminPage() {
               {busy === "ipay-switch"
                 ? a.saving
                 : settings.data.ipay_checkout_enabled
-                  ? lang === "ar" ? "إيقاف الدفع الآن" : lang === "en" ? "Stop payments now" : "Arrêter les paiements"
+                  ? lang === "ar" ? "إيقاف عمليات الدفع الجديدة" : lang === "en" ? "Stop new payment attempts" : "Bloquer les nouveaux paiements"
                   : lang === "ar" ? "تشغيل المفتاح الإداري" : lang === "en" ? "Enable admin switch" : "Activer le commutateur"}
             </button>
           </div>

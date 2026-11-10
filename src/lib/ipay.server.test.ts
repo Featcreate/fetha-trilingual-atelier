@@ -136,6 +136,8 @@ describe("iPay read-only webhook health check", () => {
     const [url, init] = fetchMock.mock.calls[0] as [string | URL, RequestInit];
     expect(String(url)).toBe("https://api.ipay.tn/api/admin/webhooks/health?probe=true");
     expect(init.method).toBe("GET");
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+    expect(init.signal?.aborted).toBe(false);
     expect((init.headers as Record<string, string>)["X-Org-Id"]).toBe("org-test");
     expect((init.headers as Record<string, string>).Authorization).toBe("Bearer jwt-test");
   });

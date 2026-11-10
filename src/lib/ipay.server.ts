@@ -7,16 +7,18 @@ export type IpayConfig = {
   orgId: string;
   jwt: string;
   productCode: string;
-  amountUnit: "major" | "minor";
+  amountUnit: "major" | "minor" | null;
 };
 
 export function ipayConfig(requireActivation = false): IpayConfig | null {
   const orgId = process.env["IPAY_ORG_ID"];
   const jwt = process.env["IPAY_JWT"];
   const productCode = process.env["IPAY_PRODUCT_CODE"];
-  const amountUnit = process.env["IPAY_AMOUNT_UNIT"] ?? "minor";
+  const configuredAmountUnit = process.env["IPAY_AMOUNT_UNIT"];
+  const amountUnit = configuredAmountUnit === "major" || configuredAmountUnit === "minor"
+    ? configuredAmountUnit
+    : null;
   if (!orgId || !jwt || !productCode) return null;
-  if (amountUnit !== "major" && amountUnit !== "minor") return null;
   if (requireActivation && process.env["IPAY_CHECKOUT_ENABLED"] !== "true") {
     return null;
   }
@@ -84,6 +86,7 @@ export async function ipayCreateOneShot(input: {
 }): Promise<{ paymentUrl: string; paymentRef: string }> {
   const cfg = ipayConfig(true);
   if (!cfg) throw new Error("ipay_not_configured");
+  if (!cfg.amountUnit) throw new Error("ipay_amount_unit_not_configured");
   if (!input.orderId.trim() || input.orderId.length > 100) {
     throw new Error("invalid_order_reference");
   }

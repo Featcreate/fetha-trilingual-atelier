@@ -1,11 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ipayAmountFromMillimes,
+  isIpayCheckoutEnabled,
   ipayCreateOneShot,
   ipayGetWebhookHealth,
   ipayInitClaimError,
   parseIpayOneShotResponse,
 } from "./ipay.server";
+
+describe("iPay checkout kill switch", () => {
+  it("requires both the admin switch and the independent environment gate", () => {
+    expect(isIpayCheckoutEnabled(false, "true")).toBe(false);
+    expect(isIpayCheckoutEnabled(true, "false")).toBe(false);
+    expect(isIpayCheckoutEnabled(true, undefined)).toBe(false);
+    expect(isIpayCheckoutEnabled(true, "true")).toBe(true);
+  });
+});
 
 describe("iPay TND dinar conversion", () => {
   it("converts canonical TND millimes to dinars", () => {

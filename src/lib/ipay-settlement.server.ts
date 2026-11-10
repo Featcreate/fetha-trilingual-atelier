@@ -13,6 +13,7 @@ type IpayTransaction = {
 type IpayWebhookNotice = {
   id?: unknown;
   invoice_reference?: unknown;
+  status?: unknown;
 };
 
 export function ipayAmountToMillimes(value: unknown): number {
@@ -35,27 +36,27 @@ function parseIpayTransaction(payload: unknown): IpayTransaction {
   }
   const data = envelope.data as Record<string, unknown>;
   if (
-    (typeof data.id !== "string" && typeof data.id !== "number") ||
-    typeof data.invoice_reference !== "string" ||
-    typeof data.amount !== "string" ||
-    typeof data.currency !== "string" ||
-    typeof data.status !== "string"
+    (typeof data["id"] !== "string" && typeof data["id"] !== "number") ||
+    typeof data["invoice_reference"] !== "string" ||
+    typeof data["amount"] !== "string" ||
+    typeof data["currency"] !== "string" ||
+    typeof data["status"] !== "string"
   ) {
     throw new Error("ipay_invalid_response");
   }
-  const id = String(data.id).trim();
-  const invoiceReference = data.invoice_reference.trim();
+  const id = String(data["id"]).trim();
+  const invoiceReference = data["invoice_reference"].trim();
   if (!id || !invoiceReference || id.length > 200 || invoiceReference.length > 200) {
     throw new Error("ipay_invalid_response");
   }
   // Validate the amount here so malformed provider data never reaches the database.
-  ipayAmountToMillimes(data.amount);
+  ipayAmountToMillimes(data["amount"]);
   return {
     id,
     invoice_reference: invoiceReference,
-    amount: data.amount,
-    currency: data.currency.toUpperCase(),
-    status: data.status.toLowerCase(),
+    amount: data["amount"],
+    currency: data["currency"].toUpperCase(),
+    status: data["status"].toLowerCase(),
   };
 }
 
@@ -90,8 +91,8 @@ async function fetchIpayTransaction(path: string): Promise<IpayTransaction> {
 }
 
 export async function ipayGetTransaction(input: {
-  transactionId?: string;
-  invoiceReference?: string;
+  transactionId?: string | undefined;
+  invoiceReference?: string | undefined;
 }): Promise<IpayTransaction> {
   if (input.transactionId) {
     return fetchIpayTransaction(

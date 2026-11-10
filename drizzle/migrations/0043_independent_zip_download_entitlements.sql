@@ -47,7 +47,12 @@ CREATE OR REPLACE FUNCTION public.create_zip_entitlement_for_original()
 RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
-  IF NEW.order_id IS NOT NULL THEN
+  IF NEW.order_id IS NOT NULL AND EXISTS (
+    SELECT 1 FROM public.orders o
+     WHERE o.id = NEW.order_id
+       AND o.status = 'paid'
+       AND o.payment_mode = 'verified'
+  ) THEN
     INSERT INTO public.zip_download_entitlements
       (order_id, order_item_file_id, user_id, starts_at, expires_at)
     VALUES
@@ -55,7 +60,7 @@ BEGIN
     ON CONFLICT (order_item_file_id) DO NOTHING;
   END IF;
   RETURN NEW;
-END $$;
+END $;
 REVOKE ALL ON FUNCTION public.create_zip_entitlement_for_original() FROM PUBLIC, anon, authenticated;
 CREATE TRIGGER create_zip_entitlement_after_original
   AFTER INSERT ON public.download_entitlements
@@ -66,7 +71,7 @@ INSERT INTO public.zip_download_entitlements
 SELECT de.order_id, de.order_item_file_id, de.user_id, de.starts_at, de.expires_at
 FROM public.download_entitlements de
 JOIN public.orders o ON o.id = de.order_id
-WHERE o.status = 'paid'
+WHERE o.status = 'paid' AND o.payment_mode = 'verified'
 ON CONFLICT (order_item_file_id) DO NOTHING;
 
 CREATE OR REPLACE FUNCTION public.reserve_zip_download(_user_id uuid, _entitlement_id uuid)
@@ -115,10 +120,14 @@ CREATE OR REPLACE FUNCTION public.finalize_zip_download(_reservation_id uuid)
 RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE r record;
 BEGIN
+  -- Lock the reservation first so concurrent/retried finalization is idempotent.
   SELECT zr.id, zr.entitlement_id, zr.status, zr.expires_at
     INTO r FROM public.zip_download_reservations zr
-   WHERE zr.id = _reservation_id;
+   WHERE zr.id = _reservation_id
+   FOR UPDATE;
   IF NOT FOUND THEN RETURN false; END IF;
+  IF r.status = 'finalized' THEN RETURN true; END IF;
+  IF r.status <> 'reserved' THEN RETURN false; END IF;
   PERFORM 1
     FROM public.zip_download_entitlements ze
     JOIN public.orders o ON o.id = ze.order_id
@@ -134,10 +143,7 @@ BEGIN
      WHERE id = _reservation_id AND status = 'reserved';
     RETURN false;
   END IF;
-  SELECT zr.status, zr.expires_at INTO r.status, r.expires_at
-    FROM public.zip_download_reservations zr WHERE zr.id = _reservation_id;
-  IF r.status = 'finalized' THEN RETURN true; END IF;
-  IF r.status <> 'reserved' OR r.expires_at <= now() THEN
+  IF r.expires_at <= now() THEN
     UPDATE public.zip_download_reservations
        SET status = 'expired', closed_at = now()
      WHERE id = _reservation_id AND status = 'reserved';

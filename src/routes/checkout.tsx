@@ -137,8 +137,7 @@ function CheckoutPage() {
     0,
   );
   const provider = availability.data?.provider;
-  const providerNotice =
-    provider === "ipay" ? t.providerNoticeIpay : t.providerNoticeKonnect;
+  const providerNotice = provider === "ipay" ? t.providerNoticeIpay : t.providerNoticeKonnect;
   const payLabel = provider === "ipay" ? t.payIpay : t.payKonnect;
 
   return (
@@ -193,9 +192,7 @@ function CheckoutPage() {
             </p>
           ) : (
             <section className="mt-5 rounded-xl border border-border p-4">
-              <p className="text-sm leading-7 text-muted-foreground">
-                {providerNotice}
-              </p>
+              <p className="text-sm leading-7 text-muted-foreground">{providerNotice}</p>
             </section>
           )}
           {availability.data?.enabled && !unavailable ? (

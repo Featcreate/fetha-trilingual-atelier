@@ -25,9 +25,9 @@ describe("iPay amount conversion", () => {
     expect(() => ipayAmountFromMillimes(1.5, "major")).toThrow(
       "invalid_order_amount",
     );
-    expect(() => ipayAmountFromMillimes(Number.MAX_SAFE_INTEGER + 1, "minor")).toThrow(
-      "invalid_order_amount",
-    );
+    expect(() =>
+      ipayAmountFromMillimes(Number.MAX_SAFE_INTEGER + 1, "minor"),
+    ).toThrow("invalid_order_amount");
   });
 });
 

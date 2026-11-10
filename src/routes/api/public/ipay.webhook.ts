@@ -33,8 +33,18 @@ export const Route = createFileRoute("/api/public/ipay/webhook")({
         }
 
         try {
+          // The documented iPay webhook envelope stores transaction fields in data.
+          // Accept the documented envelope and a flat form, but never trust its status/amount.
+          const envelope = notice as Record<string, unknown>;
+          const payload =
+            envelope["data"] && typeof envelope["data"] === "object" && !Array.isArray(envelope["data"])
+              ? (envelope["data"] as Record<string, unknown>)
+              : envelope;
           const result = await processIpaySettlementNotice(
-            notice as { id?: unknown; invoice_reference?: unknown },
+            {
+              id: payload["id"],
+              invoice_reference: payload["invoice_reference"],
+            },
             "webhook",
           );
           const status = result.outcome === "pending" ? 202 : 200;

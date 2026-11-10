@@ -70,12 +70,15 @@ The documented payload shape is:
 - Optional `probe=true` makes iPay issue a HEAD request to each configured callback URL and report reachability/status code.
 - This endpoint checks callback configuration and network reachability only. It does not authenticate a webhook, verify a transaction, prove settlement, or replay a missed event.
 
-## Safe webhook ingress guard
+## Webhook ingress and authoritative verification
 
-- A POST route exists at `/api/public/ipay/webhook` as a fail-closed ingress placeholder.
-- It returns HTTP 503 without parsing, logging, storing, or acting on the request body.
-- This is intentionally not a functioning webhook receiver and must not be configured in the iPay dashboard.
-- Replace the guard only after Audasoft confirms the exact webhook authenticity mechanism and a documented authoritative transaction lookup/settlement contract is implemented and tested.
+- `POST /api/public/ipay/webhook` accepts the documented iPay envelope, where transaction identifiers are nested under `data`; it also accepts a flat identifier form for compatibility.
+- The incoming webhook is unsigned and untrusted. Its event type, status, amount, and currency are never used as settlement evidence.
+- The receiver extracts only the provider transaction ID or invoice reference, then makes an authenticated server-to-server GET to iPay using the organisation JWT and `X-Org-Id`.
+- The authoritative GET response must match the supplied transaction ID/reference and the internal order's iPay transaction reference, order UUID, exact amount in TND millimes, and TND currency.
+- Only provider status `completed` proceeds to the atomic database settlement RPC. Provider statuses `declared` and `pending` remain pending; failed/other states do not settle.
+- If verification fails, the route returns HTTP 503. A pending provider state returns HTTP 202. The receiver does not treat an HTTP redirect or webhook delivery as proof of payment.
+- The route is not protected by a webhook signature because the provider contract supplied for this account documents no signature/HMAC. The authoritative server-to-server lookup is therefore mandatory for every webhook trigger.
 
 ## What the current code actually does
 
@@ -85,7 +88,7 @@ The documented payload shape is:
 - Builds the documented one-shot POST request with product code, TND currency, customer name, and order ID as external/invoice references.
 - Converts canonical integer millimes to decimal dinars (`10500` millimes becomes `10.5` TND). This follows the documentation's decimal-looking example but remains subject to written provider confirmation.
 - Applies a 15-second timeout and validates that the returned transaction reference is non-empty and the hosted URL is HTTPS on an iPay domain.
-- Exposes a read-only webhook-health GET helper. It does not receive or process webhooks.
+- Exposes a read-only webhook-health GET helper. The separate webhook route treats notifications only as triggers and verifies transactions with an authenticated GET.
 - Requires `IPAY_CHECKOUT_ENABLED=true` for one-shot creation.
 
 ### Checkout — `src/lib/shop.functions.ts` and `src/routes/checkout.tsx`
@@ -105,10 +108,10 @@ The documented payload shape is:
 
 ## Known gaps and hard blockers
 
-1. **Authoritative transaction lookup:** No verified iPay API contract is implemented to fetch a transaction by its provider ID and establish final cleared/settled status.
-2. **Webhook authenticity:** No documented signature/HMAC/secret-header validation contract has been confirmed. There is no iPay webhook receiver in the application.
-3. **Webhook event semantics:** `transaction.completed` can mean paid, bank transfer declared, or postal mandate declared. The event name alone cannot prove cleared funds.
-4. **Webhook delivery:** The dashboard says there is no retry after delivery failure. The receiver will need idempotency and an independent reconciliation process; it cannot rely on retries.
+1. **Sandbox verification:** Audasoft has not yet supplied a confirmed Sandbox endpoint and test credentials. Do not test the payment-creation endpoint against production.
+2. **Webhook authenticity:** The account documentation supplied to us does not specify a signature/HMAC/secret-header. Webhooks remain untrusted triggers and must always be followed by authenticated server-side transaction lookup.
+3. **Webhook event semantics:** `transaction.completed` may cover bank/postal declaration events. The implementation requires the authoritative GET status `completed`; bank/postal transfers must only reach that status after the provider's manual receipt matching is complete.
+4. **Webhook delivery:** The dashboard says there is no retry after delivery failure. The hourly reconciliation worker in the follow-up PR addresses missed notifications, subject to its deployment secret and migration prerequisites.
 5. **Stuck initialization recovery:** A claim left behind after an ambiguous timeout is intentionally not cleared automatically. It requires manual provider-dashboard reconciliation. Only after verifying that no transaction exists for the order may a separately authorised recovery procedure release the claim. If a transaction exists, record its exact reference and reconcile it through a verified provider lookup before any settlement.
 6. **Marketplace eligibility and settlement:** Written confirmation is still needed that this organisation may collect marketplace orders for multiple digital-goods sellers and later pay sellers manually outside iPay.
 7. **Amount contract:** The current code sends decimal TND. Audasoft must confirm the exact amount unit with a request/response example for 10.500 TND before checkout can be activated.
@@ -137,15 +140,14 @@ The documented payload shape is:
 
 ## Implementation gate
 
-Until the provider contracts above are confirmed:
+The code path is implemented but not approved for live operation. Until Sandbox tests, written commercial/marketplace eligibility confirmation, and production readiness review are complete:
 
-- Keep `IPAY_CHECKOUT_ENABLED` unset or set to `false`.
-- Do not send real payment requests.
-- Do not implement a webhook that changes order state without verified authenticity and transaction lookup.
-- Do not settle orders or release downloads based on redirects, webhook names, or declared bank/postal transfers.
-- Do not automatically clear or retry ambiguous initialization claims.
+- Keep `IPAY_CHECKOUT_ENABLED` unset or set to `false`; the database admin switch also defaults to off.
+- Do not send real payment requests or enable buyer checkout.
+- Do not settle orders or release downloads based on redirects, webhook names, webhook-supplied status, or customer-declared bank/postal transfers.
+- The webhook route may be configured only after its deployment, secret handling, and provider callback setup have been separately reviewed and explicitly approved.
+- Do not automatically clear ambiguous checkout initialization claims.
 - Do not change the central ledger, commission calculation, seller balances, or manual weekly payout workflow.
-- Do not configure webhook URLs in the iPay dashboard until a secure receiver is implemented, deployed over HTTPS, and explicitly approved.
 
 ## Next safe engineering phase after provider confirmation
 

@@ -61,9 +61,9 @@ A first, deliberately incomplete server-side scaffold is present on `main` and h
 
 - `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and Bearer JWT headers.
 - The one-shot client validates the order/customer input, requires `IPAY_CHECKOUT_ENABLED=true`, and rejects provider responses with empty references or checkout URLs outside HTTPS iPay domains (including URLs containing embedded credentials).
-- `IPAY_AMOUNT_UNIT` defaults to `minor` (integer TND millimes); `major` remains an explicit override only if Audasoft confirms decimal dinars in writing. This is an adopted but unverified assumption, not an official confirmation.
+- `IPAY_AMOUNT_UNIT` must be explicitly set to `major` or `minor`; there is no default. If it is absent or invalid, the one-shot client fails closed before making a provider request. Neither unit is treated as confirmed until Audasoft provides the amount convention in writing and a non-settling test verifies it.
 - `drizzle/migrations/0034_ipay_checkout_reference.sql` adds separate nullable iPay reference/URL fields and a unique partial index. It does not alter the Konnect columns, order settlement, commission, ledger, or payout rules.
-- `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard and hosted checkout URL/reference validation, including malformed payloads, numeric references, lookalike domains, non-standard ports, and oversized references. The new hardening tests are in `feature/ipay-checkout-mainline`.
+- `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard, hosted checkout URL/reference validation, read-only webhook health requests, and fail-closed behaviour when the amount unit is not explicitly configured. Coverage includes malformed payloads, numeric references, lookalike domains, non-standard ports, and oversized references. The new tests are in `feature/ipay-checkout-mainline`; CI execution has not yet been verified.
 
 The current buyer checkout remains Konnect-only. The iPay client is not yet wired into buyer checkout. A server-only, read-only `ipayGetWebhookHealth(probe)` helper now calls the documented `GET /api/admin/webhooks/health` endpoint (and optional `?probe=true`) without creating a transaction or enabling checkout. No iPay webhook receiver or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
 
@@ -75,7 +75,7 @@ Until Audasoft confirms the open questions above:
 - do not apply migration 0034 to Supabase;
 - do not settle an order based only on a webhook, redirect, or browser query parameter;
 - do not release downloads for declared bank/postal transfers without confirmed cleared funds;
-- keep the adopted `minor` default provisional until a non-settling sandbox test confirms that `amount: 1000` displays exactly `1.000 TND`; do not enable live checkout based on this assumption;
+- keep `IPAY_AMOUNT_UNIT` unset until Audasoft confirms the amount convention and a non-settling sandbox test verifies it; do not enable live checkout based on an assumption;
 - do not claim international-card or foreign-currency support;
 - do not assume webhook authenticity or retry behaviour.
 

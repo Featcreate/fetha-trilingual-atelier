@@ -112,10 +112,14 @@ export const startCheckout = createServerFn({ method: "POST" })
     }
   });
 
-/** Public-safe status only; never exposes provider credentials. */
+/** Public-safe status only; never exposes provider credentials. iPay takes priority when explicitly enabled. */
 export const getCartCheckoutAvailability = createServerFn({ method: "GET" }).handler(async () => {
-  const { konnectConfig } = await import("./konnect.server");
-  return { enabled: Boolean(konnectConfig(true)) };
+  const [{ ipayConfig }, { konnectConfig }] = await Promise.all([
+    import("./ipay.server"),
+    import("./konnect.server"),
+  ]);
+  const provider = ipayConfig(true) ? "ipay" : konnectConfig(true) ? "konnect" : null;
+  return { enabled: provider !== null, provider };
 });
 
 /** Create one pending order with one entitlement per distinct digital product, then request one Konnect charge.
@@ -138,8 +142,12 @@ export const startCartCheckout = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
-    if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
+    const [{ ipayConfig, ipayCreateOneShot }, { konnectConfig, konnectInitPayment }] =
+      await Promise.all([import("./ipay.server"), import("./konnect.server")]);
+    const useIpay = Boolean(ipayConfig(true));
+    if (!useIpay && !konnectConfig(true)) {
+      return { ok: false as const, error: "payments_not_configured" };
+    }
 
     const { data: orderId, error } = await context.supabase.rpc("create_order_from_cart", {
       _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),
@@ -156,15 +164,91 @@ export const startCartCheckout = createServerFn({ method: "POST" })
 
     const { data: order } = await context.supabase
       .from("orders")
-      .select("id,status,total_millimes,konnect_pay_url,customer_email")
+      .select("id,status,total_millimes,konnect_pay_url,konnect_payment_ref,konnect_init_claimed_at,ipay_payment_url,ipay_payment_ref,ipay_init_claimed_at,customer_email")
       .eq("id", orderId)
       .single();
     if (!order) return { ok: false as const, error: "order_failed" };
     if (order.status !== "pending") {
       return { ok: false as const, error: "order_closed", orderId };
     }
+
+    if (useIpay) {
+      if (order.ipay_payment_ref && order.ipay_payment_url) {
+        return { ok: true as const, orderId, payUrl: order.ipay_payment_url };
+      }
+      const { data: claimRows, error: claimError } = await context.supabase.rpc(
+        "claim_order_ipay_init",
+        { _order_id: order.id },
+      );
+      const claim = claimRows?.[0] as { outcome?: string; pay_url?: string | null } | undefined;
+      if (claimError || !claim) {
+        return { ok: false as const, error: "payment_initialization_uncertain", orderId };
+      }
+      if (claim.outcome === "existing" && claim.pay_url) {
+        return { ok: true as const, orderId, payUrl: claim.pay_url };
+      }
+      if (claim.outcome !== "claimed") {
+        return {
+          ok: false as const,
+          error:
+            claim.outcome === "order_closed" ? "order_closed" : "payment_initialization_uncertain",
+          orderId,
+        };
+      }
+
+      const { data: profile } = await context.supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", context.userId)
+        .maybeSingle();
+      const customerName =
+        profile?.full_name?.trim() ||
+        order.customer_email?.split("@")[0] ||
+        "Algorea Bazaar buyer";
+
+      try {
+        const { paymentUrl, paymentRef } = await ipayCreateOneShot({
+          amountMillimes: order.total_millimes,
+          orderId: order.id,
+          customerName,
+        });
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { error: saveError } = await supabaseAdmin
+          .from("orders")
+          .update({ ipay_payment_ref: paymentRef, ipay_payment_url: paymentUrl })
+          .eq("id", order.id)
+          .eq("status", "pending")
+          .not("ipay_init_claimed_at", "is", null)
+          .is("ipay_payment_ref", null)
+          .is("ipay_payment_url", null);
+        const { data: saved, error: readError } = await supabaseAdmin
+          .from("orders")
+          .select("ipay_payment_ref,ipay_payment_url")
+          .eq("id", order.id)
+          .single();
+        if (
+          readError ||
+          !saved?.ipay_payment_ref ||
+          !saved.ipay_payment_url ||
+          saved.ipay_payment_ref !== paymentRef
+        ) {
+          console.error(
+            "iPay payment reference could not be persisted",
+            saveError?.message ?? readError?.message ?? "missing_payment_reference",
+          );
+          return { ok: false as const, error: "payment_reference_save_failed", orderId };
+        }
+        return { ok: true as const, orderId, payUrl: saved.ipay_payment_url };
+      } catch {
+        return { ok: false as const, error: "payment_provider_error", orderId };
+      }
+    }
+
     if (order.konnect_pay_url) {
       return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
+    }
+    if (order.ipay_payment_ref || order.ipay_payment_url || order.ipay_init_claimed_at) {
+      return { ok: false as const, error: "payment_initialization_uncertain", orderId };
     }
 
     const { data: claimRows, error: claimError } = await context.supabase.rpc(

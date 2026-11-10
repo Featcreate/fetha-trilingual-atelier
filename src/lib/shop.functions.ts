@@ -367,22 +367,20 @@ export const adminRecheckPayment = createServerFn({ method: "POST" })
 
 /** Initialize one iPay hosted checkout for the authenticated buyer's entire cart.
  * The returned URL only redirects to iPay; it never marks an order as paid. */
-export const getIpayCheckoutAvailability = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const { ipayConfig, isIpayCheckoutEnabled } = await import("./ipay.server");
-    const cfg = ipayConfig(true);
-    if (!cfg) return { enabled: false };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: settings, error } = await supabaseAdmin
-      .from("platform_settings")
-      .select("ipay_checkout_enabled")
-      .eq("id", true)
-      .maybeSingle();
-    return {
-      enabled: !error && isIpayCheckoutEnabled(settings?.ipay_checkout_enabled === true),
-    };
-  },
-);
+export const getIpayCheckoutAvailability = createServerFn({ method: "GET" }).handler(async () => {
+  const { ipayConfig, isIpayCheckoutEnabled } = await import("./ipay.server");
+  const cfg = ipayConfig(true);
+  if (!cfg) return { enabled: false };
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: settings, error } = await supabaseAdmin
+    .from("platform_settings")
+    .select("ipay_checkout_enabled")
+    .eq("id", true)
+    .maybeSingle();
+  return {
+    enabled: !error && isIpayCheckoutEnabled(settings?.ipay_checkout_enabled === true),
+  };
+});
 
 export const startCartIpayCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -398,9 +396,7 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { ipayConfig, ipayCreateOneShot, isIpayCheckoutEnabled } = await import(
-      "./ipay.server"
-    );
+    const { ipayConfig, ipayCreateOneShot, isIpayCheckoutEnabled } = await import("./ipay.server");
     const cfg = ipayConfig(true);
     if (!cfg) return { ok: false as const, error: "ipay_not_configured" };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -409,10 +405,7 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       .select("ipay_checkout_enabled")
       .eq("id", true)
       .maybeSingle();
-    if (
-      settingsError ||
-      !isIpayCheckoutEnabled(settings?.ipay_checkout_enabled === true)
-    ) {
+    if (settingsError || !isIpayCheckoutEnabled(settings?.ipay_checkout_enabled === true)) {
       return { ok: false as const, error: "ipay_checkout_disabled" };
     }
 

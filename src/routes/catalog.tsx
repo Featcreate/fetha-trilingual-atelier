@@ -79,7 +79,7 @@ function CatalogPage() {
       .replace(/\p{M}/gu, "")
       .replace(/[^\p{L}\p{N}]+/gu, " ")
       .trim();
-    const searchTerms = q ? q.split(/\\s+/) : [];
+    const searchTerms = q ? q.split(/\s+/) : [];
     const storeMap = new Map((catalog.data?.stores ?? []).map((s) => [s.id, s]));
     return (catalog.data?.products ?? [])
       .filter((p) => {

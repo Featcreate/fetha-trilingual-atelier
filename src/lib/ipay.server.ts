@@ -78,7 +78,6 @@ export async function ipayCreateOneShot(input: {
 }): Promise<{ paymentUrl: string; paymentRef: string }> {
   const cfg = ipayConfig(true);
   if (!cfg) throw new Error("ipay_not_configured");
-  if (!cfg.amountUnit) throw new Error("ipay_amount_unit_not_configured");
   if (!input.orderId.trim() || input.orderId.length > 100) {
     throw new Error("invalid_order_reference");
   }

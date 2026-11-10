@@ -70,6 +70,13 @@ The documented payload shape is:
 - Optional `probe=true` makes iPay issue a HEAD request to each configured callback URL and report reachability/status code.
 - This endpoint checks callback configuration and network reachability only. It does not authenticate a webhook, verify a transaction, prove settlement, or replay a missed event.
 
+## Safe webhook ingress guard
+
+- A POST route exists at `/api/public/ipay/webhook` as a fail-closed ingress placeholder.
+- It returns HTTP 503 without parsing, logging, storing, or acting on the request body.
+- This is intentionally not a functioning webhook receiver and must not be configured in the iPay dashboard.
+- Replace the guard only after Audasoft confirms the exact webhook authenticity mechanism and a documented authoritative transaction lookup/settlement contract is implemented and tested.
+
 ## What the current code actually does
 
 ### Provider client — `src/lib/ipay.server.ts`

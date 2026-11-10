@@ -2,6 +2,7 @@ name: iPay hourly reconciliation
 
 on:
   schedule:
+    # GitHub Actions schedules are UTC; the service limits each run to 20 orders.
     - cron: "17 * * * *"
   workflow_dispatch:
 

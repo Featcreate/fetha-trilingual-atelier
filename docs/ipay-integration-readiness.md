@@ -1,82 +1,85 @@
 # iPay integration readiness — Algorea Bazaar
 
-Last reviewed against the public iPay by Audasoft website: 2026-11-07.
+Last reviewed against the repository on 2026-11-10. This document distinguishes code that exists from provider capabilities that remain unverified.
 
-## Scope and invariants
+## Scope and financial invariants
 
-- iPay is the selected provider for planned buyer checkout.
-- Keep the existing Konnect integration intact; do not remove it or silently reroute it.
-- Do not enable live checkout as part of this preparation.
-- Buyer payments are collected into the platform's iPay organisation/account. Do not use split payments or provider-managed seller payouts.
-- Keep TND order accounting, commission calculation, the append-only platform ledger, seller balances, and weekly manual seller payouts unchanged.
-- Release a digital download only after authoritative confirmation of the exact transaction, order association, amount, currency, and final payment state.
-- Never commit API tokens/JWTs or other provider secrets. Store them only as server-side deployment secrets after the integration contract is confirmed.
+- iPay is a planned buyer-checkout provider. Keep the existing Konnect integration intact; do not silently reroute or mix provider transactions.
+- Buyer payments, if approved, are collected into the platform's iPay organisation/account. Do not use split payments or provider-managed seller payouts.
+- Keep TND order accounting, configurable platform commission, the append-only platform ledger, seller balances, and weekly manual seller payouts unchanged.
+- A buyer redirect, browser query parameter, webhook event name, or customer-declared transfer is never sufficient proof of payment.
+- Release digital downloads only after an authoritative server-side verification of the exact transaction, order association, amount, currency, product, and final cleared/settled state.
+- Never commit API tokens/JWTs or other provider secrets. Keep them only as server-side deployment secrets.
 
-## Public information verified on ipay.tn
+## What the current code actually does
 
-### API and checkout
+### Provider client — `src/lib/ipay.server.ts`
 
-- Public developer page documents API base authentication headers: `X-Org-Id` and `Authorization: Bearer <JWT>`; token is stated to be valid for one year.
-- Public developer page lists `GET /api/admin/transactions` for listing transactions.
-- Public one-shot page explicitly describes e-commerce/m-commerce: `POST /api/admin/transactions/create-oneshot`, one transaction per order, returning a payment link for redirect. It says the buyer chooses a method on iPay.
-- The public pages do not publish the full create-oneshot request/response schema; the detailed API documentation is stated to be available inside the authenticated dashboard. The field list previously recorded in this project came from the user-provided authenticated documentation, not independently verifiable public page content.
+- Authenticates requests with `X-Org-Id` and `Authorization: Bearer <JWT>`.
+- Builds `POST /api/admin/transactions/create-oneshot` requests with the product code, TND currency, customer name, and order ID as external/invoice references.
+- Converts canonical integer millimes to decimal dinars (`10500` millimes becomes `10.5` TND).
+- Applies a 15-second timeout and validates that the returned transaction reference is non-empty and the hosted URL is HTTPS on an iPay domain.
+- Exposes a read-only webhook-health GET helper. It does not receive or process webhooks.
+- Requires `IPAY_CHECKOUT_ENABLED=true` for one-shot creation. The amount unit is currently hard-coded as decimal TND based on the current implementation assumption; this is **not** a provider-confirmed contract. Do not enable checkout until Audasoft confirms it in writing and a safe non-settling verification is available.
 
-### Payment methods and geography
+### Checkout — `src/lib/shop.functions.ts` and `src/routes/checkout.tsx`
 
-- Public aggregator page lists bank transfer, postal mandate, ClicToPay, Flouci, D17, Konnect, Ooredoo SMS, Tunisie Telecom SMS, and WinSMS.
-- The public page describes these as solutions covering the Tunisian payment ecosystem. ClicToPay is described as a Tunisian-bank card gateway.
-- The public information reviewed does **not** establish that international-issued cards are accepted, that non-TND buyer charges are supported, or that settlement is available in foreign currencies. Do not advertise worldwide card acceptance until Audasoft confirms supported card schemes/issuing countries, currency, and settlement.
-- The public website and the organisation dashboard both show iPay pricing of 1% per transaction, capped at 5 TND, billed monthly; the dashboard currently shows no transaction/commission entries. The public pricing page says third-party provider fees (e.g. ClicToPay, Flouci, SMS) may be charged in addition, while bank transfer and postal mandate have no additional iPay-side surcharge beyond the 1% capped commission. Confirm the precise tariff and all external/acquirer fees for this organisation, refunds, and every enabled method before financial modelling.
+- The iPay checkout path is wired into the buyer checkout page, but it is available only when the activation gate and required credentials are present.
+- It creates/reuses a pending cart order, claims initialization, requests one hosted checkout URL, and persists the iPay reference and URL.
+- The redirect only sends the buyer to iPay. It does not settle an order or grant a download.
+- Claim outcomes now remain explicit: missing order, closed order, provider conflict, and an already-in-progress initialization are distinct errors.
+- If the provider request times out or its response cannot be persisted, the claim deliberately remains locked. This avoids duplicate charges when iPay may have created a transaction but the response was lost. There is no automatic retry or automatic claim reset.
 
-### Webhooks — important inconsistency and risk
+### Database migrations
 
-- Public webhook page says events are sent by POST JSON to product-configured URLs; it advertises call history/payload history and automatic retry.
-- The same page says `transaction.completed` can be triggered when a customer declares a bank transfer or postal mandate, when an administrator manually changes status to paid, and when a gateway callback confirms payment.
-- Public one-shot page also describes `transaction.completed` for card, declared transfer, Flouci, and SMS.
-- This means the event name alone does not prove that funds have cleared or are available to the platform. Treat bank/postal declarations as unverified until the merchant can confirm actual receipt.
-- There is a documentation conflict: the authenticated API notes supplied by the user previously stated that iPay does **not** retry failed webhook deliveries, while the current public webhook page advertises automatic retry. Do not rely on retries until Audasoft confirms the actual behaviour for this organisation/API version. The receiver must be idempotent regardless.
-- The public pages reviewed do not specify a webhook signature/HMAC scheme or provide an authoritative transaction-by-ID verification endpoint/response schema. This is an absence in the public documentation reviewed, not proof that the capability does not exist.
+- `0034_ipay_checkout_reference.sql` adds separate nullable iPay transaction-reference and checkout-URL fields with a unique partial index.
+- `0041_ipay_checkout_init_claim.sql` serializes iPay initialization and prevents a competing Konnect initialization for the same order.
+- These migrations do not implement iPay webhook receipt, authoritative transaction lookup, settlement, ledger posting, or seller payout.
+- Do not apply new database migrations or alter production data as part of this readiness work.
 
-## Provider contact status
+## Known gaps and hard blockers
 
-- A one-question email was attempted to `support@ipay.tn` on 2026-11-07, asking whether `create-oneshot.amount` uses integer millimes or decimal dinars.
-- Gmail returned a delivery failure: `554 5.7.1 Relay access denied`. The message did not reach iPay; no provider response or confirmation has been received.
-- The published general/commercial contact is `contact@audasoft.co`. A follow-up to that alternate address has not been sent pending the account owner's approval.
+1. **Authoritative transaction lookup:** No verified iPay API contract is implemented to fetch a transaction by its provider ID and establish final cleared/settled status.
+2. **Webhook authenticity:** No documented signature/HMAC/secret-header validation contract has been confirmed. There is no iPay webhook receiver in the application.
+3. **Webhook event semantics:** Public iPay material describes `transaction.completed` for card/gateway payments as well as customer-declared bank transfers/postal mandates and administrator status changes. The event name alone cannot prove cleared funds.
+4. **Webhook retries:** Public information and dashboard notes previously reviewed conflict on automatic retry behaviour. The application must remain idempotent and cannot depend on retries.
+5. **Stuck initialization recovery:** A claim left behind after an ambiguous timeout is intentionally not cleared automatically. It requires manual provider-dashboard reconciliation. Only after verifying that no transaction exists for the order may a separately authorised recovery procedure release the claim. If a transaction exists, record its exact reference and reconcile it through a verified provider lookup before any settlement.
+6. **Marketplace eligibility and settlement:** Written confirmation is still needed that this organisation may collect marketplace orders for multiple digital-goods sellers and later pay sellers manually outside iPay.
+7. **Amount contract:** The current code sends decimal TND. Audasoft must confirm the exact amount unit with a request/response example for 10.500 TND before checkout can be activated.
+8. **International cards/currencies:** Do not claim support for foreign-issued cards or foreign-currency charging/settlement until Audasoft confirms supported schemes, issuing countries, and settlement currency.
 
-## Required confirmation from Audasoft
+## Safe handling of ambiguous or stuck iPay initialization
 
-1. **Amount units:** Is `amount` in TND millimes, decimal TND, or another convention? Provide a request/response example for exactly 10.500 TND.
-1. **Authoritative transaction verification:** What endpoint and fields confirm one transaction's final paid/settled state, amount, currency, product code, transaction ID, and external order reference? Can `GET /api/admin/transactions` filter reliably by transaction ID or invoice/customer external reference?
-1. **Webhook authenticity:** Is there a signature, HMAC, secret header, mTLS, or another authenticity mechanism? Provide exact verification instructions.
-1. **Declared bank/postal transfers:** Does `transaction.completed` on a declared transfer mean funds are already credited/cleared, or only that the customer declared a transfer? Which status/event confirms actual receipt? Can these methods be disabled per product?
-1. **International buyers:** Which card schemes and issuing countries are accepted? Are international-issued Visa/Mastercard supported through this organisation's ClicToPay configuration? Which currencies can be charged, and what currency reaches the platform?
-1. **Webhook delivery:** The public page advertises automatic retry but the authenticated notes supplied earlier say no retry. Which is correct for this account/API version, what is the retry schedule, and how can missed events be replayed?
-1. **Product configuration:** Confirm that product code `algorea-bazaar` is valid for one-shot transactions, and whether success/failure callback URLs are configured per product only or can be overridden per transaction.
-1. **Marketplace eligibility and documents:** Confirm in writing that this organisation/account can process payments for a digital-goods marketplace where buyers pay the platform and the platform separately accounts for and manually pays sellers. Confirm any required business registration, KYC, or supporting documents.
-1. **Fees:** Confirm the 1% monthly-billed commission capped at 5 TND for this organisation and identify every additional acquirer/provider fee by payment method, including refunds and declared transfers.
+- Do not retry `startCartIpayCheckout` for an order whose initialization outcome is `payment_initialization_in_progress` or `payment_initialization_uncertain`.
+- Do not clear `ipay_init_claimed_at` just because a timeout elapsed.
+- An operator must inspect the iPay organisation dashboard and search using the exact order ID/external reference, customer, amount, and time window.
+- If a matching transaction exists, capture its provider ID and current status. Do not settle until an authoritative API lookup contract confirms the exact amount, currency, product, order reference, and cleared state.
+- If no matching transaction exists, retain the evidence of the dashboard search and use a separately reviewed, admin-only recovery operation. No such automatic reset operation is implemented.
+- If the dashboard result is ambiguous, leave the order pending and escalate to Audasoft. Do not create a second transaction.
 
-## Implementation status on current mainline
+## Provider questions still requiring written answers
 
-A first, deliberately incomplete server-side scaffold is present on `main` and has been carried into the fresh `feature/ipay-checkout-mainline` branch:
-
-- `src/lib/ipay.server.ts` implements authenticated one-shot request construction using the documented `X-Org-Id` and Bearer JWT headers.
-- The one-shot client validates the order/customer input, requires `IPAY_CHECKOUT_ENABLED=true`, and rejects provider responses with empty references or checkout URLs outside HTTPS iPay domains (including URLs containing embedded credentials).
-- `IPAY_AMOUNT_UNIT` must be explicitly set to `major` or `minor`; there is no default. If it is absent or invalid, the one-shot client fails closed before making a provider request. Neither unit is treated as confirmed until Audasoft provides the amount convention in writing and a non-settling test verifies it.
-- `drizzle/migrations/0034_ipay_checkout_reference.sql` adds separate nullable iPay reference/URL fields and a unique partial index. It does not alter the Konnect columns, order settlement, commission, ledger, or payout rules.
-- `src/lib/ipay.server.test.ts` covers the pure TND amount conversion guard, hosted checkout URL/reference validation, read-only webhook health requests, fail-closed behaviour when the amount unit is not explicitly configured, and the one-shot POST's explicit amount conversion plus bounded request signal. Coverage includes malformed payloads, numeric references, lookalike domains, non-standard ports, and oversized references. GitHub Actions run 618 passed on 2026-11-10: migration journal, TypeScript typecheck, Prettier, ESLint, all 55 tests across 8 test files, and production build.
-
-The current buyer checkout remains Konnect-only. The iPay client is not yet wired into buyer checkout. A server-only, read-only `ipayGetWebhookHealth(probe)` helper now calls the documented `GET /api/admin/webhooks/health` endpoint (and optional `?probe=true`) without creating a transaction or enabling checkout. Both the one-shot POST and health GET have a 15-second abort timeout. No iPay webhook receiver or settlement/reconciliation path has been added. This is intentional: the public material reviewed does not yet establish the authoritative status-verification contract or webhook authenticity, and the semantics of declared bank/postal transfers remain ambiguous.
+1. **Amount:** Is `create-oneshot.amount` decimal TND or integer millimes? Provide a complete example for exactly 10.500 TND.
+2. **Verification:** Which endpoint and fields confirm final paid/settled status, transaction ID, amount, currency, product code, and external order reference? Can `GET /api/admin/transactions` filter reliably by transaction ID or external reference?
+3. **Webhook authenticity:** Is there HMAC/signature, a secret header, mTLS, or another authenticity mechanism? Provide exact validation instructions.
+4. **Bank/postal transfers:** Does `transaction.completed` mean funds have actually been received and cleared, or only that the customer declared a transfer? Which event/status proves receipt?
+5. **Retries/replay:** Which retry policy applies to this account/API version? Can missed webhook events be replayed?
+6. **Product configuration:** Is product code `algorea-bazaar` valid for one-shot transactions? Are success/failure URLs product-level only or overridable per transaction?
+7. **Marketplace eligibility:** Is this account authorised to collect full orders for multiple digital sellers and pay sellers manually later? Which KYC/business documents are required?
+8. **International acceptance:** Which card schemes and issuing countries are supported, and what are the charge and settlement currencies?
+9. **Fees:** Confirm the 1% monthly-billed fee capped at 5 TND for this organisation, plus all external/acquirer fees and refund costs.
 
 ## Implementation gate
 
-Until Audasoft confirms the open questions above:
+Until the above provider contracts are confirmed:
 
-- do not set `IPAY_CHECKOUT_ENABLED=true`;
-- do not apply migration 0034 to Supabase;
-- do not settle an order based only on a webhook, redirect, or browser query parameter;
-- do not release downloads for declared bank/postal transfers without confirmed cleared funds;
-- keep `IPAY_AMOUNT_UNIT` unset until Audasoft confirms the amount convention and a non-settling sandbox test verifies it; do not enable live checkout based on an assumption;
-- do not claim international-card or foreign-currency support;
-- do not assume webhook authenticity or retry behaviour.
+- Keep `IPAY_CHECKOUT_ENABLED` unset or set to `false`.
+- Do not send real payment requests.
+- Do not implement a webhook that changes order state without verified authenticity and transaction lookup.
+- Do not settle orders or release downloads based on redirects, webhook names, or declared bank/postal transfers.
+- Do not automatically clear or retry ambiguous initialization claims.
+- Do not change the central ledger, commission calculation, seller balances, or manual weekly payout workflow.
 
-Next engineering steps after written confirmation: implement authoritative transaction lookup, authenticated/idempotent webhook reconciliation, exact order/amount/currency/product matching, safe settlement through the existing trusted RPC, and sandbox integration tests. Then run the repository typecheck, unit tests, migration-journal check, and production build on the branch. Review the full diff before any merge or deployment.
+## Next safe engineering phase after provider confirmation
+
+Implement the documented transaction lookup, authenticated and idempotent webhook ingestion, exact order/amount/currency/product matching, and settlement through the existing trusted settlement RPC. Add reconciliation for missed events and a separately authorised admin recovery path for claims proven to have no provider transaction. Then run typecheck, formatting, lint, all unit tests, migration-journal checks, and production build. Review the full diff before merge or deployment.

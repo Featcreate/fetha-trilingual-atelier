@@ -1,6 +1,10 @@
 // Server-only. Import dynamically from inside server handlers.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { decidePaymentOutcome, type KonnectPayment, type PaymentOutcome } from "./payment-rules";
+import {
+  decidePaymentOutcome,
+  type KonnectPayment,
+  type PaymentOutcome,
+} from "./payment-rules";
 import { isKonnectPaymentEnabled } from "./payment-activation";
 import { KONNECT_API_BASE_URLS } from "./konnect-api";
 
@@ -13,15 +17,22 @@ export function konnectConfig(requireActivation = false) {
     requireActivation &&
     !isKonnectPaymentEnabled({
       KONNECT_ENV: mode,
-      KONNECT_SANDBOX_PAYMENTS_ENABLED: process.env["KONNECT_SANDBOX_PAYMENTS_ENABLED"],
-      KONNECT_LIVE_PAYMENTS_ENABLED: process.env["KONNECT_LIVE_PAYMENTS_ENABLED"],
+      KONNECT_SANDBOX_PAYMENTS_ENABLED:
+        process.env["KONNECT_SANDBOX_PAYMENTS_ENABLED"],
+      KONNECT_LIVE_PAYMENTS_ENABLED:
+        process.env["KONNECT_LIVE_PAYMENTS_ENABLED"],
     })
   ) {
     return null;
   }
   if (!apiKey || !walletId) return null;
   const live = mode === "live";
-  return { apiKey, walletId, base: live ? KONNECT_API_BASE_URLS.live : KONNECT_API_BASE_URLS.sandbox, live };
+  return {
+    apiKey,
+    walletId,
+    base: live ? KONNECT_API_BASE_URLS.live : KONNECT_API_BASE_URLS.sandbox,
+    live,
+  };
 }
 
 export async function konnectInitPayment(input: {
@@ -77,9 +88,12 @@ export async function konnectInitPayment(input: {
 async function konnectGetPayment(paymentRef: string): Promise<KonnectPayment> {
   const cfg = konnectConfig();
   if (!cfg) throw new Error("payments_not_configured");
-  const res = await fetch(`${cfg.base}/payments/${encodeURIComponent(paymentRef)}`, {
-    headers: { "x-api-key": cfg.apiKey },
-  });
+  const res = await fetch(
+    `${cfg.base}/payments/${encodeURIComponent(paymentRef)}`,
+    {
+      headers: { "x-api-key": cfg.apiKey },
+    },
+  );
   if (!res.ok) throw new Error(`konnect_status_${res.status}`);
   const json = (await res.json()) as { payment?: KonnectPayment };
   return json.payment ?? {};

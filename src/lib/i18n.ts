@@ -336,7 +336,7 @@ export const dict = {
       checkEmail:
         "Compte créé. Vérifiez votre e-mail pour confirmer votre adresse, puis connectez-vous.",
       verificationResend: "Renvoyer l’e-mail de vérification",
-      verificationResent: "Un nouvel e-mail de vérification a été demandé. Consultez votre boîte de réception et vos courriers indésirables."
+      verificationResent: "Un nouvel e-mail de vérification a été demandé. Consultez votre boîte de réception et vos courriers indésirables.",
       loading: "Veuillez patienter…",
       save: "Enregistrer",
       saved: "Profil enregistré.",
@@ -668,7 +668,7 @@ export const dict = {
       resetInvalid: "الرابط غير صالح أو منتهي الصلاحية. اطلب رابطاً جديداً.",
       checkEmail: "تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتأكيد العنوان ثم سجّل الدخول.",
       verificationResend: "إعادة إرسال رسالة التحقق",
-      verificationResent: "تم طلب إرسال رسالة تحقق جديدة. افحص صندوق الوارد والبريد غير المرغوب فيه."
+      verificationResent: "تم طلب إرسال رسالة تحقق جديدة. افحص صندوق الوارد والبريد غير المرغوب فيه.",
       loading: "يرجى الانتظار…",
       save: "حفظ",
       saved: "تم حفظ الملف الشخصي.",
@@ -1007,7 +1007,7 @@ export const dict = {
       resetInvalid: "Invalid or expired link. Request a new one.",
       checkEmail: "Account created. Check your email to confirm your address, then sign in.",
       verificationResend: "Resend verification email",
-      verificationResent: "A new verification email has been requested. Check your inbox and spam folder."
+      verificationResent: "A new verification email has been requested. Check your inbox and spam folder.",
       loading: "Please wait…",
       save: "Save",
       saved: "Profile saved.",

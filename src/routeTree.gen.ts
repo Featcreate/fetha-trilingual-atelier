@@ -24,8 +24,8 @@ import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ProductsIdRouteImport } from './routes/products/$id'
 import { Route as StoresSlugRouteImport } from './routes/stores/$slug'
-import { Route as ApiPublicKonnectWebhookRouteImport } from './routes/api/public/konnect.webhook'
 import { Route as ApiPublicIpayWebhookRouteImport } from './routes/api/public/ipay.webhook'
+import { Route as ApiPublicKonnectWebhookRouteImport } from './routes/api/public/konnect.webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -101,14 +101,14 @@ const StoresSlugRoute = StoresSlugRouteImport.update({
   path: '/stores/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicKonnectWebhookRoute = ApiPublicKonnectWebhookRouteImport.update({
-  id: '/api/public/konnect/webhook',
-  path: '/api/public/konnect/webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicIpayWebhookRoute = ApiPublicIpayWebhookRouteImport.update({
   id: '/api/public/ipay/webhook',
   path: '/api/public/ipay/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicKonnectWebhookRoute = ApiPublicKonnectWebhookRouteImport.update({
+  id: '/api/public/konnect/webhook',
+  path: '/api/public/konnect/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -127,8 +127,8 @@ export interface FileRoutesByFullPath {
   '/checkout/return': typeof CheckoutReturnRoute
   '/products/$id': typeof ProductsIdRoute
   '/stores/$slug': typeof StoresSlugRoute
-  '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
   '/api/public/ipay/webhook': typeof ApiPublicIpayWebhookRoute
+  '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -145,8 +145,8 @@ export interface FileRoutesByTo {
   '/checkout/return': typeof CheckoutReturnRoute
   '/products/$id': typeof ProductsIdRoute
   '/stores/$slug': typeof StoresSlugRoute
-  '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
   '/api/public/ipay/webhook': typeof ApiPublicIpayWebhookRoute
+  '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -165,8 +165,8 @@ export interface FileRoutesById {
   '/checkout/return': typeof CheckoutReturnRoute
   '/products/$id': typeof ProductsIdRoute
   '/stores/$slug': typeof StoresSlugRoute
-  '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
   '/api/public/ipay/webhook': typeof ApiPublicIpayWebhookRoute
+  '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -185,8 +185,8 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/products/$id'
     | '/stores/$slug'
-    | '/api/public/konnect/webhook'
     | '/api/public/ipay/webhook'
+    | '/api/public/konnect/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -203,8 +203,8 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/products/$id'
     | '/stores/$slug'
-    | '/api/public/konnect/webhook'
     | '/api/public/ipay/webhook'
+    | '/api/public/konnect/webhook'
   id:
     | '__root__'
     | '/'
@@ -222,8 +222,8 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/products/$id'
     | '/stores/$slug'
-    | '/api/public/konnect/webhook'
     | '/api/public/ipay/webhook'
+    | '/api/public/konnect/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -237,8 +237,8 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ProductsIdRoute: typeof ProductsIdRoute
   StoresSlugRoute: typeof StoresSlugRoute
-  ApiPublicKonnectWebhookRoute: typeof ApiPublicKonnectWebhookRoute
   ApiPublicIpayWebhookRoute: typeof ApiPublicIpayWebhookRoute
+  ApiPublicKonnectWebhookRoute: typeof ApiPublicKonnectWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -348,18 +348,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoresSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/konnect/webhook': {
-      id: '/api/public/konnect/webhook'
-      path: '/api/public/konnect/webhook'
-      fullPath: '/api/public/konnect/webhook'
-      preLoaderRoute: typeof ApiPublicKonnectWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/ipay/webhook': {
       id: '/api/public/ipay/webhook'
       path: '/api/public/ipay/webhook'
       fullPath: '/api/public/ipay/webhook'
       preLoaderRoute: typeof ApiPublicIpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/konnect/webhook': {
+      id: '/api/public/konnect/webhook'
+      path: '/api/public/konnect/webhook'
+      fullPath: '/api/public/konnect/webhook'
+      preLoaderRoute: typeof ApiPublicKonnectWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -405,8 +405,8 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ProductsIdRoute: ProductsIdRoute,
   StoresSlugRoute: StoresSlugRoute,
-  ApiPublicKonnectWebhookRoute: ApiPublicKonnectWebhookRoute,
   ApiPublicIpayWebhookRoute: ApiPublicIpayWebhookRoute,
+  ApiPublicKonnectWebhookRoute: ApiPublicKonnectWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -5,7 +5,10 @@ export const fullNameSchema = z.string().trim().min(2).max(120);
 export const phoneSchema = z
   .string()
   .trim()
-  .regex(/^\+?[0-9][0-9\s-]{6,18}[0-9]$/);
+  .refine(
+    (value) => value === "" || /^\+?[0-9][0-9\s-]{6,18}[0-9]$/.test(value),
+    "Enter a valid phone number or leave it blank.",
+  );
 export const emailSchema = z.string().trim().email().max(255);
 export const passwordSchema = z.string().min(8).max(72);
 

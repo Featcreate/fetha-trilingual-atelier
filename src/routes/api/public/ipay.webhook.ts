@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   processIpayReconciliationBatch,
@@ -15,14 +15,26 @@ export const Route = createFileRoute("/api/public/ipay/webhook")({
       POST: async ({ request }) => {
         // Scheduled reconciliation uses a separate high-entropy secret.
         // The public iPay webhook remains unsigned and is only an untrusted trigger.
-        const suppliedSecret = request.headers.get("x-ipay-reconcile-secret");
-        if (suppliedSecret !== null) {
-          const expectedSecret = process.env["IPAY_RECONCILE_CRON_SECRET"];
-          if (
-            !expectedSecret ||
-            Buffer.byteLength(suppliedSecret) !== Buffer.byteLength(expectedSecret) ||
-            !timingSafeEqual(Buffer.from(suppliedSecret), Buffer.from(expectedSecret))
-          ) {
+        const suppliedSecretHeader = request.headers.get("x-ipay-reconcile-secret");
+        if (suppliedSecretHeader !== null) {
+          // Normalize accidental leading/trailing whitespace from dashboard copy/paste.
+          const suppliedSecret = suppliedSecretHeader.trim();
+          const expectedSecret = process.env["IPAY_RECONCILE_CRON_SECRET"]?.trim();
+          const fingerprint = (value: string) =>
+            createHash("sha256").update(value, "utf8").digest("hex").slice(0, 12);
+          const matches =
+            Boolean(expectedSecret) &&
+            Buffer.byteLength(suppliedSecret) === Buffer.byteLength(expectedSecret!) &&
+            timingSafeEqual(Buffer.from(suppliedSecret), Buffer.from(expectedSecret!));
+          if (!matches) {
+            // Fingerprints and lengths are safe diagnostics; never log either secret.
+            console.warn("iPay reconciliation authentication rejected", {
+              expectedPresent: Boolean(expectedSecret),
+              expectedLength: expectedSecret ? Buffer.byteLength(expectedSecret) : 0,
+              suppliedLength: Buffer.byteLength(suppliedSecret),
+              expectedFingerprint: expectedSecret ? fingerprint(expectedSecret) : null,
+              suppliedFingerprint: fingerprint(suppliedSecret),
+            });
             return new Response("Unauthorized", {
               status: 401,
               headers: { "Cache-Control": "no-store" },

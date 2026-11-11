@@ -38,7 +38,8 @@ const copy = {
   ar: {
     title: "مراجعة الطلب",
     total: "الإجمالي المستحق",
-    disabled: "وسيلة الدفع هذه غير متاحة مؤقتاً. ستبقى سلتك محفوظة، ولن يتم إنشاء طلب أو خصم أي مبلغ.",
+    disabled:
+      "وسيلة الدفع هذه غير متاحة مؤقتاً. ستبقى سلتك محفوظة، ولن يتم إنشاء طلب أو خصم أي مبلغ.",
     back: "العودة إلى السلة",
     methods: "اختاري مزوّد الدفع المناسب.",
     empty: "السلة فارغة.",
@@ -193,7 +194,9 @@ function CheckoutPage() {
                   <span>{localizedProductText(product.name, product.name_translations, lang)}</span>
                   {salePrice != null ? (
                     <span className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                      <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">
+                      <span
+                        className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground"
+                      >
                         PROMO
                       </span>
                       <span className="text-sm text-muted-foreground line-through">

@@ -20,7 +20,8 @@ const copy = {
   fr: {
     title: "Récapitulatif de commande",
     total: "Total à payer",
-    disabled: "Ce moyen de paiement est temporairement indisponible. Votre panier est conservé ; aucune commande ni aucun débit ne sera créé.",
+    disabled:
+      "Ce moyen de paiement est temporairement indisponible. Votre panier est conservé ; aucune commande ni aucun débit ne sera créé.",
     back: "Retour au panier",
     methods: "Choisissez votre prestataire de paiement.",
     empty: "Votre panier est vide.",
@@ -30,7 +31,8 @@ const copy = {
     konnect: "Payer avec Konnect",
     ipay: "Payer avec iPay",
     starting: "Préparation du paiement…",
-    paymentError: "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. Réessayez uniquement après vérification de l’état de la commande.",
+    paymentError:
+      "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. Réessayez uniquement après vérification de l’état de la commande.",
     providerLoading: "Vérification de la disponibilité…",
   },
   ar: {
@@ -46,13 +48,15 @@ const copy = {
     konnect: "الدفع عبر Konnect",
     ipay: "الدفع عبر iPay",
     starting: "جارٍ إعداد الدفع…",
-    paymentError: "تعذر إعداد الدفع. لن تتم إعادة محاولة إنشاء عملية دفع تلقائياً. لا تعيدي المحاولة إلا بعد التحقق من حالة الطلب.",
+    paymentError:
+      "تعذر إعداد الدفع. لن تتم إعادة محاولة إنشاء عملية دفع تلقائياً. لا تعيدي المحاولة إلا بعد التحقق من حالة الطلب.",
     providerLoading: "جارٍ التحقق من التوفر…",
   },
   en: {
     title: "Order summary",
     total: "Total due",
-    disabled: "This payment method is temporarily unavailable. Your cart is preserved; no order or charge will be created.",
+    disabled:
+      "This payment method is temporarily unavailable. Your cart is preserved; no order or charge will be created.",
     back: "Back to cart",
     methods: "Choose your payment provider.",
     empty: "Your cart is empty.",
@@ -62,7 +66,8 @@ const copy = {
     konnect: "Pay with Konnect",
     ipay: "Pay with iPay",
     starting: "Preparing payment…",
-    paymentError: "Payment could not be initialized. Another payment will not be started automatically. Retry only after checking the order status.",
+    paymentError:
+      "Payment could not be initialized. Another payment will not be started automatically. Retry only after checking the order status.",
     providerLoading: "Checking availability…",
   },
 } as const;

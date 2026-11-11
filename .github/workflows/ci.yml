@@ -53,7 +53,8 @@ jobs:
               BASE="HEAD^"
             fi
           fi
-          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$BASE"...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx' '*.json' '*.md' '*.css' '*.html' '*.yml' '*.yaml')
+          # Exclude the archived planning artifact; CI validates application and configuration files.
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$BASE"...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx' '*.json' '*.md' '*.css' '*.html' '*.yml' '*.yaml' ':!.lovable/plan.md')
           if (( ${#files[@]} )); then
             bunx prettier --check "${files[@]}"
           else

@@ -6,12 +6,16 @@ describe("account rules", () => {
     expect(phoneSchema.safeParse("+216 22 123 456").success).toBe(true);
     expect(phoneSchema.safeParse("22123456").success).toBe(true);
   });
-  it("rejects invalid phones", () => {
+  it("allows a phone number to be omitted from the customer profile", () => {
+    expect(phoneSchema.safeParse("").success).toBe(true);
+    expect(profileSchema.safeParse({ full_name: "First Last", phone: "" }).success).toBe(true);
+  });
+  it("rejects invalid non-empty phones", () => {
     expect(phoneSchema.safeParse("abc").success).toBe(false);
     expect(phoneSchema.safeParse("123").success).toBe(false);
   });
   it("requires a full name of at least 2 characters", () => {
-    expect(profileSchema.safeParse({ full_name: " a ", phone: "22123456" }).success).toBe(false);
+    expect(profileSchema.safeParse({ full_name: " a ", phone: "" }).success).toBe(false);
   });
   it("requires passwords of at least 8 characters", () => {
     expect(passwordSchema.safeParse("1234567").success).toBe(false);

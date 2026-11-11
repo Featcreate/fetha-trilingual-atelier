@@ -33,7 +33,7 @@ const copy = {
     ipay: "Payer avec iPay",
     starting: "Préparation du paiement…",
     paymentError:
-      "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. " +
+      "Le paiement n’a pas pu être initialisé. Aucun paiement ne sera relancé automatiquement. " +
       "Réessayez uniquement après vérification de l’état de la commande.",
     providerLoading: "Vérification de la disponibilité…",
   },
@@ -201,7 +201,10 @@ function CheckoutPage() {
                   {salePrice != null ? (
                     <span className="flex shrink-0 flex-wrap items-center justify-end gap-2">
                       <span
-                        className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground"
+                        className={[
+                          "rounded-full bg-accent px-2 py-0.5 text-xs font-bold",
+                          "text-accent-foreground",
+                        ].join(" ")}
                       >
                         PROMO
                       </span>
@@ -308,7 +311,10 @@ function CheckoutPage() {
           ) : null}
           <Link
             to="/cart"
-            className="mt-5 inline-flex rounded-full border border-border px-5 py-3 text-sm font-semibold"
+            className={[
+              "mt-5 inline-flex rounded-full border border-border",
+              "px-5 py-3 text-sm font-semibold",
+            ].join(" ")}
           >
             {t.back}
           </Link>

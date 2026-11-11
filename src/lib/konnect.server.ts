@@ -1,10 +1,6 @@
 // Server-only. Import dynamically from inside server handlers.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import {
-  decidePaymentOutcome,
-  type KonnectPayment,
-  type PaymentOutcome,
-} from "./payment-rules";
+import { decidePaymentOutcome, type KonnectPayment, type PaymentOutcome } from "./payment-rules";
 import { isKonnectPaymentEnabled } from "./payment-activation";
 import { KONNECT_API_BASE_URLS } from "./konnect-api";
 
@@ -88,9 +84,7 @@ async function konnectGetPayment(paymentRef: string): Promise<KonnectPayment> {
   if (!cfg) throw new Error("payments_not_configured");
   const res = await fetch(
     `${cfg.base}/payments/${encodeURIComponent(paymentRef)}`,
-    {
-      headers: { "x-api-key": cfg.apiKey },
-    },
+    { headers: { "x-api-key": cfg.apiKey } },
   );
   if (!res.ok) throw new Error(`konnect_status_${res.status}`);
   const json = (await res.json()) as { payment?: KonnectPayment };

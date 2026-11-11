@@ -30,7 +30,11 @@ jobs:
         env:
           RECONCILE_SECRET: ${{ secrets.IPAY_RECONCILE_CRON_SECRET }}
         run: |
-          curl --fail-with-body --silent --show-error --max-time 120 \
+          # Print a non-reversible fingerprint so it can be compared with Render logs.
+          SECRET_FINGERPRINT="$(printf '%s' "$RECONCILE_SECRET" | sha256sum | cut -c1-12)"
+          echo "Reconciliation secret fingerprint: $SECRET_FINGERPRINT"
+          echo "Reconciliation secret length: ${#RECONCILE_SECRET} bytes"
+          curl --fail-with-body --silent --show-error --connect-timeout 15 --max-time 120 \
             -X POST \
             -H "x-ipay-reconcile-secret: ${RECONCILE_SECRET}" \
             "https://algorea-bazaar.onrender.com/api/public/ipay/webhook"

@@ -21,7 +21,8 @@ const copy = {
     title: "Récapitulatif de commande",
     total: "Total à payer",
     disabled:
-      "Ce moyen de paiement est temporairement indisponible. Votre panier est conservé ; aucune commande ni aucun débit ne sera créé.",
+      "Ce moyen de paiement est temporairement indisponible. " +
+      "Votre panier est conservé ; aucune commande ni aucun débit ne sera créé.",
     back: "Retour au panier",
     methods: "Choisissez votre prestataire de paiement.",
     empty: "Votre panier est vide.",
@@ -32,14 +33,16 @@ const copy = {
     ipay: "Payer avec iPay",
     starting: "Préparation du paiement…",
     paymentError:
-      "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. Réessayez uniquement après vérification de l’état de la commande.",
+      "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. " +
+      "Réessayez uniquement après vérification de l’état de la commande.",
     providerLoading: "Vérification de la disponibilité…",
   },
   ar: {
     title: "مراجعة الطلب",
     total: "الإجمالي المستحق",
     disabled:
-      "وسيلة الدفع هذه غير متاحة مؤقتاً. ستبقى سلتك محفوظة، ولن يتم إنشاء طلب أو خصم أي مبلغ.",
+      "وسيلة الدفع هذه غير متاحة مؤقتاً. " +
+      "ستبقى سلتك محفوظة، ولن يتم إنشاء طلب أو خصم أي مبلغ.",
     back: "العودة إلى السلة",
     methods: "اختاري مزوّد الدفع المناسب.",
     empty: "السلة فارغة.",
@@ -50,14 +53,16 @@ const copy = {
     ipay: "الدفع عبر iPay",
     starting: "جارٍ إعداد الدفع…",
     paymentError:
-      "تعذر إعداد الدفع. لن تتم إعادة محاولة إنشاء عملية دفع تلقائياً. لا تعيدي المحاولة إلا بعد التحقق من حالة الطلب.",
+      "تعذر إعداد الدفع. لن تتم إعادة محاولة إنشاء عملية دفع تلقائياً. " +
+      "لا تعيدي المحاولة إلا بعد التحقق من حالة الطلب.",
     providerLoading: "جارٍ التحقق من التوفر…",
   },
   en: {
     title: "Order summary",
     total: "Total due",
     disabled:
-      "This payment method is temporarily unavailable. Your cart is preserved; no order or charge will be created.",
+      "This payment method is temporarily unavailable. " +
+      "Your cart is preserved; no order or charge will be created.",
     back: "Back to cart",
     methods: "Choose your payment provider.",
     empty: "Your cart is empty.",
@@ -68,7 +73,8 @@ const copy = {
     ipay: "Pay with iPay",
     starting: "Preparing payment…",
     paymentError:
-      "Payment could not be initialized. Another payment will not be started automatically. Retry only after checking the order status.",
+      "Payment could not be initialized. Another payment will not be started automatically. " +
+      "Retry only after checking the order status.",
     providerLoading: "Checking availability…",
   },
 } as const;
@@ -241,7 +247,11 @@ function CheckoutPage() {
                   konnectMutation.isPending ||
                   ipayMutation.isPending
                 }
-                className="mt-3 inline-flex w-full justify-center rounded-full bg-accent px-5 py-3 text-center font-semibold text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                className={[
+                  "mt-3 inline-flex w-full justify-center rounded-full",
+                  "bg-accent px-5 py-3 text-center font-semibold text-accent-foreground",
+                  "disabled:cursor-not-allowed disabled:opacity-50",
+                ].join(" ")}
               >
                 {konnectMutation.isPending ? t.starting : t.konnect}
               </button>
@@ -270,7 +280,11 @@ function CheckoutPage() {
                   ipayMutation.isPending ||
                   konnectMutation.isPending
                 }
-                className="mt-3 inline-flex w-full justify-center rounded-full bg-accent px-5 py-3 text-center font-semibold text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                className={[
+                  "mt-3 inline-flex w-full justify-center rounded-full",
+                  "bg-accent px-5 py-3 text-center font-semibold text-accent-foreground",
+                  "disabled:cursor-not-allowed disabled:opacity-50",
+                ].join(" ")}
               >
                 {ipayMutation.isPending ? t.starting : t.ipay}
               </button>

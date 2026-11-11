@@ -238,7 +238,11 @@ function CheckoutPage() {
                 {konnectMutation.isPending ? t.starting : t.konnect}
               </button>
               <p role="status" className="mt-2 text-sm text-muted-foreground">
-                {konnectAvailability.isPending ? t.providerLoading : !konnectAvailability.data?.enabled ? t.disabled : ""}
+                {konnectAvailability.isPending
+                  ? t.providerLoading
+                  : !konnectAvailability.data?.enabled
+                    ? t.disabled
+                    : ""}
               </p>
             </section>
 
@@ -263,7 +267,11 @@ function CheckoutPage() {
                 {ipayMutation.isPending ? t.starting : t.ipay}
               </button>
               <p role="status" className="mt-2 text-sm text-muted-foreground">
-                {ipayAvailability.isPending ? t.providerLoading : !ipayAvailability.data?.enabled ? t.disabled : ""}
+                {ipayAvailability.isPending
+                  ? t.providerLoading
+                  : !ipayAvailability.data?.enabled
+                    ? t.disabled
+                    : ""}
               </p>
             </section>
           </div>

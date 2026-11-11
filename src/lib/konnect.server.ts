@@ -2,9 +2,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { decidePaymentOutcome, type KonnectPayment, type PaymentOutcome } from "./payment-rules";
 import { isKonnectPaymentEnabled } from "./payment-activation";
-
-const SANDBOX = "https://api.preprod.konnect.network/api/v2";
-const LIVE = "https://api.konnect.network/api/v2";
+import { KONNECT_API_BASE_URLS } from "./konnect-api";
 
 export function konnectConfig(requireActivation = false) {
   const apiKey = process.env["KONNECT_API_KEY"];
@@ -23,7 +21,7 @@ export function konnectConfig(requireActivation = false) {
   }
   if (!apiKey || !walletId) return null;
   const live = mode === "live";
-  return { apiKey, walletId, base: live ? LIVE : SANDBOX, live };
+  return { apiKey, walletId, base: live ? KONNECT_API_BASE_URLS.live : KONNECT_API_BASE_URLS.sandbox, live };
 }
 
 export async function konnectInitPayment(input: {

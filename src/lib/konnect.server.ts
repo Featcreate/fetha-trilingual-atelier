@@ -82,10 +82,9 @@ export async function konnectInitPayment(input: {
 async function konnectGetPayment(paymentRef: string): Promise<KonnectPayment> {
   const cfg = konnectConfig();
   if (!cfg) throw new Error("payments_not_configured");
-  const res = await fetch(
-    `${cfg.base}/payments/${encodeURIComponent(paymentRef)}`,
-    { headers: { "x-api-key": cfg.apiKey } },
-  );
+  const res = await fetch(`${cfg.base}/payments/${encodeURIComponent(paymentRef)}`, {
+    headers: { "x-api-key": cfg.apiKey },
+  });
   if (!res.ok) throw new Error(`konnect_status_${res.status}`);
   const json = (await res.json()) as { payment?: KonnectPayment };
   return json.payment ?? {};

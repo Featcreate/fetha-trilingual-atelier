@@ -7,7 +7,12 @@ import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { localizedProductText } from "@/lib/product-translations";
-import { getIpayCheckoutAvailability, startCartIpayCheckout } from "@/lib/shop.functions";
+import {
+  getCartCheckoutAvailability,
+  getIpayCheckoutAvailability,
+  startCartCheckout,
+  startCartIpayCheckout,
+} from "@/lib/shop.functions";
 
 export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
 
@@ -15,50 +20,50 @@ const copy = {
   fr: {
     title: "Récapitulatif de commande",
     total: "Total à payer",
-    disabled:
-      "Le paiement en ligne est temporairement désactivé. Votre panier est conservé ; aucune commande ni aucun débit ne sera créé.",
+    disabled: "Ce moyen de paiement est temporairement indisponible. Votre panier est conservé ; aucune commande ni aucun débit ne sera créé.",
     back: "Retour au panier",
-    methods:
-      "Vous serez redirigé vers la page sécurisée iPay pour choisir le moyen de paiement disponible.",
+    methods: "Choisissez votre prestataire de paiement.",
     empty: "Votre panier est vide.",
     loading: "Chargement…",
     error: "Impossible de charger la commande.",
     unavailable: "Un ou plusieurs produits ne sont plus disponibles. Retournez au panier.",
-    pay: "Continuer vers le paiement iPay",
+    konnect: "Payer avec Konnect",
+    ipay: "Payer avec iPay",
     starting: "Préparation du paiement…",
-    paymentError:
-      "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. Réessayez uniquement après vérification de l’état de la commande.",
+    paymentError: "Le paiement n’a pas pu être initialisé. Aucun nouveau paiement ne sera lancé automatiquement. Réessayez uniquement après vérification de l’état de la commande.",
+    providerLoading: "Vérification de la disponibilité…",
   },
   ar: {
     title: "مراجعة الطلب",
     total: "الإجمالي المستحق",
-    disabled: "الدفع الإلكتروني معطّل مؤقتاً. ستبقى سلتك محفوظة، ولن يتم إنشاء طلب أو خصم أي مبلغ.",
+    disabled: "وسيلة الدفع هذه غير متاحة مؤقتاً. ستبقى سلتك محفوظة، ولن يتم إنشاء طلب أو خصم أي مبلغ.",
     back: "العودة إلى السلة",
-    methods: "سيتم تحويلك إلى صفحة iPay الآمنة لاختيار وسيلة الدفع المتاحة.",
+    methods: "اختاري مزوّد الدفع المناسب.",
     empty: "السلة فارغة.",
     loading: "جارٍ التحميل…",
     error: "تعذر تحميل الطلب.",
     unavailable: "منتج أو أكثر لم يعد متاحاً. عودي إلى السلة.",
-    pay: "المتابعة إلى الدفع عبر iPay",
+    konnect: "الدفع عبر Konnect",
+    ipay: "الدفع عبر iPay",
     starting: "جارٍ إعداد الدفع…",
-    paymentError:
-      "تعذر إعداد الدفع. لن تتم إعادة محاولة إنشاء عملية دفع تلقائياً. لا تعيدي المحاولة إلا بعد التحقق من حالة الطلب.",
+    paymentError: "تعذر إعداد الدفع. لن تتم إعادة محاولة إنشاء عملية دفع تلقائياً. لا تعيدي المحاولة إلا بعد التحقق من حالة الطلب.",
+    providerLoading: "جارٍ التحقق من التوفر…",
   },
   en: {
     title: "Order summary",
     total: "Total due",
-    disabled:
-      "Online payment is temporarily disabled. Your cart is preserved; no order or charge will be created.",
+    disabled: "This payment method is temporarily unavailable. Your cart is preserved; no order or charge will be created.",
     back: "Back to cart",
-    methods: "You will be redirected to iPay’s secure page to choose an available payment method.",
+    methods: "Choose your payment provider.",
     empty: "Your cart is empty.",
     loading: "Loading…",
     error: "Could not load order.",
     unavailable: "One or more products are no longer available. Return to your cart.",
-    pay: "Continue to iPay payment",
+    konnect: "Pay with Konnect",
+    ipay: "Pay with iPay",
     starting: "Preparing payment…",
-    paymentError:
-      "Payment could not be initialized. Another payment will not be started automatically. Retry only after checking the order status.",
+    paymentError: "Payment could not be initialized. Another payment will not be started automatically. Retry only after checking the order status.",
+    providerLoading: "Checking availability…",
   },
 } as const;
 
@@ -66,27 +71,61 @@ function CheckoutPage() {
   const { lang, setLang } = useLang();
   const t = copy[lang];
   const { items } = useCart();
-  const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
+  const checkoutAttempt = useRef<{
+    signature: string;
+    konnectKey: string;
+    ipayKey: string;
+  } | null>(null);
   const signature = items
     .map((line) => line.productId)
     .sort()
     .join(",");
 
-  const availability = useQuery({
-    queryKey: ["cart-checkout-availability"],
+  const konnectAvailability = useQuery({
+    queryKey: ["cart-checkout-availability", "konnect"],
+    queryFn: () => getCartCheckoutAvailability(),
+    staleTime: 30_000,
+  });
+  const ipayAvailability = useQuery({
+    queryKey: ["cart-checkout-availability", "ipay"],
     queryFn: () => getIpayCheckoutAvailability(),
     staleTime: 30_000,
   });
 
-  const checkoutMutation = useMutation({
+  const konnectMutation = useMutation({
     mutationFn: async () => {
       if (!checkoutAttempt.current || checkoutAttempt.current.signature !== signature) {
-        checkoutAttempt.current = { signature, key: crypto.randomUUID() };
+        checkoutAttempt.current = {
+          signature,
+          konnectKey: crypto.randomUUID(),
+          ipayKey: crypto.randomUUID(),
+        };
+      }
+      return startCartCheckout({
+        data: {
+          items: items.map(({ productId }) => ({ productId })),
+          checkoutKey: checkoutAttempt.current.konnectKey,
+        },
+      });
+    },
+    onSuccess: (result) => {
+      if (result.ok) window.location.assign(result.payUrl);
+    },
+  });
+
+  const ipayMutation = useMutation({
+    mutationFn: async () => {
+      if (!checkoutAttempt.current || checkoutAttempt.current.signature !== signature) {
+        checkoutAttempt.current = {
+          signature,
+          konnectKey: crypto.randomUUID(),
+          ipayKey: crypto.randomUUID(),
+        };
       }
       return startCartIpayCheckout({
         data: {
           items: items.map(({ productId }) => ({ productId })),
-          checkoutKey: checkoutAttempt.current.key,
+          checkoutKey: checkoutAttempt.current.ipayKey,
         },
       });
     },
@@ -122,6 +161,7 @@ function CheckoutPage() {
         0),
     0,
   );
+  const paymentUnavailable = unavailable || query.isPending || query.isError;
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={t.title} wide>
@@ -174,21 +214,55 @@ function CheckoutPage() {
               {t.unavailable}
             </p>
           ) : null}
-          {availability.data?.enabled && !unavailable ? (
-            <button
-              type="button"
-              onClick={() => checkoutMutation.mutate()}
-              disabled={checkoutMutation.isPending}
-              className="mt-4 inline-flex w-full justify-center rounded-full bg-accent px-5 py-3 text-center font-semibold text-accent-foreground disabled:opacity-50"
-            >
-              {checkoutMutation.isPending ? t.starting : t.pay}
-            </button>
-          ) : (
-            <p role="status" className="mt-3 rounded-xl border border-border p-4 text-sm">
-              {availability.isPending ? t.loading : t.disabled}
-            </p>
-          )}
-          {checkoutMutation.isError || (checkoutMutation.data && !checkoutMutation.data.ok) ? (
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <section className="rounded-xl border border-border p-4">
+              <h2 className="font-semibold">Konnect</h2>
+              <button
+                type="button"
+                onClick={() => konnectMutation.mutate()}
+                disabled={
+                  paymentUnavailable ||
+                  !konnectAvailability.data?.enabled ||
+                  konnectAvailability.isPending ||
+                  konnectMutation.isPending ||
+                  ipayMutation.isPending
+                }
+                className="mt-3 inline-flex w-full justify-center rounded-full bg-accent px-5 py-3 text-center font-semibold text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {konnectMutation.isPending ? t.starting : t.konnect}
+              </button>
+              <p role="status" className="mt-2 text-sm text-muted-foreground">
+                {konnectAvailability.isPending ? t.providerLoading : !konnectAvailability.data?.enabled ? t.disabled : ""}
+              </p>
+            </section>
+
+            <section className="rounded-xl border border-border p-4">
+              <h2 className="font-semibold">iPay</h2>
+              <button
+                type="button"
+                onClick={() => ipayMutation.mutate()}
+                disabled={
+                  paymentUnavailable ||
+                  !ipayAvailability.data?.enabled ||
+                  ipayAvailability.isPending ||
+                  ipayMutation.isPending ||
+                  konnectMutation.isPending
+                }
+                className="mt-3 inline-flex w-full justify-center rounded-full bg-accent px-5 py-3 text-center font-semibold text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {ipayMutation.isPending ? t.starting : t.ipay}
+              </button>
+              <p role="status" className="mt-2 text-sm text-muted-foreground">
+                {ipayAvailability.isPending ? t.providerLoading : !ipayAvailability.data?.enabled ? t.disabled : ""}
+              </p>
+            </section>
+          </div>
+
+          {konnectMutation.isError ||
+          (konnectMutation.data && !konnectMutation.data.ok) ||
+          ipayMutation.isError ||
+          (ipayMutation.data && !ipayMutation.data.ok) ? (
             <p role="alert" className="mt-3 rounded-xl border border-border p-4 text-sm">
               {t.paymentError}
             </p>

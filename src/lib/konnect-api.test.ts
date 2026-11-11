@@ -9,7 +9,9 @@ describe("Konnect API environment endpoints", () => {
   });
 
   it("keeps the Production API host separate from Sandbox", () => {
-    expect(KONNECT_API_BASE_URLS.live).toBe("https://api.konnect.network/api/v2");
+    expect(KONNECT_API_BASE_URLS.live).toBe(
+      "https://api.konnect.network/api/v2",
+    );
     expect(KONNECT_API_BASE_URLS.live).not.toBe(KONNECT_API_BASE_URLS.sandbox);
   });
 });

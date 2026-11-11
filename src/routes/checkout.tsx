@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { AuthShell } from "@/components/AuthShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
@@ -71,6 +71,7 @@ function CheckoutPage() {
   const { lang, setLang } = useLang();
   const t = copy[lang];
   const { items } = useCart();
+  const [attemptedProvider, setAttemptedProvider] = useState<"konnect" | "ipay" | null>(null);
   const checkoutAttempt = useRef<{
     signature: string;
     konnectKey: string;
@@ -220,11 +221,15 @@ function CheckoutPage() {
               <h2 className="font-semibold">Konnect</h2>
               <button
                 type="button"
-                onClick={() => konnectMutation.mutate()}
+                onClick={() => {
+                  setAttemptedProvider("konnect");
+                  konnectMutation.mutate();
+                }}
                 disabled={
                   paymentUnavailable ||
                   !konnectAvailability.data?.enabled ||
                   konnectAvailability.isPending ||
+                  attemptedProvider !== null ||
                   konnectMutation.isPending ||
                   ipayMutation.isPending
                 }
@@ -241,11 +246,15 @@ function CheckoutPage() {
               <h2 className="font-semibold">iPay</h2>
               <button
                 type="button"
-                onClick={() => ipayMutation.mutate()}
+                onClick={() => {
+                  setAttemptedProvider("ipay");
+                  ipayMutation.mutate();
+                }}
                 disabled={
                   paymentUnavailable ||
                   !ipayAvailability.data?.enabled ||
                   ipayAvailability.isPending ||
+                  attemptedProvider !== null ||
                   ipayMutation.isPending ||
                   konnectMutation.isPending
                 }

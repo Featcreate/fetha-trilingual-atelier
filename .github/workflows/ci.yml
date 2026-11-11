@@ -41,6 +41,9 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Print Prettier-formatted checkout source
+        run: bunx prettier src/routes/checkout.tsx
+
       - name: Check formatting
         shell: bash
         run: |

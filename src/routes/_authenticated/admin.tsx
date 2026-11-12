@@ -321,11 +321,12 @@ function AdminPage() {
       } else {
         setNotice({
           ok: true,
-          text: lang === "ar"
-            ? `نتيجة التحقق من iPay: ${result.outcome}`
-            : lang === "en"
-              ? `iPay verification result: ${result.outcome}`
-              : `Résultat de vérification iPay : ${result.outcome}`,
+          text:
+            lang === "ar"
+              ? `نتيجة التحقق من iPay: ${result.outcome}`
+              : lang === "en"
+                ? `iPay verification result: ${result.outcome}`
+                : `Résultat de vérification iPay : ${result.outcome}`,
         });
       }
     } catch {

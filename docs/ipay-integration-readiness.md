@@ -97,6 +97,7 @@ The documented payload shape is:
 - The iPay checkout path is wired into the buyer checkout page, but it is available only when the activation gate and required credentials are present.
 - It creates/reuses a pending cart order, claims initialization, requests one hosted checkout URL, and persists the iPay reference and URL.
 - The redirect only sends the buyer to iPay. It does not settle an order or grant a download.
+- On the buyer return page, the server now checks an iPay order using its saved iPay transaction reference and the authenticated provider lookup; Konnect return verification remains unchanged.
 - Claim outcomes remain explicit: missing order, closed order, provider conflict, and an already-in-progress initialization are distinct errors.
 - An admin-only server action can recheck a pending iPay order by its saved provider transaction ID; it uses the same authenticated provider lookup and atomic settlement path as webhook/reconciliation.
 - The browser preserves the per-cart idempotency keys in session storage across refreshes, then clears them after the order reaches a terminal state.

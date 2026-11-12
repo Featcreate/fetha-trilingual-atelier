@@ -107,7 +107,7 @@ The documented payload shape is:
 - These migrations do not implement iPay webhook receipt, authoritative transaction lookup, settlement, ledger posting, or seller payout.
 - Do not apply new database migrations or alter production data as part of this readiness work.
 
-## Known gaps and hard blockers
+## Remaining provider and launch checks
 
 1. **Sandbox verification:** Audasoft has not yet supplied a confirmed Sandbox endpoint and test credentials. Do not test the payment-creation endpoint against production.
 2. **Webhook authenticity:** The account documentation supplied to us does not specify a signature/HMAC/secret-header. Webhooks remain untrusted triggers and must always be followed by authenticated server-side transaction lookup.
@@ -115,8 +115,8 @@ The documented payload shape is:
 4. **Webhook delivery:** The dashboard says there is no retry after delivery failure. The hourly reconciliation worker in the follow-up PR addresses missed notifications, subject to its deployment secret and migration prerequisites.
 5. **Stuck initialization recovery:** A claim left behind after an ambiguous timeout is intentionally not cleared automatically. It requires manual provider-dashboard reconciliation. Only after verifying that no transaction exists for the order may a separately authorised recovery procedure release the claim. If a transaction exists, record its exact reference and reconcile it through a verified provider lookup before any settlement.
 6. **Marketplace eligibility and settlement:** Written confirmation is still needed that this organisation may collect marketplace orders for multiple digital-goods sellers and later pay sellers manually outside iPay.
-8. **International acceptance:** Do not claim support for foreign-issued cards or foreign-currency charging/settlement until Audasoft confirms supported schemes, issuing countries, and settlement currency.
-9. **Fees:** The public marketing page advertises 1% capped at 5 TND per transaction. Confirm in writing that this applies to this organisation and all enabled methods, and ask about acquirer, refund, transfer, and payout-related fees.
+6. **International acceptance:** Do not claim support for foreign-issued cards or foreign-currency charging/settlement until Audasoft confirms supported schemes, issuing countries, and settlement currency.
+7. **Fees:** The public marketing page advertises 1% capped at 5 TND per transaction. Confirm in writing that this applies to this organisation and all enabled methods, and ask about acquirer, refund, transfer, and payout-related fees.
 
 ## Safe handling of ambiguous or stuck iPay initialization
 
@@ -129,11 +129,11 @@ The documented payload shape is:
 
 ## Provider questions still requiring written answers
 
-2. **Verification:** Which endpoint and fields confirm final paid/settled status, transaction ID, amount, currency, product code, and external order reference? Can the transaction list be filtered reliably by transaction ID or external reference?
-3. **Webhook authenticity:** Is there HMAC/signature, a secret header, mTLS, or another authenticity mechanism? Provide exact validation instructions and replay protections.
-4. **Bank/postal transfers:** Does `transaction.completed` mean funds have actually been received and cleared, or only that the customer declared a transfer? Which event/status proves receipt?
-5. **Delivery/replay:** Confirm the no-retry policy, retry behaviour by account/API version, and whether missed events can be replayed or queried.
-6. **Marketplace eligibility:** Is this account authorised to collect full orders for multiple digital sellers and pay sellers manually later? Which KYC/business documents are required?
+1. **Verification:** Which endpoint and fields confirm final paid/settled status, transaction ID, amount, currency, product code, and external order reference? Can the transaction list be filtered reliably by transaction ID or external reference?
+2. **Webhook authenticity:** Is there HMAC/signature, a secret header, mTLS, or another authenticity mechanism? Provide exact validation instructions and replay protections.
+3. **Bank/postal transfers:** Does `transaction.completed` mean funds have actually been received and cleared, or only that the customer declared a transfer? Which event/status proves receipt?
+4. **Delivery/replay:** Confirm the no-retry policy, retry behaviour by account/API version, and whether missed events can be replayed or queried.
+5. **Marketplace eligibility:** Is this account authorised to collect full orders for multiple digital sellers and pay sellers manually later? Which KYC/business documents are required?
 7. **International acceptance:** Which card schemes and issuing countries are supported, and what are the charge and settlement currencies?
 8. **Fees:** Confirm the 1% monthly-billed fee capped at 5 TND for this organisation, plus all external/acquirer, refund, and payout costs.
 
@@ -148,6 +148,6 @@ The code path is under active development. Continue implementation without treat
 - Do not automatically clear ambiguous checkout initialization claims.
 - Do not change the central ledger, commission calculation, seller balances, or manual weekly payout workflow.
 
-## Next safe engineering phase after provider confirmation
+## Next engineering phase
 
-Implement the documented transaction lookup, authenticated and idempotent webhook ingestion, exact order/amount/currency/product matching, and settlement through the existing trusted settlement RPC. Add reconciliation for missed events and a separately authorised admin recovery path for claims proven to have no provider transaction. Then run typecheck, formatting, lint, all unit tests, migration-journal checks, and production build. Review the full diff before merge or deployment.
+Continue completing the buyer checkout path and its recovery behaviour, keep the existing transaction-verification and settlement components aligned with the checkout response, and review the migration journal against the current database schema. Once implementation is complete, run typecheck, formatting, lint, all unit tests, migration-journal checks, and production build as one final validation pass. Review the full diff before merge or deployment.

@@ -155,7 +155,8 @@ export const dict = {
         "Ce fichier est lié à un achat antérieur : il doit être conservé pour protéger le téléchargement de l’acheteur.",
       fileDeleteLastActive:
         "Ajoutez d’abord un autre fichier actif ou désactivez le produit avant de supprimer son dernier fichier actif.",
-      fileDeleteFailed: "Impossible de supprimer ce fichier. Réessayez plus tard.",
+      fileDeleteFailed:
+        "Impossible de supprimer ce fichier. Réessayez plus tard.",
       fileArchiveFailed: "Impossible d’archiver ce fichier.",
       fileArchiveNeedsReplacement:
         "Ajoutez d’abord un nouveau fichier actif avant d’archiver le dernier fichier du produit.",

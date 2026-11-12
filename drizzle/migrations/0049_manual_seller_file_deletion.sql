@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION public.archive_file_version(_version_id uuid)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
   _product_id uuid;
@@ -74,7 +74,7 @@ CREATE OR REPLACE FUNCTION public.guard_order_item_file_snapshot()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
   _product_id uuid;
@@ -148,7 +148,7 @@ CREATE OR REPLACE FUNCTION public.register_file_version(
 RETURNS TABLE (version_id uuid, upload_path text)
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 #variable_conflict use_column
 DECLARE

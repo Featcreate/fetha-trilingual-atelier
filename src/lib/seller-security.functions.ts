@@ -159,25 +159,8 @@ export const deleteSellerFileVersion = createServerFn({ method: "POST" })
       return { data: null, error: { message: "file_version_has_purchases" } };
     }
 
-    // Do not race an unfinished upload: Storage authorizes new writes only
-    // while the version is pending_upload. Let the seller retry after upload ends.
-    if (version.status === "pending_upload") {
-      const separator = version.storage_path.lastIndexOf("/");
-      const folder = version.storage_path.slice(0, separator);
-      const objectName = version.storage_path.slice(separator + 1);
-      const { data: pendingObjects, error: pendingListError } = await supabaseAdmin.storage
-        .from("product-files")
-        .list(folder, { search: objectName, limit: 100 });
-      if (pendingListError) {
-        return { data: null, error: { message: "storage_lookup_failed" } };
-      }
-      if (!(pendingObjects ?? []).some((object) => object.name === objectName)) {
-        return { data: null, error: { message: "file_upload_in_progress" } };
-      }
-    }
-
-    // Archive active and completed pending uploads first. The database serializes
-    // this transition with checkout and rejects removal of a product's last active file.
+    // Archive active and pending uploads first. The database serializes this
+    // transition with both Storage uploads and checkout snapshots.
     if (version.status !== "archived") {
       const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
       const { error: archiveError } = await callActorScopedRpc(

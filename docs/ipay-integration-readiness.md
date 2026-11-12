@@ -26,7 +26,7 @@ Last reviewed against the repository and the in-dashboard iPay API documentation
 - Documented endpoint: `POST /api/admin/transactions/create-oneshot`.
 - Documented request fields: `product_code`, `amount` (number greater than zero), `currency`, `customer_name`, `customer_external_id` (required), and optional `invoice_reference`.
 - Documented response fields: `id`, `payment_url`, `amount`, `currency`, and `invoice_reference`.
-- The example uses `amount: 149.99` with `currency: "TND"`, which is consistent with decimal dinars. However, the documentation does not explicitly state the unit rule or provide an exact 10.500 TND example. Treat decimal TND as the current code assumption, not a fully confirmed provider contract.
+- The amount unit has already been checked for this integration: `amount` is decimal TND (dinars), not integer millimes. The server converts the canonical internal millime total to decimal dinars before sending it to iPay; for example, 12,500 millimes is sent as `12.5` TND.
 - The documented flow redirects the buyer to `payment_url`; the redirect itself is not proof of payment.
 
 ### Webhooks
@@ -86,7 +86,7 @@ The documented payload shape is:
 
 - Authenticates requests with `X-Org-Id` and `Authorization: Bearer <JWT>`.
 - Builds the documented one-shot POST request with product code, TND currency, customer name, and order ID as external/invoice references.
-- Converts canonical integer millimes to decimal dinars (`10500` millimes becomes `10.5` TND). This follows the documentation's decimal-looking example but remains subject to written provider confirmation.
+- Converts canonical integer millimes to decimal dinars (`10500` millimes becomes `10.5` TND), matching the confirmed iPay amount unit.
 - Validates the returned transaction reference and hosted URL, and requires the response to echo the exact requested amount, TND currency, and internal order reference before exposing the hosted URL. Any mismatch fails closed; because the provider may already have created a transaction, the initialization claim remains locked for manual reconciliation.
 - Applies a 15-second timeout and validates that the returned transaction reference is non-empty and the hosted URL is HTTPS on an iPay domain.
 - Exposes a read-only webhook-health GET helper. The separate webhook route treats notifications only as triggers and verifies transactions with an authenticated GET.
@@ -115,7 +115,6 @@ The documented payload shape is:
 4. **Webhook delivery:** The dashboard says there is no retry after delivery failure. The hourly reconciliation worker in the follow-up PR addresses missed notifications, subject to its deployment secret and migration prerequisites.
 5. **Stuck initialization recovery:** A claim left behind after an ambiguous timeout is intentionally not cleared automatically. It requires manual provider-dashboard reconciliation. Only after verifying that no transaction exists for the order may a separately authorised recovery procedure release the claim. If a transaction exists, record its exact reference and reconcile it through a verified provider lookup before any settlement.
 6. **Marketplace eligibility and settlement:** Written confirmation is still needed that this organisation may collect marketplace orders for multiple digital-goods sellers and later pay sellers manually outside iPay.
-7. **Amount contract:** The current code sends decimal TND. Audasoft must confirm the exact amount unit with a request/response example for 10.500 TND before checkout can be activated.
 8. **International acceptance:** Do not claim support for foreign-issued cards or foreign-currency charging/settlement until Audasoft confirms supported schemes, issuing countries, and settlement currency.
 9. **Fees:** The public marketing page advertises 1% capped at 5 TND per transaction. Confirm in writing that this applies to this organisation and all enabled methods, and ask about acquirer, refund, transfer, and payout-related fees.
 
@@ -130,7 +129,6 @@ The documented payload shape is:
 
 ## Provider questions still requiring written answers
 
-1. **Amount:** Is `create-oneshot.amount` decimal TND or integer millimes? Provide a complete example for exactly 10.500 TND.
 2. **Verification:** Which endpoint and fields confirm final paid/settled status, transaction ID, amount, currency, product code, and external order reference? Can the transaction list be filtered reliably by transaction ID or external reference?
 3. **Webhook authenticity:** Is there HMAC/signature, a secret header, mTLS, or another authenticity mechanism? Provide exact validation instructions and replay protections.
 4. **Bank/postal transfers:** Does `transaction.completed` mean funds have actually been received and cleared, or only that the customer declared a transfer? Which event/status proves receipt?
@@ -141,7 +139,7 @@ The documented payload shape is:
 
 ## Implementation gate
 
-The code path is implemented but not approved for live operation. Until Sandbox tests, written commercial/marketplace eligibility confirmation, and production readiness review are complete:
+The code path is under active development. Continue implementation without treating the remaining operational review items as blockers to coding. Keep production checkout disabled until the final end-to-end test and explicit launch approval:
 
 - Keep `IPAY_CHECKOUT_ENABLED` unset or set to `false`; the database admin switch also defaults to off.
 - Do not send real payment requests or enable buyer checkout.

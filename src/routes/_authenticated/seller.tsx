@@ -20,7 +20,9 @@ import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 import {
   activateSellerFileVersion,
+  archiveSellerFileVersion,
   createSellerStore,
+  deleteArchivedSellerFileVersion,
   registerSellerFileVersion,
 } from "@/lib/seller-security.functions";
 import {
@@ -1035,6 +1037,7 @@ function SellerPage() {
                             )}
                           </p>
                         </div>
+                        <SellerFileVersions productId={product.id} labels={m} />
                         <div className="flex flex-wrap gap-2">
                           <label className="cursor-pointer rounded-full border border-border px-3 py-2 text-xs font-semibold">
                             {m.addFiles}
@@ -1401,4 +1404,116 @@ function SellerImageFields({
       <p className="text-xs text-muted-foreground">{m.imageLimit}</p>
     </div>
   );
+}
+
+
+function SellerFileVersions({
+  productId,
+  labels: m,
+}: {
+  productId: string;
+  labels: ReturnType<typeof useLang>["t"]["marketplace"];
+}) {
+  const qc = useQueryClient();
+  const [workingId, setWorkingId] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
+  const versionsQuery = useQuery({
+    queryKey: ["seller-file-versions", productId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_file_versions")
+        .select("id,file_name,size_bytes,status,created_at")
+        .eq("product_id", productId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  async function archive(versionId: string) {
+    if (workingId) return;
+    setWorkingId(versionId);
+    setMessage("");
+    const { error } = await archiveSellerFileVersion({ data: { versionId } });
+    setWorkingId(null);
+    if (error) {
+      setMessage(m.fileArchiveFailed);
+      return;
+    }
+    await qc.invalidateQueries({ queryKey: ["seller-file-versions", productId] });
+  }
+
+  async function remove(versionId: string, fileName: string, sizeBytes: number) {
+    if (workingId || !window.confirm(
+      m.confirmDeleteFile + "\\n\\n" + fileName + " · " + formatFileSize(sizeBytes),
+    )) return;
+    setWorkingId(versionId);
+    setMessage("");
+    const result = await deleteArchivedSellerFileVersion({ data: { versionId } });
+    setWorkingId(null);
+    if (result.error) {
+      setMessage(
+        result.error.message === "file_version_has_purchases"
+          ? m.fileDeletePurchased
+          : m.fileDeleteFailed,
+      );
+      return;
+    }
+    setMessage(m.fileDeleted);
+    await qc.invalidateQueries({ queryKey: ["seller-file-versions", productId] });
+    await qc.invalidateQueries({ queryKey: ["seller-storage-usage"] });
+  }
+
+  if (versionsQuery.isPending) return <p className="text-xs text-muted-foreground">{m.loading}</p>;
+  if (versionsQuery.isError) return <p role="alert" className="text-xs text-destructive">{m.error}</p>;
+  const versions = versionsQuery.data ?? [];
+  const activeCount = versions.filter((version) => version.status === "active").length;
+  if (!versions.length) return null;
+
+  return (
+    <div className="w-full space-y-2 rounded-lg bg-secondary/40 p-3">
+      <h3 className="text-sm font-semibold">{m.fileVersions}</h3>
+      {versions.map((version) => (
+        <div key={version.id} className="flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="min-w-0">
+            <p className="break-all font-medium">{version.file_name}</p>
+            <p className="text-muted-foreground">
+              {version.status === "active" ? m.fileStatusActive : m.fileStatusArchived}
+              {" · "}{m.fileSize}: {formatFileSize(Number(version.size_bytes))}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            {version.status === "active" && activeCount > 1 && (
+              <button
+                type="button"
+                disabled={workingId !== null}
+                onClick={() => void archive(version.id)}
+                className="rounded-full border border-border px-3 py-1.5 font-semibold disabled:opacity-50"
+              >
+                {workingId === version.id ? m.loading : m.archiveFile}
+              </button>
+            )}
+            {version.status === "archived" && (
+              <button
+                type="button"
+                disabled={workingId !== null}
+                onClick={() => void remove(version.id, version.file_name, Number(version.size_bytes))}
+                className="rounded-full border border-destructive px-3 py-1.5 font-semibold text-destructive disabled:opacity-50"
+              >
+                {workingId === version.id ? m.loading : m.deleteFile}
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+      {message && <p role="status" className="text-xs text-muted-foreground">{message}</p>}
+    </div>
+  );
+}
+
+function formatFileSize(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes < 0) return "—";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }

@@ -512,20 +512,16 @@ export const dict = {
       confirmDeleteFile:
         "هل تريد حذف هذا الملف نهائياً وتحرير مساحته؟ لا يمكن التراجع عن هذا الإجراء.",
       fileDeleted: "تم حذف الملف وتحرير مساحته.",
-      fileDeletedNoStorage:
-        "تم حذف سجل الملف؛ لم يُعثر على ملف مخزّن لتحرير مساحته.",
+      fileDeletedNoStorage: "تم حذف سجل الملف؛ لم يُعثر على ملف مخزّن لتحرير مساحته.",
       fileDeletePurchased:
         "هذا الملف مرتبط بعملية شراء سابقة؛ يجب الاحتفاظ به لضمان حق المشتري في التنزيل.",
-      fileDeleteLastActive:
-        "أضف ملفاً نشطاً آخر أولاً أو عطّل المنتج قبل حذف آخر ملف نشط له.",
+      fileDeleteLastActive: "أضف ملفاً نشطاً آخر أولاً أو عطّل المنتج قبل حذف آخر ملف نشط له.",
       fileDeleteFailed: "تعذر حذف الملف. حاول لاحقاً.",
-      fileUploadInProgress:
-        "ما زال رفع الملف جارياً. أعد المحاولة بعد اكتمال الرفع.",
+      fileUploadInProgress: "ما زال رفع الملف جارياً. أعد المحاولة بعد اكتمال الرفع.",
       fileDeletedAuditFailed:
         "تم حذف الملف، لكن تعذر تسجيل العملية في سجل التدقيق. يرجى التواصل مع الدعم.",
       fileArchiveFailed: "تعذرت أرشفة الملف.",
-      fileArchiveNeedsReplacement:
-        "أضف ملفاً نشطاً جديداً أولاً قبل أرشفة آخر ملف للمنتج.",
+      fileArchiveNeedsReplacement: "أضف ملفاً نشطاً جديداً أولاً قبل أرشفة آخر ملف للمنتج.",
       productImage: "صورة المنتج (اختيارية)",
       productCover: "صورة الغلاف",
       productGallery: "صور معاينة المنتج (يمكن اختيار عدة صور)",
@@ -869,15 +865,13 @@ export const dict = {
       confirmDeleteFile:
         "Permanently delete this file and free its storage space? This action cannot be undone.",
       fileDeleted: "File deleted and storage space freed.",
-      fileDeletedNoStorage:
-        "File record deleted; no stored object was found to free.",
+      fileDeletedNoStorage: "File record deleted; no stored object was found to free.",
       fileDeletePurchased:
         "This file is linked to a previous purchase and must be kept to protect the buyer’s download access.",
       fileDeleteLastActive:
         "Add another active file or deactivate the product before deleting its last active file.",
       fileDeleteFailed: "Could not delete this file. Please try again later.",
-      fileUploadInProgress:
-        "The upload is still in progress. Try again after it finishes.",
+      fileUploadInProgress: "The upload is still in progress. Try again after it finishes.",
       fileDeletedAuditFailed:
         "The file was deleted, but its audit record could not be saved. Please contact support.",
       fileArchiveFailed: "Could not archive this file.",

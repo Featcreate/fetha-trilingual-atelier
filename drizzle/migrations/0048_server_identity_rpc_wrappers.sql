@@ -156,11 +156,15 @@ BEGIN
 END;
 $;
 
-REVOKE ALL ON FUNCTION public.server_admin_record_seller_external_fee(uuid,uuid,text,bigint,text,text,text,text,uuid,uuid) FROM PUBLIC, anon, authenticated;\nREVOKE ALL ON FUNCTION public.server_admin_record_shared_seller_fee(uuid,uuid,text,bigint,text,text,text,text) FROM PUBLIC, anon, authenticated;\nREVOKE ALL ON FUNCTION public.server_admin_renew_entitlement(uuid,uuid,integer,integer,text) FROM PUBLIC, anon, authenticated;\nREVOKE ALL ON FUNCTION public.server_create_seller_store(uuid,text,text,text,text,text) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.server_admin_record_seller_external_fee(uuid,uuid,text,bigint,text,text,text,text,uuid,uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.server_admin_record_shared_seller_fee(uuid,uuid,text,bigint,text,text,text,text) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.server_admin_renew_entitlement(uuid,uuid,integer,integer,text) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.server_create_seller_store(uuid,text,text,text,text,text) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.server_register_file_version(uuid,uuid,text,bigint,text,text) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.server_activate_file_version(uuid,uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.server_archive_file_version(uuid,uuid) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.server_create_order(uuid,uuid[],text) FROM PUBLIC, anon, authenticated;\nREVOKE ALL ON FUNCTION public.server_create_order_from_cart(uuid,jsonb,text) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.server_create_order(uuid,uuid[],text) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.server_create_order_from_cart(uuid,jsonb,text) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.server_claim_order_ipay_init(uuid,uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.server_claim_order_konnect_init(uuid,uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.server_submit_seller_rating(uuid,uuid,integer) FROM PUBLIC, anon, authenticated;
@@ -174,7 +178,8 @@ GRANT EXECUTE ON FUNCTION public.server_create_seller_store(uuid,text,text,text,
 GRANT EXECUTE ON FUNCTION public.server_register_file_version(uuid,uuid,text,bigint,text,text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.server_activate_file_version(uuid,uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.server_archive_file_version(uuid,uuid) TO service_role;
-GRANT EXECUTE ON FUNCTION public.server_create_order(uuid,uuid[],text) TO service_role;\nGRANT EXECUTE ON FUNCTION public.server_create_order_from_cart(uuid,jsonb,text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.server_create_order(uuid,uuid[],text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.server_create_order_from_cart(uuid,jsonb,text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.server_claim_order_ipay_init(uuid,uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.server_claim_order_konnect_init(uuid,uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.server_submit_seller_rating(uuid,uuid,integer) TO service_role;

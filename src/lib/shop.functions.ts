@@ -56,7 +56,7 @@ export const startCheckout = createServerFn({ method: "POST" })
     }
     if (order.konnect_pay_url) return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
 
-    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+
     const { data: rawClaimRows, error: claimError } = await callActorScopedRpc(
       context.userId,
       "server_claim_order_konnect_init",

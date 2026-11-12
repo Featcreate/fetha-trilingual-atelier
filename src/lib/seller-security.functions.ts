@@ -85,38 +85,37 @@ export const deleteArchivedSellerFileVersion = createServerFn({ method: "POST" }
     if (versionError || !version) {
       return { data: null, error: { message: "file_version_not_found" } };
     }
-    if (version.status !== "archived") {
-      if (version.status === "active") {
-        const { data: product, error: productError } = await supabaseAdmin
-          .from("products")
-          .select("is_active")
-          .eq("id", version.product_id)
-          .maybeSingle();
-        if (productError || !product) {
-          return { data: null, error: { message: "product_lookup_failed" } };
-        }
+    if (version.status === "active") {
+      const { data: product, error: productError } = await supabaseAdmin
+        .from("products")
+        .select("is_active")
+        .eq("id", version.product_id)
+        .maybeSingle();
+      if (productError || !product) {
+        return { data: null, error: { message: "product_lookup_failed" } };
+      }
 
-        if (product.is_active) {
-          const { count: activeCount, error: activeCountError } = await supabaseAdmin
-            .from("product_file_versions")
-            .select("id", { count: "exact", head: true })
-            .eq("product_id", version.product_id)
-            .eq("status", "active");
-          if (activeCountError) {
-            return { data: null, error: { message: "active_version_check_failed" } };
-          }
-          if ((activeCount ?? 0) <= 1) {
-            return { data: null, error: { message: "file_last_active_version" } };
-          }
+      if (product.is_active) {
+        const { count: activeCount, error: activeCountError } = await supabaseAdmin
+          .from("product_file_versions")
+          .select("id", { count: "exact", head: true })
+          .eq("product_id", version.product_id)
+          .eq("status", "active");
+        if (activeCountError) {
+          return { data: null, error: { message: "active_version_check_failed" } };
+        }
+        if ((activeCount ?? 0) <= 1) {
+          return { data: null, error: { message: "file_last_active_version" } };
         }
       }
 
-      try {
-        const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
-        await callActorScopedRpc(context.userId, "server_archive_file_version", {
-          _version_id: version.id,
-        });
-      } catch {
+      const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+      const { error: archiveError } = await callActorScopedRpc(
+        context.userId,
+        "server_archive_file_version",
+        { _version_id: version.id },
+      );
+      if (archiveError) {
         return { data: null, error: { message: "file_archive_failed" } };
       }
     }

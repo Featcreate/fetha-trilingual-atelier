@@ -873,7 +873,13 @@ function SellerPage() {
                 {uploadProgress !== null && (
                   <div className="mt-2 space-y-1" role="status" aria-live="polite">
                     <div className="flex justify-between text-xs">
-                      <span>{lang === "ar" ? "جارٍ رفع الملف" : lang === "en" ? "Uploading file" : "Téléversement du fichier"}</span>
+                      <span>
+                        {lang === "ar"
+                          ? "جارٍ رفع الملف"
+                          : lang === "en"
+                            ? "Uploading file"
+                            : "Téléversement du fichier"}
+                      </span>
                       <span>{uploadProgress}%</span>
                     </div>
                     <progress className="h-2 w-full" value={uploadProgress} max={100} />

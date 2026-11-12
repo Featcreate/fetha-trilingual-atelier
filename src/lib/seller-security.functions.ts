@@ -95,6 +95,20 @@ export const deleteSellerFileVersion = createServerFn({ method: "POST" })
       return { data: null, error: { message: "forbidden" } };
     }
 
+    // Avoid changing the product's active file set when an existing purchase
+    // already depends on this version. Recheck after archival to close the race
+    // with a checkout that began immediately before the archive committed.
+    const { count: existingPurchases, error: initialPurchaseError } = await supabaseAdmin
+      .from("order_item_files")
+      .select("id", { count: "exact", head: true })
+      .eq("file_version_id", version.id);
+    if (initialPurchaseError) {
+      return { data: null, error: { message: "purchase_reference_check_failed" } };
+    }
+    if ((existingPurchases ?? 0) > 0) {
+      return { data: null, error: { message: "file_version_has_purchases" } };
+    }
+
     // Archive active and unfinished uploads first. The database serializes this
     // transition with checkout and rejects removal of a product's last active file.
     if (version.status !== "archived") {

@@ -56,8 +56,10 @@ BEGIN
   IF (SELECT prosecdef FROM pg_proc WHERE oid = 'public.get_my_seller_ratings()'::regprocedure) THEN
     RAISE EXCEPTION 'get_my_seller_ratings_must_be_invoker';
   END IF;
-  IF NOT has_function_privilege('anon', 'public.get_top_rated_stores()', 'EXECUTE') THEN
-    RAISE EXCEPTION 'public_top_rated_stores_access_missing';
+  IF has_function_privilege('anon', 'public.get_top_rated_stores()', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.get_top_rated_stores()', 'EXECUTE')
+     OR NOT has_function_privilege('service_role', 'public.get_top_rated_stores()', 'EXECUTE') THEN
+    RAISE EXCEPTION 'top_rated_stores_must_be_service_role_only';
   END IF;
   IF NOT has_function_privilege('authenticated', 'public.current_user_sells_order(uuid)', 'EXECUTE') THEN
     RAISE EXCEPTION 'seller_order_rls_helper_access_missing';

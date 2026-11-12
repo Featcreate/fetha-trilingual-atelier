@@ -1437,13 +1437,18 @@ function SellerFileVersions({
     if (workingId) return;
     setWorkingId(versionId);
     setMessage("");
-    const { error } = await archiveSellerFileVersion({ data: { versionId } });
-    setWorkingId(null);
-    if (error) {
+    try {
+      const { error } = await archiveSellerFileVersion({ data: { versionId } });
+      if (error) {
+        setMessage(m.fileArchiveFailed);
+        return;
+      }
+      await qc.invalidateQueries({ queryKey: ["seller-file-versions", productId] });
+    } catch {
       setMessage(m.fileArchiveFailed);
-      return;
+    } finally {
+      setWorkingId(null);
     }
-    await qc.invalidateQueries({ queryKey: ["seller-file-versions", productId] });
   }
 
   async function remove(versionId: string, fileName: string, sizeBytes: number) {

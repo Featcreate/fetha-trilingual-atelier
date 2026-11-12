@@ -499,6 +499,7 @@ function SellerPage() {
     }
     setBusy(false);
     setNotice(m.productUpdated);
+    await qc.invalidateQueries({ queryKey: ["seller-file-versions", product.id] });
   }
 
   async function toggleProduct(product: Product) {

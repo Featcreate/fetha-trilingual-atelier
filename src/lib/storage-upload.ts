@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
+// Keep the client-side cap aligned with the database and private bucket limits.
+// Supabase's project-wide Storage setting can impose a lower effective maximum.
 export const MAX_PRODUCT_FILE_BYTES = 1024 * 1024 * 1024;
 const RESUMABLE_THRESHOLD_BYTES = 6 * 1024 * 1024;
 const TUS_CHUNK_BYTES = 6 * 1024 * 1024;

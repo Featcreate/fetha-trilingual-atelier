@@ -151,6 +151,8 @@ export const dict = {
       confirmDeleteFile:
         "Supprimer définitivement ce fichier et libérer son espace ? Cette action est irréversible.",
       fileDeleted: "Fichier supprimé et espace libéré.",
+      fileDeletedNoStorage:
+        "Enregistrement supprimé ; aucun objet de stockage n’a été trouvé à libérer.",
       fileDeletePurchased:
         "Ce fichier est lié à un achat antérieur : il doit être conservé pour protéger le téléchargement de l’acheteur.",
       fileDeleteLastActive:
@@ -510,6 +512,8 @@ export const dict = {
       confirmDeleteFile:
         "هل تريد حذف هذا الملف نهائياً وتحرير مساحته؟ لا يمكن التراجع عن هذا الإجراء.",
       fileDeleted: "تم حذف الملف وتحرير مساحته.",
+      fileDeletedNoStorage:
+        "تم حذف سجل الملف؛ لم يُعثر على ملف مخزّن لتحرير مساحته.",
       fileDeletePurchased:
         "هذا الملف مرتبط بعملية شراء سابقة؛ يجب الاحتفاظ به لضمان حق المشتري في التنزيل.",
       fileDeleteLastActive:
@@ -865,6 +869,8 @@ export const dict = {
       confirmDeleteFile:
         "Permanently delete this file and free its storage space? This action cannot be undone.",
       fileDeleted: "File deleted and storage space freed.",
+      fileDeletedNoStorage:
+        "File record deleted; no stored object was found to free.",
       fileDeletePurchased:
         "This file is linked to a previous purchase and must be kept to protect the buyer’s download access.",
       fileDeleteLastActive:

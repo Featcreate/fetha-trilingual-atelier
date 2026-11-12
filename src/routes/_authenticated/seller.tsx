@@ -1415,7 +1415,6 @@ function SellerImageFields({
   );
 }
 
-
 function SellerFileVersions({
   productId,
   labels: m,
@@ -1552,6 +1551,7 @@ function SellerFileVersions({
     </div>
   );
 }
+
 function formatFileSize(bytes: number) {
   if (!Number.isFinite(bytes) || bytes < 0) return "—";
   if (bytes < 1024) return `${bytes} B`;

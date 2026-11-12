@@ -115,6 +115,18 @@ function CheckoutReturnPage() {
   });
 
   useEffect(() => {
+    if (query.data && query.data.status !== "pending") {
+      const signature = query.data.order_items
+        .map((item) => item.product_id)
+        .sort()
+        .join(",");
+      try {
+        sessionStorage.removeItem(`algorea-bazaar:checkout-attempt:${signature}`);
+      } catch {
+        // Storage may be unavailable; the order status remains authoritative.
+      }
+    }
+
     if (query.data?.status === "paid" && processedPaidOrder.current !== query.data.id) {
       processedPaidOrder.current = query.data.id;
       query.data.order_items.forEach((item) => remove(item.product_id));

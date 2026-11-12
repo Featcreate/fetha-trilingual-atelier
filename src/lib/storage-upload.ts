@@ -28,8 +28,11 @@ function request(
       };
     }
     xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) resolve({ status: xhr.status, headers: xhr });
-      else reject(new Error(`storage_upload_http_${xhr.status}`));
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve({ status: xhr.status, headers: xhr });
+      } else {
+        reject(new Error(`storage_upload_http_${xhr.status}`));
+      }
     };
     xhr.onerror = () => reject(new Error("storage_upload_network_error"));
     xhr.ontimeout = () => reject(new Error("storage_upload_timeout"));
@@ -74,13 +77,15 @@ async function uploadResumable(
     `objectName ${encodeMetadata(path)}`,
     `contentType ${encodeMetadata(file.type || "application/octet-stream")}`,
     `cacheControl ${encodeMetadata("3600")}`,
-    `metadata ${encodeMetadata(JSON.stringify({ mimetype: file.type || "application/octet-stream" }))}`,
+    `metadata ${encodeMetadata(
+      JSON.stringify({ mimetype: file.type || "application/octet-stream" }),
+    )}`,
   ].join(",");
-  const created = await request(
-    "POST",
-    endpoint,
-    { ...headers, "Upload-Length": String(file.size), "Upload-Metadata": metadata },
-  );
+  const created = await request("POST", endpoint, {
+    ...headers,
+    "Upload-Length": String(file.size),
+    "Upload-Metadata": metadata,
+  });
   const location = created.headers.getResponseHeader("Location");
   if (!location) throw new Error("storage_upload_location_missing");
   const uploadUrl = new URL(location, endpoint).toString();
@@ -99,7 +104,8 @@ async function uploadResumable(
           "Content-Type": "application/offset+octet-stream",
         },
         chunk,
-        (loaded) => onProgress?.(Math.min(100, Math.round(((offset + loaded) / file.size) * 100))),
+        (loaded) =>
+          onProgress?.(Math.min(100, Math.round(((offset + loaded) / file.size) * 100))),
       );
       const nextOffset = Number(patched.headers.getResponseHeader("Upload-Offset"));
       if (!Number.isFinite(nextOffset) || nextOffset <= offset) {

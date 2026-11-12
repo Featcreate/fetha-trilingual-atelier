@@ -907,7 +907,7 @@ function SellerPage() {
                     {product.deleted_at ? (
                       <div className="space-y-3">
                         <p className="text-sm text-muted-foreground">{m.productDeleted}</p>
-                        <SellerFileVersions productId={product.id} labels={m} />
+                        <SellerFileVersions productId={product.id} labels={m} allowArchiveLast />
                       </div>
                     ) : editing === product.id ? (
                       <form onSubmit={(e) => saveProduct(e, product)} className="space-y-3">
@@ -1042,7 +1042,11 @@ function SellerPage() {
                             )}
                           </p>
                         </div>
-                        <SellerFileVersions productId={product.id} labels={m} />
+                        <SellerFileVersions
+                          productId={product.id}
+                          labels={m}
+                          allowArchiveLast={!product.is_active}
+                        />
                         <div className="flex flex-wrap gap-2">
                           <label className="cursor-pointer rounded-full border border-border px-3 py-2 text-xs font-semibold">
                             {m.addFiles}
@@ -1415,9 +1419,11 @@ function SellerImageFields({
 function SellerFileVersions({
   productId,
   labels: m,
+  allowArchiveLast = false,
 }: {
   productId: string;
   labels: ReturnType<typeof useLang>["t"]["marketplace"];
+  allowArchiveLast?: boolean;
 }) {
   const qc = useQueryClient();
   const [workingId, setWorkingId] = useState<string | null>(null);
@@ -1491,7 +1497,7 @@ function SellerFileVersions({
             </p>
           </div>
           <div className="flex gap-2">
-            {version.status === "active" && activeCount > 1 && (
+            {version.status === "active" && (activeCount > 1 || allowArchiveLast) && (
               <button
                 type="button"
                 disabled={workingId !== null}

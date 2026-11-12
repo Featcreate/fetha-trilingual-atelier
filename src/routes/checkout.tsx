@@ -93,6 +93,52 @@ function CheckoutPage() {
     .sort()
     .join(",");
 
+  // Keep the cart idempotency keys across a page refresh so an ambiguous
+  // provider response cannot create a second order when the buyer retries.
+  const getCheckoutAttempt = () => {
+    if (checkoutAttempt.current?.signature === signature) return checkoutAttempt.current;
+
+    const storageKey = `algorea-bazaar:checkout-attempt:${signature}`;
+    try {
+      const stored = sessionStorage.getItem(storageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored) as Partial<{
+          signature: string;
+          konnectKey: string;
+          ipayKey: string;
+        }>;
+        if (
+          parsed.signature === signature &&
+          typeof parsed.konnectKey === "string" &&
+          parsed.konnectKey.length >= 8 &&
+          typeof parsed.ipayKey === "string" &&
+          parsed.ipayKey.length >= 8
+        ) {
+          checkoutAttempt.current = {
+            signature,
+            konnectKey: parsed.konnectKey,
+            ipayKey: parsed.ipayKey,
+          };
+          return checkoutAttempt.current;
+        }
+      }
+    } catch {
+      // Storage may be unavailable; the in-memory key still protects this page.
+    }
+
+    checkoutAttempt.current = {
+      signature,
+      konnectKey: crypto.randomUUID(),
+      ipayKey: crypto.randomUUID(),
+    };
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify(checkoutAttempt.current));
+    } catch {
+      // Continue with the in-memory idempotency keys if storage is unavailable.
+    }
+    return checkoutAttempt.current;
+  };
+
   const konnectAvailability = useQuery({
     queryKey: ["cart-checkout-availability", "konnect"],
     queryFn: () => getCartCheckoutAvailability(),
@@ -106,17 +152,11 @@ function CheckoutPage() {
 
   const konnectMutation = useMutation({
     mutationFn: async () => {
-      if (!checkoutAttempt.current || checkoutAttempt.current.signature !== signature) {
-        checkoutAttempt.current = {
-          signature,
-          konnectKey: crypto.randomUUID(),
-          ipayKey: crypto.randomUUID(),
-        };
-      }
+      const attempt = getCheckoutAttempt();
       return startCartCheckout({
         data: {
           items: items.map(({ productId }) => ({ productId })),
-          checkoutKey: checkoutAttempt.current.konnectKey,
+          checkoutKey: attempt.konnectKey,
         },
       });
     },
@@ -127,17 +167,11 @@ function CheckoutPage() {
 
   const ipayMutation = useMutation({
     mutationFn: async () => {
-      if (!checkoutAttempt.current || checkoutAttempt.current.signature !== signature) {
-        checkoutAttempt.current = {
-          signature,
-          konnectKey: crypto.randomUUID(),
-          ipayKey: crypto.randomUUID(),
-        };
-      }
+      const attempt = getCheckoutAttempt();
       return startCartIpayCheckout({
         data: {
           items: items.map(({ productId }) => ({ productId })),
-          checkoutKey: checkoutAttempt.current.ipayKey,
+          checkoutKey: attempt.ipayKey,
         },
       });
     },

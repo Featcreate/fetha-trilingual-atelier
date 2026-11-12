@@ -244,11 +244,18 @@ export const checkOrderPayment = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: order } = await context.supabase
       .from("orders")
-      .select("id, status, konnect_payment_ref")
+      .select("id, status, konnect_payment_ref, ipay_payment_ref")
       .eq("id", data.orderId)
       .maybeSingle();
     if (!order) return { status: "not_found" as const };
-    if (order.status === "pending" && order.konnect_payment_ref) {
+    if (order.status === "pending" && order.ipay_payment_ref) {
+      try {
+        const { processIpaySettlementNotice } = await import("./ipay-settlement.server");
+        await processIpaySettlementNotice({ id: order.ipay_payment_ref }, "return_check");
+      } catch (e) {
+        console.error("iPay return check failed", e instanceof Error ? e.message : "unknown");
+      }
+    } else if (order.status === "pending" && order.konnect_payment_ref) {
       const { konnectConfig, applyPaymentRef } = await import("./konnect.server");
       if (konnectConfig()) {
         try {
@@ -361,6 +368,44 @@ export const adminRecheckPayment = createServerFn({ method: "POST" })
       const r = await applyPaymentRef(order.konnect_payment_ref, "admin_check");
       return { ok: true as const, outcome: r.outcome };
     } catch {
+      return { ok: false as const, error: "payment_provider_error" };
+    }
+  });
+
+/** Admin: re-verify a pending iPay order using a fresh authenticated provider lookup. */
+export const adminRecheckIpayPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) return { ok: false as const, error: "forbidden" };
+
+    const { data: order } = await context.supabase
+      .from("orders")
+      .select("status,ipay_payment_ref")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (!order) return { ok: false as const, error: "not_found" };
+    if (order.status !== "pending") {
+      return { ok: false as const, error: "order_not_pending" };
+    }
+    if (!order.ipay_payment_ref) return { ok: false as const, error: "no_payment" };
+
+    try {
+      const { processIpaySettlementNotice } = await import("./ipay-settlement.server");
+      const result = await processIpaySettlementNotice(
+        { id: order.ipay_payment_ref },
+        "admin_check",
+      );
+      return { ok: true as const, outcome: result.outcome };
+    } catch (error) {
+      console.error(
+        "Admin iPay payment recheck failed",
+        error instanceof Error ? error.message : "unknown",
+      );
       return { ok: false as const, error: "payment_provider_error" };
     }
   });

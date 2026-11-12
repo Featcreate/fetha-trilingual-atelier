@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { AuthShell, SubmitButton } from "@/components/AuthShell";
+import { adminRecheckIpayPayment } from "@/lib/shop.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async ({ location }) => {
@@ -61,6 +62,8 @@ type OrderRow = {
   status: string;
   total_millimes: number;
   currency: string;
+  ipay_payment_ref: string | null;
+  konnect_payment_ref: string | null;
   created_at: string;
 };
 type PayoutRow = {
@@ -84,6 +87,7 @@ function AdminPage() {
   const qc = useQueryClient();
   const [commission, setCommission] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [recheckingOrderId, setRecheckingOrderId] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
   const [payoutStoreId, setPayoutStoreId] = useState("");
   const [payoutReference, setPayoutReference] = useState("");
@@ -133,7 +137,9 @@ function AdminPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("id,user_id,status,total_millimes,currency,created_at")
+        .select(
+          "id,user_id,status,total_millimes,currency,ipay_payment_ref,konnect_payment_ref,created_at",
+        )
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -285,6 +291,58 @@ function AdminPage() {
     setPayoutFailure("");
     setNotice({ ok: true, text: a.payoutFailedNote });
     await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+  }
+
+  async function recheckIpayOrder(orderId: string) {
+    setRecheckingOrderId(orderId);
+    setNotice(null);
+    try {
+      const result = await adminRecheckIpayPayment({ data: { orderId } });
+      if (!result.ok) {
+        const message =
+          result.error === "order_not_pending"
+            ? lang === "ar"
+              ? "الطلب لم يعد معلّقاً."
+              : lang === "en"
+                ? "The order is no longer pending."
+                : "La commande n’est plus en attente."
+            : result.error === "no_payment"
+              ? lang === "ar"
+                ? "لا يوجد مرجع دفع iPay لهذا الطلب."
+                : lang === "en"
+                  ? "No iPay payment reference exists for this order."
+                  : "Aucune référence de paiement iPay pour cette commande."
+              : lang === "ar"
+                ? "تعذر التحقق من دفعة iPay."
+                : lang === "en"
+                  ? "Could not verify the iPay payment."
+                  : "Impossible de vérifier le paiement iPay.";
+        setNotice({ ok: false, text: message });
+      } else {
+        setNotice({
+          ok: true,
+          text:
+            lang === "ar"
+              ? `نتيجة التحقق من iPay: ${result.outcome}`
+              : lang === "en"
+                ? `iPay verification result: ${result.outcome}`
+                : `Résultat de vérification iPay : ${result.outcome}`,
+        });
+      }
+    } catch {
+      setNotice({
+        ok: false,
+        text:
+          lang === "ar"
+            ? "حدث خطأ أثناء إعادة التحقق."
+            : lang === "en"
+              ? "An error occurred while rechecking the payment."
+              : "Une erreur est survenue lors de la nouvelle vérification.",
+      });
+    } finally {
+      setRecheckingOrderId(null);
+      await qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    }
   }
 
   async function setStoreStatus(store: StoreRow) {
@@ -764,6 +822,36 @@ function AdminPage() {
                     {formatTND(order.total_millimes)} {order.currency}
                   </p>
                   <p className="text-xs text-muted-foreground">{order.status}</p>
+                  {order.ipay_payment_ref && (
+                    <p className="text-xs text-muted-foreground">
+                      iPay · {order.ipay_payment_ref.slice(0, 16)}
+                    </p>
+                  )}
+                  {order.konnect_payment_ref && (
+                    <p className="text-xs text-muted-foreground">
+                      Konnect · {order.konnect_payment_ref.slice(0, 16)}
+                    </p>
+                  )}
+                  {order.status === "pending" && order.ipay_payment_ref && (
+                    <button
+                      type="button"
+                      disabled={recheckingOrderId !== null}
+                      onClick={() => void recheckIpayOrder(order.id)}
+                      className="mt-2 rounded-full border border-border px-3 py-2 text-xs font-semibold disabled:opacity-50"
+                    >
+                      {recheckingOrderId === order.id
+                        ? lang === "ar"
+                          ? "جارٍ التحقق…"
+                          : lang === "en"
+                            ? "Checking…"
+                            : "Vérification…"
+                        : lang === "ar"
+                          ? "إعادة التحقق عبر iPay"
+                          : lang === "en"
+                            ? "Recheck with iPay"
+                            : "Revérifier avec iPay"}
+                    </button>
+                  )}
                 </div>
               </article>
             ))}

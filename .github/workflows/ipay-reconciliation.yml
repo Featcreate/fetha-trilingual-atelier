@@ -16,7 +16,7 @@ concurrency:
 jobs:
   reconcile:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Validate reconciliation secret
         env:
@@ -34,7 +34,7 @@ jobs:
           SECRET_FINGERPRINT="$(printf '%s' "$RECONCILE_SECRET" | sha256sum | cut -c1-12)"
           echo "Reconciliation secret fingerprint: $SECRET_FINGERPRINT"
           echo "Reconciliation secret length: ${#RECONCILE_SECRET} bytes"
-          curl --fail-with-body --silent --show-error --connect-timeout 15 --max-time 120 \
+          curl --fail-with-body --silent --show-error --connect-timeout 15 --max-time 360 \
             -X POST \
             -H "x-ipay-reconcile-secret: ${RECONCILE_SECRET}" \
             "https://algorea-bazaar.onrender.com/api/public/ipay/webhook"

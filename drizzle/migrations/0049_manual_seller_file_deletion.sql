@@ -135,9 +135,9 @@ FOR EACH ROW
 EXECUTE FUNCTION public.guard_order_item_file_snapshot();
 
 
--- Recompute seller quota from retained versions. Immutable metadata remains,
--- but a version with a successful manual-deletion audit no longer consumes
--- the seller's application quota.
+-- Recompute seller quota from physical private-bucket objects. Immutable
+-- version metadata and audit records remain, while absent Storage objects no
+-- longer consume the seller's application quota.
 CREATE OR REPLACE FUNCTION public.register_file_version(
   _product_id uuid,
   _file_name text,
@@ -185,13 +185,10 @@ BEGIN
   SELECT coalesce(sum(v.size_bytes), 0)
     INTO _used_bytes
     FROM public.product_file_versions v
-   WHERE v.store_id = _store
-     AND NOT EXISTS (
-       SELECT 1
-         FROM public.storage_cleanup_audit a
-        WHERE a.file_version_id = v.id
-          AND a.decision = 'deleted'
-     );
+    JOIN storage.objects o
+      ON o.bucket_id = 'product-files'
+     AND o.name = v.storage_path
+   WHERE v.store_id = _store;
 
   IF _used_bytes + _size_bytes > _store_limit THEN
     RAISE EXCEPTION 'storage_quota_exceeded';

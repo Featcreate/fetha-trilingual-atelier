@@ -251,7 +251,7 @@ export const checkOrderPayment = createServerFn({ method: "POST" })
     if (order.status === "pending" && order.ipay_payment_ref) {
       try {
         const { processIpaySettlementNotice } = await import("./ipay-settlement.server");
-        await processIpaySettlementNotice({ id: order.ipay_payment_ref }, "webhook");
+        await processIpaySettlementNotice({ id: order.ipay_payment_ref }, "return_check");
       } catch (e) {
         console.error("iPay return check failed", e instanceof Error ? e.message : "unknown");
       }

@@ -141,8 +141,8 @@ The documented payload shape is:
 3. **Bank/postal transfers:** Does `transaction.completed` mean funds have actually been received and cleared, or only that the customer declared a transfer? Which event/status proves receipt?
 4. **Delivery/replay:** Confirm the no-retry policy, retry behaviour by account/API version, and whether missed events can be replayed or queried.
 5. **Marketplace eligibility:** Is this account authorised to collect full orders for multiple digital sellers and pay sellers manually later? Which KYC/business documents are required?
-7. **International acceptance:** Which card schemes and issuing countries are supported, and what are the charge and settlement currencies?
-8. **Fees:** Confirm the 1% monthly-billed fee capped at 5 TND for this organisation, plus all external/acquirer, refund, and payout costs.
+6. **International acceptance:** Which card schemes and issuing countries are supported, and what are the charge and settlement currencies?
+7. **Fees:** Confirm the 1% monthly-billed fee capped at 5 TND for this organisation, plus all external/acquirer, refund, and payout costs.
 
 ## Implementation gate
 

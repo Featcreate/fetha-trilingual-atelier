@@ -53,14 +53,14 @@ $$;
 
 CREATE OR REPLACE FUNCTION public.server_create_order(_actor_id uuid, _product_ids uuid[], _checkout_key text)
 RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
-AS $
+AS $function$
 BEGIN
   IF _actor_id IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
   PERFORM set_config('request.jwt.claim.sub', _actor_id::text, true);
   PERFORM set_config('request.jwt.claims', jsonb_build_object('sub', _actor_id, 'role', 'authenticated')::text, true);
   RETURN public.create_order(_product_ids, _checkout_key);
 END;
-$;
+$function$;
 
 CREATE OR REPLACE FUNCTION public.server_create_order_from_cart(_actor_id uuid, _items jsonb, _checkout_key text)
 RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
@@ -113,7 +113,7 @@ CREATE OR REPLACE FUNCTION public.server_admin_record_seller_external_fee(
   _source text, _external_reference text, _description text, _idempotency_key text,
   _order_id uuid DEFAULT NULL, _order_item_id uuid DEFAULT NULL
 ) RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
-AS $
+AS $function$
 BEGIN
   IF _actor_id IS NULL THEN RAISE EXCEPTION 'forbidden'; END IF;
   PERFORM set_config('request.jwt.claim.sub', _actor_id::text, true);
@@ -124,13 +124,13 @@ BEGIN
     _description, _idempotency_key, _order_id, _order_item_id
   );
 END;
-$;
+$function$;
 
 CREATE OR REPLACE FUNCTION public.server_admin_record_shared_seller_fee(
   _actor_id uuid, _order_id uuid, _fee_category text, _amount_millimes bigint,
   _source text, _external_reference text, _description text, _idempotency_key text
 ) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
-AS $
+AS $function$
 BEGIN
   IF _actor_id IS NULL THEN RAISE EXCEPTION 'forbidden'; END IF;
   PERFORM set_config('request.jwt.claim.sub', _actor_id::text, true);
@@ -141,12 +141,12 @@ BEGIN
     _description, _idempotency_key
   );
 END;
-$;
+$function$;
 
 CREATE OR REPLACE FUNCTION public.server_admin_renew_entitlement(
   _actor_id uuid, _entitlement_id uuid, _extra_days integer, _extra_downloads integer, _reason text
 ) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
-AS $
+AS $function$
 BEGIN
   IF _actor_id IS NULL THEN RAISE EXCEPTION 'forbidden'; END IF;
   PERFORM set_config('request.jwt.claim.sub', _actor_id::text, true);
@@ -154,7 +154,7 @@ BEGIN
   IF NOT public.has_role(_actor_id, 'admin') THEN RAISE EXCEPTION 'forbidden'; END IF;
   PERFORM public.admin_renew_entitlement(_entitlement_id, _extra_days, _extra_downloads, _reason);
 END;
-$;
+$function$;
 
 REVOKE ALL ON FUNCTION public.server_admin_record_seller_external_fee(uuid,uuid,text,bigint,text,text,text,text,uuid,uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.server_admin_record_shared_seller_fee(uuid,uuid,text,bigint,text,text,text,text) FROM PUBLIC, anon, authenticated;

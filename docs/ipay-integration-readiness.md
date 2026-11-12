@@ -107,7 +107,10 @@ The documented payload shape is:
 
 - `0034_ipay_checkout_reference.sql` adds separate nullable iPay transaction-reference and checkout-URL fields with a unique partial index.
 - `0041_ipay_checkout_init_claim.sql` serializes iPay initialization and prevents a competing Konnect initialization for the same order.
-- These migrations do not implement iPay webhook receipt, authoritative transaction lookup, settlement, ledger posting, or seller payout.
+- `0043_ipay_verified_settlement.sql` adds immutable verified-settlement records and the atomic iPay settlement RPC.
+- `0044_ipay_reconciliation_cooldown.sql` supports bounded reconciliation checks.
+- `0045_ipay_return_check_source.sql` adds an auditable `return_check` source for buyer-return verification without changing settlement amounts or ledger logic.
+- These migrations do not enable checkout or create provider transactions.
 - Do not apply new database migrations or alter production data as part of this readiness work.
 
 ## Remaining provider and launch checks

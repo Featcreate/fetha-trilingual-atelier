@@ -144,7 +144,22 @@ export const deleteSellerFileVersion = createServerFn({ method: "POST" })
       return { data: null, error: { message: "file_version_has_purchases" } };
     }
 
-    // A pending upload may not have created its Storage object yet.
+    // Record eligibility before the irreversible Storage operation. The audit table
+    // is append-only, so a failed removal leaves a truthful eligibility record.
+    const { error: eligibilityAuditError } = await supabaseAdmin
+      .from("storage_cleanup_audit")
+      .insert({
+        file_version_id: version.id,
+        storage_path: version.storage_path,
+        decision: "dry_run_eligible",
+        reason: "seller_manual_deletion_eligible",
+        decided_by: context.userId,
+      });
+    if (eligibilityAuditError) {
+      return { data: null, error: { message: "storage_audit_failed" } };
+    }
+
+    // Pending uploads may not have created their Storage object yet.
     const separator = version.storage_path.lastIndexOf("/");
     const folder = version.storage_path.slice(0, separator);
     const objectName = version.storage_path.slice(separator + 1);
@@ -173,7 +188,10 @@ export const deleteSellerFileVersion = createServerFn({ method: "POST" })
       decided_by: context.userId,
     });
     if (auditError) {
-      return { data: null, error: { message: "storage_deleted_audit_failed" } };
+      return {
+        data: { deletedBytes: objectExists ? Number(version.size_bytes) : 0 },
+        error: { message: "storage_deleted_audit_failed" },
+      };
     }
 
     return { data: { deletedBytes: objectExists ? Number(version.size_bytes) : 0 }, error: null };

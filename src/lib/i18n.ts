@@ -148,13 +148,17 @@ export const dict = {
       fileSize: "Taille",
       archiveFile: "Archiver",
       deleteFile: "Supprimer le fichier",
-      confirmDeleteFile: "Supprimer définitivement ce fichier et libérer son espace ? Cette action est irréversible.",
+      confirmDeleteFile:
+        "Supprimer définitivement ce fichier et libérer son espace ? Cette action est irréversible.",
       fileDeleted: "Fichier supprimé et espace libéré.",
-      fileDeletePurchased: "Ce fichier est lié à un achat antérieur : il doit être conservé pour protéger le téléchargement de l’acheteur.",
-      fileDeleteLastActive: "Ajoutez d’abord un autre fichier actif ou désactivez le produit avant de supprimer son dernier fichier actif.",
+      fileDeletePurchased:
+        "Ce fichier est lié à un achat antérieur : il doit être conservé pour protéger le téléchargement de l’acheteur.",
+      fileDeleteLastActive:
+        "Ajoutez d’abord un autre fichier actif ou désactivez le produit avant de supprimer son dernier fichier actif.",
       fileDeleteFailed: "Impossible de supprimer ce fichier. Réessayez plus tard.",
       fileArchiveFailed: "Impossible d’archiver ce fichier.",
-      fileArchiveNeedsReplacement: "Ajoutez d’abord un nouveau fichier actif avant d’archiver le dernier fichier du produit.",
+      fileArchiveNeedsReplacement:
+        "Ajoutez d’abord un nouveau fichier actif avant d’archiver le dernier fichier du produit.",
       productImage: "Image du produit (facultative)",
       productCover: "Image de couverture",
       productGallery: "Images de prévisualisation (plusieurs images possibles)",
@@ -500,13 +504,17 @@ export const dict = {
       fileSize: "الحجم",
       archiveFile: "أرشفة",
       deleteFile: "حذف الملف",
-      confirmDeleteFile: "هل تريد حذف هذا الملف نهائياً وتحرير مساحته؟ لا يمكن التراجع عن هذا الإجراء.",
+      confirmDeleteFile:
+        "هل تريد حذف هذا الملف نهائياً وتحرير مساحته؟ لا يمكن التراجع عن هذا الإجراء.",
       fileDeleted: "تم حذف الملف وتحرير مساحته.",
-      fileDeletePurchased: "هذا الملف مرتبط بعملية شراء سابقة؛ يجب الاحتفاظ به لضمان حق المشتري في التنزيل.",
-      fileDeleteLastActive: "أضف ملفاً نشطاً آخر أولاً أو عطّل المنتج قبل حذف آخر ملف نشط له.",
+      fileDeletePurchased:
+        "هذا الملف مرتبط بعملية شراء سابقة؛ يجب الاحتفاظ به لضمان حق المشتري في التنزيل.",
+      fileDeleteLastActive:
+        "أضف ملفاً نشطاً آخر أولاً أو عطّل المنتج قبل حذف آخر ملف نشط له.",
       fileDeleteFailed: "تعذر حذف الملف. حاول لاحقاً.",
       fileArchiveFailed: "تعذرت أرشفة الملف.",
-      fileArchiveNeedsReplacement: "أضف ملفاً نشطاً جديداً أولاً قبل أرشفة آخر ملف للمنتج.",
+      fileArchiveNeedsReplacement:
+        "أضف ملفاً نشطاً جديداً أولاً قبل أرشفة آخر ملف للمنتج.",
       productImage: "صورة المنتج (اختيارية)",
       productCover: "صورة الغلاف",
       productGallery: "صور معاينة المنتج (يمكن اختيار عدة صور)",
@@ -847,13 +855,17 @@ export const dict = {
       fileSize: "Size",
       archiveFile: "Archive",
       deleteFile: "Delete file",
-      confirmDeleteFile: "Permanently delete this file and free its storage space? This action cannot be undone.",
+      confirmDeleteFile:
+        "Permanently delete this file and free its storage space? This action cannot be undone.",
       fileDeleted: "File deleted and storage space freed.",
-      fileDeletePurchased: "This file is linked to a previous purchase and must be kept to protect the buyer’s download access.",
-      fileDeleteLastActive: "Add another active file or deactivate the product before deleting its last active file.",
+      fileDeletePurchased:
+        "This file is linked to a previous purchase and must be kept to protect the buyer’s download access.",
+      fileDeleteLastActive:
+        "Add another active file or deactivate the product before deleting its last active file.",
       fileDeleteFailed: "Could not delete this file. Please try again later.",
       fileArchiveFailed: "Could not archive this file.",
-      fileArchiveNeedsReplacement: "Upload a new active file before archiving the product’s last active file.",
+      fileArchiveNeedsReplacement:
+        "Upload a new active file before archiving the product’s last active file.",
       productImage: "Product image (optional)",
       productCover: "Product cover image",
       productGallery: "Product preview images (select multiple)",

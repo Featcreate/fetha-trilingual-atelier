@@ -36,8 +36,29 @@ export function ipayAmountFromMillimes(amountMillimes: number): number {
   return amountMillimes / 1000;
 }
 
-/** Validate the provider response before exposing its hosted URL to a buyer. */
-export function parseIpayOneShotResponse(payload: unknown): {
+function ipayResponseAmountToMillimes(value: unknown): number {
+  const raw =
+    typeof value === "number" && Number.isFinite(value)
+      ? String(value)
+      : typeof value === "string"
+        ? value.trim()
+        : "";
+  if (!/^\\d+(?:\\.\\d{1,3})?$/.test(raw)) {
+    throw new Error("ipay_invalid_response");
+  }
+  const [whole, fraction = ""] = raw.split(".");
+  const amountMillimes = Number(whole) * 1000 + Number(fraction.padEnd(3, "0"));
+  if (!Number.isSafeInteger(amountMillimes) || amountMillimes <= 0) {
+    throw new Error("ipay_invalid_response");
+  }
+  return amountMillimes;
+}
+
+/** Validate the provider response against the exact checkout request before exposing its URL. */
+export function parseIpayOneShotResponse(
+  payload: unknown,
+  expected: { amountMillimes: number; orderId: string },
+): {
   paymentUrl: string;
   paymentRef: string;
 } {
@@ -45,17 +66,36 @@ export function parseIpayOneShotResponse(payload: unknown): {
     throw new Error("ipay_invalid_response");
   }
 
-  const record = payload as { id?: unknown; payment_url?: unknown };
+  const record = payload as {
+    id?: unknown;
+    payment_url?: unknown;
+    amount?: unknown;
+    currency?: unknown;
+    invoice_reference?: unknown;
+  };
   if (
     (typeof record.id !== "string" && typeof record.id !== "number") ||
-    typeof record.payment_url !== "string"
+    typeof record.payment_url !== "string" ||
+    (typeof record.amount !== "string" && typeof record.amount !== "number") ||
+    typeof record.currency !== "string" ||
+    typeof record.invoice_reference !== "string"
   ) {
     throw new Error("ipay_invalid_response");
   }
 
   const paymentRef = String(record.id).trim();
-  if (!paymentRef || paymentRef.length > 200) {
+  const invoiceReference = record.invoice_reference.trim();
+  if (!paymentRef || paymentRef.length > 200 || !invoiceReference) {
     throw new Error("ipay_invalid_response");
+  }
+  if (record.currency.trim().toUpperCase() !== "TND") {
+    throw new Error("ipay_response_currency_mismatch");
+  }
+  if (invoiceReference !== expected.orderId) {
+    throw new Error("ipay_response_invoice_mismatch");
+  }
+  if (ipayResponseAmountToMillimes(record.amount) !== expected.amountMillimes) {
+    throw new Error("ipay_response_amount_mismatch");
   }
 
   let paymentUrl: URL;
@@ -124,7 +164,7 @@ export async function ipayCreateOneShot(input: {
   } catch {
     throw new Error("ipay_invalid_response");
   }
-  return parseIpayOneShotResponse(payload);
+  return parseIpayOneShotResponse(payload, input);
 }
 
 /**

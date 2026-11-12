@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 // Keep the client-side cap aligned with the database and private bucket limits.
 // Supabase's project-wide Storage setting can impose a lower effective maximum.
 export const MAX_PRODUCT_FILE_BYTES = 1024 * 1024 * 1024;
-const RESUMABLE_THRESHOLD_BYTES = 6 * 1024 * 1024;
+export const RESUMABLE_UPLOAD_THRESHOLD_BYTES = 6 * 1024 * 1024;
 const TUS_CHUNK_BYTES = 6 * 1024 * 1024;
 const RETRY_DELAYS_MS = [1_000, 3_000, 5_000, 10_000];
 
@@ -140,7 +140,7 @@ export async function uploadProductFile(
     throw new Error("file_size_limit_exceeded");
   }
 
-  if (file.size <= RESUMABLE_THRESHOLD_BYTES) {
+  if (file.size <= RESUMABLE_UPLOAD_THRESHOLD_BYTES) {
     const { error } = await supabase.storage.from("product-files").upload(path, file, {
       contentType: file.type || "application/octet-stream",
       upsert: false,

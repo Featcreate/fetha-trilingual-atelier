@@ -57,7 +57,7 @@ function ipayResponseAmountToMillimes(value: unknown): number {
 /** Validate the provider response against the exact checkout request before exposing its URL. */
 export function parseIpayOneShotResponse(
   payload: unknown,
-  expected: { amountMillimes: number; orderId: string },
+  expected?: { amountMillimes: number; orderId: string },
 ): {
   paymentUrl: string;
   paymentRef: string;
@@ -91,10 +91,11 @@ export function parseIpayOneShotResponse(
   if (record.currency.trim().toUpperCase() !== "TND") {
     throw new Error("ipay_response_currency_mismatch");
   }
-  if (invoiceReference !== expected.orderId) {
+  const responseAmountMillimes = ipayResponseAmountToMillimes(record.amount);
+  if (expected && invoiceReference !== expected.orderId) {
     throw new Error("ipay_response_invoice_mismatch");
   }
-  if (ipayResponseAmountToMillimes(record.amount) !== expected.amountMillimes) {
+  if (expected && responseAmountMillimes !== expected.amountMillimes) {
     throw new Error("ipay_response_amount_mismatch");
   }
 

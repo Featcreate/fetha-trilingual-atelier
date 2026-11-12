@@ -63,7 +63,7 @@ export const startCheckout = createServerFn({ method: "POST" })
         _order_id: order.id,
       },
     );
-    const claimRows = rawClaimRows as PaymentInitClaim[] | null;
+    const claimRows = rawClaimRows as unknown as PaymentInitClaim[] | null;
     const claim = claimRows?.[0];
     if (claimError || !claim) {
       return { ok: false as const, error: "payment_initialization_uncertain", orderId };
@@ -516,7 +516,7 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
         _order_id: order.id,
       },
     );
-    const claims = rawClaims as PaymentInitClaim[] | null;
+    const claims = rawClaims as unknown as PaymentInitClaim[] | null;
     const claim = claims?.[0];
     if (claimError || !claim) {
       return { ok: false as const, error: "payment_initialization_uncertain", orderId };

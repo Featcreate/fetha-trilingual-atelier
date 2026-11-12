@@ -23,6 +23,7 @@ import {
   archiveSellerFileVersion,
   createSellerStore,
   deleteSellerFileVersion,
+  listSellerFileVersions,
   registerSellerFileVersion,
 } from "@/lib/seller-security.functions";
 import {
@@ -1429,34 +1430,7 @@ function SellerFileVersions({
   const [message, setMessage] = useState("");
   const versionsQuery = useQuery({
     queryKey: ["seller-file-versions", productId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("product_file_versions")
-        .select("id,file_name,size_bytes,status,created_at")
-        .eq("product_id", productId)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-
-      const versions = data ?? [];
-      if (!versions.length) return [];
-
-      const { data: deletedAudit, error: auditError } = await supabase
-        .from("storage_cleanup_audit")
-        .select("file_version_id")
-        .eq("decision", "deleted")
-        .in(
-          "file_version_id",
-          versions.map((version) => version.id),
-        );
-      if (auditError) throw auditError;
-
-      const deletedIds = new Set(
-        (deletedAudit ?? [])
-          .map((entry) => entry.file_version_id)
-          .filter((id): id is string => Boolean(id)),
-      );
-      return versions.filter((version) => !deletedIds.has(version.id));
-    },
+    queryFn: async () => listSellerFileVersions({ data: { productId } }),
   });
 
   async function archive(versionId: string) {

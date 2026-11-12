@@ -81,7 +81,7 @@ export const listSellerFileVersions = createServerFn({ method: "GET" })
       .select("id,store_id")
       .eq("id", data.productId)
       .maybeSingle();
-    if (productError || !product) {
+    if (productError || !product || !product.store_id) {
       throw new Error("product_not_found");
     }
 

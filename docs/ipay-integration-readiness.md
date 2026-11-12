@@ -87,6 +87,7 @@ The documented payload shape is:
 - Authenticates requests with `X-Org-Id` and `Authorization: Bearer <JWT>`.
 - Builds the documented one-shot POST request with product code, TND currency, customer name, and order ID as external/invoice references.
 - Converts canonical integer millimes to decimal dinars (`10500` millimes becomes `10.5` TND). This follows the documentation's decimal-looking example but remains subject to written provider confirmation.
+- Validates the returned transaction reference and hosted URL, and requires the response to echo the exact requested amount, TND currency, and internal order reference before exposing the hosted URL. Any mismatch fails closed; because the provider may already have created a transaction, the initialization claim remains locked for manual reconciliation.
 - Applies a 15-second timeout and validates that the returned transaction reference is non-empty and the hosted URL is HTTPS on an iPay domain.
 - Exposes a read-only webhook-health GET helper. The separate webhook route treats notifications only as triggers and verifies transactions with an authenticated GET.
 - Requires `IPAY_CHECKOUT_ENABLED=true` for one-shot creation.

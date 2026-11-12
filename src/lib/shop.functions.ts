@@ -3,6 +3,8 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+type PaymentInitClaim = { outcome?: string; pay_url?: string | null };
+
 function siteOrigin() {
   const configured = process.env["PUBLIC_SITE_URL"];
   if (configured) return configured.replace(/\/$/, "");
@@ -24,9 +26,8 @@ export const startCheckout = createServerFn({ method: "POST" })
     const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
     if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
 
-    const { data: rawOrderId, error } = await (
-      await import("@/lib/actor-rpc.server")
-    ).callActorScopedRpc(context.userId, "server_create_order", {
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    const { data: rawOrderId, error } = await callActorScopedRpc(context.userId, "server_create_order", {
       _product_ids: data.productIds,
       _checkout_key: data.checkoutKey,
     });
@@ -51,14 +52,11 @@ export const startCheckout = createServerFn({ method: "POST" })
     }
     if (order.konnect_pay_url) return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
 
-    const { data: rawClaimRows, error: claimError } = await (
-      await import("@/lib/actor-rpc.server")
-    ).callActorScopedRpc(context.userId, "server_claim_order_konnect_init", {
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    const { data: rawClaimRows, error: claimError } = await callActorScopedRpc(context.userId, "server_claim_order_konnect_init", {
       _order_id: order.id,
     });
-    const claimRows = rawClaimRows as
-      | { outcome?: string; pay_url?: string | null }[]
-      | null;
+    const claimRows = rawClaimRows as PaymentInitClaim[] | null;
     const claim = claimRows?.[0];
     if (claimError || !claim) {
       return { ok: false as const, error: "payment_initialization_uncertain", orderId };
@@ -151,9 +149,8 @@ export const startCartCheckout = createServerFn({ method: "POST" })
     const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
     if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
 
-    const { data: rawOrderId, error } = await (
-      await import("@/lib/actor-rpc.server")
-    ).callActorScopedRpc(context.userId, "server_create_order_from_cart", {
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    const { data: rawOrderId, error } = await callActorScopedRpc(context.userId, "server_create_order_from_cart", {
       _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),
       _checkout_key: data.checkoutKey,
     });
@@ -500,14 +497,11 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       return { ok: false as const, error: "customer_name_required", orderId };
     }
 
-    const { data: rawClaims, error: claimError } = await (
-      await import("@/lib/actor-rpc.server")
-    ).callActorScopedRpc(context.userId, "server_claim_order_ipay_init", {
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    const { data: rawClaims, error: claimError } = await callActorScopedRpc(context.userId, "server_claim_order_ipay_init", {
       _order_id: order.id,
     });
-    const claims = rawClaims as
-      | { outcome?: string; pay_url?: string | null }[]
-      | null;
+    const claims = rawClaims as PaymentInitClaim[] | null;
     const claim = claims?.[0];
     if (claimError || !claim) {
       return { ok: false as const, error: "payment_initialization_uncertain", orderId };

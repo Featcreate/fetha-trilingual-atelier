@@ -338,9 +338,8 @@ function SellerPage() {
         sha256: "",
       },
     });
-    const version = (Array.isArray(versionRows) ? versionRows[0] : versionRows) as
-      | { version_id?: string; upload_path?: string }
-      | null;
+    const rawVersion = Array.isArray(versionRows) ? versionRows[0] : versionRows;
+    const version = rawVersion as { version_id?: string; upload_path?: string } | null;
     if (registerError) {
       if (registerError.message.includes("storage_quota_exceeded")) return "quota";
       if (registerError.message.includes("email_verification_required")) return "email";

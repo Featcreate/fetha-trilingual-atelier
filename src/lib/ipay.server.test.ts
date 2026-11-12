@@ -39,11 +39,42 @@ describe("iPay one-shot response validation", () => {
       parseIpayOneShotResponse({
         id: "txn-123",
         payment_url: "https://checkout.ipay.tn/pay/txn-123",
+        amount: 10.5,
+        currency: "TND",
+        invoice_reference: "order-123",
       }),
     ).toEqual({
       paymentRef: "txn-123",
       paymentUrl: "https://checkout.ipay.tn/pay/txn-123",
     });
+  });
+
+  it("rejects a provider response that does not match the requested amount, currency, or order", () => {
+    const response = {
+      id: "txn-123",
+      payment_url: "https://ipay.tn/pay/txn-123",
+      amount: 10.5,
+      currency: "TND",
+      invoice_reference: "order-123",
+    };
+    expect(() =>
+      parseIpayOneShotResponse({ ...response, amount: 10.499 }, {
+        amountMillimes: 10500,
+        orderId: "order-123",
+      }),
+    ).toThrow("ipay_response_amount_mismatch");
+    expect(() =>
+      parseIpayOneShotResponse({ ...response, currency: "EUR" }, {
+        amountMillimes: 10500,
+        orderId: "order-123",
+      }),
+    ).toThrow("ipay_response_currency_mismatch");
+    expect(() =>
+      parseIpayOneShotResponse({ ...response, invoice_reference: "another-order" }, {
+        amountMillimes: 10500,
+        orderId: "order-123",
+      }),
+    ).toThrow("ipay_response_invoice_mismatch");
   });
 
   it("rejects non-iPay hosts, credentials, and non-HTTPS URLs", () => {
@@ -52,7 +83,13 @@ describe("iPay one-shot response validation", () => {
       "https://user@ipay.tn/pay",
       "http://ipay.tn/pay",
     ]) {
-      expect(() => parseIpayOneShotResponse({ id: "txn-123", payment_url })).toThrow(
+      expect(() => parseIpayOneShotResponse({
+        id: "txn-123",
+        payment_url,
+        amount: 10.5,
+        currency: "TND",
+        invoice_reference: "order-123",
+      })).toThrow(
         "ipay_invalid_payment_url",
       );
     }
@@ -74,6 +111,9 @@ describe("iPay one-shot response hardening", () => {
       parseIpayOneShotResponse({
         id: 987654,
         payment_url: "https://ipay.tn/checkout/987654",
+        amount: 10.5,
+        currency: "TND",
+        invoice_reference: "order-123",
       }),
     ).toEqual({
       paymentRef: "987654",
@@ -106,9 +146,21 @@ describe("iPay one-shot response hardening", () => {
           ? "https://checkout.ipay.tn/pay"
           : undefined;
       if (expected) {
-        expect(parseIpayOneShotResponse({ id: "txn-1", payment_url }).paymentUrl).toBe(expected);
+        expect(parseIpayOneShotResponse({
+          id: "txn-1",
+          payment_url,
+          amount: 10.5,
+          currency: "TND",
+          invoice_reference: "order-123",
+        }).paymentUrl).toBe(expected);
       } else {
-        expect(() => parseIpayOneShotResponse({ id: "txn-1", payment_url })).toThrow(
+        expect(() => parseIpayOneShotResponse({
+            id: "txn-1",
+            payment_url,
+            amount: 10.5,
+            currency: "TND",
+            invoice_reference: "order-123",
+          })).toThrow(
           "ipay_invalid_payment_url",
         );
       }
@@ -120,6 +172,9 @@ describe("iPay one-shot response hardening", () => {
       parseIpayOneShotResponse({
         id: "x".repeat(201),
         payment_url: "https://ipay.tn/pay",
+        amount: 10.5,
+        currency: "TND",
+        invoice_reference: "order-123",
       }),
     ).toThrow("ipay_invalid_response");
   });
@@ -184,6 +239,9 @@ describe("iPay one-shot request safety", () => {
         JSON.stringify({
           id: "txn-test",
           payment_url: "https://checkout.ipay.tn/pay/txn-test",
+          amount: 10.5,
+          currency: "TND",
+          invoice_reference: "order-test",
         }),
         {
           status: 200,

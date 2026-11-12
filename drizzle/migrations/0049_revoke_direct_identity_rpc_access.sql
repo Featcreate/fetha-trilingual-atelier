@@ -15,3 +15,6 @@ REVOKE EXECUTE ON FUNCTION public.submit_seller_rating(uuid,integer) FROM authen
 REVOKE EXECUTE ON FUNCTION public.admin_record_seller_external_fee(uuid,text,bigint,text,text,text,text,uuid,uuid) FROM authenticated;
 REVOKE EXECUTE ON FUNCTION public.admin_record_shared_seller_fee(uuid,text,bigint,text,text,text,text) FROM authenticated;
 REVOKE EXECUTE ON FUNCTION public.admin_renew_entitlement(uuid,integer,integer,text) FROM authenticated;
+
+-- Public homepage access is served through the app server, not direct PostgREST RPC.
+REVOKE EXECUTE ON FUNCTION public.get_top_rated_stores() FROM anon, authenticated;

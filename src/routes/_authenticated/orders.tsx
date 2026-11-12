@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
+import { submitSellerRating } from "@/lib/seller-security.functions";
 import { formatTND } from "@/lib/money";
 import { getDownloadLink } from "@/lib/shop.functions";
 import { AuthShell } from "@/components/AuthShell";
@@ -70,9 +71,8 @@ function BuyerOrdersPage() {
   async function rateSeller(storeId: string, stars: number) {
     setRatingBusy(storeId);
     setNotice("");
-    const { error } = await supabase.rpc("submit_seller_rating", {
-      _store_id: storeId,
-      _stars: stars,
+    const { error } = await submitSellerRating({
+      data: { storeId, stars },
     });
     setRatingBusy(null);
     if (error) {

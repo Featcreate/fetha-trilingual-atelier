@@ -3,6 +3,8 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+type PaymentInitClaim = { outcome?: string; pay_url?: string | null };
+
 function siteOrigin() {
   const configured = process.env["PUBLIC_SITE_URL"];
   if (configured) return configured.replace(/\/$/, "");
@@ -24,10 +26,16 @@ export const startCheckout = createServerFn({ method: "POST" })
     const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
     if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
 
-    const { data: orderId, error } = await context.supabase.rpc("create_order", {
-      _product_ids: data.productIds,
-      _checkout_key: data.checkoutKey,
-    });
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    const { data: rawOrderId, error } = await callActorScopedRpc(
+      context.userId,
+      "server_create_order",
+      {
+        _product_ids: data.productIds,
+        _checkout_key: data.checkoutKey,
+      },
+    );
+    const orderId = rawOrderId as string | null;
     if (error || !orderId) {
       const code = error?.message?.includes("product_unavailable")
         ? "product_unavailable"
@@ -48,11 +56,15 @@ export const startCheckout = createServerFn({ method: "POST" })
     }
     if (order.konnect_pay_url) return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
 
-    const { data: claimRows, error: claimError } = await context.supabase.rpc(
-      "claim_order_konnect_init",
-      { _order_id: order.id },
+    const { data: rawClaimRows, error: claimError } = await callActorScopedRpc(
+      context.userId,
+      "server_claim_order_konnect_init",
+      {
+        _order_id: order.id,
+      },
     );
-    const claim = claimRows?.[0] as { outcome?: string; pay_url?: string | null } | undefined;
+    const claimRows = rawClaimRows as unknown as PaymentInitClaim[] | null;
+    const claim = claimRows?.[0];
     if (claimError || !claim) {
       return { ok: false as const, error: "payment_initialization_uncertain", orderId };
     }
@@ -144,10 +156,16 @@ export const startCartCheckout = createServerFn({ method: "POST" })
     const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
     if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
 
-    const { data: orderId, error } = await context.supabase.rpc("create_order_from_cart", {
-      _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),
-      _checkout_key: data.checkoutKey,
-    });
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    const { data: rawOrderId, error } = await callActorScopedRpc(
+      context.userId,
+      "server_create_order_from_cart",
+      {
+        _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),
+        _checkout_key: data.checkoutKey,
+      },
+    );
+    const orderId = rawOrderId as string | null;
     if (error || !orderId) {
       const code = error?.message?.includes("product_unavailable")
         ? "product_unavailable"
@@ -490,11 +508,16 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       return { ok: false as const, error: "customer_name_required", orderId };
     }
 
-    const { data: claims, error: claimError } = await context.supabase.rpc(
-      "claim_order_ipay_init",
-      { _order_id: order.id },
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    const { data: rawClaims, error: claimError } = await callActorScopedRpc(
+      context.userId,
+      "server_claim_order_ipay_init",
+      {
+        _order_id: order.id,
+      },
     );
-    const claim = claims?.[0] as { outcome?: string; pay_url?: string | null } | undefined;
+    const claims = rawClaims as unknown as PaymentInitClaim[] | null;
+    const claim = claims?.[0];
     if (claimError || !claim) {
       return { ok: false as const, error: "payment_initialization_uncertain", orderId };
     }

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatTND } from "@/lib/money";
 import { TndEquivalents } from "@/components/TndEquivalents";
 import { ProductPreview } from "@/components/ProductPreview";
+import { getTopRatedStores } from "@/lib/public-data.functions";
 import {
   Menu,
   X,
@@ -147,11 +148,7 @@ function Index() {
 
   const topRatedStoresQuery = useQuery({
     queryKey: ["homepage-top-rated-stores"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_top_rated_stores");
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => getTopRatedStores(),
   });
   const topRatedScrollerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {

@@ -337,6 +337,20 @@
       "when": 1794528000000,
       "tag": "0045_ipay_return_check_source",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1794614400000,
+      "tag": "0046_server_rpc_wrappers",
+      "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1794700800000,
+      "tag": "0047_revoke_direct_rpc_access",
+      "breakpoints": true
     }
   ]
 }

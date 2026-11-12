@@ -58,22 +58,31 @@ describe("iPay one-shot response validation", () => {
       invoice_reference: "order-123",
     };
     expect(() =>
-      parseIpayOneShotResponse({ ...response, amount: 10.499 }, {
-        amountMillimes: 10500,
-        orderId: "order-123",
-      }),
+      parseIpayOneShotResponse(
+        { ...response, amount: 10.499 },
+        {
+          amountMillimes: 10500,
+          orderId: "order-123",
+        },
+      ),
     ).toThrow("ipay_response_amount_mismatch");
     expect(() =>
-      parseIpayOneShotResponse({ ...response, currency: "EUR" }, {
-        amountMillimes: 10500,
-        orderId: "order-123",
-      }),
+      parseIpayOneShotResponse(
+        { ...response, currency: "EUR" },
+        {
+          amountMillimes: 10500,
+          orderId: "order-123",
+        },
+      ),
     ).toThrow("ipay_response_currency_mismatch");
     expect(() =>
-      parseIpayOneShotResponse({ ...response, invoice_reference: "another-order" }, {
-        amountMillimes: 10500,
-        orderId: "order-123",
-      }),
+      parseIpayOneShotResponse(
+        { ...response, invoice_reference: "another-order" },
+        {
+          amountMillimes: 10500,
+          orderId: "order-123",
+        },
+      ),
     ).toThrow("ipay_response_invoice_mismatch");
   });
 
@@ -83,15 +92,15 @@ describe("iPay one-shot response validation", () => {
       "https://user@ipay.tn/pay",
       "http://ipay.tn/pay",
     ]) {
-      expect(() => parseIpayOneShotResponse({
-        id: "txn-123",
-        payment_url,
-        amount: 10.5,
-        currency: "TND",
-        invoice_reference: "order-123",
-      })).toThrow(
-        "ipay_invalid_payment_url",
-      );
+      expect(() =>
+        parseIpayOneShotResponse({
+          id: "txn-123",
+          payment_url,
+          amount: 10.5,
+          currency: "TND",
+          invoice_reference: "order-123",
+        }),
+      ).toThrow("ipay_invalid_payment_url");
     }
   });
 
@@ -146,23 +155,25 @@ describe("iPay one-shot response hardening", () => {
           ? "https://checkout.ipay.tn/pay"
           : undefined;
       if (expected) {
-        expect(parseIpayOneShotResponse({
-          id: "txn-1",
-          payment_url,
-          amount: 10.5,
-          currency: "TND",
-          invoice_reference: "order-123",
-        }).paymentUrl).toBe(expected);
-      } else {
-        expect(() => parseIpayOneShotResponse({
+        expect(
+          parseIpayOneShotResponse({
             id: "txn-1",
             payment_url,
             amount: 10.5,
             currency: "TND",
             invoice_reference: "order-123",
-          })).toThrow(
-          "ipay_invalid_payment_url",
-        );
+          }).paymentUrl,
+        ).toBe(expected);
+      } else {
+        expect(() =>
+          parseIpayOneShotResponse({
+            id: "txn-1",
+            payment_url,
+            amount: 10.5,
+            currency: "TND",
+            invoice_reference: "order-123",
+          }),
+        ).toThrow("ipay_invalid_payment_url");
       }
     }
   });

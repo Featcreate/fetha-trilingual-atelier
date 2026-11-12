@@ -62,7 +62,7 @@ function parseIpayTransaction(payload: unknown): IpayTransaction {
   return {
     id,
     invoice_reference: invoiceReference,
-    amount: data["amount"],
+    amount: String(data["amount"]),
     currency: data["currency"].trim().toUpperCase(),
     status: data["status"].toLowerCase(),
   };

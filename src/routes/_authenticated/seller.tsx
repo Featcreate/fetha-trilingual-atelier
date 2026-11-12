@@ -1479,7 +1479,11 @@ function SellerFileVersions({
           <div className="min-w-0">
             <p className="break-all font-medium">{version.file_name}</p>
             <p className="text-muted-foreground">
-              {version.status === "active" ? m.fileStatusActive : m.fileStatusArchived}
+              {version.status === "active"
+                ? m.fileStatusActive
+                : version.status === "archived"
+                  ? m.fileStatusArchived
+                  : m.fileStatusPending}
               {" · "}{m.fileSize}: {formatFileSize(Number(version.size_bytes))}
             </p>
           </div>

@@ -98,7 +98,8 @@ The documented payload shape is:
 - It creates/reuses a pending cart order, claims initialization, requests one hosted checkout URL, and persists the iPay reference and URL.
 - The redirect only sends the buyer to iPay. It does not settle an order or grant a download.
 - Claim outcomes remain explicit: missing order, closed order, provider conflict, and an already-in-progress initialization are distinct errors.
-- If the provider request times out or its response cannot be persisted, the claim deliberately remains locked. This avoids duplicate charges when iPay may have created a transaction but the response was lost. There is no automatic retry or automatic claim reset.
+- The browser preserves the per-cart idempotency keys in session storage across refreshes, then clears them after the order reaches a terminal state.
+- If the provider request times out or its response cannot be persisted, the claim deliberately remains locked. This avoids duplicate charges when iPay may have created a transaction but the response was lost. There is no automatic provider retry or automatic claim reset.
 
 ### Database migrations
 

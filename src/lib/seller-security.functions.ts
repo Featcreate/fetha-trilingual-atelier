@@ -128,7 +128,7 @@ export const deleteSellerFileVersion = createServerFn({ method: "POST" })
 
     const { data: version, error: versionError } = await supabaseAdmin
       .from("product_file_versions")
-      .select("id,product_id,store_id,file_name,size_bytes,storage_path,status")
+      .select("id,product_id,store_id,file_name,size_bytes,storage_path,status,created_at")
       .eq("id", data.versionId)
       .maybeSingle();
 
@@ -172,7 +172,12 @@ export const deleteSellerFileVersion = createServerFn({ method: "POST" })
       if (pendingListError) {
         return { data: null, error: { message: "storage_lookup_failed" } };
       }
-      if (!(pendingObjects ?? []).some((object) => object.name === objectName)) {
+      const pendingObjectExists = (pendingObjects ?? []).some(
+        (object) => object.name === objectName,
+      );
+      const uploadSessionExpired =
+        Date.now() - new Date(version.created_at).getTime() > 25 * 60 * 60 * 1000;
+      if (!pendingObjectExists && !uploadSessionExpired) {
         return { data: null, error: { message: "file_upload_in_progress" } };
       }
     }

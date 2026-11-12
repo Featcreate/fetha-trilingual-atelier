@@ -1507,16 +1507,14 @@ function SellerFileVersions({
                 {workingId === version.id ? m.loading : m.archiveFile}
               </button>
             )}
-            {version.status === "archived" && (
-              <button
-                type="button"
-                disabled={workingId !== null}
-                onClick={() => void remove(version.id, version.file_name, Number(version.size_bytes))}
-                className="rounded-full border border-destructive px-3 py-1.5 font-semibold text-destructive disabled:opacity-50"
-              >
-                {workingId === version.id ? m.loading : m.deleteFile}
-              </button>
-            )}
+            <button
+              type="button"
+              disabled={workingId !== null}
+              onClick={() => void remove(version.id, version.file_name, Number(version.size_bytes))}
+              className="rounded-full border border-destructive px-3 py-1.5 font-semibold text-destructive disabled:opacity-50"
+            >
+              {workingId === version.id ? m.loading : m.deleteFile}
+            </button>
           </div>
         </div>
       ))}

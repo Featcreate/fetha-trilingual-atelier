@@ -1527,15 +1527,15 @@ function SellerFileVersions({
           <div className="flex gap-2">
             {version.status === "active" &&
               (activeCount > 1 || allowArchiveLast) && (
-              <button
-                type="button"
-                disabled={workingId !== null}
-                onClick={() => void archive(version.id)}
-                className="rounded-full border border-border px-3 py-1.5 font-semibold disabled:opacity-50"
-              >
-                {workingId === version.id ? m.loading : m.archiveFile}
-              </button>
-            )}
+                <button
+                  type="button"
+                  disabled={workingId !== null}
+                  onClick={() => void archive(version.id)}
+                  className="rounded-full border border-border px-3 py-1.5 font-semibold disabled:opacity-50"
+                >
+                  {workingId === version.id ? m.loading : m.archiveFile}
+                </button>
+              )}
             <button
               type="button"
               disabled={workingId !== null}

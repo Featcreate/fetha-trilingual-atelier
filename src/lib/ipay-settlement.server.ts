@@ -141,7 +141,7 @@ export async function ipayGetTransaction(input: {
  */
 export async function processIpaySettlementNotice(
   notice: IpayWebhookNotice,
-  source: "webhook" | "polling" | "admin_check",
+  source: "webhook" | "polling" | "admin_check" | "return_check",
 ): Promise<{ outcome: string }> {
   const transactionId =
     typeof notice.id === "string" || typeof notice.id === "number" ? String(notice.id).trim() : "";

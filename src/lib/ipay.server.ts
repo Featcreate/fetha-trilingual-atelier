@@ -85,7 +85,12 @@ export function parseIpayOneShotResponse(
 
   const paymentRef = String(record.id).trim();
   const invoiceReference = record.invoice_reference.trim();
-  if (!paymentRef || paymentRef.length > 200 || !invoiceReference || invoiceReference.length > 200) {
+  if (
+    !paymentRef ||
+    paymentRef.length > 200 ||
+    !invoiceReference ||
+    invoiceReference.length > 200
+  ) {
     throw new Error("ipay_invalid_response");
   }
   if (record.currency.trim().toUpperCase() !== "TND") {

@@ -218,3 +218,19 @@ $$;
 
 REVOKE ALL ON FUNCTION public.register_file_version(uuid, text, bigint, text, text) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.register_file_version(uuid, text, bigint, text, text) TO service_role;
+
+-- Sellers may see cleanup outcomes for their own file versions so successfully
+-- deleted versions can disappear from the seller's file-management list.
+CREATE POLICY "Sellers read own file cleanup audit"
+ON public.storage_cleanup_audit
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1
+      FROM public.product_file_versions v
+      JOIN public.stores s ON s.id = v.store_id
+     WHERE v.id = storage_cleanup_audit.file_version_id
+       AND s.owner_id = auth.uid()
+  )
+);

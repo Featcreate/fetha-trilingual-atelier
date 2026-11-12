@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const MAX_PRODUCT_FILE_BYTES = 1024 * 1024 * 1024;
 const RESUMABLE_THRESHOLD_BYTES = 6 * 1024 * 1024;
 const TUS_CHUNK_BYTES = 6 * 1024 * 1024;
-const RETRY_DELAYS_MS = [0, 1_000, 3_000, 5_000, 10_000];
+const RETRY_DELAYS_MS = [1_000, 3_000, 5_000, 10_000];
 
 type TusResponse = {
   status: number;
@@ -115,8 +115,8 @@ async function uploadResumable(
       retries = 0;
       onProgress?.(Math.min(100, Math.round((offset / file.size) * 100)));
     } catch (error) {
-      if (retries >= RETRY_DELAYS_MS.length - 1) throw error;
-      await new Promise((resolve) => window.setTimeout(resolve, RETRY_DELAYS_MS[++retries]));
+      if (retries >= RETRY_DELAYS_MS.length) throw error;
+      await new Promise((resolve) => window.setTimeout(resolve, RETRY_DELAYS_MS[retries++]));
       // Recover the server-confirmed offset after a dropped connection or lost PATCH response.
       const head = await request("HEAD", uploadUrl, headers);
       const serverOffset = Number(head.headers.getResponseHeader("Upload-Offset"));

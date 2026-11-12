@@ -156,6 +156,8 @@ export const dict = {
       fileDeleteLastActive:
         "Ajoutez d’abord un autre fichier actif ou désactivez le produit avant de supprimer son dernier fichier actif.",
       fileDeleteFailed: "Impossible de supprimer ce fichier. Réessayez plus tard.",
+      fileUploadInProgress:
+        "Le téléversement est encore en cours. Réessayez après sa fin.",
       fileUploadInProgress: "Le téléversement est en cours. Réessayez une fois terminé.",
       fileDeletedAuditFailed:
         "Le fichier a été supprimé, mais son journal de suppression n’a pas pu être enregistré. Contactez le support.",
@@ -515,6 +517,8 @@ export const dict = {
       fileDeleteLastActive:
         "أضف ملفاً نشطاً آخر أولاً أو عطّل المنتج قبل حذف آخر ملف نشط له.",
       fileDeleteFailed: "تعذر حذف الملف. حاول لاحقاً.",
+      fileUploadInProgress:
+        "ما زال رفع الملف جارياً. أعد المحاولة بعد اكتمال الرفع.",
       fileDeletedAuditFailed:
         "تم حذف الملف، لكن تعذر تسجيل العملية في سجل التدقيق. يرجى التواصل مع الدعم.",
       fileArchiveFailed: "تعذرت أرشفة الملف.",
@@ -868,6 +872,8 @@ export const dict = {
       fileDeleteLastActive:
         "Add another active file or deactivate the product before deleting its last active file.",
       fileDeleteFailed: "Could not delete this file. Please try again later.",
+      fileUploadInProgress:
+        "The upload is still in progress. Try again after it finishes.",
       fileDeletedAuditFailed:
         "The file was deleted, but its audit record could not be saved. Please contact support.",
       fileArchiveFailed: "Could not archive this file.",

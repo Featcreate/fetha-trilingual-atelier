@@ -1,0 +1,31 @@
+name: Temporary iPay formatting repair
+on:
+  push:
+    branches:
+      - work/ipay-create-response-validation
+    paths:
+      - .github/workflows/temp-format-ipay.yml
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work/ipay-create-response-validation
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bunx prettier --write docs/ipay-integration-readiness.md src/routes/_authenticated/admin.tsx
+      - name: Commit formatted files
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/ipay-integration-readiness.md src/routes/_authenticated/admin.tsx
+          git commit -m "Format iPay readiness and admin files"
+          git push origin HEAD:work/ipay-create-response-validation

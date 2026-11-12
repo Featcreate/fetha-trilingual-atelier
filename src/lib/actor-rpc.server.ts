@@ -1,5 +1,7 @@
+import type { Json } from "@/integrations/supabase/types";
+
 type ActorRpcResult = {
-  data: any;
+  data: Json;
   error: { message: string; code?: string } | null;
 };
 

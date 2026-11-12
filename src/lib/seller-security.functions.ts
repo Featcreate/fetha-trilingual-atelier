@@ -70,6 +70,69 @@ export const archiveSellerFileVersion = createServerFn({ method: "POST" })
     });
   });
 
+export const deleteArchivedSellerFileVersion = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ versionId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: version, error: versionError } = await supabaseAdmin
+      .from("product_file_versions")
+      .select("id,store_id,file_name,size_bytes,storage_path,status")
+      .eq("id", data.versionId)
+      .maybeSingle();
+
+    if (versionError || !version) {
+      return { data: null, error: { message: "file_version_not_found" } };
+    }
+    if (version.status !== "archived") {
+      return { data: null, error: { message: "file_version_must_be_archived" } };
+    }
+
+    const { data: store, error: storeError } = await supabaseAdmin
+      .from("stores")
+      .select("owner_id")
+      .eq("id", version.store_id)
+      .maybeSingle();
+    if (storeError || !store || store.owner_id !== context.userId) {
+      return { data: null, error: { message: "forbidden" } };
+    }
+
+    // Archived versions cannot enter new checkout snapshots. Existing purchase
+    // snapshots are immutable and block physical deletion permanently.
+    const { count, error: purchaseError } = await supabaseAdmin
+      .from("order_item_files")
+      .select("id", { count: "exact", head: true })
+      .eq("file_version_id", version.id);
+    if (purchaseError) {
+      return { data: null, error: { message: "purchase_reference_check_failed" } };
+    }
+    if ((count ?? 0) > 0) {
+      return { data: null, error: { message: "file_version_has_purchases" } };
+    }
+
+    const { error: storageError } = await supabaseAdmin.storage
+      .from("product-files")
+      .remove([version.storage_path]);
+    if (storageError) {
+      return { data: null, error: { message: "storage_delete_failed" } };
+    }
+
+    const { error: auditError } = await supabaseAdmin.from("storage_cleanup_audit").insert({
+      file_version_id: version.id,
+      storage_path: version.storage_path,
+      decision: "deleted",
+      reason: "seller_manual_deletion",
+      decided_by: context.userId,
+    });
+    if (auditError) {
+      // The object is already removed; surface the audit failure for operator review.
+      return { data: null, error: { message: "storage_deleted_audit_failed" } };
+    }
+
+    return { data: { deletedBytes: Number(version.size_bytes) }, error: null };
+  });
+
 export const submitSellerRating = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>

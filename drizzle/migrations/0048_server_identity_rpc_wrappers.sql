@@ -187,3 +187,6 @@ GRANT EXECUTE ON FUNCTION public.server_submit_seller_rating(uuid,uuid,integer) 
 -- This read-only function is fully covered by the seller_ratings own-row RLS
 -- policy, so it no longer needs SECURITY DEFINER.
 ALTER FUNCTION public.get_my_seller_ratings() SECURITY INVOKER;
+
+-- The homepage uses a public server handler for this aggregate; keep the RPC service-only.
+GRANT EXECUTE ON FUNCTION public.get_top_rated_stores() TO service_role;

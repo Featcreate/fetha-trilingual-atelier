@@ -156,6 +156,7 @@ export const dict = {
       fileDeleteLastActive:
         "Ajoutez d’abord un autre fichier actif ou désactivez le produit avant de supprimer son dernier fichier actif.",
       fileDeleteFailed: "Impossible de supprimer ce fichier. Réessayez plus tard.",
+      fileUploadInProgress: "Le téléversement est en cours. Réessayez une fois terminé.",
       fileDeletedAuditFailed:
         "Le fichier a été supprimé, mais son journal de suppression n’a pas pu être enregistré. Contactez le support.",
       fileArchiveFailed: "Impossible d’archiver ce fichier.",

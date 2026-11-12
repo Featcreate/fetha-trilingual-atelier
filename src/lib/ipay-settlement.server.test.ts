@@ -10,10 +10,12 @@ describe("iPay exact TND amount parsing", () => {
     expect(ipayAmountToMillimes("45.000")).toBe(45000);
     expect(ipayAmountToMillimes("12.5")).toBe(12500);
     expect(ipayAmountToMillimes("0.001")).toBe(1);
+    expect(ipayAmountToMillimes(12.5)).toBe(12500);
+    expect(ipayAmountToMillimes(45)).toBe(45000);
   });
 
-  it("rejects floats, malformed values, excess precision and unsafe amounts", () => {
-    for (const value of [45, "1e2", "1.0001", "-1.000", "0.000", "abc"]) {
+  it("rejects malformed values, excess precision and unsafe amounts", () => {
+    for (const value of ["1e2", "1.0001", "-1.000", "0.000", "abc", Number.NaN, Infinity]) {
       expect(() => ipayAmountToMillimes(value)).toThrow("ipay_invalid_amount");
     }
   });
@@ -56,6 +58,35 @@ describe("iPay authoritative transaction lookup", () => {
     expect(init.method).toBe("GET");
     expect((init.headers as Record<string, string>)["Authorization"]).toBe("Bearer jwt-test");
     expect((init.headers as Record<string, string>)["X-Org-Id"]).toBe("org-test");
+  });
+
+  it("accepts the documented numeric amount shape in a transaction lookup", async () => {
+    vi.stubEnv("IPAY_ORG_ID", "org-test");
+    vi.stubEnv("IPAY_JWT", "jwt-test");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: true,
+            data: {
+              id: "tx-number",
+              invoice_reference: "order-number",
+              amount: 12.5,
+              currency: " TND ",
+              status: "completed",
+            },
+          }),
+          { status: 200 },
+        ),
+      ),
+    );
+
+    await expect(ipayGetTransaction({ transactionId: "tx-number" })).resolves.toMatchObject({
+      amount: 12.5,
+      currency: "TND",
+      status: "completed",
+    });
   });
 
   it("requires exactly one result for invoice-reference lookup", async () => {

@@ -15,6 +15,9 @@
 - Payments settle only through the service-role `settle_order_payment` RPC (verified or simulation mode; simulation never writes seller ledger) — one idempotent, transactional path.
 - Downloads go reserve_download → sign (300s) → finalize_download; release on signing failure — quota counts only finalized downloads and 5-minute repeats are free.
 - Product files live in immutable `product_file_versions` with server-built paths; `product_files` is deprecated and kept only for compatibility.
+- Seller file retention is manual: never automatically delete files or old versions. Show a direct delete action for every seller file version; before physical deletion, archive active or pending versions through the server RPC and reject deletion of the last active file while its product is active.
+- Block physical deletion whenever an immutable `order_item_files` purchase snapshot references the version. Keep version metadata, buyer entitlements, and purchase snapshots; append a `storage_cleanup_audit` record after successful deletion.
+- Checkout snapshot insertion must recheck active version status and Storage-object existence while holding the product row lock, serializing it against seller archival/deletion. A successfully deleted version no longer consumes the seller's application quota.
 - Financial, purchase-snapshot, entitlement and audit rows use ON DELETE RESTRICT plus immutability triggers — never cascade-delete them.
 
 ## Seller country and provider eligibility

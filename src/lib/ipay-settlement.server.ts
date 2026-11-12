@@ -17,10 +17,18 @@ type IpayWebhookNotice = {
 };
 
 export function ipayAmountToMillimes(value: unknown): number {
-  if (typeof value !== "string" || !/^\d+(?:\.\d{1,3})?$/.test(value.trim())) {
+  // iPay's API examples encode amount as a JSON number, while some responses
+  // return it as a decimal string. Normalize both without binary-float math.
+  const raw =
+    typeof value === "number" && Number.isFinite(value)
+      ? String(value)
+      : typeof value === "string"
+        ? value.trim()
+        : "";
+  if (!/^\d+(?:\.\d{1,3})?$/.test(raw)) {
     throw new Error("ipay_invalid_amount");
   }
-  const [whole, fraction = ""] = value.trim().split(".");
+  const [whole, fraction = ""] = raw.split(".");
   const millimes = Number(whole) * 1000 + Number(fraction.padEnd(3, "0"));
   if (!Number.isSafeInteger(millimes) || millimes <= 0) {
     throw new Error("ipay_invalid_amount");
@@ -38,7 +46,7 @@ function parseIpayTransaction(payload: unknown): IpayTransaction {
   if (
     (typeof data["id"] !== "string" && typeof data["id"] !== "number") ||
     typeof data["invoice_reference"] !== "string" ||
-    typeof data["amount"] !== "string" ||
+    (typeof data["amount"] !== "string" && typeof data["amount"] !== "number") ||
     typeof data["currency"] !== "string" ||
     typeof data["status"] !== "string"
   ) {
@@ -55,7 +63,7 @@ function parseIpayTransaction(payload: unknown): IpayTransaction {
     id,
     invoice_reference: invoiceReference,
     amount: data["amount"],
-    currency: data["currency"].toUpperCase(),
+    currency: data["currency"].trim().toUpperCase(),
     status: data["status"].toLowerCase(),
   };
 }

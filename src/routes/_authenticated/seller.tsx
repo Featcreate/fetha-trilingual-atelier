@@ -22,7 +22,7 @@ import {
   activateSellerFileVersion,
   archiveSellerFileVersion,
   createSellerStore,
-  deleteArchivedSellerFileVersion,
+  deleteSellerFileVersion,
   registerSellerFileVersion,
 } from "@/lib/seller-security.functions";
 import {
@@ -1469,7 +1469,7 @@ function SellerFileVersions({
     }
     setWorkingId(versionId);
     setMessage("");
-    const result = await deleteArchivedSellerFileVersion({ data: { versionId } });
+    const result = await deleteSellerFileVersion({ data: { versionId } });
     setWorkingId(null);
     if (result.error) {
       setMessage(

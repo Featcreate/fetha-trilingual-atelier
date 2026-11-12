@@ -153,7 +153,7 @@ export const dict = {
       commissionUnset:
         "La commission de la plateforme n'est pas encore configurée. Les produits peuvent être préparés, mais les commandes resteront désactivées.",
       fileLimit:
-        "Plusieurs fichiers acceptés, 50 Mo maximum chacun et 1 Go de stockage total par boutique. Les fichiers restent privés.",
+        "Tous les types de fichiers sont acceptés. Jusqu’à 1 Go par fichier et 1 Go au total par boutique. Pour les fichiers volumineux, téléversez une archive ZIP, RAR ou 7Z ; le client téléchargera l’archive originale. Les fichiers restent privés.",
       freeForever: "Ouverture de boutique et ajout de produits gratuits.",
       sales: "Ventes",
       sellerNet: "Montant vendeur",
@@ -196,7 +196,7 @@ export const dict = {
       save: "Enregistrer",
       loading: "Chargement…",
       error: "Une erreur est survenue. Réessayez.",
-      invalidFile: "Choisissez un fichier numérique valide de 50 Mo maximum.",
+      invalidFile: "Choisissez un fichier numérique valide de 1 Go maximum. La limite totale de stockage par boutique est de 1 Go.",
       invalidPrice: "Saisissez un prix valide supérieur à zéro.",
       slugHint: "Lettres minuscules, chiffres et tirets.",
       cancel: "Annuler",
@@ -489,7 +489,7 @@ export const dict = {
       commissionUnset:
         "لم يتم ضبط عمولة المنصة بعد. يمكنك تجهيز المنتجات، لكن الطلبات ستبقى متوقفة.",
       fileLimit:
-        "يمكن إضافة عدة ملفات، بحد أقصى 50 ميغابايت للملف الواحد و1 غيغابايت إجمالاً لكل متجر. تبقى الملفات خاصة.",
+        "تُقبل جميع أنواع الملفات، حتى 1 غيغابايت للملف الواحد و1 غيغابايت إجمالاً لكل متجر. للملفات الكبيرة، ارفعها في أرشيف ZIP أو RAR أو 7Z، وسيحمّل المشتري الأرشيف الأصلي. تبقى الملفات خاصة.",
       freeForever: "إنشاء المتجر وإضافة المنتجات مجانيان.",
       sales: "المبيعات",
       sellerNet: "مستحقات البائع",
@@ -532,7 +532,7 @@ export const dict = {
       save: "حفظ",
       loading: "جارٍ التحميل…",
       error: "حدث خطأ. حاول مرة أخرى.",
-      invalidFile: "اختر ملفاً رقمياً صالحاً لا يتجاوز 50 ميغابايت.",
+      invalidFile: "اختر ملفاً رقمياً صالحاً لا يتجاوز 1 غيغابايت. الحد الإجمالي للتخزين لكل متجر هو 1 غيغابايت.",
       invalidPrice: "أدخل سعراً صحيحاً أكبر من صفر.",
       slugHint: "أحرف لاتينية صغيرة وأرقام وشرطات فقط.",
       cancel: "إلغاء",
@@ -821,7 +821,7 @@ export const dict = {
       commissionUnset:
         "The platform commission is not configured yet. Products can be prepared, but orders will remain disabled.",
       fileLimit:
-        "Multiple files allowed, up to 50 MB each and 1 GB total storage per store. Files remain private.",
+        "All file types are accepted, up to 1 GB per file and 1 GB total per store. For large files, upload a ZIP, RAR, or 7Z archive; buyers download the original archive. Files remain private.",
       freeForever: "Store creation and product listings are free.",
       sales: "Sales",
       sellerNet: "Seller proceeds",
@@ -864,7 +864,7 @@ export const dict = {
       save: "Save",
       loading: "Loading…",
       error: "Something went wrong. Please try again.",
-      invalidFile: "Choose a valid digital file no larger than 50 MB.",
+      invalidFile: "Choose a valid digital file no larger than 1 GB. The total storage quota per store is 1 GB.",
       invalidPrice: "Enter a valid price greater than zero.",
       slugHint: "Lowercase letters, numbers, and hyphens.",
       cancel: "Cancel",

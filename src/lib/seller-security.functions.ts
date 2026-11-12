@@ -78,7 +78,7 @@ export const deleteArchivedSellerFileVersion = createServerFn({ method: "POST" }
 
     const { data: version, error: versionError } = await supabaseAdmin
       .from("product_file_versions")
-      .select("id,store_id,file_name,size_bytes,storage_path,status")
+      .select("id,product_id,store_id,file_name,size_bytes,storage_path,status")
       .eq("id", data.versionId)
       .maybeSingle();
 
@@ -86,7 +86,39 @@ export const deleteArchivedSellerFileVersion = createServerFn({ method: "POST" }
       return { data: null, error: { message: "file_version_not_found" } };
     }
     if (version.status !== "archived") {
-      return { data: null, error: { message: "file_version_must_be_archived" } };
+      if (version.status === "active") {
+        const { data: product, error: productError } = await supabaseAdmin
+          .from("products")
+          .select("is_active")
+          .eq("id", version.product_id)
+          .maybeSingle();
+        if (productError || !product) {
+          return { data: null, error: { message: "product_lookup_failed" } };
+        }
+
+        if (product.is_active) {
+          const { count: activeCount, error: activeCountError } = await supabaseAdmin
+            .from("product_file_versions")
+            .select("id", { count: "exact", head: true })
+            .eq("product_id", version.product_id)
+            .eq("status", "active");
+          if (activeCountError) {
+            return { data: null, error: { message: "active_version_check_failed" } };
+          }
+          if ((activeCount ?? 0) <= 1) {
+            return { data: null, error: { message: "file_last_active_version" } };
+          }
+        }
+      }
+
+      try {
+        const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+        await callActorScopedRpc(context.userId, "server_archive_file_version", {
+          _version_id: version.id,
+        });
+      } catch {
+        return { data: null, error: { message: "file_archive_failed" } };
+      }
     }
 
     const { data: store, error: storeError } = await supabaseAdmin

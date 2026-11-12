@@ -244,11 +244,18 @@ export const checkOrderPayment = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: order } = await context.supabase
       .from("orders")
-      .select("id, status, konnect_payment_ref")
+      .select("id, status, konnect_payment_ref, ipay_payment_ref")
       .eq("id", data.orderId)
       .maybeSingle();
     if (!order) return { status: "not_found" as const };
-    if (order.status === "pending" && order.konnect_payment_ref) {
+    if (order.status === "pending" && order.ipay_payment_ref) {
+      try {
+        const { processIpaySettlementNotice } = await import("./ipay-settlement.server");
+        await processIpaySettlementNotice({ id: order.ipay_payment_ref }, "webhook");
+      } catch (e) {
+        console.error("iPay return check failed", e instanceof Error ? e.message : "unknown");
+      }
+    } else if (order.status === "pending" && order.konnect_payment_ref) {
       const { konnectConfig, applyPaymentRef } = await import("./konnect.server");
       if (konnectConfig()) {
         try {

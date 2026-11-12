@@ -1,5 +1,5 @@
 type ActorRpcResult = {
-  data: unknown;
+  data: any;
   error: { message: string; code?: string } | null;
 };
 

@@ -66,3 +66,20 @@ export const archiveSellerFileVersion = createServerFn({ method: "POST" })
       _version_id: data.versionId,
     }),
   );
+
+export const submitSellerRating = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        storeId: z.string().uuid(),
+        stars: z.number().int().min(1).max(5),
+      })
+      .parse(input),
+  )
+  .handler(({ data, context }) =>
+    callActorScopedRpc(context.userId, "server_submit_seller_rating", {
+      _store_id: data.storeId,
+      _stars: data.stars,
+    }),
+  );

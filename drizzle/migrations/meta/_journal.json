@@ -351,6 +351,20 @@
       "when": 1794614400001,
       "tag": "0047_revoke_direct_admin_rpc_access",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1794700800000,
+      "tag": "0048_server_identity_rpc_wrappers",
+      "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1794700800001,
+      "tag": "0049_revoke_direct_identity_rpc_access",
+      "breakpoints": true
     }
   ]
 }

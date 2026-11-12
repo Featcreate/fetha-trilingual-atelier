@@ -70,6 +70,56 @@ export const archiveSellerFileVersion = createServerFn({ method: "POST" })
     });
   });
 
+export const listSellerFileVersions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ productId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: product, error: productError } = await supabaseAdmin
+      .from("products")
+      .select("id,store_id")
+      .eq("id", data.productId)
+      .maybeSingle();
+    if (productError || !product) {
+      throw new Error("product_not_found");
+    }
+
+    const { data: store, error: storeError } = await supabaseAdmin
+      .from("stores")
+      .select("owner_id")
+      .eq("id", product.store_id)
+      .maybeSingle();
+    if (storeError || !store || store.owner_id !== context.userId) {
+      throw new Error("forbidden");
+    }
+
+    const { data: versions, error: versionsError } = await supabaseAdmin
+      .from("product_file_versions")
+      .select("id,file_name,size_bytes,status,created_at")
+      .eq("product_id", data.productId)
+      .order("created_at", { ascending: false });
+    if (versionsError) throw versionsError;
+    if (!versions?.length) return [];
+
+    const { data: deletedAudit, error: auditError } = await supabaseAdmin
+      .from("storage_cleanup_audit")
+      .select("file_version_id")
+      .eq("decision", "deleted")
+      .in(
+        "file_version_id",
+        versions.map((version) => version.id),
+      );
+    if (auditError) throw auditError;
+
+    const deletedIds = new Set(
+      (deletedAudit ?? [])
+        .map((entry) => entry.file_version_id)
+        .filter((id): id is string => Boolean(id)),
+    );
+    return versions.filter((version) => !deletedIds.has(version.id));
+  });
+
 export const deleteSellerFileVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ versionId: z.string().uuid() }).parse(input))

@@ -185,13 +185,10 @@ BEGIN
   SELECT coalesce(sum(v.size_bytes), 0)
     INTO _used_bytes
     FROM public.product_file_versions v
-   WHERE v.store_id = _store
-     AND NOT EXISTS (
-       SELECT 1
-         FROM public.storage_cleanup_audit a
-        WHERE a.file_version_id = v.id
-          AND a.decision = 'deleted'
-     );
+    JOIN storage.objects o
+      ON o.bucket_id = 'product-files'
+     AND o.name = v.storage_path
+   WHERE v.store_id = _store;
 
   IF _used_bytes + _size_bytes > _store_limit THEN
     RAISE EXCEPTION 'storage_quota_exceeded';

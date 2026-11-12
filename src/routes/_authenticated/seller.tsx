@@ -1468,20 +1468,30 @@ function SellerFileVersions({
     }
     setWorkingId(versionId);
     setMessage("");
-    const result = await deleteSellerFileVersion({ data: { versionId } });
-    setWorkingId(null);
-    if (result.error) {
-      setMessage(
-        result.error.message === "file_version_has_purchases"
-          ? m.fileDeletePurchased
-          : result.error.message === "file_last_active_version"
-            ? m.fileDeleteLastActive
-            : m.fileDeleteFailed,
-      );
-      return;
+    try {
+      const result = await deleteSellerFileVersion({ data: { versionId } });
+      if (result.error) {
+        setMessage(
+          result.error.message === "file_version_has_purchases"
+            ? m.fileDeletePurchased
+            : result.error.message === "file_last_active_version"
+              ? m.fileDeleteLastActive
+              : result.error.message === "storage_deleted_audit_failed"
+                ? m.fileDeletedAuditFailed
+                : m.fileDeleteFailed,
+        );
+        if (result.data) {
+          await qc.invalidateQueries({ queryKey: ["seller-file-versions", productId] });
+        }
+        return;
+      }
+      setMessage(m.fileDeleted);
+      await qc.invalidateQueries({ queryKey: ["seller-file-versions", productId] });
+    } catch {
+      setMessage(m.fileDeleteFailed);
+    } finally {
+      setWorkingId(null);
     }
-    setMessage(m.fileDeleted);
-    await qc.invalidateQueries({ queryKey: ["seller-file-versions", productId] });
   }
 
   if (versionsQuery.isPending) {
@@ -1520,7 +1530,8 @@ function SellerFileVersions({
             </p>
           </div>
           <div className="flex gap-2">
-            {version.status === "active" && (activeCount > 1 || allowArchiveLast) && (
+            {version.status === "active" &&
+              (activeCount > 1 || allowArchiveLast) && (
               <button
                 type="button"
                 disabled={workingId !== null}

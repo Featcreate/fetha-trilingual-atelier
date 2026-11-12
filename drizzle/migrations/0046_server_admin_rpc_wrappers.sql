@@ -11,9 +11,12 @@ CREATE OR REPLACE FUNCTION public.server_admin_create_seller_payout(
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
-  IF _actor_id IS NULL OR NOT public.has_role(_actor_id, 'admin') THEN RAISE EXCEPTION 'forbidden'; END IF;
+  IF _actor_id IS NULL THEN RAISE EXCEPTION 'forbidden'; END IF;
+  -- This wrapper is executable only by service_role. Establish the verified
+  -- actor context so the SECURITY INVOKER has_role() check sees the same user.
   PERFORM set_config('request.jwt.claim.sub', _actor_id::text, true);
   PERFORM set_config('request.jwt.claims', jsonb_build_object('sub', _actor_id, 'role', 'authenticated')::text, true);
+  IF NOT public.has_role(_actor_id, 'admin') THEN RAISE EXCEPTION 'forbidden'; END IF;
   RETURN public.admin_create_seller_payout(_store_id, _idempotency_key, _scheduled_for);
 END;
 $$;
@@ -24,9 +27,12 @@ CREATE OR REPLACE FUNCTION public.server_admin_mark_seller_payout_paid(
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
-  IF _actor_id IS NULL OR NOT public.has_role(_actor_id, 'admin') THEN RAISE EXCEPTION 'forbidden'; END IF;
+  IF _actor_id IS NULL THEN RAISE EXCEPTION 'forbidden'; END IF;
+  -- This wrapper is executable only by service_role. Establish the verified
+  -- actor context so the SECURITY INVOKER has_role() check sees the same user.
   PERFORM set_config('request.jwt.claim.sub', _actor_id::text, true);
   PERFORM set_config('request.jwt.claims', jsonb_build_object('sub', _actor_id, 'role', 'authenticated')::text, true);
+  IF NOT public.has_role(_actor_id, 'admin') THEN RAISE EXCEPTION 'forbidden'; END IF;
   RETURN public.admin_mark_seller_payout_paid(_payout_id, _transfer_reference);
 END;
 $$;
@@ -37,9 +43,12 @@ CREATE OR REPLACE FUNCTION public.server_admin_mark_seller_payout_failed(
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
-  IF _actor_id IS NULL OR NOT public.has_role(_actor_id, 'admin') THEN RAISE EXCEPTION 'forbidden'; END IF;
+  IF _actor_id IS NULL THEN RAISE EXCEPTION 'forbidden'; END IF;
+  -- This wrapper is executable only by service_role. Establish the verified
+  -- actor context so the SECURITY INVOKER has_role() check sees the same user.
   PERFORM set_config('request.jwt.claim.sub', _actor_id::text, true);
   PERFORM set_config('request.jwt.claims', jsonb_build_object('sub', _actor_id, 'role', 'authenticated')::text, true);
+  IF NOT public.has_role(_actor_id, 'admin') THEN RAISE EXCEPTION 'forbidden'; END IF;
   RETURN public.admin_mark_seller_payout_failed(_payout_id, _failure_reason);
 END;
 $$;
@@ -50,9 +59,12 @@ CREATE OR REPLACE FUNCTION public.server_admin_set_commission_bps(
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
-  IF _actor_id IS NULL OR NOT public.has_role(_actor_id, 'admin') THEN RAISE EXCEPTION 'forbidden'; END IF;
+  IF _actor_id IS NULL THEN RAISE EXCEPTION 'forbidden'; END IF;
+  -- This wrapper is executable only by service_role. Establish the verified
+  -- actor context so the SECURITY INVOKER has_role() check sees the same user.
   PERFORM set_config('request.jwt.claim.sub', _actor_id::text, true);
   PERFORM set_config('request.jwt.claims', jsonb_build_object('sub', _actor_id, 'role', 'authenticated')::text, true);
+  IF NOT public.has_role(_actor_id, 'admin') THEN RAISE EXCEPTION 'forbidden'; END IF;
   PERFORM public.admin_set_commission_bps(_bps);
 END;
 $$;
@@ -63,9 +75,12 @@ CREATE OR REPLACE FUNCTION public.server_admin_set_ipay_checkout_enabled(
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
-  IF _actor_id IS NULL OR NOT public.has_role(_actor_id, 'admin') THEN RAISE EXCEPTION 'forbidden'; END IF;
+  IF _actor_id IS NULL THEN RAISE EXCEPTION 'forbidden'; END IF;
+  -- This wrapper is executable only by service_role. Establish the verified
+  -- actor context so the SECURITY INVOKER has_role() check sees the same user.
   PERFORM set_config('request.jwt.claim.sub', _actor_id::text, true);
   PERFORM set_config('request.jwt.claims', jsonb_build_object('sub', _actor_id, 'role', 'authenticated')::text, true);
+  IF NOT public.has_role(_actor_id, 'admin') THEN RAISE EXCEPTION 'forbidden'; END IF;
   PERFORM public.admin_set_ipay_checkout_enabled(_enabled);
 END;
 $$;

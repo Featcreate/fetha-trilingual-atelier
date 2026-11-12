@@ -31,7 +31,9 @@ async function runAdminRpc(
 
 export const adminSetCommission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ bps: z.number().int().min(0).max(10000) }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ bps: z.number().int().min(0).max(10000) }).parse(input),
+  )
   .handler(({ data, context }) =>
     runAdminRpc(context, "server_admin_set_commission_bps", { _bps: data.bps }),
   );
@@ -40,13 +42,20 @@ export const adminSetIpayCheckoutEnabled = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ enabled: z.boolean() }).parse(input))
   .handler(({ data, context }) =>
-    runAdminRpc(context, "server_admin_set_ipay_checkout_enabled", { _enabled: data.enabled }),
+    runAdminRpc(context, "server_admin_set_ipay_checkout_enabled", {
+      _enabled: data.enabled,
+    }),
   );
 
 export const adminCreateSellerPayout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ storeId: z.string().uuid(), idempotencyKey: z.string().min(8).max(200) }).parse(input),
+    z
+      .object({
+        storeId: z.string().uuid(),
+        idempotencyKey: z.string().min(8).max(200),
+      })
+      .parse(input),
   )
   .handler(({ data, context }) =>
     runAdminRpc(context, "server_admin_create_seller_payout", {
@@ -59,7 +68,12 @@ export const adminCreateSellerPayout = createServerFn({ method: "POST" })
 export const adminMarkSellerPayoutPaid = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ payoutId: z.string().uuid(), transferReference: z.string().trim().min(3).max(200) }).parse(input),
+    z
+      .object({
+        payoutId: z.string().uuid(),
+        transferReference: z.string().trim().min(3).max(200),
+      })
+      .parse(input),
   )
   .handler(({ data, context }) =>
     runAdminRpc(context, "server_admin_mark_seller_payout_paid", {
@@ -71,7 +85,12 @@ export const adminMarkSellerPayoutPaid = createServerFn({ method: "POST" })
 export const adminMarkSellerPayoutFailed = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ payoutId: z.string().uuid(), failureReason: z.string().trim().min(3).max(500) }).parse(input),
+    z
+      .object({
+        payoutId: z.string().uuid(),
+        failureReason: z.string().trim().min(3).max(500),
+      })
+      .parse(input),
   )
   .handler(({ data, context }) =>
     runAdminRpc(context, "server_admin_mark_seller_payout_failed", {

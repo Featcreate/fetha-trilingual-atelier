@@ -85,6 +85,15 @@ export const deleteArchivedSellerFileVersion = createServerFn({ method: "POST" }
     if (versionError || !version) {
       return { data: null, error: { message: "file_version_not_found" } };
     }
+    const { data: store, error: storeError } = await supabaseAdmin
+      .from("stores")
+      .select("owner_id")
+      .eq("id", version.store_id)
+      .maybeSingle();
+    if (storeError || !store || store.owner_id !== context.userId) {
+      return { data: null, error: { message: "forbidden" } };
+    }
+
     if (version.status === "active") {
       const { data: product, error: productError } = await supabaseAdmin
         .from("products")
@@ -118,15 +127,6 @@ export const deleteArchivedSellerFileVersion = createServerFn({ method: "POST" }
       if (archiveError) {
         return { data: null, error: { message: "file_archive_failed" } };
       }
-    }
-
-    const { data: store, error: storeError } = await supabaseAdmin
-      .from("stores")
-      .select("owner_id")
-      .eq("id", version.store_id)
-      .maybeSingle();
-    if (storeError || !store || store.owner_id !== context.userId) {
-      return { data: null, error: { message: "forbidden" } };
     }
 
     // Archived versions cannot enter new checkout snapshots. Existing purchase

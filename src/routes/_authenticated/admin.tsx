@@ -6,6 +6,13 @@ import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { AuthShell, SubmitButton } from "@/components/AuthShell";
 import { adminRecheckIpayPayment } from "@/lib/shop.functions";
+import {
+  adminCreateSellerPayout,
+  adminMarkSellerPayoutFailed,
+  adminMarkSellerPayoutPaid,
+  adminSetCommission,
+  adminSetIpayCheckoutEnabled,
+} from "@/lib/admin-security.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async ({ location }) => {
@@ -175,9 +182,7 @@ function AdminPage() {
     }
     setBusy("commission");
     setNotice(null);
-    const { error } = await supabase.rpc("admin_set_commission_bps", {
-      _bps: Math.round(value * 100),
-    });
+    const { error } = await adminSetCommission({ data: { bps: Math.round(value * 100) } });
     setBusy(null);
     if (error) {
       setNotice({ ok: false, text: a.saveError });
@@ -192,9 +197,7 @@ function AdminPage() {
   async function setIpayCheckoutEnabled(enabled: boolean) {
     setBusy("ipay-switch");
     setNotice(null);
-    const { error } = await supabase.rpc("admin_set_ipay_checkout_enabled", {
-      _enabled: enabled,
-    });
+    const { error } = await adminSetIpayCheckoutEnabled({ data: { enabled } });
     setBusy(null);
     if (error) {
       setNotice({ ok: false, text: a.saveError });
@@ -223,9 +226,11 @@ function AdminPage() {
     if (!payoutStoreId) return;
     setBusy("payout-create");
     setNotice(null);
-    const { error } = await supabase.rpc("admin_create_seller_payout", {
-      _store_id: payoutStoreId,
-      _idempotency_key: `seller-payout:${payoutStoreId}:${crypto.randomUUID()}`,
+    const { error } = await adminCreateSellerPayout({
+      data: {
+        storeId: payoutStoreId,
+        idempotencyKey: `seller-payout:${payoutStoreId}:${crypto.randomUUID()}`,
+      },
     });
     setBusy(null);
     if (error) {
@@ -258,9 +263,8 @@ function AdminPage() {
     }
     setBusy("payout-paid");
     setNotice(null);
-    const { error } = await supabase.rpc("admin_mark_seller_payout_paid", {
-      _payout_id: payoutId,
-      _transfer_reference: payoutReference.trim(),
+    const { error } = await adminMarkSellerPayoutPaid({
+      data: { payoutId, transferReference: payoutReference.trim() },
     });
     setBusy(null);
     if (error) {
@@ -279,9 +283,8 @@ function AdminPage() {
     }
     setBusy(payoutId);
     setNotice(null);
-    const { error } = await supabase.rpc("admin_mark_seller_payout_failed", {
-      _payout_id: payoutId,
-      _failure_reason: payoutFailure.trim(),
+    const { error } = await adminMarkSellerPayoutFailed({
+      data: { payoutId, failureReason: payoutFailure.trim() },
     });
     setBusy(null);
     if (error) {

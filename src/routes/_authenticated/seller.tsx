@@ -1436,7 +1436,26 @@ function SellerFileVersions({
         .eq("product_id", productId)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+
+      const versions = data ?? [];
+      if (!versions.length) return [];
+
+      const { data: deletedAudit, error: auditError } = await supabase
+        .from("storage_cleanup_audit")
+        .select("file_version_id")
+        .eq("decision", "deleted")
+        .in(
+          "file_version_id",
+          versions.map((version) => version.id),
+        );
+      if (auditError) throw auditError;
+
+      const deletedIds = new Set(
+        (deletedAudit ?? [])
+          .map((entry) => entry.file_version_id)
+          .filter((id): id is string => Boolean(id)),
+      );
+      return versions.filter((version) => !deletedIds.has(version.id));
     },
   });
 

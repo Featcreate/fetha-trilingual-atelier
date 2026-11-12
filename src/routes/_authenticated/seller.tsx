@@ -1466,7 +1466,9 @@ function SellerFileVersions({
       setMessage(
         result.error.message === "file_version_has_purchases"
           ? m.fileDeletePurchased
-          : m.fileDeleteFailed,
+          : result.error.message === "file_last_active_version"
+            ? m.fileDeleteLastActive
+            : m.fileDeleteFailed,
       );
       return;
     }

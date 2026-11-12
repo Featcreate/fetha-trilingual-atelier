@@ -70,7 +70,7 @@ export const archiveSellerFileVersion = createServerFn({ method: "POST" })
     });
   });
 
-export const deleteArchivedSellerFileVersion = createServerFn({ method: "POST" })
+export const deleteSellerFileVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ versionId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
@@ -85,6 +85,7 @@ export const deleteArchivedSellerFileVersion = createServerFn({ method: "POST" }
     if (versionError || !version) {
       return { data: null, error: { message: "file_version_not_found" } };
     }
+
     const { data: store, error: storeError } = await supabaseAdmin
       .from("stores")
       .select("owner_id")
@@ -94,30 +95,9 @@ export const deleteArchivedSellerFileVersion = createServerFn({ method: "POST" }
       return { data: null, error: { message: "forbidden" } };
     }
 
-    if (version.status === "active") {
-      const { data: product, error: productError } = await supabaseAdmin
-        .from("products")
-        .select("is_active")
-        .eq("id", version.product_id)
-        .maybeSingle();
-      if (productError || !product) {
-        return { data: null, error: { message: "product_lookup_failed" } };
-      }
-
-      if (product.is_active) {
-        const { count: activeCount, error: activeCountError } = await supabaseAdmin
-          .from("product_file_versions")
-          .select("id", { count: "exact", head: true })
-          .eq("product_id", version.product_id)
-          .eq("status", "active");
-        if (activeCountError) {
-          return { data: null, error: { message: "active_version_check_failed" } };
-        }
-        if ((activeCount ?? 0) <= 1) {
-          return { data: null, error: { message: "file_last_active_version" } };
-        }
-      }
-
+    // Archive active and unfinished uploads first. The database serializes this
+    // transition with checkout and rejects removal of a product's last active file.
+    if (version.status !== "archived") {
       const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
       const { error: archiveError } = await callActorScopedRpc(
         context.userId,
@@ -125,7 +105,15 @@ export const deleteArchivedSellerFileVersion = createServerFn({ method: "POST" }
         { _version_id: version.id },
       );
       if (archiveError) {
-        return { data: null, error: { message: "file_archive_failed" } };
+        return {
+          data: null,
+          error: {
+            message:
+              archiveError.message === "file_last_active_version"
+                ? "file_last_active_version"
+                : "file_archive_failed",
+          },
+        };
       }
     }
 
@@ -142,11 +130,25 @@ export const deleteArchivedSellerFileVersion = createServerFn({ method: "POST" }
       return { data: null, error: { message: "file_version_has_purchases" } };
     }
 
-    const { error: storageError } = await supabaseAdmin.storage
+    // A pending upload may not have created its Storage object yet.
+    const separator = version.storage_path.lastIndexOf("/");
+    const folder = version.storage_path.slice(0, separator);
+    const objectName = version.storage_path.slice(separator + 1);
+    const { data: objects, error: listError } = await supabaseAdmin.storage
       .from("product-files")
-      .remove([version.storage_path]);
-    if (storageError) {
-      return { data: null, error: { message: "storage_delete_failed" } };
+      .list(folder, { search: objectName, limit: 100 });
+    if (listError) {
+      return { data: null, error: { message: "storage_lookup_failed" } };
+    }
+
+    const objectExists = (objects ?? []).some((object) => object.name === objectName);
+    if (objectExists) {
+      const { error: storageError } = await supabaseAdmin.storage
+        .from("product-files")
+        .remove([version.storage_path]);
+      if (storageError) {
+        return { data: null, error: { message: "storage_delete_failed" } };
+      }
     }
 
     const { error: auditError } = await supabaseAdmin.from("storage_cleanup_audit").insert({
@@ -157,11 +159,10 @@ export const deleteArchivedSellerFileVersion = createServerFn({ method: "POST" }
       decided_by: context.userId,
     });
     if (auditError) {
-      // The object is already removed; surface the audit failure for operator review.
       return { data: null, error: { message: "storage_deleted_audit_failed" } };
     }
 
-    return { data: { deletedBytes: Number(version.size_bytes) }, error: null };
+    return { data: { deletedBytes: objectExists ? Number(version.size_bytes) : 0 }, error: null };
   });
 
 export const submitSellerRating = createServerFn({ method: "POST" })

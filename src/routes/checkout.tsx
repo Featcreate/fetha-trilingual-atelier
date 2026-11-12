@@ -126,17 +126,18 @@ function CheckoutPage() {
       // Storage may be unavailable; the in-memory key still protects this page.
     }
 
-    checkoutAttempt.current = {
+    const attempt = {
       signature,
       konnectKey: crypto.randomUUID(),
       ipayKey: crypto.randomUUID(),
     };
+    checkoutAttempt.current = attempt;
     try {
-      sessionStorage.setItem(storageKey, JSON.stringify(checkoutAttempt.current));
+      sessionStorage.setItem(storageKey, JSON.stringify(attempt));
     } catch {
       // Continue with the in-memory idempotency keys if storage is unavailable.
     }
-    return checkoutAttempt.current;
+    return attempt;
   };
 
   const konnectAvailability = useQuery({

@@ -31,8 +31,8 @@ export const startCheckout = createServerFn({ method: "POST" })
       context.userId,
       "server_create_order",
       {
-      _product_ids: data.productIds,
-      _checkout_key: data.checkoutKey,
+        _product_ids: data.productIds,
+        _checkout_key: data.checkoutKey,
       },
     );
     const orderId = rawOrderId as string | null;
@@ -56,12 +56,11 @@ export const startCheckout = createServerFn({ method: "POST" })
     }
     if (order.konnect_pay_url) return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
 
-
     const { data: rawClaimRows, error: claimError } = await callActorScopedRpc(
       context.userId,
       "server_claim_order_konnect_init",
       {
-      _order_id: order.id,
+        _order_id: order.id,
       },
     );
     const claimRows = rawClaimRows as PaymentInitClaim[] | null;
@@ -162,8 +161,8 @@ export const startCartCheckout = createServerFn({ method: "POST" })
       context.userId,
       "server_create_order_from_cart",
       {
-      _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),
-      _checkout_key: data.checkoutKey,
+        _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),
+        _checkout_key: data.checkoutKey,
       },
     );
     const orderId = rawOrderId as string | null;

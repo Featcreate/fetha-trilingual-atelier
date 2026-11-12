@@ -1455,9 +1455,18 @@ function SellerFileVersions({
   }
 
   async function remove(versionId: string, fileName: string, sizeBytes: number) {
-    if (workingId || !window.confirm(
-      m.confirmDeleteFile + "\\n\\n" + fileName + " · " + formatFileSize(sizeBytes),
-    )) return;
+    if (
+      workingId ||
+      !window.confirm(
+        m.confirmDeleteFile +
+          "\n\n" +
+          fileName +
+          " · " +
+          formatFileSize(sizeBytes),
+      )
+    ) {
+      return;
+    }
     setWorkingId(versionId);
     setMessage("");
     const result = await deleteArchivedSellerFileVersion({ data: { versionId } });
@@ -1476,8 +1485,17 @@ function SellerFileVersions({
     await qc.invalidateQueries({ queryKey: ["seller-file-versions", productId] });
   }
 
-  if (versionsQuery.isPending) return <p className="text-xs text-muted-foreground">{m.loading}</p>;
-  if (versionsQuery.isError) return <p role="alert" className="text-xs text-destructive">{m.error}</p>;
+  if (versionsQuery.isPending) {
+    return <p className="text-xs text-muted-foreground">{m.loading}</p>;
+  }
+  if (versionsQuery.isError) {
+    return (
+      <p role="alert" className="text-xs text-destructive">
+        {m.error}
+      </p>
+    );
+  }
+
   const versions = versionsQuery.data ?? [];
   const activeCount = versions.filter((version) => version.status === "active").length;
   if (!versions.length) return null;
@@ -1486,7 +1504,10 @@ function SellerFileVersions({
     <div className="w-full space-y-2 rounded-lg bg-secondary/40 p-3">
       <h3 className="text-sm font-semibold">{m.fileVersions}</h3>
       {versions.map((version) => (
-        <div key={version.id} className="flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div
+          key={version.id}
+          className="flex flex-wrap items-center justify-between gap-2 text-xs"
+        >
           <div className="min-w-0">
             <p className="break-all font-medium">{version.file_name}</p>
             <p className="text-muted-foreground">
@@ -1495,7 +1516,8 @@ function SellerFileVersions({
                 : version.status === "archived"
                   ? m.fileStatusArchived
                   : m.fileStatusPending}
-              {" · "}{m.fileSize}: {formatFileSize(Number(version.size_bytes))}
+              {" · "}
+              {m.fileSize}: {formatFileSize(Number(version.size_bytes))}
             </p>
           </div>
           <div className="flex gap-2">
@@ -1512,7 +1534,9 @@ function SellerFileVersions({
             <button
               type="button"
               disabled={workingId !== null}
-              onClick={() => void remove(version.id, version.file_name, Number(version.size_bytes))}
+              onClick={() =>
+                void remove(version.id, version.file_name, Number(version.size_bytes))
+              }
               className="rounded-full border border-destructive px-3 py-1.5 font-semibold text-destructive disabled:opacity-50"
             >
               {workingId === version.id ? m.loading : m.deleteFile}
@@ -1520,11 +1544,14 @@ function SellerFileVersions({
           </div>
         </div>
       ))}
-      {message && <p role="status" className="text-xs text-muted-foreground">{message}</p>}
+      {message && (
+        <p role="status" className="text-xs text-muted-foreground">
+          {message}
+        </p>
+      )}
     </div>
   );
 }
-
 function formatFileSize(bytes: number) {
   if (!Number.isFinite(bytes) || bytes < 0) return "—";
   if (bytes < 1024) return `${bytes} B`;

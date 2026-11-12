@@ -1,4 +1,4 @@
--- Allow large digital products while keeping the existing 1 GiB per-store quota.
+-- Keep the free-plan per-file cap at 50 MiB while retaining the 1 GiB per-store quota.
 -- The private bucket accepts every MIME type; authorization remains enforced by Storage RLS.
 -- Supabase's project-wide Storage limit still applies and may be lower than this bucket ceiling.
 

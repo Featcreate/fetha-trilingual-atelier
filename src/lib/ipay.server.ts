@@ -43,7 +43,7 @@ function ipayResponseAmountToMillimes(value: unknown): number {
       : typeof value === "string"
         ? value.trim()
         : "";
-  if (!/^\\d+(?:\\.\\d{1,3})?$/.test(raw)) {
+  if (!/^\d+(?:\.\d{1,3})?$/.test(raw)) {
     throw new Error("ipay_invalid_response");
   }
   const [whole, fraction = ""] = raw.split(".");
@@ -85,7 +85,7 @@ export function parseIpayOneShotResponse(
 
   const paymentRef = String(record.id).trim();
   const invoiceReference = record.invoice_reference.trim();
-  if (!paymentRef || paymentRef.length > 200 || !invoiceReference) {
+  if (!paymentRef || paymentRef.length > 200 || !invoiceReference || invoiceReference.length > 200) {
     throw new Error("ipay_invalid_response");
   }
   if (record.currency.trim().toUpperCase() !== "TND") {

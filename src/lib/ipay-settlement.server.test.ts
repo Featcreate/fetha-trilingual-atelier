@@ -72,7 +72,7 @@ describe("iPay authoritative transaction lookup", () => {
             data: {
               id: "tx-number",
               invoice_reference: "order-number",
-              amount: 12.5,
+              amount: "12.5",
               currency: " TND ",
               status: "completed",
             },

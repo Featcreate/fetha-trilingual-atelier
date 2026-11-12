@@ -196,7 +196,8 @@ export const dict = {
       save: "Enregistrer",
       loading: "Chargement…",
       error: "Une erreur est survenue. Réessayez.",
-      invalidFile: "Choisissez un fichier numérique valide de 1 Go maximum. La limite totale de stockage par boutique est de 1 Go.",
+      invalidFile:
+        "Choisissez un fichier numérique valide de 1 Go maximum. La limite totale de stockage par boutique est de 1 Go.",
       invalidPrice: "Saisissez un prix valide supérieur à zéro.",
       slugHint: "Lettres minuscules, chiffres et tirets.",
       cancel: "Annuler",
@@ -532,7 +533,8 @@ export const dict = {
       save: "حفظ",
       loading: "جارٍ التحميل…",
       error: "حدث خطأ. حاول مرة أخرى.",
-      invalidFile: "اختر ملفاً رقمياً صالحاً لا يتجاوز 1 غيغابايت. الحد الإجمالي للتخزين لكل متجر هو 1 غيغابايت.",
+      invalidFile:
+        "اختر ملفاً رقمياً صالحاً لا يتجاوز 1 غيغابايت. الحد الإجمالي للتخزين لكل متجر هو 1 غيغابايت.",
       invalidPrice: "أدخل سعراً صحيحاً أكبر من صفر.",
       slugHint: "أحرف لاتينية صغيرة وأرقام وشرطات فقط.",
       cancel: "إلغاء",
@@ -864,7 +866,8 @@ export const dict = {
       save: "Save",
       loading: "Loading…",
       error: "Something went wrong. Please try again.",
-      invalidFile: "Choose a valid digital file no larger than 1 GB. The total storage quota per store is 1 GB.",
+      invalidFile:
+        "Choose a valid digital file no larger than 1 GB. The total storage quota per store is 1 GB.",
       invalidPrice: "Enter a valid price greater than zero.",
       slugHint: "Lowercase letters, numbers, and hyphens.",
       cancel: "Cancel",

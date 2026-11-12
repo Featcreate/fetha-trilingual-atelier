@@ -15,6 +15,7 @@ import {
 } from "@/lib/product-previews";
 import { ProductPreview } from "@/components/ProductPreview";
 import { translateProductContent } from "@/lib/product-translations";
+import { MAX_PRODUCT_FILE_BYTES, uploadProductFile } from "@/lib/storage-upload";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 import {
@@ -52,7 +53,7 @@ export const Route = createFileRoute("/_authenticated/seller")({
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
 const productTypes = PRODUCT_TYPES;
-const MAX_FILE_BYTES = 50 * 1024 * 1024;
+const MAX_FILE_BYTES = MAX_PRODUCT_FILE_BYTES;
 
 function slugify(value: string) {
   return value
@@ -82,6 +83,7 @@ function SellerPage() {
   const qc = useQueryClient();
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [editingStore, setEditingStore] = useState(false);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -346,13 +348,13 @@ function SellerPage() {
       return "error";
     }
     if (!version?.upload_path || !version?.version_id) return "error";
-    const { error: uploadError } = await supabase.storage
-      .from("product-files")
-      .upload(version.upload_path, file, {
-        contentType: file.type || "application/octet-stream",
-        upsert: false,
-      });
-    if (uploadError) return "error";
+    try {
+      await uploadProductFile(version.upload_path, file, setUploadProgress);
+      setUploadProgress(null);
+    } catch {
+      setUploadProgress(null);
+      return "error";
+    }
     const { error: activateError } = await activateSellerFileVersion({
       data: { versionId: version.version_id },
     });
@@ -868,6 +870,21 @@ function SellerPage() {
                   className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">{m.fileLimit}</p>
+                {uploadProgress !== null && (
+                  <div className="mt-2 space-y-1" role="status" aria-live="polite">
+                    <div className="flex justify-between text-xs">
+                      <span>
+                        {lang === "ar"
+                          ? "جارٍ رفع الملف"
+                          : lang === "en"
+                            ? "Uploading file"
+                            : "Téléversement du fichier"}
+                      </span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <progress className="h-2 w-full" value={uploadProgress} max={100} />
+                  </div>
+                )}
               </div>
               <SubmitButton busy={busy} label={m.upload} busyLabel={m.publishing} />
             </form>

@@ -129,7 +129,6 @@ function SellerPage() {
         .from("products")
         .select("*")
         .eq("store_id", store!.id)
-        .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Product[];
@@ -905,7 +904,12 @@ function SellerPage() {
               <div className="space-y-3">
                 {productsQuery.data.map((product) => (
                   <article key={product.id} className="rounded-xl border border-border p-4">
-                    {editing === product.id ? (
+                    {product.deleted_at ? (
+                      <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground">{m.productDeleted}</p>
+                        <SellerFileVersions productId={product.id} labels={m} />
+                      </div>
+                    ) : editing === product.id ? (
                       <form onSubmit={(e) => saveProduct(e, product)} className="space-y-3">
                         <Field
                           id={`edit_name_${product.id}`}
@@ -1462,7 +1466,6 @@ function SellerFileVersions({
     }
     setMessage(m.fileDeleted);
     await qc.invalidateQueries({ queryKey: ["seller-file-versions", productId] });
-    await qc.invalidateQueries({ queryKey: ["seller-storage-usage"] });
   }
 
   if (versionsQuery.isPending) return <p className="text-xs text-muted-foreground">{m.loading}</p>;

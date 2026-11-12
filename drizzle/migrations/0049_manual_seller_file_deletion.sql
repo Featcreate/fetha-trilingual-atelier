@@ -3,6 +3,70 @@
 -- checkout trigger rechecks the version after acquiring that lock, so a
 -- concurrent deletion cannot leave a newly purchased snapshot without a file.
 
+-- Serialize Storage uploads with archival/deletion. An in-flight upload holds
+-- the product row lock until its Storage INSERT commits; archival waits for it.
+CREATE OR REPLACE FUNCTION public.can_upload_registered_file(_storage_path text)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $
+DECLARE
+  _product_id uuid;
+  _version_status text;
+  _created_by uuid;
+  _owner_id uuid;
+  _store_status text;
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RETURN false;
+  END IF;
+
+  SELECT v.product_id
+    INTO _product_id
+    FROM public.product_file_versions v
+   WHERE v.storage_path = _storage_path;
+
+  IF NOT FOUND THEN
+    RETURN false;
+  END IF;
+
+  PERFORM p.id
+    FROM public.products p
+   WHERE p.id = _product_id
+   FOR UPDATE;
+
+  SELECT v.status, v.created_by, s.owner_id, s.status
+    INTO _version_status, _created_by, _owner_id, _store_status
+    FROM public.product_file_versions v
+    JOIN public.stores s ON s.id = v.store_id
+   WHERE v.storage_path = _storage_path;
+
+  IF NOT FOUND THEN
+    RETURN false;
+  END IF;
+
+  RETURN _version_status = 'pending_upload'
+    AND _created_by = auth.uid()
+    AND _owner_id = auth.uid()
+    AND _store_status = 'active';
+END;
+$;
+
+REVOKE ALL ON FUNCTION public.can_upload_registered_file(text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.can_upload_registered_file(text) TO authenticated;
+
+DROP POLICY IF EXISTS "Sellers upload registered file versions" ON storage.objects;
+CREATE POLICY "Sellers upload registered file versions"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'product-files'
+  AND public.can_upload_registered_file(storage.objects.name)
+);
+
+
 CREATE OR REPLACE FUNCTION public.archive_file_version(_version_id uuid)
 RETURNS void
 LANGUAGE plpgsql

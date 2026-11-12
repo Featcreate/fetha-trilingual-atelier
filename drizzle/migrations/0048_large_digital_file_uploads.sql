@@ -10,7 +10,7 @@ BEGIN
 END $$;
 
 UPDATE storage.buckets
-   SET file_size_limit = 52428800,
+   SET file_size_limit = 50000000,
        allowed_mime_types = NULL,
        public = false
  WHERE id = 'product-files';
@@ -88,4 +88,4 @@ END;
 $$;
 
 COMMENT ON FUNCTION public.register_file_version(uuid, text, bigint, text, text)
-  IS 'Registers one private digital product file, enforcing up to 50 MiB per file and 1 GiB total stored bytes per seller store. All MIME types are accepted; the Supabase project-wide Storage limit still applies.';
+  IS 'Registers one private digital product file, enforcing up to 50 MB per file and 1 GiB total stored bytes per seller store. All MIME types are accepted; the Supabase project-wide Storage limit still applies.';

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { MAX_PRODUCT_FILE_BYTES, RESUMABLE_UPLOAD_THRESHOLD_BYTES } from "./storage-upload";
 
 describe("digital product upload limits", () => {
-  it("matches the 1 GiB per-file platform limit", () => {
-    expect(MAX_PRODUCT_FILE_BYTES).toBe(1024 * 1024 * 1024);
+  it("matches the 50 MiB free-plan per-file limit", () => {
+    expect(MAX_PRODUCT_FILE_BYTES).toBe(50 * 1024 * 1024);
   });
 
   it("uses resumable uploads above the 6 MiB standard-upload threshold", () => {

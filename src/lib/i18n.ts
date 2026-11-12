@@ -155,8 +155,9 @@ export const dict = {
         "Ce fichier est lié à un achat antérieur : il doit être conservé pour protéger le téléchargement de l’acheteur.",
       fileDeleteLastActive:
         "Ajoutez d’abord un autre fichier actif ou désactivez le produit avant de supprimer son dernier fichier actif.",
-      fileDeleteFailed:
-        "Impossible de supprimer ce fichier. Réessayez plus tard.",
+      fileDeleteFailed: "Impossible de supprimer ce fichier. Réessayez plus tard.",
+      fileDeletedAuditFailed:
+        "Le fichier a été supprimé, mais son journal de suppression n’a pas pu être enregistré. Contactez le support.",
       fileArchiveFailed: "Impossible d’archiver ce fichier.",
       fileArchiveNeedsReplacement:
         "Ajoutez d’abord un nouveau fichier actif avant d’archiver le dernier fichier du produit.",
@@ -513,6 +514,8 @@ export const dict = {
       fileDeleteLastActive:
         "أضف ملفاً نشطاً آخر أولاً أو عطّل المنتج قبل حذف آخر ملف نشط له.",
       fileDeleteFailed: "تعذر حذف الملف. حاول لاحقاً.",
+      fileDeletedAuditFailed:
+        "تم حذف الملف، لكن تعذر تسجيل العملية في سجل التدقيق. يرجى التواصل مع الدعم.",
       fileArchiveFailed: "تعذرت أرشفة الملف.",
       fileArchiveNeedsReplacement:
         "أضف ملفاً نشطاً جديداً أولاً قبل أرشفة آخر ملف للمنتج.",
@@ -864,6 +867,8 @@ export const dict = {
       fileDeleteLastActive:
         "Add another active file or deactivate the product before deleting its last active file.",
       fileDeleteFailed: "Could not delete this file. Please try again later.",
+      fileDeletedAuditFailed:
+        "The file was deleted, but its audit record could not be saved. Please contact support.",
       fileArchiveFailed: "Could not archive this file.",
       fileArchiveNeedsReplacement:
         "Upload a new active file before archiving the product’s last active file.",

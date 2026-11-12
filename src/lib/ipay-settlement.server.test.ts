@@ -72,7 +72,7 @@ describe("iPay authoritative transaction lookup", () => {
             data: {
               id: "tx-number",
               invoice_reference: "order-number",
-              amount: "12.5",
+              amount: 12.5,
               currency: " TND ",
               status: "completed",
             },
@@ -83,7 +83,7 @@ describe("iPay authoritative transaction lookup", () => {
     );
 
     await expect(ipayGetTransaction({ transactionId: "tx-number" })).resolves.toMatchObject({
-      amount: 12.5,
+      amount: "12.5",
       currency: "TND",
       status: "completed",
     });

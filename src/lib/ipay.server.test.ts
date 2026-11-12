@@ -49,6 +49,29 @@ describe("iPay one-shot response validation", () => {
     });
   });
 
+  it("matches decimal TND strings to the canonical millime total", () => {
+    const response = {
+      id: "txn-amount",
+      payment_url: "https://checkout.ipay.tn/pay/txn-amount",
+      amount: "12.500",
+      currency: "TND",
+      invoice_reference: "order-amount",
+    };
+    expect(
+      parseIpayOneShotResponse(response, {
+        amountMillimes: 12500,
+        orderId: "order-amount",
+      }).paymentRef,
+    ).toBe("txn-amount");
+
+    expect(() =>
+      parseIpayOneShotResponse(
+        { ...response, amount: "12.5000" },
+        { amountMillimes: 12500, orderId: "order-amount" },
+      ),
+    ).toThrow("ipay_invalid_response");
+  });
+
   it("rejects a provider response that does not match the requested amount, currency, or order", () => {
     const response = {
       id: "txn-123",

@@ -18,6 +18,11 @@ import { translateProductContent } from "@/lib/product-translations";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 import {
+  activateSellerFileVersion,
+  createSellerStore,
+  registerSellerFileVersion,
+} from "@/lib/seller-security.functions";
+import {
   SellerLegalAcceptance,
   SELLER_PRIVACY_VERSION,
   SELLER_TERMS_VERSION,

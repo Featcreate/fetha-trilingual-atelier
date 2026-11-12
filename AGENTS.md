@@ -16,6 +16,7 @@
 - Downloads go reserve_download → sign (300s) → finalize_download; release on signing failure — quota counts only finalized downloads and 5-minute repeats are free.
 - Product files live in immutable `product_file_versions` with server-built paths; `product_files` is deprecated and kept only for compatibility.
 - Seller file retention is manual: never automatically delete files or old versions. Sellers may request deletion only for archived versions; block physical deletion whenever an immutable `order_item_files` purchase snapshot references the version. Keep the version row and append a `storage_cleanup_audit` record; never delete buyer entitlements or purchase snapshots.
+- Seller storage quota must count only `product-files` Storage objects that physically exist; deleting an eligible archived object frees its bytes while immutable file-version metadata remains for audit.
 - Financial, purchase-snapshot, entitlement and audit rows use ON DELETE RESTRICT plus immutability triggers — never cascade-delete them.
 
 ## Seller country and provider eligibility

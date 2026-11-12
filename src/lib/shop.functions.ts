@@ -27,10 +27,14 @@ export const startCheckout = createServerFn({ method: "POST" })
     if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
 
     const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
-    const { data: rawOrderId, error } = await callActorScopedRpc(context.userId, "server_create_order", {
+    const { data: rawOrderId, error } = await callActorScopedRpc(
+      context.userId,
+      "server_create_order",
+      {
       _product_ids: data.productIds,
       _checkout_key: data.checkoutKey,
-    });
+      },
+    );
     const orderId = rawOrderId as string | null;
     if (error || !orderId) {
       const code = error?.message?.includes("product_unavailable")
@@ -53,9 +57,13 @@ export const startCheckout = createServerFn({ method: "POST" })
     if (order.konnect_pay_url) return { ok: true as const, orderId, payUrl: order.konnect_pay_url };
 
     const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
-    const { data: rawClaimRows, error: claimError } = await callActorScopedRpc(context.userId, "server_claim_order_konnect_init", {
+    const { data: rawClaimRows, error: claimError } = await callActorScopedRpc(
+      context.userId,
+      "server_claim_order_konnect_init",
+      {
       _order_id: order.id,
-    });
+      },
+    );
     const claimRows = rawClaimRows as PaymentInitClaim[] | null;
     const claim = claimRows?.[0];
     if (claimError || !claim) {
@@ -150,10 +158,14 @@ export const startCartCheckout = createServerFn({ method: "POST" })
     if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
 
     const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
-    const { data: rawOrderId, error } = await callActorScopedRpc(context.userId, "server_create_order_from_cart", {
+    const { data: rawOrderId, error } = await callActorScopedRpc(
+      context.userId,
+      "server_create_order_from_cart",
+      {
       _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),
       _checkout_key: data.checkoutKey,
-    });
+      },
+    );
     const orderId = rawOrderId as string | null;
     if (error || !orderId) {
       const code = error?.message?.includes("product_unavailable")
@@ -498,9 +510,13 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
     }
 
     const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
-    const { data: rawClaims, error: claimError } = await callActorScopedRpc(context.userId, "server_claim_order_ipay_init", {
+    const { data: rawClaims, error: claimError } = await callActorScopedRpc(
+      context.userId,
+      "server_claim_order_ipay_init",
+      {
       _order_id: order.id,
-    });
+      },
+    );
     const claims = rawClaims as PaymentInitClaim[] | null;
     const claim = claims?.[0];
     if (claimError || !claim) {

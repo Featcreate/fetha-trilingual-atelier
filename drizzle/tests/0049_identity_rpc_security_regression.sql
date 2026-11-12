@@ -25,7 +25,10 @@ DECLARE
     'public.server_create_order_from_cart(uuid,jsonb,text)',
     'public.server_claim_order_ipay_init(uuid,uuid)',
     'public.server_claim_order_konnect_init(uuid,uuid)',
-    'public.server_submit_seller_rating(uuid,uuid,integer)'
+    'public.server_submit_seller_rating(uuid,uuid,integer)',
+    'public.server_admin_record_seller_external_fee(uuid,uuid,text,bigint,text,text,text,text,uuid,uuid)',
+    'public.server_admin_record_shared_seller_fee(uuid,uuid,text,bigint,text,text,text,text)',
+    'public.server_admin_renew_entitlement(uuid,uuid,integer,integer,text)'
   ];
 BEGIN
   FOREACH _fn IN ARRAY _legacy LOOP
@@ -44,6 +47,11 @@ BEGIN
       RAISE EXCEPTION 'untrusted_role_can_execute_wrapper:%', _fn;
     END IF;
   END LOOP;
+
+  IF NOT has_function_privilege('service_role', 'public.admin_record_seller_external_fee(uuid,text,bigint,text,text,text,text,uuid,uuid)', 'EXECUTE')
+     OR NOT has_function_privilege('service_role', 'public.admin_record_shared_seller_fee(uuid,text,bigint,text,text,text,text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'service_role_missing_legacy_fee_rpc_execute';
+  END IF;
 
   IF (SELECT prosecdef FROM pg_proc WHERE oid = 'public.get_my_seller_ratings()'::regprocedure) THEN
     RAISE EXCEPTION 'get_my_seller_ratings_must_be_invoker';

@@ -75,7 +75,7 @@ The documented payload shape is:
 - `POST /api/public/ipay/webhook` accepts the documented iPay envelope, where transaction identifiers are nested under `data`; it also accepts a flat identifier form for compatibility.
 - The incoming webhook is unsigned and untrusted. Its event type, status, amount, and currency are never used as settlement evidence.
 - The receiver extracts only the provider transaction ID or invoice reference, then makes an authenticated server-to-server GET to iPay using the organisation JWT and `X-Org-Id`.
-- The authoritative GET response must match the supplied transaction ID/reference and the internal order's iPay transaction reference, order UUID, exact amount in TND millimes, and TND currency.
+- The authoritative GET response may encode `amount` as either a JSON number or a decimal string; both are normalized exactly to integer millimes. It must match the supplied transaction ID/reference and the internal order's iPay transaction reference, order UUID, exact amount in TND millimes, and TND currency.
 - Only provider status `completed` proceeds to the atomic database settlement RPC. Provider statuses `declared` and `pending` remain pending; failed/other states do not settle.
 - If verification fails, the route returns HTTP 503. A pending provider state returns HTTP 202. The receiver does not treat an HTTP redirect or webhook delivery as proof of payment.
 - The route is not protected by a webhook signature because the provider contract supplied for this account documents no signature/HMAC. The authoritative server-to-server lookup is therefore mandatory for every webhook trigger.
@@ -98,6 +98,7 @@ The documented payload shape is:
 - It creates/reuses a pending cart order, claims initialization, requests one hosted checkout URL, and persists the iPay reference and URL.
 - The redirect only sends the buyer to iPay. It does not settle an order or grant a download.
 - Claim outcomes remain explicit: missing order, closed order, provider conflict, and an already-in-progress initialization are distinct errors.
+- An admin-only server action can recheck a pending iPay order by its saved provider transaction ID; it uses the same authenticated provider lookup and atomic settlement path as webhook/reconciliation.
 - The browser preserves the per-cart idempotency keys in session storage across refreshes, then clears them after the order reaches a terminal state.
 - If the provider request times out or its response cannot be persisted, the claim deliberately remains locked. This avoids duplicate charges when iPay may have created a transaction but the response was lost. There is no automatic provider retry or automatic claim reset.
 

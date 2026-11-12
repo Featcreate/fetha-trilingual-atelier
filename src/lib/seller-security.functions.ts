@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { callActorScopedRpc } from "@/lib/actor-rpc.server";
 
 export const createSellerStore = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -16,15 +15,16 @@ export const createSellerStore = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  .handler(({ data, context }) =>
-    callActorScopedRpc(context.userId, "server_create_seller_store", {
+  .handler(async ({ data, context }) => {
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    return callActorScopedRpc(context.userId, "server_create_seller_store", {
       _name: data.name,
       _slug: data.slug,
       _privacy_version: data.privacyVersion,
       _terms_version: data.termsVersion,
       _language: data.language,
-    }),
-  );
+    });
+  });
 
 export const registerSellerFileVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -39,33 +39,36 @@ export const registerSellerFileVersion = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  .handler(({ data, context }) =>
-    callActorScopedRpc(context.userId, "server_register_file_version", {
+  .handler(async ({ data, context }) => {
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    return callActorScopedRpc(context.userId, "server_register_file_version", {
       _product_id: data.productId,
       _file_name: data.fileName,
       _size_bytes: data.sizeBytes,
       _mime_type: data.mimeType,
       _sha256: data.sha256,
-    }),
-  );
+    });
+  });
 
 export const activateSellerFileVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ versionId: z.string().uuid() }).parse(input))
-  .handler(({ data, context }) =>
-    callActorScopedRpc(context.userId, "server_activate_file_version", {
+  .handler(async ({ data, context }) => {
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    return callActorScopedRpc(context.userId, "server_activate_file_version", {
       _version_id: data.versionId,
-    }),
-  );
+    });
+  });
 
 export const archiveSellerFileVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ versionId: z.string().uuid() }).parse(input))
-  .handler(({ data, context }) =>
-    callActorScopedRpc(context.userId, "server_archive_file_version", {
+  .handler(async ({ data, context }) => {
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    return callActorScopedRpc(context.userId, "server_archive_file_version", {
       _version_id: data.versionId,
-    }),
-  );
+    });
+  });
 
 export const submitSellerRating = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -77,9 +80,10 @@ export const submitSellerRating = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  .handler(({ data, context }) =>
-    callActorScopedRpc(context.userId, "server_submit_seller_rating", {
+  .handler(async ({ data, context }) => {
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    return callActorScopedRpc(context.userId, "server_submit_seller_rating", {
       _store_id: data.storeId,
       _stars: data.stars,
-    }),
-  );
+    });
+  });

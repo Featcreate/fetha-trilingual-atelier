@@ -7,6 +7,7 @@ export const RESUMABLE_UPLOAD_THRESHOLD_BYTES = 6 * 1024 * 1024;
 const TUS_CHUNK_BYTES = 6 * 1024 * 1024;
 const RETRY_DELAYS_MS = [1_000, 3_000, 5_000, 10_000];
 
+// prettier-ignore
 function request(
   method: string,
   url: string,
@@ -42,6 +43,7 @@ function request(
   });
 }
 
+// prettier-ignore
 function encodeMetadata(value: string) {
   const encoded = encodeURIComponent(value).replace(
     /%([0-9A-F]{2})/g,
@@ -50,6 +52,7 @@ function encodeMetadata(value: string) {
   return btoa(encoded);
 }
 
+// prettier-ignore
 function storageEndpoint() {
   const url = import.meta.env["VITE_SUPABASE_URL"];
   if (!url) throw new Error("supabase_url_missing");
@@ -62,6 +65,7 @@ function storageEndpoint() {
   return `${parsed.protocol}//${hostname}/storage/v1/upload/resumable`;
 }
 
+// prettier-ignore
 async function uploadResumable(
   path: string,
   file: File,
@@ -148,6 +152,7 @@ async function uploadResumable(
   onProgress?.(100);
 }
 
+// prettier-ignore
 export async function uploadProductFile(
   path: string,
   file: File,

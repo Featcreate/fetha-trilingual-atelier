@@ -11,6 +11,8 @@ AS $$
 DECLARE
   _product_id uuid;
   _owner_id uuid;
+  _product_active boolean;
+  _active_count integer;
 BEGIN
   SELECT pv.product_id, s.owner_id
     INTO _product_id, _owner_id
@@ -22,10 +24,23 @@ BEGIN
     RAISE EXCEPTION 'forbidden';
   END IF;
 
-  -- Same lock order as checkout: product first, then file version.
+  -- Checkout, archival, and direct deletion serialize on the product row.
   PERFORM p.id FROM public.products p
    WHERE p.id = _product_id
    FOR UPDATE;
+
+  SELECT p.is_active INTO _product_active
+    FROM public.products p
+   WHERE p.id = _product_id;
+
+  SELECT count(*) INTO _active_count
+    FROM public.product_file_versions pv
+   WHERE pv.product_id = _product_id
+     AND pv.status = 'active';
+
+  IF _product_active AND _active_count <= 1 THEN
+    RAISE EXCEPTION 'file_last_active_version';
+  END IF;
 
   UPDATE public.product_file_versions pv
      SET status = 'archived', archived_at = now()
@@ -35,6 +50,9 @@ BEGIN
   IF NOT FOUND THEN RAISE EXCEPTION 'forbidden'; END IF;
 END;
 $$;
+
+REVOKE ALL ON FUNCTION public.archive_file_version(uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.archive_file_version(uuid) TO service_role;
 
 CREATE OR REPLACE FUNCTION public.create_order_from_cart(_items jsonb, _checkout_key text)
 RETURNS uuid
@@ -169,8 +187,8 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.create_order_from_cart(jsonb, text) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.create_order_from_cart(jsonb, text) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION public.create_order_from_cart(jsonb, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.create_order_from_cart(jsonb, text) TO service_role;
 
 
 -- Keep the legacy single-product checkout path under the same serialization rule.
@@ -245,8 +263,8 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.create_order(uuid[], text) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.create_order(uuid[], text) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION public.create_order(uuid[], text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.create_order(uuid[], text) TO service_role;
 
 
 -- Recompute quota from objects that still exist in the private bucket.
@@ -318,5 +336,5 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.register_file_version(uuid, text, bigint, text, text) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.register_file_version(uuid, text, bigint, text, text) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION public.register_file_version(uuid, text, bigint, text, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.register_file_version(uuid, text, bigint, text, text) TO service_role;

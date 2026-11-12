@@ -137,7 +137,9 @@ function AdminPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("id,user_id,status,total_millimes,currency,ipay_payment_ref,konnect_payment_ref,created_at")
+        .select(
+          "id,user_id,status,total_millimes,currency,ipay_payment_ref,konnect_payment_ref,created_at",
+        )
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -297,11 +299,24 @@ function AdminPage() {
     try {
       const result = await adminRecheckIpayPayment({ data: { orderId } });
       if (!result.ok) {
-        const message = result.error === "order_not_pending"
-          ? lang === "ar" ? "الطلب لم يعد معلّقاً." : lang === "en" ? "The order is no longer pending." : "La commande n’est plus en attente."
-          : result.error === "no_payment"
-            ? lang === "ar" ? "لا يوجد مرجع دفع iPay لهذا الطلب." : lang === "en" ? "No iPay payment reference exists for this order." : "Aucune référence de paiement iPay pour cette commande."
-            : lang === "ar" ? "تعذر التحقق من دفعة iPay." : lang === "en" ? "Could not verify the iPay payment." : "Impossible de vérifier le paiement iPay.";
+        const message =
+          result.error === "order_not_pending"
+            ? lang === "ar"
+              ? "الطلب لم يعد معلّقاً."
+              : lang === "en"
+                ? "The order is no longer pending."
+                : "La commande n’est plus en attente."
+            : result.error === "no_payment"
+              ? lang === "ar"
+                ? "لا يوجد مرجع دفع iPay لهذا الطلب."
+                : lang === "en"
+                  ? "No iPay payment reference exists for this order."
+                  : "Aucune référence de paiement iPay pour cette commande."
+              : lang === "ar"
+                ? "تعذر التحقق من دفعة iPay."
+                : lang === "en"
+                  ? "Could not verify the iPay payment."
+                  : "Impossible de vérifier le paiement iPay.";
         setNotice({ ok: false, text: message });
       } else {
         setNotice({
@@ -316,7 +331,12 @@ function AdminPage() {
     } catch {
       setNotice({
         ok: false,
-        text: lang === "ar" ? "حدث خطأ أثناء إعادة التحقق." : lang === "en" ? "An error occurred while rechecking the payment." : "Une erreur est survenue lors de la nouvelle vérification.",
+        text:
+          lang === "ar"
+            ? "حدث خطأ أثناء إعادة التحقق."
+            : lang === "en"
+              ? "An error occurred while rechecking the payment."
+              : "Une erreur est survenue lors de la nouvelle vérification.",
       });
     } finally {
       setRecheckingOrderId(null);
@@ -802,10 +822,14 @@ function AdminPage() {
                   </p>
                   <p className="text-xs text-muted-foreground">{order.status}</p>
                   {order.ipay_payment_ref && (
-                    <p className="text-xs text-muted-foreground">iPay · {order.ipay_payment_ref.slice(0, 16)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      iPay · {order.ipay_payment_ref.slice(0, 16)}
+                    </p>
                   )}
                   {order.konnect_payment_ref && (
-                    <p className="text-xs text-muted-foreground">Konnect · {order.konnect_payment_ref.slice(0, 16)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Konnect · {order.konnect_payment_ref.slice(0, 16)}
+                    </p>
                   )}
                   {order.status === "pending" && order.ipay_payment_ref && (
                     <button
@@ -815,8 +839,16 @@ function AdminPage() {
                       className="mt-2 rounded-full border border-border px-3 py-2 text-xs font-semibold disabled:opacity-50"
                     >
                       {recheckingOrderId === order.id
-                        ? lang === "ar" ? "جارٍ التحقق…" : lang === "en" ? "Checking…" : "Vérification…"
-                        : lang === "ar" ? "إعادة التحقق عبر iPay" : lang === "en" ? "Recheck with iPay" : "Revérifier avec iPay"}
+                        ? lang === "ar"
+                          ? "جارٍ التحقق…"
+                          : lang === "en"
+                            ? "Checking…"
+                            : "Vérification…"
+                        : lang === "ar"
+                          ? "إعادة التحقق عبر iPay"
+                          : lang === "en"
+                            ? "Recheck with iPay"
+                            : "Revérifier avec iPay"}
                     </button>
                   )}
                 </div>

@@ -224,12 +224,14 @@ function SellerPage() {
     }
     setBusy(true);
     setNotice("");
-    const { error } = await supabase.rpc("create_seller_store", {
-      _name: name,
-      _slug: slug,
-      _privacy_version: SELLER_PRIVACY_VERSION,
-      _terms_version: SELLER_TERMS_VERSION,
-      _language: lang,
+    const { error } = await createSellerStore({
+      data: {
+        name,
+        slug,
+        privacyVersion: SELLER_PRIVACY_VERSION,
+        termsVersion: SELLER_TERMS_VERSION,
+        language: lang,
+      },
     });
     setBusy(false);
     if (error) {
@@ -322,16 +324,15 @@ function SellerPage() {
     file: File,
   ): Promise<"ok" | "quota" | "email" | "error"> {
     const fileName = safeFileName(file.name);
-    const { data: versionRows, error: registerError } = await supabase.rpc(
-      "register_file_version",
-      {
-        _product_id: productId,
-        _file_name: fileName,
-        _size_bytes: file.size,
-        _mime_type: file.type || "application/octet-stream",
-        _sha256: "",
+    const { data: versionRows, error: registerError } = await registerSellerFileVersion({
+      data: {
+        productId,
+        fileName,
+        sizeBytes: file.size,
+        mimeType: file.type || "application/octet-stream",
+        sha256: "",
       },
-    );
+    });
     const version = Array.isArray(versionRows) ? versionRows[0] : versionRows;
     if (registerError) {
       if (registerError.message.includes("storage_quota_exceeded")) return "quota";
@@ -346,8 +347,8 @@ function SellerPage() {
         upsert: false,
       });
     if (uploadError) return "error";
-    const { error: activateError } = await supabase.rpc("activate_file_version", {
-      _version_id: version.version_id,
+    const { error: activateError } = await activateSellerFileVersion({
+      data: { versionId: version.version_id },
     });
     return activateError ? "error" : "ok";
   }

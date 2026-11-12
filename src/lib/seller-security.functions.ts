@@ -33,7 +33,7 @@ export const registerSellerFileVersion = createServerFn({ method: "POST" })
       .object({
         productId: z.string().uuid(),
         fileName: z.string().trim().min(1).max(255),
-        sizeBytes: z.number().int().positive().max(1_073_741_824),
+        sizeBytes: z.number().int().positive().max(52_428_800),
         mimeType: z.string().max(255),
         sha256: z.string().max(128),
       })

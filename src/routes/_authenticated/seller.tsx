@@ -1485,7 +1485,7 @@ function SellerFileVersions({
         }
         return;
       }
-      setMessage(m.fileDeleted);
+      setMessage(result.data?.deletedBytes ? m.fileDeleted : m.fileDeletedNoStorage);
       await qc.invalidateQueries({ queryKey: ["seller-file-versions", productId] });
     } catch {
       setMessage(m.fileDeleteFailed);

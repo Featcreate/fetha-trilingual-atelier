@@ -100,6 +100,7 @@ The documented payload shape is:
 - On the buyer return page, the server now checks an iPay order using its saved iPay transaction reference and the authenticated provider lookup; Konnect return verification remains unchanged.
 - Claim outcomes remain explicit: missing order, closed order, provider conflict, and an already-in-progress initialization are distinct errors.
 - An admin-only server action can recheck a pending iPay order by its saved provider transaction ID; it uses the same authenticated provider lookup and atomic settlement path as webhook/reconciliation.
+- The private administration order-monitoring panel exposes this action only for pending orders with a saved iPay reference, shows the provider reference, prevents overlapping rechecks, and refreshes the order list after each attempt. Konnect orders are not sent through the iPay verifier.
 - The browser preserves the per-cart idempotency keys in session storage across refreshes, then clears them after the order reaches a terminal state.
 - If the provider request times out or its response cannot be persisted, the claim deliberately remains locked. This avoids duplicate charges when iPay may have created a transaction but the response was lost. There is no automatic provider retry or automatic claim reset.
 

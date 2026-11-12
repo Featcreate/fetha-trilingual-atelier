@@ -1476,7 +1476,9 @@ function SellerFileVersions({
               ? m.fileDeleteLastActive
               : result.error.message === "storage_deleted_audit_failed"
                 ? m.fileDeletedAuditFailed
-                : m.fileDeleteFailed,
+                : result.error.message === "file_upload_in_progress"
+                  ? m.fileUploadInProgress
+                  : m.fileDeleteFailed,
         );
         if (result.data) {
           await qc.invalidateQueries({ queryKey: ["seller-file-versions", productId] });

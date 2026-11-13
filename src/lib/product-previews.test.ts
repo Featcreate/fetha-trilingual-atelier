@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { isMissingGalleryTable, previewObjectPath, validPreviewImage } from "./product-previews";
 import { PRODUCT_TYPES } from "./product-types";
-import { getCategory, getProductTypeLabel, getSubcategoryLabel, isValidProductCategory } from "./product-categories";
+import {
+  getCategory,
+  getProductTypeLabel,
+  getSubcategoryLabel,
+  isValidProductCategory,
+} from "./product-categories";
 import { getCategory, getProductTypeLabel, getSubcategoryLabel, isValidProductCategory } from "./product-categories";
 
 describe("preview image rules", () => {
@@ -34,8 +39,12 @@ describe("preview image rules", () => {
   });
   it("defines the approved ten categories and 54 subcategories", () => {
     expect(PRODUCT_TYPES).toHaveLength(10);
-    expect(PRODUCT_TYPES.every((id) => (getCategory(id)?.subcategories.length ?? 0) > 0)).toBe(true);
-    expect(PRODUCT_TYPES.reduce((count, id) => count + (getCategory(id)?.subcategories.length ?? 0), 0)).toBe(54);
+    expect(
+      PRODUCT_TYPES.every((id) => (getCategory(id)?.subcategories.length ?? 0) > 0),
+    ).toBe(true);
+    expect(
+      PRODUCT_TYPES.reduce((count, id) => count + (getCategory(id)?.subcategories.length ?? 0), 0),
+    ).toBe(54);
   });
   it("validates a subcategory only under its own parent category", () => {
     expect(isValidProductCategory("ressources-educatives", "fiches-exercices")).toBe(true);

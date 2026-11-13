@@ -48,6 +48,7 @@ function CatalogPage() {
   const { lang, setLang, t } = useLang();
   const m = t.marketplace;
   const { add, count, items } = useCart();
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [type, setType] = useState(Route.useSearch().type ?? "all");
   const catalog = useQuery({
@@ -72,19 +73,29 @@ function CatalogPage() {
     },
   });
   const visible = useMemo(() => {
-    const q = search.trim().toLocaleLowerCase();
+    const q = search
+      .normalize("NFKC")
+      .toLocaleLowerCase()
+      .replace(/\p{M}/gu, "")
+      .replace(/[^\p{L}\p{N}]+/gu, " ")
+      .trim();
+    const searchTerms = q ? q.split(/\s+/) : [];
     const storeMap = new Map((catalog.data?.stores ?? []).map((s) => [s.id, s]));
     return (catalog.data?.products ?? [])
       .filter((p) => {
         const store = p.store_id ? storeMap.get(p.store_id) : undefined;
         const matchesType = type === "all" || p.product_type === type;
-        const matchesText =
-          !q ||
-          [
-            localizedProductText(p.name, p.name_translations, lang),
-            localizedProductText(p.description, p.description_translations, lang),
-            store?.name ?? "",
-          ].some((v) => v.toLocaleLowerCase().includes(q));
+        const searchableText = [
+          localizedProductText(p.name, p.name_translations, lang),
+          localizedProductText(p.description, p.description_translations, lang),
+          store?.name ?? "",
+        ]
+          .join(" ")
+          .normalize("NFKC")
+          .toLocaleLowerCase()
+          .replace(/\p{M}/gu, "")
+          .replace(/[^\p{L}\p{N}]+/gu, " ");
+        const matchesText = searchTerms.every((term) => searchableText.includes(term));
         return matchesType && matchesText && !!store;
       })
       .flatMap((p) => {
@@ -113,12 +124,27 @@ function CatalogPage() {
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-[1fr_220px]">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={m.search}
-          className="w-full rounded-lg border border-input bg-background px-3 py-3"
-        />
+        <form
+          role="search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSearch(searchInput);
+          }}
+          className="flex min-w-0 gap-2"
+        >
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder={m.search}
+            className="min-w-0 flex-1 rounded-lg border border-input bg-background px-3 py-3"
+          />
+          <button
+            type="submit"
+            className="shrink-0 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:opacity-90"
+          >
+            {lang === "ar" ? "بحث" : lang === "en" ? "Search" : "Rechercher"}
+          </button>
+        </form>
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}

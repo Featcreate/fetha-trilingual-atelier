@@ -7,7 +7,7 @@ import { TndEquivalents } from "@/components/TndEquivalents";
 import { AuthShell } from "@/components/AuthShell";
 import { localizedProductText } from "@/lib/product-translations";
 import { ProductPreview } from "@/components/ProductPreview";
-import { getProductTypeLabel } from "@/lib/product-categories";
+import { getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
 
 export const Route = createFileRoute("/stores/$slug")({
   head: () => ({ meta: [{ title: "Boutique — Algorea Bazaar" }] }),
@@ -116,6 +116,7 @@ function StorefrontPage() {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {getProductTypeLabel(p.product_type, lang, m as unknown as Record<string, string>)}
+                    {getSubcategoryLabel(p.product_type, p.product_subcategory, lang) ? " · " + getSubcategoryLabel(p.product_type, p.product_subcategory, lang) : ""}
                   </p>
                   <Link
                     to="/products/$id"

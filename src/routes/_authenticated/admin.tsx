@@ -135,6 +135,7 @@ function AdminPage() {
         .select(
           "id,store_id,name,product_type,product_subcategory,price_millimes,sale_price_millimes,is_active,created_at",
         )
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;

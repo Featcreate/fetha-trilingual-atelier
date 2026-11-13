@@ -7,7 +7,6 @@ import {
   getSubcategoryLabel,
   isValidProductCategory,
 } from "./product-categories";
-import { getCategory, getProductTypeLabel, getSubcategoryLabel, isValidProductCategory } from "./product-categories";
 
 describe("preview image rules", () => {
   it("accepts the exact 10 MiB limit and rejects larger files", () => {

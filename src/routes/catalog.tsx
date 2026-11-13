@@ -152,7 +152,10 @@ function CatalogPage() {
         </select>
       </div>
       {selectedCategory && (
-        <section className="mt-5 rounded-xl border border-border bg-card p-4" aria-labelledby="subcategory-heading">
+        <section
+          className="mt-5 rounded-xl border border-border bg-card p-4"
+          aria-labelledby="subcategory-heading"
+        >
           <h2 id="subcategory-heading" className="mb-3 text-base font-bold text-petrol">
             {lang === "ar" ? "التصنيفات الفرعية" : lang === "en" ? "Subcategories" : "Sous-catégories"}
           </h2>
@@ -161,7 +164,11 @@ function CatalogPage() {
               type="button"
               onClick={() => setSubcategory("all")}
               aria-pressed={subcategory === "all"}
-              className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${subcategory === "all" ? "border-petrol bg-petrol text-white" : "border-border bg-background hover:border-coral"}`}
+              className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                subcategory === "all"
+                  ? "border-petrol bg-petrol text-white"
+                  : "border-border bg-background hover:border-coral"
+              }`}
             >
               {lang === "ar" ? "كل التصنيفات" : lang === "en" ? "All subcategories" : "Toutes les sous-catégories"}
             </button>
@@ -171,7 +178,11 @@ function CatalogPage() {
                 type="button"
                 onClick={() => setSubcategory(item.id)}
                 aria-pressed={subcategory === item.id}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${subcategory === item.id ? "border-petrol bg-petrol text-white" : "border-border bg-background hover:border-coral"}`}
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                  subcategory === item.id
+                    ? "border-petrol bg-petrol text-white"
+                    : "border-border bg-background hover:border-coral"
+                }`}
               >
                 {item.name[lang]}
               </button>

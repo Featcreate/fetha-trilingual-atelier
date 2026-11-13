@@ -56,6 +56,9 @@ export const Route = createFileRoute("/_authenticated/seller")({
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
 const MAX_FILE_BYTES = MAX_PRODUCT_FILE_BYTES;
+const DEFAULT_CATEGORY = PRODUCT_CATEGORIES[0]!;
+const DEFAULT_CATEGORY_ID = DEFAULT_CATEGORY.id;
+const DEFAULT_SUBCATEGORY_ID = DEFAULT_CATEGORY.subcategories[0]!.id;
 
 function slugify(value: string) {
   return value
@@ -94,8 +97,8 @@ function SellerPage() {
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
   const [confirmationBusy, setConfirmationBusy] = useState(false);
   const [payoutMethod, setPayoutMethod] = useState("other");
-  const [newCategoryId, setNewCategoryId] = useState("");
-  const [newSubcategoryId, setNewSubcategoryId] = useState("");
+  const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
+  const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
   const [editCategoryId, setEditCategoryId] = useState("");
   const [editSubcategoryId, setEditSubcategoryId] = useState("");
 

@@ -8,6 +8,7 @@ import { formatTND } from "@/lib/money";
 import { TndEquivalents } from "@/components/TndEquivalents";
 import { loadProductGallery } from "@/lib/product-previews";
 import { ProductPreview } from "@/components/ProductPreview";
+import { getProductTypeLabel } from "@/lib/product-categories";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { PaymentMethodsPreview } from "@/components/PaymentMethodsPreview";
@@ -47,7 +48,7 @@ function ProductPage() {
       const { data: product, error } = await supabase
         .from("products")
         .select(
-          "id,name,description,name_translations,description_translations,price_millimes,sale_price_millimes,product_type,store_id,image_path",
+          "id,name,description,name_translations,description_translations,price_millimes,sale_price_millimes,product_type,product_subcategory,store_id,image_path",
         )
         .eq("id", id)
         .eq("is_active", true)
@@ -216,8 +217,7 @@ function ProductPage() {
             );
           })()}
           <p className="mt-6 text-sm text-muted-foreground">
-            {m[query.data.product.product_type as keyof typeof m] ??
-              query.data.product.product_type}
+            {getProductTypeLabel(query.data.product.product_type, lang, m as unknown as Record<string, string>)}
           </p>
           <h1 className="mt-2 text-2xl font-extrabold">
             {localizedProductText(

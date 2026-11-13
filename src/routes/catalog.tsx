@@ -209,9 +209,7 @@ function CatalogPage() {
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((p) => (
             <article key={p.id} className="overflow-hidden rounded-xl border border-border bg-card">
-              <div
-                className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-cream-light p-6 text-center"
-              >
+              <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-cream-light p-6 text-center">
                 <ProductPreview path={p.image_path} alt={p.name} />
               </div>
               <div className="space-y-3 p-4">
@@ -277,9 +275,7 @@ function CatalogPage() {
                       ? "Add to cart"
                       : "Ajouter au panier"}
                 </button>
-                <div
-                  className="flex items-center justify-between gap-2 border-t border-border pt-3"
-                >
+                <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
                   <Link
                     to="/stores/$slug"
                     params={{ slug: p.store.slug }}

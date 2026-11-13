@@ -56,8 +56,6 @@ export const Route = createFileRoute("/_authenticated/seller")({
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
 const MAX_FILE_BYTES = MAX_PRODUCT_FILE_BYTES;
-const DEFAULT_CATEGORY_ID = PRODUCT_CATEGORIES[0]?.id ?? "graphisme";
-const DEFAULT_SUBCATEGORY_ID = PRODUCT_CATEGORIES[0]?.subcategories[0]?.id ?? "illustrations-dessins-logos";
 
 function slugify(value: string) {
   return value
@@ -96,8 +94,8 @@ function SellerPage() {
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
   const [confirmationBusy, setConfirmationBusy] = useState(false);
   const [payoutMethod, setPayoutMethod] = useState("other");
-  const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
-  const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
+  const [newCategoryId, setNewCategoryId] = useState("");
+  const [newSubcategoryId, setNewSubcategoryId] = useState("");
   const [editCategoryId, setEditCategoryId] = useState("");
   const [editSubcategoryId, setEditSubcategoryId] = useState("");
 
@@ -805,14 +803,16 @@ function SellerPage() {
                   <select
                     id="product_type"
                     name="product_type"
+                    required
                     value={newCategoryId}
                     onChange={(event) => {
                       const nextId = event.currentTarget.value;
                       setNewCategoryId(nextId);
-                      setNewSubcategoryId(getCategory(nextId)?.subcategories[0]?.id ?? "");
+                      setNewSubcategoryId("");
                     }}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2"
                   >
+                    <option value="">{lang === "ar" ? "اختر الفئة" : lang === "en" ? "Choose a category" : "Choisir une catégorie"}</option>
                     {PRODUCT_CATEGORIES.map((category) => (
                       <option key={category.id} value={category.id}>{category.name[lang]}</option>
                     ))}
@@ -823,10 +823,12 @@ function SellerPage() {
                   <select
                     id="product_subcategory"
                     name="product_subcategory"
+                    required
                     value={newSubcategoryId}
                     onChange={(event) => setNewSubcategoryId(event.currentTarget.value)}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2"
                   >
+                    <option value="">{lang === "ar" ? "اختر التصنيف الفرعي" : lang === "en" ? "Choose a subcategory" : "Choisir une sous-catégorie"}</option>
                     {(getCategory(newCategoryId)?.subcategories ?? []).map((subcategory) => (
                       <option key={subcategory.id} value={subcategory.id}>{subcategory.name[lang]}</option>
                     ))}
@@ -991,11 +993,12 @@ function SellerPage() {
                         <select
                           id={`edit_type_${product.id}`}
                           name={`edit_type_${product.id}`}
+                          required
                           value={editCategoryId}
                           onChange={(event) => {
                             const nextId = event.currentTarget.value;
                             setEditCategoryId(nextId);
-                            setEditSubcategoryId(getCategory(nextId)?.subcategories[0]?.id ?? "");
+                            setEditSubcategoryId("");
                           }}
                           className="w-full rounded-lg border border-input bg-background px-3 py-2"
                         >
@@ -1010,6 +1013,7 @@ function SellerPage() {
                         <select
                           id={`edit_subcategory_${product.id}`}
                           name={`edit_subcategory_${product.id}`}
+                          required
                           value={editSubcategoryId}
                           onChange={(event) => setEditSubcategoryId(event.currentTarget.value)}
                           className="w-full rounded-lg border border-input bg-background px-3 py-2"

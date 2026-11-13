@@ -92,8 +92,7 @@ function CatalogPage() {
       .filter((p) => {
         const store = p.store_id ? storeMap.get(p.store_id) : undefined;
         const matchesType = type === "all" || p.product_type === type;
-        const matchesSubcategory =
-          subcategory === "all" || p.product_subcategory === subcategory;
+        const matchesSubcategory = subcategory === "all" || p.product_subcategory === subcategory;
         const matchesText =
           !q ||
           [

@@ -50,6 +50,7 @@ function AuthPage() {
   const [errors, setErrors] = useState<Errs>({});
   const [formError, setFormError] = useState("");
   const [notice, setNotice] = useState("");
+  const [verificationEmail, setVerificationEmail] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -113,7 +114,10 @@ function AuthPage() {
         });
         if (error) return setFormError(authErrorMessage(a, error));
         if (data.session) navigate({ to: "/account", replace: true });
-        else setNotice(a.checkEmail);
+        else {
+          setVerificationEmail(email);
+          setNotice(a.checkEmail);
+        }
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: authRedirectUrl("/reset-password"),
@@ -122,6 +126,26 @@ function AuthPage() {
           return setFormError(a.errRate);
         setNotice(a.resetSent);
       }
+    } catch {
+      setFormError(a.errGeneric);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resendVerification() {
+    if (!verificationEmail || busy) return;
+    setBusy(true);
+    setFormError("");
+    setNotice("");
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: verificationEmail,
+        options: { emailRedirectTo: authRedirectUrl("/account") },
+      });
+      if (error) setFormError(authErrorMessage(a, error));
+      else setNotice(a.verificationResent);
     } catch {
       setFormError(a.errGeneric);
     } finally {
@@ -194,9 +218,19 @@ function AuthPage() {
           </p>
         )}
         {notice && (
-          <p role="status" className="rounded-lg bg-secondary p-3 text-sm">
-            {notice}
-          </p>
+          <div role="status" className="space-y-3 rounded-lg bg-secondary p-3 text-sm">
+            <p>{notice}</p>
+            {mode === "signup" && verificationEmail && (
+              <button
+                type="button"
+                onClick={() => void resendVerification()}
+                disabled={busy}
+                className="font-semibold text-coral underline underline-offset-2 disabled:opacity-60"
+              >
+                {busy ? a.loading : a.verificationResend}
+              </button>
+            )}
+          </div>
         )}
         <SubmitButton busy={busy} label={submit} busyLabel={a.loading} />
       </form>

@@ -8,7 +8,7 @@ import { formatTND } from "@/lib/money";
 import { TndEquivalents } from "@/components/TndEquivalents";
 import { loadProductGallery } from "@/lib/product-previews";
 import { ProductPreview } from "@/components/ProductPreview";
-import { getProductTypeLabel } from "@/lib/product-categories";
+import { getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { PaymentMethodsPreview } from "@/components/PaymentMethodsPreview";
@@ -218,6 +218,7 @@ function ProductPage() {
           })()}
           <p className="mt-6 text-sm text-muted-foreground">
             {getProductTypeLabel(query.data.product.product_type, lang, m as unknown as Record<string, string>)}
+            {getSubcategoryLabel(query.data.product.product_type, query.data.product.product_subcategory, lang) ? " · " + getSubcategoryLabel(query.data.product.product_type, query.data.product.product_subcategory, lang) : ""}
           </p>
           <h1 className="mt-2 text-2xl font-extrabold">
             {localizedProductText(

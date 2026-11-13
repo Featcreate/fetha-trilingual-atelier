@@ -9,7 +9,7 @@ import { TndEquivalents } from "@/components/TndEquivalents";
 import { ProductPreview } from "@/components/ProductPreview";
 import { getTopRatedStores } from "@/lib/public-data.functions";
 import { Menu, X } from "lucide-react";
-import { PRODUCT_CATEGORIES, getProductTypeLabel } from "@/lib/product-categories";
+import { PRODUCT_CATEGORIES, getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
 import { BrandLogo } from "@/components/BrandLogo";
 import heroBanner from "@/assets/1793464236433.jpg";
 import { LANGS, dict, useLang } from "@/lib/i18n";
@@ -160,6 +160,7 @@ function Index() {
         <div className="space-y-2 p-4">
           <p className="text-xs text-muted-foreground">
             {getProductTypeLabel(product.product_type, lang, t.marketplace as unknown as Record<string, string>)}
+            {getSubcategoryLabel(product.product_type, product.product_subcategory, lang) ? " · " + getSubcategoryLabel(product.product_type, product.product_subcategory, lang) : ""}
           </p>
           <Link
             to="/products/$id"

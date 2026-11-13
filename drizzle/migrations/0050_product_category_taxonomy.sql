@@ -26,6 +26,9 @@ ALTER TABLE public.products ADD CONSTRAINT products_product_subcategory_check CH
 -- Map only legacy values with a clear equivalent. Bundle products deliberately retain a NULL
 -- subcategory until their seller chooses the correct bundle family. Ambiguous pdf/printable/other
 -- values stay legacy and are never assigned a guessed category.
+-- Map only legacy values whose top-level category is clear. Do not infer a
+-- subcategory from a broad legacy type: sellers can choose it later when editing.
+-- Ambiguous pdf/printable/other values remain unchanged until manually classified.
 UPDATE public.products SET
   product_type = CASE product_type
     WHEN 'ebook' THEN 'livres-numeriques'
@@ -42,32 +45,11 @@ UPDATE public.products SET
     WHEN 'video' THEN 'contenus-audio-visuels'
     WHEN 'graphics' THEN 'graphisme'
     ELSE product_type
-  END,
-  product_subcategory = CASE product_type
-    WHEN 'ebook' THEN 'livres-specialises'
-    WHEN 'template' THEN 'documents-formulaires'
-    WHEN 'educational' THEN 'activites-pedagogiques'
-    WHEN 'software' THEN 'logiciels-ordinateur'
-    WHEN 'app' THEN 'applications-mobiles'
-    WHEN 'planner' THEN 'agendas-planificateurs'
-    WHEN 'course' THEN 'cours-en-ligne'
-    WHEN 'worksheets' THEN 'fiches-exercices'
-    WHEN 'flashcards' THEN 'cartes-memoire'
-    WHEN 'audio' THEN 'musique-sons'
-    WHEN 'video' THEN 'videos-sequences'
-    WHEN 'graphics' THEN 'illustrations-dessins-logos'
-    WHEN 'bundle' THEN NULL
-    ELSE product_subcategory
   END
 WHERE product_type IN (
   'ebook','template','educational','bundle','software','app','planner','course',
   'worksheets','flashcards','audio','video','graphics'
 );
-
--- Legacy ambiguous types cannot safely retain a category-specific subcategory.
-UPDATE public.products
-SET product_subcategory = NULL
-WHERE product_type IN ('pdf', 'printable', 'other');
 
 -- Enforce the category/subcategory relationship, not merely membership in two independent lists.
 ALTER TABLE public.products DROP CONSTRAINT IF EXISTS products_category_subcategory_pair_check;

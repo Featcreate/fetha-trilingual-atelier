@@ -23,9 +23,6 @@ ALTER TABLE public.products ADD CONSTRAINT products_product_subcategory_check CH
   'packs-formations-cours', 'packs-creation-fabrication-numerique'
 ));
 
--- Map only legacy values with a clear equivalent. Bundle products deliberately retain a NULL
--- subcategory until their seller chooses the correct bundle family. Ambiguous pdf/printable/other
--- values stay legacy and are never assigned a guessed category.
 -- Map only legacy values whose top-level category is clear. Do not infer a
 -- subcategory from a broad legacy type: sellers can choose it later when editing.
 -- Ambiguous pdf/printable/other values remain unchanged until manually classified.

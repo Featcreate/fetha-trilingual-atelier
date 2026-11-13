@@ -495,7 +495,7 @@ function Index() {
             <h2 id="cats" className="mb-5 text-center text-xl font-bold text-petrol">
               {t.marketplace.browseCategories}
             </h2>
-            <div className="grid grid-cols-5 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
               {PRODUCT_CATEGORIES.map((category) => {
                 const Icon = category.icon;
                 return (

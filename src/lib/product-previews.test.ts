@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { isMissingGalleryTable, previewObjectPath, validPreviewImage } from "./product-previews";
 import { PRODUCT_TYPES } from "./product-types";
+import { getCategory, getProductTypeLabel, getSubcategoryLabel, isValidProductCategory } from "./product-categories";
 
 describe("preview image rules", () => {
   it("accepts the exact 10 MiB limit and rejects larger files", () => {

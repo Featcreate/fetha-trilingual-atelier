@@ -812,7 +812,9 @@ function SellerPage() {
                     }}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2"
                   >
-                    <option value="">{lang === "ar" ? "اختر الفئة" : lang === "en" ? "Choose a category" : "Choisir une catégorie"}</option>
+                    <option value="">
+                      {lang === "ar" ? "اختر الفئة" : lang === "en" ? "Choose a category" : "Choisir une catégorie"}
+                    </option>
                     {PRODUCT_CATEGORIES.map((category) => (
                       <option key={category.id} value={category.id}>{category.name[lang]}</option>
                     ))}
@@ -828,7 +830,9 @@ function SellerPage() {
                     onChange={(event) => setNewSubcategoryId(event.currentTarget.value)}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2"
                   >
-                    <option value="">{lang === "ar" ? "اختر التصنيف الفرعي" : lang === "en" ? "Choose a subcategory" : "Choisir une sous-catégorie"}</option>
+                    <option value="">
+                      {lang === "ar" ? "اختر التصنيف الفرعي" : lang === "en" ? "Choose a subcategory" : "Choisir une sous-catégorie"}
+                    </option>
                     {(getCategory(newCategoryId)?.subcategories ?? []).map((subcategory) => (
                       <option key={subcategory.id} value={subcategory.id}>{subcategory.name[lang]}</option>
                     ))}

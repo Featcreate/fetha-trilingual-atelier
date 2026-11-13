@@ -8,67 +8,8 @@ import { formatTND } from "@/lib/money";
 import { TndEquivalents } from "@/components/TndEquivalents";
 import { ProductPreview } from "@/components/ProductPreview";
 import { getTopRatedStores } from "@/lib/public-data.functions";
-import {
-  Menu,
-  X,
-  BookOpen,
-  FileText,
-  LayoutTemplate,
-  Layers,
-  Printer,
-  ClipboardList,
-  CalendarCheck,
-  GraduationCap,
-  Gift,
-  Laptop,
-  Smartphone,
-  Presentation,
-  Package,
-  Headphones,
-  Video,
-  Palette,
-} from "lucide-react";
-
-import { PRODUCT_TYPES } from "@/lib/product-types";
-const categoryIcons = {
-  ebook: BookOpen,
-  pdf: FileText,
-  template: LayoutTemplate,
-  educational: GraduationCap,
-  bundle: Gift,
-  software: Laptop,
-  app: Smartphone,
-  printable: Printer,
-  planner: CalendarCheck,
-  course: Presentation,
-  worksheets: ClipboardList,
-  flashcards: Layers,
-  audio: Headphones,
-  video: Video,
-  graphics: Palette,
-  other: Package,
-};
-const categoryColors = [
-  "bg-rose-100 text-rose-700 border-rose-200",
-  "bg-sky-100 text-sky-700 border-sky-200",
-  "bg-violet-100 text-violet-700 border-violet-200",
-  "bg-emerald-100 text-emerald-700 border-emerald-200",
-  "bg-amber-100 text-amber-700 border-amber-200",
-  "bg-cyan-100 text-cyan-700 border-cyan-200",
-  "bg-orange-100 text-orange-700 border-orange-200",
-  "bg-lime-100 text-lime-700 border-lime-200",
-  "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200",
-  "bg-indigo-100 text-indigo-700 border-indigo-200",
-  "bg-teal-100 text-teal-700 border-teal-200",
-  "bg-pink-100 text-pink-700 border-pink-200",
-  "bg-purple-100 text-purple-700 border-purple-200",
-  "bg-blue-100 text-blue-700 border-blue-200",
-  "bg-yellow-100 text-yellow-800 border-yellow-200",
-  "bg-stone-100 text-stone-700 border-stone-200",
-];
-const CATEGORIES = PRODUCT_TYPES.map(
-  (id, index) => [id, categoryIcons[id], categoryColors[index % categoryColors.length]] as const,
-);
+import { Menu, X } from "lucide-react";
+import { PRODUCT_CATEGORIES, getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
 import { BrandLogo } from "@/components/BrandLogo";
 import heroBanner from "@/assets/1793464236433.jpg";
 import { LANGS, dict, useLang } from "@/lib/i18n";
@@ -105,6 +46,7 @@ function Index() {
     name: string;
     name_translations: unknown;
     product_type: string;
+    product_subcategory: string | null;
     price_millimes: number;
     sale_price_millimes: number | null;
     image_path: string | null;
@@ -132,7 +74,7 @@ function Index() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,name,name_translations,product_type,price_millimes,sale_price_millimes,image_path,store_id")
+        .select("id,name,name_translations,product_type,product_subcategory,price_millimes,sale_price_millimes,image_path,store_id")
         .eq("store_id", myStoreQuery.data!.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false })
@@ -171,7 +113,7 @@ function Index() {
     queryFn: async () => {
       const { data: products, error } = await supabase
         .from("products")
-        .select("id,name,name_translations,product_type,price_millimes,sale_price_millimes,image_path,store_id")
+        .select("id,name,name_translations,product_type,product_subcategory,price_millimes,sale_price_millimes,image_path,store_id")
         .eq("is_active", true)
         .not("store_id", "is", null)
         .order("created_at", { ascending: false })
@@ -217,8 +159,8 @@ function Index() {
         </Link>
         <div className="space-y-2 p-4">
           <p className="text-xs text-muted-foreground">
-            {t.marketplace[product.product_type as keyof typeof t.marketplace] ??
-              product.product_type}
+            {getProductTypeLabel(product.product_type, lang, t.marketplace as unknown as Record<string, string>)}
+            {getSubcategoryLabel(product.product_type, product.product_subcategory, lang) ? " · " + getSubcategoryLabel(product.product_type, product.product_subcategory, lang) : ""}
           </p>
           <Link
             to="/products/$id"
@@ -553,22 +495,28 @@ function Index() {
             <h2 id="cats" className="mb-5 text-center text-xl font-bold text-petrol">
               {t.marketplace.browseCategories}
             </h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-              {CATEGORIES.map(([id, Icon, colorClass]) => (
-                <Link
-                  key={id}
-                  to="/catalog"
-                  search={{ type: id }}
-                  className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-5 text-center text-sm font-semibold transition duration-200 hover:-translate-y-1 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral"
-                >
-                  <span
-                    className={`flex h-14 w-14 items-center justify-center rounded-2xl border ${colorClass}`}
+            <div className="grid grid-cols-5 gap-2 sm:gap-3">
+              {PRODUCT_CATEGORIES.map((category) => {
+                const Icon = category.icon;
+                return (
+                  <Link
+                    key={category.id}
+                    to="/catalog"
+                    search={{ type: category.id }}
+                    className="group overflow-hidden rounded-2xl border border-border bg-card text-start transition duration-200 hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral"
                   >
-                    <Icon className="h-7 w-7" aria-hidden />
-                  </span>
-                  <span>{t.marketplace[id]}</span>
-                </Link>
-              ))}
+                    <div className="relative aspect-[16/9] overflow-hidden bg-cream-light">
+                      <img src={category.image} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      <span className={`absolute bottom-3 end-3 flex h-11 w-11 items-center justify-center rounded-xl border border-white/70 bg-gradient-to-br shadow-sm ${category.color}`}>
+                        <Icon className="h-6 w-6" aria-hidden />
+                      </span>
+                    </div>
+                    <span className="block min-h-16 px-3 py-3 text-sm font-bold leading-6 text-petrol">
+                      {category.name[lang]}
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
             <div className="mt-8 text-center">
               <Link

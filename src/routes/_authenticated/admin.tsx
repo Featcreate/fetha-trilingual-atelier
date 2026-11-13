@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
+import { getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
 import { AuthShell, SubmitButton } from "@/components/AuthShell";
 import { adminRecheckIpayPayment } from "@/lib/shop.functions";
 import {
@@ -58,6 +59,7 @@ type ProductRow = {
   store_id: string | null;
   name: string;
   product_type: string;
+  product_subcategory: string | null;
   price_millimes: number;
   sale_price_millimes: number | null;
   is_active: boolean;
@@ -131,7 +133,7 @@ function AdminPage() {
       const { data, error } = await supabase
         .from("products")
         .select(
-          "id,store_id,name,product_type,price_millimes,sale_price_millimes,is_active,created_at",
+          "id,store_id,name,product_type,product_subcategory,price_millimes,sale_price_millimes,is_active,created_at",
         )
         .order("created_at", { ascending: false })
         .limit(100);
@@ -747,7 +749,16 @@ function AdminPage() {
                 <div className="min-w-0">
                   <p className="font-semibold">{product.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {product.product_type} ·{" "}
+                    {getProductTypeLabel(
+                      product.product_type,
+                      lang,
+                      t.marketplace as unknown as Record<string, string>,
+                    )}
+                    {getSubcategoryLabel(product.product_type, product.product_subcategory, lang)
+                      ? " · " +
+                        getSubcategoryLabel(product.product_type, product.product_subcategory, lang)
+                      : ""}{" "}
+                    ·{" "}
                     {product.sale_price_millimes ? (
                       <>
                         <span className="text-xs font-bold text-red-600">PROMO</span>

@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { TndEquivalents } from "@/components/TndEquivalents";
 import {
   PRODUCT_CATEGORIES,
+  getCategory,
   getProductTypeLabel,
   getSubcategoryLabel,
 } from "@/lib/product-categories";
@@ -54,7 +55,15 @@ function CatalogPage() {
   const m = t.marketplace;
   const { add, count, items } = useCart();
   const [search, setSearch] = useState("");
-  const [type, setType] = useState(Route.useSearch().type ?? "all");
+  const searchParams = Route.useSearch();
+  const [type, setType] = useState(searchParams.type ?? "all");
+  const [subcategory, setSubcategory] = useState("all");
+  const selectedCategory = getCategory(type);
+
+  useEffect(() => {
+    setType(searchParams.type ?? "all");
+    setSubcategory("all");
+  }, [searchParams.type]);
   const catalog = useQuery({
     queryKey: ["catalog"],
     queryFn: async () => {
@@ -83,6 +92,7 @@ function CatalogPage() {
       .filter((p) => {
         const store = p.store_id ? storeMap.get(p.store_id) : undefined;
         const matchesType = type === "all" || p.product_type === type;
+        const matchesSubcategory = subcategory === "all" || p.product_subcategory === subcategory;
         const matchesText =
           !q ||
           [
@@ -90,13 +100,13 @@ function CatalogPage() {
             localizedProductText(p.description, p.description_translations, lang),
             store?.name ?? "",
           ].some((v) => v.toLocaleLowerCase().includes(q));
-        return matchesType && matchesText && !!store;
+        return matchesType && matchesSubcategory && matchesText && !!store;
       })
       .flatMap((p) => {
         const store = p.store_id ? storeMap.get(p.store_id) : undefined;
         return store ? [{ ...p, store }] : [];
       });
-  }, [catalog.data, search, type, lang]);
+  }, [catalog.data, search, type, subcategory, lang]);
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.catalog} wide>
@@ -126,7 +136,10 @@ function CatalogPage() {
         />
         <select
           value={type}
-          onChange={(e) => setType(e.target.value)}
+          onChange={(e) => {
+            setType(e.target.value);
+            setSubcategory("all");
+          }}
           className="rounded-lg border border-input bg-background px-3 py-3"
         >
           <option value="all">{m.allTypes}</option>
@@ -137,6 +150,53 @@ function CatalogPage() {
           ))}
         </select>
       </div>
+      {selectedCategory && (
+        <section
+          className="mt-5 rounded-xl border border-border bg-card p-4"
+          aria-labelledby="subcategory-heading"
+        >
+          <h2 id="subcategory-heading" className="mb-3 text-base font-bold text-petrol">
+            {lang === "ar"
+              ? "التصنيفات الفرعية"
+              : lang === "en"
+                ? "Subcategories"
+                : "Sous-catégories"}
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setSubcategory("all")}
+              aria-pressed={subcategory === "all"}
+              className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                subcategory === "all"
+                  ? "border-petrol bg-petrol text-white"
+                  : "border-border bg-background hover:border-coral"
+              }`}
+            >
+              {lang === "ar"
+                ? "كل التصنيفات"
+                : lang === "en"
+                  ? "All subcategories"
+                  : "Toutes les sous-catégories"}
+            </button>
+            {selectedCategory.subcategories.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setSubcategory(item.id)}
+                aria-pressed={subcategory === item.id}
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                  subcategory === item.id
+                    ? "border-petrol bg-petrol text-white"
+                    : "border-border bg-background hover:border-coral"
+                }`}
+              >
+                {item.name[lang]}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
       {catalog.isPending ? (
         <p className="py-8 text-center">{m.loading}</p>
       ) : catalog.isError ? (

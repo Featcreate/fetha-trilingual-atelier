@@ -56,6 +56,8 @@ export const Route = createFileRoute("/_authenticated/seller")({
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
 const MAX_FILE_BYTES = MAX_PRODUCT_FILE_BYTES;
+const DEFAULT_CATEGORY_ID = PRODUCT_CATEGORIES[0]?.id ?? "graphisme";
+const DEFAULT_SUBCATEGORY_ID = PRODUCT_CATEGORIES[0]?.subcategories[0]?.id ?? "illustrations-dessins-logos";
 
 function slugify(value: string) {
   return value
@@ -94,8 +96,8 @@ function SellerPage() {
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
   const [confirmationBusy, setConfirmationBusy] = useState(false);
   const [payoutMethod, setPayoutMethod] = useState("other");
-  const [newCategoryId, setNewCategoryId] = useState(PRODUCT_CATEGORIES[0].id);
-  const [newSubcategoryId, setNewSubcategoryId] = useState(PRODUCT_CATEGORIES[0].subcategories[0].id);
+  const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
+  const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
   const [editCategoryId, setEditCategoryId] = useState("");
   const [editSubcategoryId, setEditSubcategoryId] = useState("");
 
@@ -460,8 +462,8 @@ function SellerPage() {
     form.reset();
     setCoverPreview(null);
     setGalleryPreviews([]);
-    setNewCategoryId(PRODUCT_CATEGORIES[0].id);
-    setNewSubcategoryId(PRODUCT_CATEGORIES[0].subcategories[0].id);
+    setNewCategoryId(DEFAULT_CATEGORY_ID);
+    setNewSubcategoryId(DEFAULT_SUBCATEGORY_ID);
     setNotice(translatedContent ? m.productCreated : m.translationSavedWithoutTranslation);
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
     await qc.invalidateQueries({ queryKey: ["catalog"] });

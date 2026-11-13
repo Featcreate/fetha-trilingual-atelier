@@ -115,8 +115,14 @@ function StorefrontPage() {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {getProductTypeLabel(p.product_type, lang, m as unknown as Record<string, string>)}
-                    {getSubcategoryLabel(p.product_type, p.product_subcategory, lang) ? " · " + getSubcategoryLabel(p.product_type, p.product_subcategory, lang) : ""}
+                    {getProductTypeLabel(
+                      p.product_type,
+                      lang,
+                      m as unknown as Record<string, string>,
+                    )}
+                    {getSubcategoryLabel(p.product_type, p.product_subcategory, lang)
+                      ? " · " + getSubcategoryLabel(p.product_type, p.product_subcategory, lang)
+                      : ""}
                   </p>
                   <Link
                     to="/products/$id"

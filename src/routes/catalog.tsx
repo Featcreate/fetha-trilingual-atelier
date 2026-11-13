@@ -5,7 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { TndEquivalents } from "@/components/TndEquivalents";
-import { PRODUCT_CATEGORIES, getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
+import {
+  PRODUCT_CATEGORIES,
+  getProductTypeLabel,
+  getSubcategoryLabel,
+} from "@/lib/product-categories";
 import { ProductPreview } from "@/components/ProductPreview";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
@@ -151,8 +155,14 @@ function CatalogPage() {
               <div className="space-y-3 p-4">
                 <div>
                   <p className="text-xs text-muted-foreground">
-                    {getProductTypeLabel(p.product_type, lang, m as unknown as Record<string, string>)}
-                    {getSubcategoryLabel(p.product_type, p.product_subcategory, lang) ? " · " + getSubcategoryLabel(p.product_type, p.product_subcategory, lang) : ""}
+                    {getProductTypeLabel(
+                      p.product_type,
+                      lang,
+                      m as unknown as Record<string, string>,
+                    )}
+                    {getSubcategoryLabel(p.product_type, p.product_subcategory, lang)
+                      ? " · " + getSubcategoryLabel(p.product_type, p.product_subcategory, lang)
+                      : ""}
                   </p>
                   <Link
                     to="/products/$id"

@@ -749,7 +749,16 @@ function AdminPage() {
                 <div className="min-w-0">
                   <p className="font-semibold">{product.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {getProductTypeLabel(product.product_type, lang, t.marketplace as unknown as Record<string, string>)}{getSubcategoryLabel(product.product_type, product.product_subcategory, lang) ? " · " + getSubcategoryLabel(product.product_type, product.product_subcategory, lang) : ""} ·{" "}
+                    {getProductTypeLabel(
+                      product.product_type,
+                      lang,
+                      t.marketplace as unknown as Record<string, string>,
+                    )}
+                    {getSubcategoryLabel(product.product_type, product.product_subcategory, lang)
+                      ? " · " +
+                        getSubcategoryLabel(product.product_type, product.product_subcategory, lang)
+                      : ""}{" "}
+                    ·{" "}
                     {product.sale_price_millimes ? (
                       <>
                         <span className="text-xs font-bold text-red-600">PROMO</span>

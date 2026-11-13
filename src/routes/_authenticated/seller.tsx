@@ -6,7 +6,12 @@ import type { Database } from "@/integrations/supabase/types";
 import { useLang } from "@/lib/i18n";
 import { formatTND, parseTNDToMillimes } from "@/lib/money";
 import { TndEquivalents } from "@/components/TndEquivalents";
-import { PRODUCT_CATEGORIES, getCategory, isValidProductCategory, type ProductType } from "@/lib/product-categories";
+import {
+  PRODUCT_CATEGORIES,
+  getCategory,
+  isValidProductCategory,
+  type ProductType,
+} from "@/lib/product-categories";
 import {
   IMAGE_ACCEPT,
   validPreviewImage,
@@ -816,14 +821,27 @@ function SellerPage() {
                     className="w-full rounded-lg border border-input bg-background px-3 py-2"
                   >
                     <option value="">
-                      {lang === "ar" ? "اختر الفئة" : lang === "en" ? "Choose a category" : "Choisir une catégorie"}
+                      {lang === "ar"
+                        ? "اختر الفئة"
+                        : lang === "en"
+                          ? "Choose a category"
+                          : "Choisir une catégorie"}
                     </option>
                     {PRODUCT_CATEGORIES.map((category) => (
-                      <option key={category.id} value={category.id}>{category.name[lang]}</option>
+                      <option key={category.id} value={category.id}>
+                        {category.name[lang]}
+                      </option>
                     ))}
                   </select>
-                  <label htmlFor="product_subcategory" className="mb-1 mt-3 block text-sm font-medium">
-                    {lang === "ar" ? "التصنيف الفرعي" : lang === "en" ? "Subcategory" : "Sous-catégorie"}
+                  <label
+                    htmlFor="product_subcategory"
+                    className="mb-1 mt-3 block text-sm font-medium"
+                  >
+                    {lang === "ar"
+                      ? "التصنيف الفرعي"
+                      : lang === "en"
+                        ? "Subcategory"
+                        : "Sous-catégorie"}
                   </label>
                   <select
                     id="product_subcategory"
@@ -834,10 +852,16 @@ function SellerPage() {
                     className="w-full rounded-lg border border-input bg-background px-3 py-2"
                   >
                     <option value="">
-                      {lang === "ar" ? "اختر التصنيف الفرعي" : lang === "en" ? "Choose a subcategory" : "Choisir une sous-catégorie"}
+                      {lang === "ar"
+                        ? "اختر التصنيف الفرعي"
+                        : lang === "en"
+                          ? "Choose a subcategory"
+                          : "Choisir une sous-catégorie"}
                     </option>
                     {(getCategory(newCategoryId)?.subcategories ?? []).map((subcategory) => (
-                      <option key={subcategory.id} value={subcategory.id}>{subcategory.name[lang]}</option>
+                      <option key={subcategory.id} value={subcategory.id}>
+                        {subcategory.name[lang]}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -1009,13 +1033,28 @@ function SellerPage() {
                           }}
                           className="w-full rounded-lg border border-input bg-background px-3 py-2"
                         >
-                          <option value="">{lang === "ar" ? "اختر الفئة" : lang === "en" ? "Choose a category" : "Choisir une catégorie"}</option>
+                          <option value="">
+                            {lang === "ar"
+                              ? "اختر الفئة"
+                              : lang === "en"
+                                ? "Choose a category"
+                                : "Choisir une catégorie"}
+                          </option>
                           {PRODUCT_CATEGORIES.map((category) => (
-                            <option key={category.id} value={category.id}>{category.name[lang]}</option>
+                            <option key={category.id} value={category.id}>
+                              {category.name[lang]}
+                            </option>
                           ))}
                         </select>
-                        <label className="block text-sm font-medium" htmlFor={`edit_subcategory_${product.id}`}>
-                          {lang === "ar" ? "التصنيف الفرعي" : lang === "en" ? "Subcategory" : "Sous-catégorie"}
+                        <label
+                          className="block text-sm font-medium"
+                          htmlFor={`edit_subcategory_${product.id}`}
+                        >
+                          {lang === "ar"
+                            ? "التصنيف الفرعي"
+                            : lang === "en"
+                              ? "Subcategory"
+                              : "Sous-catégorie"}
                         </label>
                         <select
                           id={`edit_subcategory_${product.id}`}
@@ -1025,9 +1064,17 @@ function SellerPage() {
                           onChange={(event) => setEditSubcategoryId(event.currentTarget.value)}
                           className="w-full rounded-lg border border-input bg-background px-3 py-2"
                         >
-                          <option value="">{lang === "ar" ? "اختر التصنيف الفرعي" : lang === "en" ? "Choose a subcategory" : "Choisir une sous-catégorie"}</option>
+                          <option value="">
+                            {lang === "ar"
+                              ? "اختر التصنيف الفرعي"
+                              : lang === "en"
+                                ? "Choose a subcategory"
+                                : "Choisir une sous-catégorie"}
+                          </option>
                           {(getCategory(editCategoryId)?.subcategories ?? []).map((subcategory) => (
-                            <option key={subcategory.id} value={subcategory.id}>{subcategory.name[lang]}</option>
+                            <option key={subcategory.id} value={subcategory.id}>
+                              {subcategory.name[lang]}
+                            </option>
                           ))}
                         </select>
                         <SellerImageFields product={product} labels={m} />
@@ -1124,7 +1171,9 @@ function SellerPage() {
                             type="button"
                             onClick={() => {
                               setEditing(product.id);
-                              setEditCategoryId(getCategory(product.product_type) ? product.product_type : "");
+                              setEditCategoryId(
+                                getCategory(product.product_type) ? product.product_type : "",
+                              );
                               setEditSubcategoryId(product.product_subcategory ?? "");
                             }}
                             className="rounded-full border border-border px-3 py-2 text-xs font-semibold"

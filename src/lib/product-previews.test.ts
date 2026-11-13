@@ -20,27 +20,50 @@ describe("preview image rules", () => {
   });
   it("scopes immutable image names to store, product and media kind", () => {
     const id = "11111111-1111-4111-8111-111111111111";
-    expect(previewObjectPath(id, id, "gallery", id, "image/png")).toBe(`${id}/${id}/gallery/${id}.png`);
+    expect(previewObjectPath(id, id, "gallery", id, "image/png")).toBe(
+      `${id}/${id}/gallery/${id}.png`,
+    );
     expect(() => previewObjectPath("../other", id, "cover", id, "image/png")).toThrow();
   });
   it("tolerates only the absent gallery relation, not other errors", () => {
-    expect(isMissingGalleryTable({ code: "42P01", message: 'relation "public.product_images" does not exist' })).toBe(true);
-    expect(isMissingGalleryTable({ code: "PGRST205", message: "Could not find the table 'public.product_images' in the schema cache" })).toBe(true);
-    expect(isMissingGalleryTable({ code: "42501", message: "permission denied for product_images" })).toBe(false);
-    expect(isMissingGalleryTable({ code: "42P01", message: "relation stores missing" })).toBe(false);
+    expect(
+      isMissingGalleryTable({
+        code: "42P01",
+        message: 'relation "public.product_images" does not exist',
+      }),
+    ).toBe(true);
+    expect(
+      isMissingGalleryTable({
+        code: "PGRST205",
+        message: "Could not find the table 'public.product_images' in the schema cache",
+      }),
+    ).toBe(true);
+    expect(
+      isMissingGalleryTable({ code: "42501", message: "permission denied for product_images" }),
+    ).toBe(false);
+    expect(isMissingGalleryTable({ code: "42P01", message: "relation stores missing" })).toBe(
+      false,
+    );
   });
   it("exposes the ten approved top-level product categories", () => {
     expect([...PRODUCT_TYPES]).toEqual([
-      "graphisme", "modeles", "livres-numeriques", "ressources-educatives",
-      "agendas-organisation", "logiciels-applications", "contenus-audio-visuels",
-      "formations-cours", "creation-fabrication-numerique", "packs-bundles-numeriques",
+      "graphisme",
+      "modeles",
+      "livres-numeriques",
+      "ressources-educatives",
+      "agendas-organisation",
+      "logiciels-applications",
+      "contenus-audio-visuels",
+      "formations-cours",
+      "creation-fabrication-numerique",
+      "packs-bundles-numeriques",
     ]);
   });
   it("defines the approved ten categories and 54 subcategories", () => {
     expect(PRODUCT_TYPES).toHaveLength(10);
-    expect(
-      PRODUCT_TYPES.every((id) => (getCategory(id)?.subcategories.length ?? 0) > 0),
-    ).toBe(true);
+    expect(PRODUCT_TYPES.every((id) => (getCategory(id)?.subcategories.length ?? 0) > 0)).toBe(
+      true,
+    );
     expect(
       PRODUCT_TYPES.reduce((count, id) => count + (getCategory(id)?.subcategories.length ?? 0), 0),
     ).toBe(54);

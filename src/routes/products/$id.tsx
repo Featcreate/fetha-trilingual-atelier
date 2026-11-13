@@ -217,8 +217,23 @@ function ProductPage() {
             );
           })()}
           <p className="mt-6 text-sm text-muted-foreground">
-            {getProductTypeLabel(query.data.product.product_type, lang, m as unknown as Record<string, string>)}
-            {getSubcategoryLabel(query.data.product.product_type, query.data.product.product_subcategory, lang) ? " · " + getSubcategoryLabel(query.data.product.product_type, query.data.product.product_subcategory, lang) : ""}
+            {getProductTypeLabel(
+              query.data.product.product_type,
+              lang,
+              m as unknown as Record<string, string>,
+            )}
+            {getSubcategoryLabel(
+              query.data.product.product_type,
+              query.data.product.product_subcategory,
+              lang,
+            )
+              ? " · " +
+                getSubcategoryLabel(
+                  query.data.product.product_type,
+                  query.data.product.product_subcategory,
+                  lang,
+                )
+              : ""}
           </p>
           <h1 className="mt-2 text-2xl font-extrabold">
             {localizedProductText(

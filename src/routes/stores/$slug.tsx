@@ -7,6 +7,7 @@ import { TndEquivalents } from "@/components/TndEquivalents";
 import { AuthShell } from "@/components/AuthShell";
 import { localizedProductText } from "@/lib/product-translations";
 import { ProductPreview } from "@/components/ProductPreview";
+import { getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
 
 export const Route = createFileRoute("/stores/$slug")({
   head: () => ({ meta: [{ title: "Boutique — Algorea Bazaar" }] }),
@@ -31,7 +32,7 @@ function StorefrontPage() {
       const { data: products, error: productError } = await supabase
         .from("products")
         .select(
-          "id,name,description,name_translations,description_translations,price_millimes,sale_price_millimes,product_type,image_path",
+          "id,name,description,name_translations,description_translations,price_millimes,sale_price_millimes,product_type,product_subcategory,image_path",
         )
         .eq("store_id", store.id)
         .eq("is_active", true)
@@ -114,7 +115,8 @@ function StorefrontPage() {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {m[p.product_type as keyof typeof m] ?? p.product_type}
+                    {getProductTypeLabel(p.product_type, lang, m as unknown as Record<string, string>)}
+                    {getSubcategoryLabel(p.product_type, p.product_subcategory, lang) ? " · " + getSubcategoryLabel(p.product_type, p.product_subcategory, lang) : ""}
                   </p>
                   <Link
                     to="/products/$id"

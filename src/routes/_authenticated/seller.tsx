@@ -55,7 +55,6 @@ export const Route = createFileRoute("/_authenticated/seller")({
 
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
-const productTypes = PRODUCT_CATEGORIES.map((category) => category.id);
 const MAX_FILE_BYTES = MAX_PRODUCT_FILE_BYTES;
 
 function slugify(value: string) {

@@ -23,7 +23,11 @@ describe("preview image rules", () => {
     expect(isMissingGalleryTable({ code: "42501", message: "permission denied for product_images" })).toBe(false);
     expect(isMissingGalleryTable({ code: "42P01", message: "relation stores missing" })).toBe(false);
   });
-  it("preserves exactly the sixteen existing type keys", () => {
-    expect([...PRODUCT_TYPES]).toEqual(["ebook", "pdf", "template", "educational", "bundle", "software", "app", "printable", "planner", "course", "worksheets", "flashcards", "audio", "video", "graphics", "other"]);
+  it("exposes the ten approved top-level product categories", () => {
+    expect([...PRODUCT_TYPES]).toEqual([
+      "graphisme", "modeles", "livres-numeriques", "ressources-educatives",
+      "agendas-organisation", "logiciels-applications", "contenus-audio-visuels",
+      "formations-cours", "creation-fabrication-numerique", "packs-bundles-numeriques",
+    ]);
   });
 });

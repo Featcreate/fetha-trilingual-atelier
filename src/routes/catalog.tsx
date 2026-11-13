@@ -127,7 +127,16 @@ function CatalogPage() {
           </Link>
         </div>
       </div>
-      <section className="mt-2" aria-label={lang === "ar" ? "فئات المنتجات" : lang === "en" ? "Product categories" : "Catégories de produits"}>
+      <section
+        className="mt-2"
+        aria-label={
+          lang === "ar"
+            ? "فئات المنتجات"
+            : lang === "en"
+              ? "Product categories"
+              : "Catégories de produits"
+        }
+      >
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
           {PRODUCT_CATEGORIES.map((category) => {
             const Icon = category.icon;
@@ -141,8 +150,15 @@ function CatalogPage() {
                 className={`group overflow-hidden rounded-2xl border bg-card text-start transition duration-200 hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral ${active ? "border-coral ring-2 ring-coral/30" : "border-border"}`}
               >
                 <div className="relative aspect-[16/9] overflow-hidden bg-cream-light">
-                  <img src={category.image} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                  <span className={`absolute bottom-3 end-3 flex h-11 w-11 items-center justify-center rounded-xl border border-white/70 bg-gradient-to-br shadow-sm ${category.color}`}>
+                  <img
+                    src={category.image}
+                    alt=""
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <span
+                    className={`absolute bottom-3 end-3 flex h-11 w-11 items-center justify-center rounded-xl border border-white/70 bg-gradient-to-br shadow-sm ${category.color}`}
+                  >
                     <Icon className="h-6 w-6" aria-hidden />
                   </span>
                 </div>

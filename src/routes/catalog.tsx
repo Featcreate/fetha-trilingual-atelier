@@ -157,7 +157,11 @@ function CatalogPage() {
           aria-labelledby="subcategory-heading"
         >
           <h2 id="subcategory-heading" className="mb-3 text-base font-bold text-petrol">
-            {lang === "ar" ? "التصنيفات الفرعية" : lang === "en" ? "Subcategories" : "Sous-catégories"}
+            {lang === "ar"
+              ? "التصنيفات الفرعية"
+              : lang === "en"
+                ? "Subcategories"
+                : "Sous-catégories"}
           </h2>
           <div className="flex flex-wrap gap-2">
             <button
@@ -170,7 +174,11 @@ function CatalogPage() {
                   : "border-border bg-background hover:border-coral"
               }`}
             >
-              {lang === "ar" ? "كل التصنيفات" : lang === "en" ? "All subcategories" : "Toutes les sous-catégories"}
+              {lang === "ar"
+                ? "كل التصنيفات"
+                : lang === "en"
+                  ? "All subcategories"
+                  : "Toutes les sous-catégories"}
             </button>
             {selectedCategory.subcategories.map((item) => (
               <button

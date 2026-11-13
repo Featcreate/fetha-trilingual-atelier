@@ -664,6 +664,7 @@ export type Database = {
           price_millimes: number
           sale_price_millimes: number | null
           product_type: string
+          product_subcategory: string | null
           store_id: string | null
           updated_at: string
         }
@@ -680,6 +681,7 @@ export type Database = {
           price_millimes: number
           sale_price_millimes?: number | null
           product_type?: string
+          product_subcategory?: string | null
           store_id?: string | null
           updated_at?: string
         }
@@ -696,6 +698,7 @@ export type Database = {
           price_millimes?: number
           sale_price_millimes?: number | null
           product_type?: string
+          product_subcategory?: string | null
           store_id?: string | null
           updated_at?: string
         }

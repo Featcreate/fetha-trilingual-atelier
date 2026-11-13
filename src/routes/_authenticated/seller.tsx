@@ -6,7 +6,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { useLang } from "@/lib/i18n";
 import { formatTND, parseTNDToMillimes } from "@/lib/money";
 import { TndEquivalents } from "@/components/TndEquivalents";
-import { PRODUCT_TYPES, type ProductType } from "@/lib/product-types";
+import { PRODUCT_CATEGORIES, getCategory, isValidProductCategory, type ProductType } from "@/lib/product-categories";
 import {
   IMAGE_ACCEPT,
   validPreviewImage,
@@ -55,8 +55,10 @@ export const Route = createFileRoute("/_authenticated/seller")({
 
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
-const productTypes = PRODUCT_TYPES;
 const MAX_FILE_BYTES = MAX_PRODUCT_FILE_BYTES;
+const DEFAULT_CATEGORY = PRODUCT_CATEGORIES[0]!;
+const DEFAULT_CATEGORY_ID = DEFAULT_CATEGORY.id;
+const DEFAULT_SUBCATEGORY_ID = DEFAULT_CATEGORY.subcategories[0]!.id;
 
 function slugify(value: string) {
   return value
@@ -95,6 +97,10 @@ function SellerPage() {
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
   const [confirmationBusy, setConfirmationBusy] = useState(false);
   const [payoutMethod, setPayoutMethod] = useState("other");
+  const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
+  const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
+  const [editCategoryId, setEditCategoryId] = useState("");
+  const [editSubcategoryId, setEditSubcategoryId] = useState("");
 
   const storeQuery = useQuery({
     queryKey: ["seller-store", user.id],
@@ -373,7 +379,8 @@ function SellerPage() {
     const price = parseTNDToMillimes(String(values.get("price") ?? ""));
     const salePriceInput = String(values.get("sale_price") ?? "").trim();
     const salePrice = salePriceInput ? parseTNDToMillimes(salePriceInput) : null;
-    const productType = String(values.get("product_type") ?? "other") as ProductType;
+    const productType = String(values.get("product_type") ?? "");
+    const productSubcategory = String(values.get("product_subcategory") ?? "");
     const files = values
       .getAll("digital_files")
       .filter((value): value is File => value instanceof File && value.size > 0);
@@ -392,7 +399,7 @@ function SellerPage() {
     ) {
       return setNotice(m.invalidFile);
     }
-    if (!productTypes.includes(productType)) return setNotice(m.error);
+    if (!isValidProductCategory(productType, productSubcategory)) return setNotice(m.error);
     setBusy(true);
     setNotice("");
     let translatedContent: Awaited<ReturnType<typeof translateProductContent>> | null = null;
@@ -411,7 +418,8 @@ function SellerPage() {
         description_translations: translatedContent?.descriptionTranslations ?? {},
         price_millimes: price,
         sale_price_millimes: salePrice,
-        product_type: productType,
+        product_type: productType as ProductType,
+        product_subcategory: productSubcategory,
         is_active: false,
       })
       .select("id")
@@ -455,6 +463,8 @@ function SellerPage() {
     form.reset();
     setCoverPreview(null);
     setGalleryPreviews([]);
+    setNewCategoryId(DEFAULT_CATEGORY_ID);
+    setNewSubcategoryId(DEFAULT_SUBCATEGORY_ID);
     setNotice(translatedContent ? m.productCreated : m.translationSavedWithoutTranslation);
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
     await qc.invalidateQueries({ queryKey: ["catalog"] });
@@ -554,10 +564,9 @@ function SellerPage() {
     if (!name || !description) return setNotice(m.productRequired);
     if (!price) return setNotice(m.invalidPrice);
     if (salePriceInput && (!salePrice || salePrice >= price)) return setNotice(m.invalidSalePrice);
-    const productType = String(
-      f.get(`edit_type_${product.id}`) ?? product.product_type,
-    ) as ProductType;
-    if (!productTypes.includes(productType)) return setNotice(m.error);
+    const productType = String(f.get(`edit_type_${product.id}`) ?? "");
+    const productSubcategory = String(f.get(`edit_subcategory_${product.id}`) ?? "");
+    if (!isValidProductCategory(productType, productSubcategory)) return setNotice(m.error);
     const coverValue = f.get(`edit_cover_${product.id}`);
     const cover = coverValue instanceof File && coverValue.size > 0 ? coverValue : null;
     const gallery = f
@@ -584,6 +593,7 @@ function SellerPage() {
           price_millimes: price,
           sale_price_millimes: salePrice,
           product_type: productType,
+          product_subcategory: productSubcategory,
         })
         .eq("id", product.id)
         .eq("store_id", store.id);
@@ -796,12 +806,38 @@ function SellerPage() {
                   <select
                     id="product_type"
                     name="product_type"
+                    required
+                    value={newCategoryId}
+                    onChange={(event) => {
+                      const nextId = event.currentTarget.value;
+                      setNewCategoryId(nextId);
+                      setNewSubcategoryId("");
+                    }}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2"
                   >
-                    {productTypes.map((type) => (
-                      <option key={type} value={type}>
-                        {m[type]}
-                      </option>
+                    <option value="">
+                      {lang === "ar" ? "اختر الفئة" : lang === "en" ? "Choose a category" : "Choisir une catégorie"}
+                    </option>
+                    {PRODUCT_CATEGORIES.map((category) => (
+                      <option key={category.id} value={category.id}>{category.name[lang]}</option>
+                    ))}
+                  </select>
+                  <label htmlFor="product_subcategory" className="mb-1 mt-3 block text-sm font-medium">
+                    {lang === "ar" ? "التصنيف الفرعي" : lang === "en" ? "Subcategory" : "Sous-catégorie"}
+                  </label>
+                  <select
+                    id="product_subcategory"
+                    name="product_subcategory"
+                    required
+                    value={newSubcategoryId}
+                    onChange={(event) => setNewSubcategoryId(event.currentTarget.value)}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2"
+                  >
+                    <option value="">
+                      {lang === "ar" ? "اختر التصنيف الفرعي" : lang === "en" ? "Choose a subcategory" : "Choisir une sous-catégorie"}
+                    </option>
+                    {(getCategory(newCategoryId)?.subcategories ?? []).map((subcategory) => (
+                      <option key={subcategory.id} value={subcategory.id}>{subcategory.name[lang]}</option>
                     ))}
                   </select>
                 </div>
@@ -964,13 +1000,34 @@ function SellerPage() {
                         <select
                           id={`edit_type_${product.id}`}
                           name={`edit_type_${product.id}`}
-                          defaultValue={product.product_type}
+                          required
+                          value={editCategoryId}
+                          onChange={(event) => {
+                            const nextId = event.currentTarget.value;
+                            setEditCategoryId(nextId);
+                            setEditSubcategoryId("");
+                          }}
                           className="w-full rounded-lg border border-input bg-background px-3 py-2"
                         >
-                          {productTypes.map((type) => (
-                            <option key={type} value={type}>
-                              {m[type]}
-                            </option>
+                          <option value="">{lang === "ar" ? "اختر الفئة" : lang === "en" ? "Choose a category" : "Choisir une catégorie"}</option>
+                          {PRODUCT_CATEGORIES.map((category) => (
+                            <option key={category.id} value={category.id}>{category.name[lang]}</option>
+                          ))}
+                        </select>
+                        <label className="block text-sm font-medium" htmlFor={`edit_subcategory_${product.id}`}>
+                          {lang === "ar" ? "التصنيف الفرعي" : lang === "en" ? "Subcategory" : "Sous-catégorie"}
+                        </label>
+                        <select
+                          id={`edit_subcategory_${product.id}`}
+                          name={`edit_subcategory_${product.id}`}
+                          required
+                          value={editSubcategoryId}
+                          onChange={(event) => setEditSubcategoryId(event.currentTarget.value)}
+                          className="w-full rounded-lg border border-input bg-background px-3 py-2"
+                        >
+                          <option value="">{lang === "ar" ? "اختر التصنيف الفرعي" : lang === "en" ? "Choose a subcategory" : "Choisir une sous-catégorie"}</option>
+                          {(getCategory(editCategoryId)?.subcategories ?? []).map((subcategory) => (
+                            <option key={subcategory.id} value={subcategory.id}>{subcategory.name[lang]}</option>
                           ))}
                         </select>
                         <SellerImageFields product={product} labels={m} />
@@ -1065,7 +1122,11 @@ function SellerPage() {
                           </label>
                           <button
                             type="button"
-                            onClick={() => setEditing(product.id)}
+                            onClick={() => {
+                              setEditing(product.id);
+                              setEditCategoryId(getCategory(product.product_type) ? product.product_type : "");
+                              setEditSubcategoryId(product.product_subcategory ?? "");
+                            }}
                             className="rounded-full border border-border px-3 py-2 text-xs font-semibold"
                           >
                             {m.editProduct}

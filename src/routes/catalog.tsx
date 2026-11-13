@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { TndEquivalents } from "@/components/TndEquivalents";
-import { PRODUCT_TYPES } from "@/lib/product-types";
+import { PRODUCT_CATEGORIES, getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
 import { ProductPreview } from "@/components/ProductPreview";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
@@ -37,6 +37,7 @@ type Product = {
   price_millimes: number;
   sale_price_millimes: number | null;
   product_type: string;
+  product_subcategory: string | null;
   store_id: string | null;
   image_path: string | null;
   name_translations: unknown;
@@ -56,7 +57,7 @@ function CatalogPage() {
       const { data: products, error } = await supabase
         .from("products")
         .select(
-          "id,name,description,name_translations,description_translations,price_millimes,sale_price_millimes,product_type,store_id,image_path",
+          "id,name,description,name_translations,description_translations,price_millimes,sale_price_millimes,product_type,product_subcategory,store_id,image_path",
         )
         .eq("is_active", true)
         .order("created_at", { ascending: false });
@@ -125,9 +126,9 @@ function CatalogPage() {
           className="rounded-lg border border-input bg-background px-3 py-3"
         >
           <option value="all">{m.allTypes}</option>
-          {PRODUCT_TYPES.map((v) => (
-            <option key={v} value={v}>
-              {m[v as keyof typeof m]}
+          {PRODUCT_CATEGORIES.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name[lang]}
             </option>
           ))}
         </select>
@@ -150,7 +151,8 @@ function CatalogPage() {
               <div className="space-y-3 p-4">
                 <div>
                   <p className="text-xs text-muted-foreground">
-                    {m[p.product_type as keyof typeof m] ?? p.product_type}
+                    {getProductTypeLabel(p.product_type, lang, m as unknown as Record<string, string>)}
+                    {getSubcategoryLabel(p.product_type, p.product_subcategory, lang) ? " · " + getSubcategoryLabel(p.product_type, p.product_subcategory, lang) : ""}
                   </p>
                   <Link
                     to="/products/$id"

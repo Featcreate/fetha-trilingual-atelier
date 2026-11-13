@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { isMissingGalleryTable, previewObjectPath, validPreviewImage } from "./product-previews";
 import { PRODUCT_TYPES } from "./product-types";
+import {
+  getCategory,
+  getProductTypeLabel,
+  getSubcategoryLabel,
+  isValidProductCategory,
+} from "./product-categories";
 
 describe("preview image rules", () => {
   it("accepts the exact 10 MiB limit and rejects larger files", () => {
@@ -23,7 +29,30 @@ describe("preview image rules", () => {
     expect(isMissingGalleryTable({ code: "42501", message: "permission denied for product_images" })).toBe(false);
     expect(isMissingGalleryTable({ code: "42P01", message: "relation stores missing" })).toBe(false);
   });
-  it("preserves exactly the sixteen existing type keys", () => {
-    expect([...PRODUCT_TYPES]).toEqual(["ebook", "pdf", "template", "educational", "bundle", "software", "app", "printable", "planner", "course", "worksheets", "flashcards", "audio", "video", "graphics", "other"]);
+  it("exposes the ten approved top-level product categories", () => {
+    expect([...PRODUCT_TYPES]).toEqual([
+      "graphisme", "modeles", "livres-numeriques", "ressources-educatives",
+      "agendas-organisation", "logiciels-applications", "contenus-audio-visuels",
+      "formations-cours", "creation-fabrication-numerique", "packs-bundles-numeriques",
+    ]);
+  });
+  it("defines the approved ten categories and 54 subcategories", () => {
+    expect(PRODUCT_TYPES).toHaveLength(10);
+    expect(
+      PRODUCT_TYPES.every((id) => (getCategory(id)?.subcategories.length ?? 0) > 0),
+    ).toBe(true);
+    expect(
+      PRODUCT_TYPES.reduce((count, id) => count + (getCategory(id)?.subcategories.length ?? 0), 0),
+    ).toBe(54);
+  });
+  it("validates a subcategory only under its own parent category", () => {
+    expect(isValidProductCategory("ressources-educatives", "fiches-exercices")).toBe(true);
+    expect(isValidProductCategory("graphisme", "fiches-exercices")).toBe(false);
+    expect(isValidProductCategory("ressources-educatives", "")).toBe(false);
+  });
+  it("keeps ambiguous legacy types displayable without assigning a new category", () => {
+    expect(getProductTypeLabel("pdf", "fr", { pdf: "PDF" })).toBe("PDF");
+    expect(getSubcategoryLabel("pdf", null, "fr")).toBe("");
+    expect(getCategory("pdf")).toBeNull();
   });
 });

@@ -81,6 +81,7 @@ type PayoutRow = {
   store_id: string;
   status: string;
   seller_amount_millimes: number;
+  external_fees_millimes: number;
   gross_millimes: number;
   commission_millimes: number;
   discount_millimes: number;
@@ -245,7 +246,7 @@ function AdminPage() {
       const { data, error } = await supabase
         .from("seller_payouts")
         .select(
-          "id,store_id,status,seller_amount_millimes,gross_millimes,commission_millimes,discount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason",
+          "id,store_id,status,seller_amount_millimes,external_fees_millimes,gross_millimes,commission_millimes,discount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason",
         )
         .order("created_at", { ascending: false })
         .limit(100);
@@ -979,6 +980,9 @@ function AdminPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {a.payoutCommission}: {formatTND(payout.commission_millimes)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {lang === "ar" ? "رسوم التحويل" : lang === "en" ? "Transfer fees" : "Frais de transfert"}: {formatTND(payout.external_fees_millimes)}
                     </p>
                   </div>
                 </div>

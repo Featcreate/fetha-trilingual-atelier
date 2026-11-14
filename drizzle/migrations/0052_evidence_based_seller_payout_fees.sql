@@ -90,6 +90,7 @@ BEGIN
     WHERE x.fee_entry_id = f.id
   ) a ON true
   WHERE f.store_id = _store_id
+    AND f.fee_category = 'seller_transfer'
     AND f.amount_millimes > coalesce(a.allocated, 0);
 
   IF _external_fees > _seller_gross THEN
@@ -148,6 +149,7 @@ BEGIN
       ), 0) AS remaining
     FROM public.seller_external_fee_entries f
     WHERE f.store_id = _store_id
+      AND f.fee_category = 'seller_transfer'
       AND f.amount_millimes > coalesce((
         SELECT sum(a.amount_millimes)
         FROM public.seller_payout_fee_allocations a

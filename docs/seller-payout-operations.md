@@ -12,11 +12,11 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 - The seller's name, account identifier, provider/bank and optional routing notes are stored as private payout details. Passwords, PINs, OTPs and API secrets must never be collected.
 - Each payout batch snapshots the selected destination. Editing the seller's preference affects future batches only; it cannot redirect an existing batch.
 - During Phase 1, seller payables and transfers are denominated in TND.
-- The platform operator transfers the seller's recorded payable from the platform's funds to the seller's own account. The seller is responsible for any external fees their chosen receiving provider or bank may charge. Algorea Bazaar does not cover, record, allocate, deduct, reimburse, or display these receiving/withdrawal fees in the seller payout statement. The payout amount is calculated from verified seller proceeds after platform commission only.
+- The platform operator transfers the seller's recorded payable from the platform's funds to the seller's selected destination. Only actual transfer fees supported by a statement or transaction reference are recorded, allocated, and deducted separately from platform commission; tariff estimates, assumed VAT, and unsupported beneficiary-side fees are not deducted.
 - An administrator records the transfer reference and marks the payout paid only after the real transfer has succeeded.
 - The admin confirmation action is an accounting record only; it does not itself send money.
 - Every payout batch has a unique idempotency key. Each verified sale ledger entry can belong to at most one payout batch. Failed transfers remain recorded and must not be silently released for duplicate payment.
-- Sellers can view their payout history, transfer references, receiving method, and the amount transferred. External receiving/withdrawal fees are not part of the platform payout record or seller statement. Administrators can view the destination snapshot needed to complete each manual transfer.
+- Sellers can view their payout history, transfer references, the payable before actual transfer fees, the evidenced fee total, and the net amount transferred. Administrators can view the destination snapshot needed to complete each manual transfer.
 
 ## Provider restrictions
 
@@ -34,7 +34,7 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 - Calculate commission and seller payable from the canonical TND accounting amount. Informational exchange-rate displays are not accounting evidence.
 - Reconcile provider fees and FX differences separately. Allocate all verified external fees attributable to the sale to the seller; never hide them inside the 5% commission.
 - For shared order-level fees, allocate proportionally to each seller's attributable paid order amount unless provider evidence identifies the seller-specific amount.
-- Calculate seller payables from verified sales after the applicable platform commission. The seller payout statement shows sales, discounts where applicable, platform commission, seller payable, payout status, and transfer reference; it does not show external receiving/withdrawal fees.
+- Calculate seller payables from verified sales after the applicable platform commission. Keep buyer-collection and order-processing fees distinct from seller-transfer fees; only evidenced `seller_transfer` entries are deducted at payout. The seller payout statement shows the payable before transfer fees, evidenced transfer fees, net payout, status, and transfer reference.
 
 ## Payment activation safety
 
@@ -45,7 +45,7 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 ## Weekly operating procedure
 
 1. Reconcile verified paid sales and seller ledger entries for the weekly period.
-2. Prepare the weekly payout batch. The platform calculates the seller's payable after platform commission and deducts only actual, evidence-backed transfer fees recorded against the seller. UIB tariff values are internal reference values, not proof of a fee charged.
+2. Prepare the weekly payout batch. The platform calculates the seller's payable after platform commission and deducts only actual, evidence-backed `seller_transfer` fees recorded against the seller. UIB tariff values are internal reference values, not proof of a fee charged.
 3. Review gross sales, discounts, platform commission, evidenced transfer fees, and final net seller payable.
 4. Transfer the displayed payable from the platform's own funds to the seller's saved receiving destination.
 5. After the transfer succeeds, record the transfer reference and confirm the payout. If the transfer fails, record the reason and retry the same payout; do not create a second batch for the same sales.
@@ -56,7 +56,7 @@ Migrations 0022, 0023 and 0024 have been applied to the original Supabase projec
 
 ## Seller destination and batch snapshots
 
-Migration 0030 introduced seller-selected receiving destinations independently from the weekly manual settlement rail. Migration 0031 superseded the earlier fee-aware payout calculation: new payout batches set the legacy `external_fees_millimes` field to zero and transfer the full verified seller payable after platform commission. Receiving/withdrawal fees charged by the seller's own provider or bank remain outside platform accounting and are not shown or deducted. Migration 0038 adds Konnect to the supported receiving destinations while retaining the seller/admin RLS boundary and immutable payout destination snapshots. Migration 0038 is a source change only until separately reviewed and applied; it does not initiate payments or transfers.
+Migration 0030 introduced seller-selected receiving destinations independently from the weekly manual settlement rail. Migration 0031 temporarily superseded the earlier fee-aware payout calculation; migration 0052 restores deductions only for actual, evidence-backed `seller_transfer` fees. Migration 0038 adds Konnect to the supported receiving destinations while retaining the seller/admin RLS boundary and immutable payout destination snapshots. Migration 0038 is a source change only until separately reviewed and applied; it does not initiate payments or transfers.
 
 ## Evidence-based payout fees and minimum
 

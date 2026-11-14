@@ -41,6 +41,9 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Preview Prettier output for iPay diagnostics
+        run: bunx prettier src/lib/admin-security.functions.ts src/routes/_authenticated/admin-ipay-check.tsx
+
       - name: Check formatting
         shell: bash
         run: |

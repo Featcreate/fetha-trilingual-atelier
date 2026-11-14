@@ -324,10 +324,18 @@ function CartPage() {
             <p className="mt-2 text-xs text-muted-foreground">{t.limit}</p>
             <button
               type="button"
-              onClick={() => paymentMutation.mutate()}
+              onClick={() => {
+                if (paymentUrl) {
+                  // Reuse the exact provider URL already created for this cart.
+                  window.location.assign(paymentUrl);
+                  return;
+                }
+                paymentMutation.mutate();
+              }}
               disabled={
                 unavailable ||
                 paymentMutation.isPending ||
+                existingIpayPayment.isPending ||
                 ipayAvailability.isPending ||
                 !ipayAvailability.data?.enabled
               }

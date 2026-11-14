@@ -101,7 +101,6 @@ function SellerPage() {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
   const [confirmationBusy, setConfirmationBusy] = useState(false);
-  const [payoutMethod, setPayoutMethod] = useState("other");
   const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
   const [editCategoryId, setEditCategoryId] = useState("");
@@ -186,12 +185,6 @@ function SellerPage() {
     },
   });
 
-  useEffect(() => {
-    if (payoutPreferenceQuery.data?.method) {
-      setPayoutMethod(payoutPreferenceQuery.data.method);
-    }
-  }, [payoutPreferenceQuery.data?.method]);
-
   const payoutHistoryQuery = useQuery({
     queryKey: ["seller-payout-history", store?.id],
     enabled: !!store?.id,
@@ -199,7 +192,7 @@ function SellerPage() {
       const { data, error } = await supabase
         .from("seller_payouts")
         .select(
-          "id,status,seller_amount_millimes,currency,created_at,paid_at,provider_transfer_ref,payout_destination_method",
+          "id,status,seller_amount_millimes,external_fees_millimes,currency,created_at,paid_at,provider_transfer_ref",
         )
         .eq("store_id", store!.id)
         .order("created_at", { ascending: false })
@@ -320,34 +313,17 @@ function SellerPage() {
     e.preventDefault();
     if (!store) return;
     const values = new FormData(e.currentTarget);
-    const method = String(values.get("payout_method") ?? "other");
+    const method = "bank_transfer";
     const accountHolderName = String(values.get("account_holder_name") ?? "").trim();
     const accountIdentifier = String(values.get("account_identifier") ?? "").trim();
-    const providerName = String(values.get("provider_name") ?? "").trim();
     const bankName = String(values.get("bank_name") ?? "").trim();
-    if (!accountHolderName || !accountIdentifier) {
+    if (!accountHolderName || !accountIdentifier || !bankName) {
       setNotice(
         lang === "ar"
-          ? "أدخل اسم صاحب الحساب ومعرّف الحساب."
+          ? "أدخل اسم صاحب الحساب واسم البنك أو المؤسسة البريدية ورقم RIB أو RIP."
           : lang === "en"
-            ? "Enter the account holder name and account identifier."
-            : "Saisissez le titulaire et l’identifiant du compte.",
-      );
-      return;
-    }
-    if ((method === "other" && !providerName) || (method === "bank_transfer" && !bankName)) {
-      setNotice(
-        lang === "ar"
-          ? method === "bank_transfer"
-            ? "أدخل اسم البنك لإتمام بيانات التحويل البنكي."
-            : "أدخل اسم مزود الخدمة للوسيلة الأخرى."
-          : lang === "en"
-            ? method === "bank_transfer"
-              ? "Enter the bank name for a bank transfer."
-              : "Enter the provider name for the other method."
-            : method === "bank_transfer"
-              ? "Saisissez le nom de la banque pour un virement bancaire."
-              : "Saisissez le nom du prestataire pour l’autre moyen.",
+            ? "Enter the account holder name, bank or postal institution, and RIB or RIP number."
+            : "Saisissez le titulaire, la banque ou l’organisme postal, et le numéro RIB ou RIP.",
       );
       return;
     }
@@ -359,8 +335,8 @@ function SellerPage() {
         method,
         account_holder_name: accountHolderName,
         account_identifier: accountIdentifier,
-        provider_name: providerName || null,
-        bank_name: bankName || null,
+        provider_name: null,
+        bank_name: bankName,
         additional_details: String(values.get("additional_details") ?? "").trim() || null,
         konnect_wallet_id: null,
       },
@@ -1275,54 +1251,18 @@ function SellerPage() {
                     ? "Never enter a password, OTP, PIN, or secret key."
                     : "Ne saisissez jamais de mot de passe, code OTP, code PIN ou clé secrète."}
               </p>
-              <a
-                href="https://dashboard.konnect.network"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex rounded-full border border-border px-4 py-2 text-sm font-semibold hover:bg-secondary"
-              >
-                {lang === "ar"
-                  ? "فتح حساب Konnect"
-                  : lang === "en"
-                    ? "Open a Konnect account"
-                    : "Ouvrir un compte Konnect"}
-              </a>
               <form
                 key={payoutPreferenceQuery.data?.updated_at ?? "new-payout-preference"}
                 onSubmit={(e) => void savePayoutPreference(e)}
                 className="mt-4 space-y-3"
               >
-                <label className="block text-sm font-medium">
+                <div className="rounded-lg bg-secondary/60 px-3 py-2 text-sm font-semibold">
                   {lang === "ar"
-                    ? "وسيلة الاستلام"
+                    ? "طريقة استلام المستحقات: تحويل بنكي فقط"
                     : lang === "en"
-                      ? "Receiving method"
-                      : "Moyen de réception"}
-                  <select
-                    name="payout_method"
-                    defaultValue={payoutPreferenceQuery.data?.method ?? "other"}
-                    onChange={(event) => setPayoutMethod(event.currentTarget.value)}
-                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
-                  >
-                    <option value="konnect">Konnect</option>
-                    <option value="ipay">iPay</option>
-                    <option value="wepay">WePay</option>
-                    <option value="bank_transfer">
-                      {lang === "ar"
-                        ? "تحويل بنكي"
-                        : lang === "en"
-                          ? "Bank transfer"
-                          : "Virement bancaire"}
-                    </option>
-                    <option value="other">
-                      {lang === "ar"
-                        ? "وسيلة أخرى"
-                        : lang === "en"
-                          ? "Other method"
-                          : "Autre moyen"}
-                    </option>
-                  </select>
-                </label>
+                      ? "Payout method: Bank transfer only"
+                      : "Mode de versement : virement bancaire uniquement"}
+                </div>
                 <label className="block text-sm font-medium">
                   {lang === "ar"
                     ? "اسم صاحب الحساب"
@@ -1336,58 +1276,56 @@ function SellerPage() {
                     defaultValue={payoutPreferenceQuery.data?.account_holder_name ?? ""}
                     className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
                   />
+                  <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                    {lang === "ar"
+                      ? "يُفضّل أن يطابق الاسم ما هو مدوّن في بطاقة التعريف."
+                      : lang === "en"
+                        ? "The name should preferably match the identity document."
+                        : "Le nom devrait de préférence correspondre à celui de la pièce d’identité."}
+                  </span>
                 </label>
                 <label className="block text-sm font-medium">
                   {lang === "ar"
-                    ? "معرّف الحساب / رقم المحفظة أو الحساب"
+                    ? "رقم RIB البنكي أو RIP البريدي"
                     : lang === "en"
-                      ? "Account identifier / wallet or account number"
-                      : "Identifiant / numéro de portefeuille ou de compte"}
+                      ? "Bank RIB or postal RIP number"
+                      : "RIB bancaire ou RIP postal"}
                   <input
                     name="account_identifier"
                     required
                     maxLength={200}
                     placeholder={
-                      payoutMethod === "bank_transfer"
-                        ? lang === "ar"
-                          ? "رقم الحساب أو IBAN"
-                          : lang === "en"
-                            ? "Account number or IBAN"
-                            : "Numéro de compte ou IBAN"
-                        : undefined
+                      lang === "ar"
+                        ? "أدخل رقم RIB أو RIP"
+                        : lang === "en"
+                          ? "Enter RIB or RIP number"
+                          : "Saisissez le numéro RIB ou RIP"
                     }
                     defaultValue={payoutPreferenceQuery.data?.account_identifier ?? ""}
                     className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
                   />
                 </label>
-                {payoutMethod === "other" && (
-                  <label className="block text-sm font-medium">
-                    {lang === "ar"
-                      ? "اسم مزود الخدمة"
-                      : lang === "en"
-                        ? "Provider name"
-                        : "Nom du prestataire"}
-                    <input
-                      name="provider_name"
-                      required
-                      maxLength={120}
-                      defaultValue={payoutPreferenceQuery.data?.provider_name ?? ""}
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
-                    />
-                  </label>
-                )}
-                {payoutMethod === "bank_transfer" && (
-                  <label className="block text-sm font-medium">
-                    {lang === "ar" ? "اسم البنك" : lang === "en" ? "Bank name" : "Nom de la banque"}
-                    <input
-                      name="bank_name"
-                      required
-                      maxLength={160}
-                      defaultValue={payoutPreferenceQuery.data?.bank_name ?? ""}
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
-                    />
-                  </label>
-                )}
+                <label className="block text-sm font-medium">
+                  {lang === "ar"
+                    ? "اسم البنك أو المؤسسة البريدية"
+                    : lang === "en"
+                      ? "Bank or postal institution"
+                      : "Banque ou organisme postal"}
+                  <input
+                    name="bank_name"
+                    required
+                    maxLength={160}
+                    defaultValue={payoutPreferenceQuery.data?.bank_name ?? ""}
+                    placeholder={
+                      lang === "ar"
+                        ? "مثال: Attijari Bank أو البريد التونسي"
+                        : lang === "en"
+                          ? "e.g. Attijari Bank or La Poste Tunisienne"
+                          : "Ex. : Attijari Bank ou La Poste Tunisienne"
+                    }
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
+                  />
+                </label>
                 <label className="block text-sm font-medium">
                   {lang === "ar"
                     ? "معلومات إضافية (اختياري)"
@@ -1493,18 +1431,24 @@ function SellerPage() {
                             {m.transferReference}: {p.provider_transfer_ref}
                           </p>
                         )}
-                        {p.payout_destination_method && (
-                          <p className="text-xs text-muted-foreground">
-                            {lang === "ar"
-                              ? "وسيلة الاستلام"
-                              : lang === "en"
-                                ? "Receiving method"
-                                : "Moyen de réception"}
-                            : {p.payout_destination_method}
-                          </p>
-                        )}
                       </div>
-                      <div className="text-end">
+                      <div className="text-end space-y-1">
+                        <p className="text-xs text-muted-foreground">
+                          {lang === "ar"
+                            ? "المبلغ قبل الرسوم"
+                            : lang === "en"
+                              ? "Amount before fees"
+                              : "Montant avant frais"}
+                          :{" "}
+                          {formatTND(
+                            Number(p.seller_amount_millimes) +
+                              Number(p.external_fees_millimes ?? 0),
+                          )}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {lang === "ar" ? "الرسوم" : lang === "en" ? "Fees" : "Frais"}:{" "}
+                          {formatTND(Number(p.external_fees_millimes ?? 0))}
+                        </p>
                         <strong>{formatTND(p.seller_amount_millimes)}</strong>
                       </div>
                     </article>

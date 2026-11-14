@@ -514,7 +514,7 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       return { ok: false as const, error: "customer_name_required", orderId };
     }
 
-    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+
     const { data: rawClaims, error: claimError } = await callActorScopedRpc(
       context.userId,
       "server_claim_order_ipay_init",

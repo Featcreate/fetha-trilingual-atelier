@@ -240,6 +240,53 @@ function AdminPage() {
       }
     },
   });
+  const unallocatedSellerTransferFees = useQuery({
+    queryKey: ["admin-unallocated-seller-transfer-fees"],
+    queryFn: async () => {
+      const feeRows: Array<{ id: string; store_id: string; amount_millimes: number }> = [];
+      const allocationRows: Array<{ fee_entry_id: string; amount_millimes: number }> = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase
+          .from("seller_external_fee_entries")
+          .select("id,store_id,amount_millimes")
+          .eq("fee_category", "seller_transfer")
+          .order("created_at", { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const page = data ?? [];
+        feeRows.push(...page);
+        if (page.length < pageSize) break;
+      }
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase
+          .from("seller_payout_fee_allocations")
+          .select("fee_entry_id,amount_millimes")
+          .order("created_at", { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const page = data ?? [];
+        allocationRows.push(...page);
+        if (page.length < pageSize) break;
+      }
+      const allocatedByFee = new Map<string, number>();
+      for (const allocation of allocationRows) {
+        allocatedByFee.set(
+          allocation.fee_entry_id,
+          (allocatedByFee.get(allocation.fee_entry_id) ?? 0) + Number(allocation.amount_millimes),
+        );
+      }
+      const byStore: Record<string, number> = {};
+      for (const fee of feeRows) {
+        const remaining = Math.max(
+          0,
+          Number(fee.amount_millimes) - (allocatedByFee.get(fee.id) ?? 0),
+        );
+        byStore[fee.store_id] = (byStore[fee.store_id] ?? 0) + remaining;
+      }
+      return byStore;
+    },
+  });
   const payouts = useQuery({
     queryKey: ["admin-payouts"],
     queryFn: async () => {
@@ -313,7 +360,13 @@ function AdminPage() {
     if (!payoutStoreId) return;
     const selectedBalance = sellerBalances.get(payoutStoreId);
     const available = selectedBalance
-      ? Math.max(0, selectedBalance.earned - selectedBalance.transferred - selectedBalance.reserved)
+      ? Math.max(
+          0,
+          selectedBalance.earned -
+            selectedBalance.transferred -
+            selectedBalance.reserved -
+            (unallocatedSellerTransferFees.data?.[payoutStoreId] ?? 0),
+        )
       : 0;
     if (available < 50_000) {
       setNotice({ ok: false, text: a.payoutMinimumNotMet });
@@ -351,6 +404,7 @@ function AdminPage() {
     }
     setNotice({ ok: true, text: a.saved });
     await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+    await qc.invalidateQueries({ queryKey: ["admin-unallocated-seller-transfer-fees"] });
   }
 
   async function recordSellerTransferFee() {
@@ -404,6 +458,7 @@ function AdminPage() {
             : "Les frais réels justifiés ont été enregistrés.",
     });
     await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+    await qc.invalidateQueries({ queryKey: ["admin-unallocated-seller-transfer-fees"] });
   }
 
   async function confirmSellerPayout(payoutId: string) {
@@ -598,9 +653,15 @@ function AdminPage() {
     },
     { earned: 0, transferred: 0, reserved: 0, commission: 0 },
   );
+  const totalUnallocatedSellerTransferFees = Object.values(
+    unallocatedSellerTransferFees.data ?? {},
+  ).reduce((total, amount) => total + amount, 0);
   const availableSellerPayables = Math.max(
     0,
-    financialTotals.earned - financialTotals.transferred - financialTotals.reserved,
+    financialTotals.earned -
+      financialTotals.transferred -
+      financialTotals.reserved -
+      totalUnallocatedSellerTransferFees,
   );
   const selectedPayoutBalance = sellerBalances.get(payoutStoreId);
   const selectedPayoutAvailable = selectedPayoutBalance
@@ -608,7 +669,8 @@ function AdminPage() {
         0,
         selectedPayoutBalance.earned -
           selectedPayoutBalance.transferred -
-          selectedPayoutBalance.reserved,
+          selectedPayoutBalance.reserved -
+          (unallocatedSellerTransferFees.data?.[payoutStoreId] ?? 0),
       )
     : 0;
   const payoutMinimumMet = selectedPayoutAvailable >= 50_000;
@@ -672,11 +734,13 @@ function AdminPage() {
         </div>
         {financialLedger.isPending ||
         verifiedProviderOrders.isPending ||
-        payoutBalanceRows.isPending ? (
+        payoutBalanceRows.isPending ||
+        unallocatedSellerTransferFees.isPending ? (
           <p className="mt-4 text-sm">{a.loading}</p>
         ) : financialLedger.isError ||
           verifiedProviderOrders.isError ||
-          payoutBalanceRows.isError ? (
+          payoutBalanceRows.isError ||
+          unallocatedSellerTransferFees.isError ? (
           <div
             role="alert"
             className="mt-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive"

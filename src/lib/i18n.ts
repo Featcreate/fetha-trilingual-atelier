@@ -627,7 +627,8 @@ export const dict = {
       emailVerificationRequired: "أكد بريدك الإلكتروني قبل إنشاء المتجر أو إضافة الملفات.",
       nameRequired: "أدخل اسم المتجر.",
       productRequired: "أدخل اسم المنتج ووصفه.",
-      automaticTranslation: "ستُترجم تسمية المنتج ووصفه تلقائياً إلى العربية والفرنسية والإنجليزية.",
+      automaticTranslation:
+        "ستُترجم تسمية المنتج ووصفه تلقائياً إلى العربية والفرنسية والإنجليزية.",
       translationFailed: "الترجمة التلقائية غير متاحة مؤقتاً. أعد المحاولة قبل نشر المنتج.",
       translationSavedWithoutTranslation:
         "حُفظ المنتج بلغته الأصلية؛ الترجمة التلقائية غير متاحة مؤقتاً.",

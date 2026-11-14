@@ -19,6 +19,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAdminIpayCheckRouteImport } from './routes/_authenticated/admin-ipay-check'
 import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
 import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated/seller'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
@@ -76,6 +77,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminIpayCheckRoute = AuthenticatedAdminIpayCheckRouteImport.update({
+  id: '/admin-ipay-check',
+  path: '/admin-ipay-check',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOrdersRoute = AuthenticatedOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/admin-ipay-check': typeof AuthenticatedAdminIpayCheckRoute
   '/orders': typeof AuthenticatedOrdersRoute
   '/seller': typeof AuthenticatedSellerRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -160,6 +167,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin-ipay-check': typeof AuthenticatedAdminIpayCheckRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRoute
   '/_authenticated/seller': typeof AuthenticatedSellerRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -180,6 +188,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/admin'
+    | '/admin-ipay-check'
     | '/orders'
     | '/seller'
     | '/checkout/return'
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/account'
     | '/_authenticated/admin'
+    | '/_authenticated/admin-ipay-check'
     | '/_authenticated/orders'
     | '/_authenticated/seller'
     | '/checkout/return'
@@ -313,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin-ipay-check': {
+      id: '/_authenticated/admin-ipay-check'
+      path: '/admin-ipay-check'
+      fullPath: '/admin-ipay-check'
+      preLoaderRoute: typeof AuthenticatedAdminIpayCheckRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/orders': {
       id: '/_authenticated/orders'
       path: '/orders'
@@ -368,6 +385,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminIpayCheckRoute: typeof AuthenticatedAdminIpayCheckRoute
   AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRoute
   AuthenticatedSellerRoute: typeof AuthenticatedSellerRoute
 }
@@ -375,6 +393,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminIpayCheckRoute: AuthenticatedAdminIpayCheckRoute,
   AuthenticatedOrdersRoute: AuthenticatedOrdersRoute,
   AuthenticatedSellerRoute: AuthenticatedSellerRoute,
 }

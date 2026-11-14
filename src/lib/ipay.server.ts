@@ -17,15 +17,25 @@ export function isIpayCheckoutEnabled(
   return adminEnabled && envEnabled === "true";
 }
 
-export function ipayConfig(requireActivation = false): IpayConfig | null {
+type IpayAuthConfig = Pick<IpayConfig, "orgId" | "jwt">;
+
+/** Authentication-only configuration for read-only provider endpoints. */
+function ipayAuthConfig(): IpayAuthConfig | null {
   const orgId = process.env["IPAY_ORG_ID"];
   const jwt = process.env["IPAY_JWT"];
+  if (!orgId || !jwt) return null;
+  return { orgId, jwt };
+}
+
+/** Checkout additionally requires a configured product code and explicit activation. */
+export function ipayConfig(requireActivation = false): IpayConfig | null {
+  const auth = ipayAuthConfig();
   const productCode = process.env["IPAY_PRODUCT_CODE"];
-  if (!orgId || !jwt || !productCode) return null;
+  if (!auth || !productCode) return null;
   if (requireActivation && process.env["IPAY_CHECKOUT_ENABLED"] !== "true") {
     return null;
   }
-  return { orgId, jwt, productCode };
+  return { ...auth, productCode };
 }
 
 /** Convert the canonical TND millime total to the dinar amount expected by iPay. */
@@ -178,7 +188,7 @@ export async function ipayCreateOneShot(input: {
  * This never creates a transaction and does not enable checkout.
  */
 export async function ipayGetWebhookHealth(probe = false): Promise<unknown> {
-  const cfg = ipayConfig(false);
+  const cfg = ipayAuthConfig();
   if (!cfg) throw new Error("ipay_not_configured");
 
   const url = new URL("/api/admin/webhooks/health", IPAY_API);

@@ -332,13 +332,15 @@ function AdminPage() {
             : lang === "en"
               ? "The seller must save a receiving method and account details before a payout can be created."
               : "Le vendeur doit enregistrer un moyen de réception et ses coordonnées avant la création du versement."
-          : error.message.includes("no_unpaid_sales")
-            ? lang === "ar"
-              ? "لا توجد مبيعات مؤكدة غير مدفوعة لهذا المتجر."
-              : lang === "en"
-                ? "No verified unpaid sales are available for this store."
-                : "Aucune vente vérifiée non réglée pour cette boutique."
-            : a.saveError,
+          : error.message.includes("payout_minimum_not_met")
+            ? a.payoutMinimumNotMet
+            : error.message.includes("no_unpaid_sales")
+              ? lang === "ar"
+                ? "لا توجد مبيعات مؤكدة غير مدفوعة لهذا المتجر."
+                : lang === "en"
+                  ? "No verified unpaid sales are available for this store."
+                  : "Aucune vente vérifiée non réglée pour cette boutique."
+              : a.saveError,
       });
       return;
     }

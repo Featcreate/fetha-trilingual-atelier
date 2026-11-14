@@ -1,6 +1,6 @@
--- Eligibility is strictly greater than 100 TND: exactly 100.000 TND is not eligible.
--- Require a seller's available net proceeds to exceed 100 TND before
--- preparing a manual payout. Amounts are stored in millimes (100 TND = 100000).
+-- Eligibility is at least 50 TND: exactly 50.000 TND is eligible.
+-- Require a seller's available net proceeds to reach 50 TND before
+-- preparing a manual payout. Amounts are stored in millimes (50 TND = 50000).
 -- The database guard is authoritative; the admin UI mirrors it for clarity.
 CREATE OR REPLACE FUNCTION public.admin_create_seller_payout(
   _store_id uuid, _idempotency_key text, _scheduled_for timestamptz DEFAULT NULL
@@ -40,7 +40,7 @@ BEGIN
   IF _seller_amount <= 0 OR _gross <= _discount OR _gross <> _discount + _commission + _seller_amount THEN
     RAISE EXCEPTION 'payout_amount_reconciliation_failed';
   END IF;
-  IF _seller_amount <= 100000 THEN
+  IF _seller_amount < 50000 THEN
     RAISE EXCEPTION 'payout_minimum_not_met';
   END IF;
   _commission_bps := round(_commission::numeric * 10000 / (_gross - _discount))::integer;

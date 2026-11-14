@@ -58,11 +58,10 @@ export const adminRecordSellerExternalFee = createServerFn({ method: "POST" })
         "digital_other_bank",
         "branch_same_bank",
         "branch_other_bank",
-        "multiple_electronic",
         "manual_list_same_bank",
         "manual_list_other_bank",
       ]),
-      externalReference: z.string().trim().min(3).max(200),
+      externalReference: z.string().trim().min(3).max(120),
     }).parse(input),
   )
   .handler(({ data, context }) =>

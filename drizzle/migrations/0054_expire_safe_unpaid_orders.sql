@@ -61,8 +61,8 @@ BEGIN
           WHERE oi.order_id = o.id
        )
      ORDER BY o.created_at, o.id
-     FOR UPDATE OF o SKIP LOCKED
      LIMIT _limit
+     FOR UPDATE OF o SKIP LOCKED
   LOOP
     -- order_item_files can be removed only because the entitlement blocker above
     -- guarantees no download entitlement references any file for this order.

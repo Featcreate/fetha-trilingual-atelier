@@ -393,6 +393,13 @@
       "when": 1794873600002,
       "tag": "0053_payout_reconciliation_and_bank_only_destination",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1794873600003,
+      "tag": "0054_expire_safe_unpaid_orders",
+      "breakpoints": true
     }
   ]
 }

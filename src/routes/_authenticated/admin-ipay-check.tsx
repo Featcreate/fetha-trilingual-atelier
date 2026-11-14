@@ -18,7 +18,9 @@ export const Route = createFileRoute("/_authenticated/admin-ipay-check")({
 
 function AdminIpayCheckPage() {
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<Awaited<ReturnType<typeof adminCheckIpayConnection>> | null>(null);
+  const [result, setResult] = useState<
+    Awaited<ReturnType<typeof adminCheckIpayConnection>> | null
+  >(null);
 
   async function runCheck() {
     setBusy(true);
@@ -63,10 +65,17 @@ function AdminIpayCheckPage() {
                 حالة webhooks العامة: {result.overallHealthy ? "سليمة" : "تحتاج إلى مراجعة"}
               </p>
               {result.products.map((product, index) => (
-                <div key={product.productCode ?? index} className="rounded-lg bg-secondary p-3 text-sm">
+                <div
+                  key={product.productCode ?? index}
+                  className="rounded-lg bg-secondary p-3 text-sm"
+                >
                   <p className="font-semibold">{product.productName ?? product.productCode ?? "منتج iPay"}</p>
-                  <p>Webhook النجاح: {product.successWebhookConfigured ? "مُعدّ" : "غير مُعدّ"}</p>
-                  <p>Webhook الفشل: {product.failureWebhookConfigured ? "مُعدّ" : "غير مُعدّ"}</p>
+                  <p>
+                    Webhook النجاح: {product.successWebhookConfigured ? "مُعدّ" : "غير مُعدّ"}
+                  </p>
+                  <p>
+                    Webhook الفشل: {product.failureWebhookConfigured ? "مُعدّ" : "غير مُعدّ"}
+                  </p>
                 </div>
               ))}
             </>

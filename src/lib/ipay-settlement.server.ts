@@ -8,6 +8,7 @@ type IpayTransaction = {
   amount: string;
   currency: string;
   status: string;
+  product_id: string;
 };
 
 type IpayWebhookNotice = {
@@ -48,13 +49,22 @@ function parseIpayTransaction(payload: unknown): IpayTransaction {
     typeof data["invoice_reference"] !== "string" ||
     (typeof data["amount"] !== "string" && typeof data["amount"] !== "number") ||
     typeof data["currency"] !== "string" ||
-    typeof data["status"] !== "string"
+    typeof data["status"] !== "string" ||
+    typeof data["product_id"] !== "string"
   ) {
     throw new Error("ipay_invalid_response");
   }
   const id = String(data["id"]).trim();
   const invoiceReference = data["invoice_reference"].trim();
-  if (!id || !invoiceReference || id.length > 200 || invoiceReference.length > 200) {
+  const productId = data["product_id"].trim();
+  if (
+    !id ||
+    !invoiceReference ||
+    !productId ||
+    id.length > 200 ||
+    invoiceReference.length > 200 ||
+    productId.length > 200
+  ) {
     throw new Error("ipay_invalid_response");
   }
   // Validate the amount here so malformed provider data never reaches the database.
@@ -65,6 +75,7 @@ function parseIpayTransaction(payload: unknown): IpayTransaction {
     amount: String(data["amount"]),
     currency: data["currency"].trim().toUpperCase(),
     status: data["status"].toLowerCase(),
+    product_id: productId,
   };
 }
 
@@ -168,6 +179,12 @@ export async function processIpaySettlementNotice(
     };
   }
   if (transaction.currency !== "TND") throw new Error("ipay_currency_mismatch");
+
+  const expectedProductId = process.env["IPAY_PRODUCT_ID"]?.trim();
+  if (!expectedProductId) throw new Error("ipay_product_id_not_configured");
+  if (transaction.product_id !== expectedProductId) {
+    throw new Error("ipay_product_id_mismatch");
+  }
 
   const amountMillimes = ipayAmountToMillimes(transaction.amount);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

@@ -320,10 +320,10 @@ function SellerPage() {
     if (!accountHolderName || !accountIdentifier || !bankName) {
       setNotice(
         lang === "ar"
-          ? "أدخل اسم صاحب الحساب واسم البنك ورقم الحساب أو IBAN."
+          ? "أدخل اسم صاحب الحساب واسم البنك أو المؤسسة البريدية ورقم RIB أو RIP."
           : lang === "en"
-            ? "Enter the account holder name, bank name, and account number or IBAN."
-            : "Saisissez le titulaire, le nom de la banque et le numéro de compte ou IBAN.",
+            ? "Enter the account holder name, bank or postal institution, and RIB or RIP number."
+            : "Saisissez le titulaire, la banque ou l’organisme postal, et le numéro RIB ou RIP.",
       );
       return;
     }
@@ -1276,35 +1276,53 @@ function SellerPage() {
                     defaultValue={payoutPreferenceQuery.data?.account_holder_name ?? ""}
                     className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
                   />
+                  <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                    {lang === "ar"
+                      ? "يُفضّل أن يطابق الاسم ما هو مدوّن في بطاقة التعريف."
+                      : lang === "en"
+                        ? "The name should preferably match the identity document."
+                        : "Le nom devrait de préférence correspondre à celui de la pièce d’identité."}
+                  </span>
                 </label>
                 <label className="block text-sm font-medium">
                   {lang === "ar"
-                    ? "رقم الحساب أو IBAN"
+                    ? "رقم RIB البنكي أو RIP البريدي"
                     : lang === "en"
-                      ? "Account number or IBAN"
-                      : "Numéro de compte ou IBAN"}
+                      ? "Bank RIB or postal RIP number"
+                      : "RIB bancaire ou RIP postal"}
                   <input
                     name="account_identifier"
                     required
                     maxLength={200}
                     placeholder={
                       lang === "ar"
-                        ? "رقم الحساب أو IBAN"
+                        ? "أدخل رقم RIB أو RIP"
                         : lang === "en"
-                          ? "Account number or IBAN"
-                          : "Numéro de compte ou IBAN"
+                          ? "Enter RIB or RIP number"
+                          : "Saisissez le numéro RIB ou RIP"
                     }
                     defaultValue={payoutPreferenceQuery.data?.account_identifier ?? ""}
                     className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
                   />
                 </label>
                 <label className="block text-sm font-medium">
-                  {lang === "ar" ? "اسم البنك" : lang === "en" ? "Bank name" : "Nom de la banque"}
+                  {lang === "ar"
+                    ? "اسم البنك أو المؤسسة البريدية"
+                    : lang === "en"
+                      ? "Bank or postal institution"
+                      : "Banque ou organisme postal"}
                   <input
                     name="bank_name"
                     required
                     maxLength={160}
                     defaultValue={payoutPreferenceQuery.data?.bank_name ?? ""}
+                    placeholder={
+                      lang === "ar"
+                        ? "مثال: Attijari Bank أو البريد التونسي"
+                        : lang === "en"
+                          ? "e.g. Attijari Bank or La Poste Tunisienne"
+                          : "Ex. : Attijari Bank ou La Poste Tunisienne"
+                    }
                     className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
                   />
                 </label>

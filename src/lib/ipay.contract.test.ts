@@ -11,6 +11,7 @@ describe("iPay dashboard one-shot contract", () => {
     vi.stubEnv("IPAY_ORG_ID", "org-test");
     vi.stubEnv("IPAY_JWT", "jwt-test");
     vi.stubEnv("IPAY_PRODUCT_CODE", "algorea-bazaar");
+    vi.stubEnv("IPAY_PRODUCT_ID", "product-test");
     vi.stubEnv("IPAY_CHECKOUT_ENABLED", "true");
 
     const fetchMock = vi.fn().mockResolvedValue(
@@ -63,6 +64,7 @@ describe("iPay dashboard one-shot contract", () => {
     vi.stubEnv("IPAY_ORG_ID", "org-test");
     vi.stubEnv("IPAY_JWT", "jwt-test");
     vi.stubEnv("IPAY_PRODUCT_CODE", "algorea-bazaar");
+    vi.stubEnv("IPAY_PRODUCT_ID", "product-test");
     vi.stubEnv("IPAY_CHECKOUT_ENABLED", "false");
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);

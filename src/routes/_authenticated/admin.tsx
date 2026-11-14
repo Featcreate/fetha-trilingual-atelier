@@ -310,7 +310,7 @@ function AdminPage() {
     const available = selectedBalance
       ? Math.max(0, selectedBalance.earned - selectedBalance.transferred - selectedBalance.reserved)
       : 0;
-    if (available <= 100_000) {
+    if (available < 50_000) {
       setNotice({ ok: false, text: a.payoutMinimumNotMet });
       return;
     }
@@ -553,7 +553,7 @@ function AdminPage() {
           selectedPayoutBalance.reserved,
       )
     : 0;
-  const payoutMinimumMet = selectedPayoutAvailable > 100_000;
+  const payoutMinimumMet = selectedPayoutAvailable >= 50_000;
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={a.title} wide>

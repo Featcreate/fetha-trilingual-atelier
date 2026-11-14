@@ -90,6 +90,26 @@ type PayoutRow = {
   failure_reason: string | null;
 };
 
+type FinancialLedgerRow = {
+  entry_type: string;
+  entry_side: string;
+  accounting_amount_millimes: number;
+  accounting_currency: string;
+  store_id: string | null;
+  created_at: string;
+};
+type VerifiedProviderOrderRow = {
+  total_millimes: number;
+  currency: string;
+  ipay_payment_ref: string | null;
+  konnect_payment_ref: string | null;
+};
+type PayoutBalanceRow = {
+  store_id: string;
+  status: string;
+  seller_amount_millimes: number;
+};
+
 function AdminPage() {
   const { lang, setLang, t } = useLang();
   const a = t.admin;
@@ -154,6 +174,65 @@ function AdminPage() {
         .limit(100);
       if (error) throw error;
       return (data ?? []) as OrderRow[];
+    },
+  });
+  const financialLedger = useQuery({
+    queryKey: ["admin-financial-ledger"],
+    queryFn: async () => {
+      const rows: FinancialLedgerRow[] = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase
+          .from("platform_financial_ledger_entries")
+          .select(
+            "entry_type,entry_side,accounting_amount_millimes,accounting_currency,store_id,created_at",
+          )
+          .order("created_at", { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const page = (data ?? []) as FinancialLedgerRow[];
+        rows.push(...page);
+        if (page.length < pageSize) return rows;
+      }
+    },
+  });
+  const verifiedProviderOrders = useQuery({
+    queryKey: ["admin-verified-provider-orders"],
+    queryFn: async () => {
+      const rows: VerifiedProviderOrderRow[] = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("total_millimes,currency,ipay_payment_ref,konnect_payment_ref")
+          .eq("status", "paid")
+          .eq("payment_mode", "verified")
+          .order("created_at", { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const page = (data ?? []) as VerifiedProviderOrderRow[];
+        rows.push(...page);
+        if (page.length < pageSize) return rows;
+      }
+    },
+  });
+  const payoutBalanceRows = useQuery({
+    queryKey: ["admin-payout-balance-rows"],
+    queryFn: async () => {
+      const rows: PayoutBalanceRow[] = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase
+          .from("seller_payouts")
+          .select("store_id,status,seller_amount_millimes")
+          .neq("status", "cancelled")
+          .order("created_at", { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const page = (data ?? []) as PayoutBalanceRow[];
+        rows.push(...page);
+        if (page.length < pageSize) return rows;
+      }
     },
   });
   const payouts = useQuery({
@@ -227,6 +306,14 @@ function AdminPage() {
 
   async function createSellerPayout() {
     if (!payoutStoreId) return;
+    const selectedBalance = sellerBalances.get(payoutStoreId);
+    const available = selectedBalance
+      ? Math.max(0, selectedBalance.earned - selectedBalance.transferred - selectedBalance.reserved)
+      : 0;
+    if (available <= 100_000) {
+      setNotice({ ok: false, text: a.payoutMinimumNotMet });
+      return;
+    }
     setBusy("payout-create");
     setNotice(null);
     const { error } = await adminCreateSellerPayout({
@@ -245,13 +332,15 @@ function AdminPage() {
             : lang === "en"
               ? "The seller must save a receiving method and account details before a payout can be created."
               : "Le vendeur doit enregistrer un moyen de réception et ses coordonnées avant la création du versement."
-          : error.message.includes("no_unpaid_sales")
-            ? lang === "ar"
-              ? "لا توجد مبيعات مؤكدة غير مدفوعة لهذا المتجر."
-              : lang === "en"
-                ? "No verified unpaid sales are available for this store."
-                : "Aucune vente vérifiée non réglée pour cette boutique."
-            : a.saveError,
+          : error.message.includes("payout_minimum_not_met")
+            ? a.payoutMinimumNotMet
+            : error.message.includes("no_unpaid_sales")
+              ? lang === "ar"
+                ? "لا توجد مبيعات مؤكدة غير مدفوعة لهذا المتجر."
+                : lang === "en"
+                  ? "No verified unpaid sales are available for this store."
+                  : "Aucune vente vérifiée non réglée pour cette boutique."
+              : a.saveError,
       });
       return;
     }
@@ -390,6 +479,81 @@ function AdminPage() {
     .reduce((sum, o) => sum + o.total_millimes, 0);
   const activeStores = (stores.data ?? []).filter((s) => s.status === "active").length;
   const listedProducts = (products.data ?? []).filter((p) => p.is_active).length;
+  const providerTotals = (verifiedProviderOrders.data ?? []).reduce(
+    (totals, order) => {
+      if (order.currency !== "TND") return totals;
+      const hasIpay = Boolean(order.ipay_payment_ref);
+      const hasKonnect = Boolean(order.konnect_payment_ref);
+      if (hasIpay && !hasKonnect) {
+        totals.ipay += order.total_millimes;
+        totals.ipayCount += 1;
+      } else if (hasKonnect && !hasIpay) {
+        totals.konnect += order.total_millimes;
+        totals.konnectCount += 1;
+      } else {
+        totals.unclassified += order.total_millimes;
+      }
+      return totals;
+    },
+    { ipay: 0, konnect: 0, ipayCount: 0, konnectCount: 0, unclassified: 0 },
+  );
+  const sellerBalances = new Map<
+    string,
+    { earned: number; transferred: number; reserved: number; commission: number }
+  >();
+  for (const entry of financialLedger.data ?? []) {
+    if (!entry.store_id || entry.accounting_currency !== "TND") continue;
+    const balance = sellerBalances.get(entry.store_id) ?? {
+      earned: 0,
+      transferred: 0,
+      reserved: 0,
+      commission: 0,
+    };
+    const amount = Number(entry.accounting_amount_millimes);
+    if (entry.entry_type === "seller_payable" && entry.entry_side === "credit") {
+      balance.earned += amount;
+    } else if (entry.entry_type === "seller_payout" && entry.entry_side === "debit") {
+      balance.transferred += amount;
+    } else if (entry.entry_type === "platform_commission" && entry.entry_side === "credit") {
+      balance.commission += amount;
+    }
+    sellerBalances.set(entry.store_id, balance);
+  }
+  for (const payout of payoutBalanceRows.data ?? []) {
+    if (payout.status === "paid" || payout.status === "cancelled") continue;
+    const balance = sellerBalances.get(payout.store_id) ?? {
+      earned: 0,
+      transferred: 0,
+      reserved: 0,
+      commission: 0,
+    };
+    balance.reserved += Number(payout.seller_amount_millimes);
+    sellerBalances.set(payout.store_id, balance);
+  }
+  const financialTotals = Array.from(sellerBalances.values()).reduce(
+    (totals, balance) => {
+      totals.earned += balance.earned;
+      totals.transferred += balance.transferred;
+      totals.reserved += balance.reserved;
+      totals.commission += balance.commission;
+      return totals;
+    },
+    { earned: 0, transferred: 0, reserved: 0, commission: 0 },
+  );
+  const availableSellerPayables = Math.max(
+    0,
+    financialTotals.earned - financialTotals.transferred - financialTotals.reserved,
+  );
+  const selectedPayoutBalance = sellerBalances.get(payoutStoreId);
+  const selectedPayoutAvailable = selectedPayoutBalance
+    ? Math.max(
+        0,
+        selectedPayoutBalance.earned -
+          selectedPayoutBalance.transferred -
+          selectedPayoutBalance.reserved,
+      )
+    : 0;
+  const payoutMinimumMet = selectedPayoutAvailable > 100_000;
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={a.title} wide>
@@ -441,6 +605,123 @@ function AdminPage() {
           <p className="mt-1 text-2xl font-bold">{formatTND(paidTotal)}</p>
           <p className="text-xs text-muted-foreground">{a.latest100}</p>
         </div>
+      </section>
+
+      <section className="mb-8 rounded-xl border border-border p-5">
+        <div className="mb-2">
+          <h2 className="text-lg font-bold">{a.financialLedgerTitle}</h2>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">{a.financialLedgerHelp}</p>
+        </div>
+        {financialLedger.isPending ||
+        verifiedProviderOrders.isPending ||
+        payoutBalanceRows.isPending ? (
+          <p className="mt-4 text-sm">{a.loading}</p>
+        ) : financialLedger.isError ||
+          verifiedProviderOrders.isError ||
+          payoutBalanceRows.isError ? (
+          <div
+            role="alert"
+            className="mt-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
+          >
+            {a.loadError}
+          </div>
+        ) : (
+          <>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              <div className="rounded-lg bg-secondary p-4">
+                <p className="text-sm text-muted-foreground">{a.providerKonnectVerified}</p>
+                <p className="mt-1 text-xl font-bold">{formatTND(providerTotals.konnect)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {providerTotals.konnectCount} {a.paidOrders}
+                </p>
+              </div>
+              <div className="rounded-lg bg-secondary p-4">
+                <p className="text-sm text-muted-foreground">{a.providerIpayVerified}</p>
+                <p className="mt-1 text-xl font-bold">{formatTND(providerTotals.ipay)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {providerTotals.ipayCount} {a.paidOrders}
+                </p>
+              </div>
+              <div className="rounded-lg bg-secondary p-4">
+                <p className="text-sm text-muted-foreground">{a.providerUnclassified}</p>
+                <p className="mt-1 text-xl font-bold">{formatTND(providerTotals.unclassified)}</p>
+              </div>
+              <div className="rounded-lg bg-secondary p-4">
+                <p className="text-sm text-muted-foreground">{a.platformCommissionTotal}</p>
+                <p className="mt-1 text-xl font-bold">{formatTND(financialTotals.commission)}</p>
+              </div>
+              <div className="rounded-lg bg-secondary p-4">
+                <p className="text-sm text-muted-foreground">{a.sellerOutstandingTotal}</p>
+                <p className="mt-1 text-xl font-bold">
+                  {formatTND(Math.max(0, financialTotals.earned - financialTotals.transferred))}
+                </p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">
+              {a.providerReconciliationNote}
+            </p>
+            <div className="mt-5">
+              <h3 className="mb-3 font-semibold">{a.sellerBalances}</h3>
+              {!stores.data?.length ? (
+                <p className="rounded-lg bg-secondary p-3 text-sm">{a.noSellerBalances}</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[720px] border-collapse text-sm">
+                    <thead>
+                      <tr className="border-b border-border text-start text-muted-foreground">
+                        <th className="px-3 py-3 text-start font-medium">{a.payoutStore}</th>
+                        <th className="px-3 py-3 text-end font-medium">{a.sellerPayableTotal}</th>
+                        <th className="px-3 py-3 text-end font-medium">
+                          {a.sellerTransferredTotal}
+                        </th>
+                        <th className="px-3 py-3 text-end font-medium">{a.sellerReservedTotal}</th>
+                        <th className="px-3 py-3 text-end font-medium">{a.sellerAvailableTotal}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stores.data.map((store) => {
+                        const balance = sellerBalances.get(store.id) ?? {
+                          earned: 0,
+                          transferred: 0,
+                          reserved: 0,
+                          commission: 0,
+                        };
+                        const available = Math.max(
+                          0,
+                          balance.earned - balance.transferred - balance.reserved,
+                        );
+                        return (
+                          <tr key={store.id} className="border-b border-border last:border-0">
+                            <td className="px-3 py-3 font-medium">{store.name}</td>
+                            <td className="px-3 py-3 text-end">{formatTND(balance.earned)}</td>
+                            <td className="px-3 py-3 text-end">{formatTND(balance.transferred)}</td>
+                            <td className="px-3 py-3 text-end">{formatTND(balance.reserved)}</td>
+                            <td className="px-3 py-3 text-end font-semibold">
+                              {formatTND(available)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr className="font-bold">
+                        <td className="px-3 py-3">{a.sellerBalancesTotal}</td>
+                        <td className="px-3 py-3 text-end">{formatTND(financialTotals.earned)}</td>
+                        <td className="px-3 py-3 text-end">
+                          {formatTND(financialTotals.transferred)}
+                        </td>
+                        <td className="px-3 py-3 text-end">
+                          {formatTND(financialTotals.reserved)}
+                        </td>
+                        <td className="px-3 py-3 text-end">{formatTND(availableSellerPayables)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </section>
 
       <section className="mb-8 rounded-xl border border-border p-5">
@@ -577,13 +858,21 @@ function AdminPage() {
           </select>
           <button
             type="button"
-            disabled={busy === "payout-create" || !payoutStoreId}
+            disabled={busy === "payout-create" || !payoutStoreId || !payoutMinimumMet}
             onClick={() => void createSellerPayout()}
             className="rounded-full bg-accent px-4 py-2 text-sm font-semibold disabled:opacity-50"
           >
             {busy === "payout-create" ? a.saving : a.createPayout}
           </button>
         </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {payoutStoreId
+            ? payoutMinimumMet
+              ? a.payoutMinimumEligible
+              : a.payoutMinimumNotMet
+            : a.payoutMinimumHelp}
+          {payoutStoreId ? ` · ${formatTND(selectedPayoutAvailable)}` : ""}
+        </p>
         {payouts.isPending ? (
           <p className="mt-4 text-sm">{a.loading}</p>
         ) : payouts.isError ? (

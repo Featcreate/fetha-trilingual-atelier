@@ -267,6 +267,14 @@ export const dict = {
       konnectEligibility:
         "En phase 1, l’inscription des vendeurs est réservée aux vendeurs en Tunisie. Ces liens sont informatifs uniquement : ils ne collectent pas les paiements des acheteurs et ne versent pas les sommes dues aux vendeurs. Algorea Bazaar calcule et verse elle-même les montants dus.",
       payoutHistory: "Historique des versements",
+      payoutBalanceTitle: "Solde de vos ventes",
+      payoutEarned: "Montant net acquis",
+      payoutTransferred: "Déjà transféré",
+      payoutReserved: "Versements préparés",
+      payoutAvailable: "Disponible à préparer",
+      payoutBalanceNote:
+        "Ce suivi comptable est calculé à partir des ventes vérifiées et des versements enregistrés. Il ne représente pas le solde bancaire du prestataire.",
+
       payoutStatus: "Statut du versement",
       transferReference: "Référence du virement",
       noPayouts: "Aucun versement enregistré pour le moment.",
@@ -331,7 +339,29 @@ export const dict = {
       noPayouts: "Aucun versement.",
       payoutConfirmNote:
         "Cette action enregistre un virement déjà effectué ; elle ne transfère pas d'argent.",
+      payoutMinimumHelp:
+        "Le montant disponible doit dépasser 100 TND pour préparer un versement manuel.",
+      payoutMinimumNotMet:
+        "Le montant disponible doit être supérieur à 100 TND. Aucun versement ne peut être préparé pour le moment.",
+      payoutMinimumEligible: "Seuil de versement atteint : le montant est supérieur à 100 TND.",
       payoutFailedNote: "Le versement a été marqué comme échoué.",
+      financialLedgerTitle: "Grand livre financier central",
+      financialLedgerHelp:
+        "Un registre unique réunit les ventes vérifiées, les commissions, les montants dus aux vendeurs et les virements manuels.",
+      providerKonnectVerified: "Commandes vérifiées via Konnect",
+      providerIpayVerified: "Commandes vérifiées via iPay",
+      providerUnclassified: "Commandes sans prestataire identifié",
+      platformCommissionTotal: "Commissions de la plateforme comptabilisées",
+      sellerOutstandingTotal: "Total restant dû aux vendeurs",
+      sellerBalances: "Soldes par boutique",
+      sellerBalancesTotal: "Total",
+      sellerPayableTotal: "Net dû",
+      sellerTransferredTotal: "Déjà transféré",
+      sellerReservedTotal: "Versements préparés",
+      sellerAvailableTotal: "Disponible à préparer",
+      noSellerBalances: "Aucun solde vendeur enregistré.",
+      providerReconciliationNote:
+        "Les montants par prestataire reflètent les commandes payées et vérifiées, et non le solde bancaire réel du compte Konnect ou iPay.",
     },
     auth: {
       signIn: "Connexion",
@@ -621,6 +651,14 @@ export const dict = {
       konnectEligibility:
         "في المرحلة الأولى، يقتصر تسجيل البائعين على تونس. هذه الروابط معلوماتية فقط؛ فهي لا تحصّل مدفوعات المشترين ولا تحوّل مستحقات البائعين. تتولى Algorea Bazaar وحدها حساب المستحقات وتحويلها.",
       payoutHistory: "سجل التحويلات",
+      payoutBalanceTitle: "رصيد مستحقاتك",
+      payoutEarned: "صافي المستحقات المكتسبة",
+      payoutTransferred: "المحوّل بالفعل",
+      payoutReserved: "تحويلات قيد الإعداد",
+      payoutAvailable: "المتاح لإعداد تحويله",
+      payoutBalanceNote:
+        "هذا سجل محاسبي محسوب من المبيعات المؤكدة والتحويلات المسجلة، ولا يمثل الرصيد البنكي لدى مزوّد الدفع.",
+
       payoutStatus: "حالة التحويل",
       transferReference: "مرجع التحويل",
       noPayouts: "لا توجد تحويلات مسجلة حالياً.",
@@ -683,7 +721,28 @@ export const dict = {
       payoutFailureRequired: "اذكر سبب تعذّر التحويل.",
       noPayouts: "لا توجد تحويلات.",
       payoutConfirmNote: "يسجل هذا الإجراء تحويلاً تم تنفيذه بالفعل؛ ولا يحوّل الأموال بنفسه.",
+      payoutMinimumHelp: "يجب أن يتجاوز المبلغ المتاح 100 دينار لإعداد تحويل يدوي.",
+      payoutMinimumNotMet:
+        "يجب أن يكون المبلغ المتاح أكبر من 100 دينار. لا يمكن إعداد التحويل حاليًا.",
+      payoutMinimumEligible: "تم بلوغ شرط التحويل: المبلغ المتاح أكبر من 100 دينار.",
       payoutFailedNote: "تم تسجيل تعذّر التحويل.",
+      financialLedgerTitle: "الدفتر المالي المركزي",
+      financialLedgerHelp:
+        "سجل موحد يجمع المبيعات المؤكدة وعمولات المنصة ومستحقات البائعين والتحويلات اليدوية.",
+      providerKonnectVerified: "الطلبات المؤكدة عبر Konnect",
+      providerIpayVerified: "الطلبات المؤكدة عبر iPay",
+      providerUnclassified: "طلبات دون مزوّد محدد",
+      platformCommissionTotal: "إجمالي عمولات المنصة المسجلة",
+      sellerOutstandingTotal: "إجمالي المستحقات المتبقية للبائعين",
+      sellerBalances: "أرصدة المتاجر والبائعين",
+      sellerBalancesTotal: "الإجمالي",
+      sellerPayableTotal: "صافي المستحق",
+      sellerTransferredTotal: "المحوّل بالفعل",
+      sellerReservedTotal: "تحويلات قيد الإعداد",
+      sellerAvailableTotal: "المتاح لإعداد تحويله",
+      noSellerBalances: "لا توجد مستحقات مسجلة للبائعين.",
+      providerReconciliationNote:
+        "تعكس مبالغ كل مزوّد قيمة الطلبات المدفوعة والمؤكدة، ولا تمثل الرصيد البنكي الفعلي في حساب Konnect أو iPay.",
     },
     auth: {
       signIn: "تسجيل الدخول",
@@ -979,6 +1038,14 @@ export const dict = {
       konnectEligibility:
         "During Phase 1, seller registration is limited to sellers in Tunisia. These links are informational only: they do not collect buyer payments or pay seller proceeds. Algorea Bazaar alone calculates and transfers the amounts owed to sellers.",
       payoutHistory: "Payout history",
+      payoutBalanceTitle: "Your sales balance",
+      payoutEarned: "Net proceeds earned",
+      payoutTransferred: "Already transferred",
+      payoutReserved: "Prepared payouts",
+      payoutAvailable: "Available to prepare",
+      payoutBalanceNote:
+        "This accounting view is calculated from verified sales and recorded payouts. It is not the payment provider's bank balance.",
+
       payoutStatus: "Payout status",
       transferReference: "Transfer reference",
       noPayouts: "No payouts have been recorded yet.",
@@ -1043,7 +1110,28 @@ export const dict = {
       noPayouts: "No payouts.",
       payoutConfirmNote:
         "This records a transfer that has already happened; it does not move money.",
+      payoutMinimumHelp: "The available amount must exceed 100 TND to prepare a manual payout.",
+      payoutMinimumNotMet:
+        "The available amount must be greater than 100 TND. A payout cannot be prepared yet.",
+      payoutMinimumEligible: "Payout threshold met: the available amount is greater than 100 TND.",
       payoutFailedNote: "The payout was marked as failed.",
+      financialLedgerTitle: "Central financial ledger",
+      financialLedgerHelp:
+        "One ledger brings together verified sales, platform commission, seller payables and manual transfers.",
+      providerKonnectVerified: "Verified orders via Konnect",
+      providerIpayVerified: "Verified orders via iPay",
+      providerUnclassified: "Orders without a provider reference",
+      platformCommissionTotal: "Platform commission recorded",
+      sellerOutstandingTotal: "Total still owed to sellers",
+      sellerBalances: "Balances by store",
+      sellerBalancesTotal: "Total",
+      sellerPayableTotal: "Net payable",
+      sellerTransferredTotal: "Already transferred",
+      sellerReservedTotal: "Prepared payouts",
+      sellerAvailableTotal: "Available to prepare",
+      noSellerBalances: "No seller balances have been recorded.",
+      providerReconciliationNote:
+        "Provider totals reflect paid and verified orders, not the actual bank balance held by Konnect or iPay.",
     },
     auth: {
       signIn: "Sign in",

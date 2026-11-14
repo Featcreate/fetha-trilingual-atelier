@@ -87,7 +87,8 @@ function CartPage() {
   const t = copy[lang];
   const { items, count, remove } = useCart();
   const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);\n  const [shouldAutoRedirect, setShouldAutoRedirect] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [shouldAutoRedirect, setShouldAutoRedirect] = useState(false);
   const signature = items
     .map((line) => line.productId)
     .sort()

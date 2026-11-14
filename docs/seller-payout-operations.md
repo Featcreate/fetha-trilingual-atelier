@@ -8,7 +8,7 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 - Seller registration, store creation, and product listings remain free. No registration, store-opening, listing, or mandatory seller subscription fee is charged.
 - The platform commission is 5% by default and administrator-configurable. Each order item snapshots its commission rate and amounts; historical snapshots are never recalculated.
 - After verified collection and settlement, the platform records the sale, commission, and seller payable in its internal financial ledger.
-- Sellers select their own receiving destination (Konnect, iPay, WePay, bank transfer, or another supported method). Weekly manual transfer is the platform's settlement cadence, not a seller receiving destination.
+- Bank transfer is the only seller receiving method currently offered in the seller dashboard. The data model remains extensible so additional methods can be introduced in a separate future change. Weekly manual transfer is the platform's settlement cadence.
 - The seller's name, account identifier, provider/bank and optional routing notes are stored as private payout details. Passwords, PINs, OTPs and API secrets must never be collected.
 - Each payout batch snapshots the selected destination. Editing the seller's preference affects future batches only; it cannot redirect an existing batch.
 - During Phase 1, seller payables and transfers are denominated in TND.
@@ -22,7 +22,7 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 
 - No provider may split a buyer payment or send seller proceeds directly.
 - No provider API is used to initiate seller payouts.
-- Konnect is the buyer-collection provider only. Seller receiving destinations such as iPay, WePay, a bank account or another supported route are independent of buyer collection and do not authorize providers to control seller balances or distribute marketplace proceeds.
+- Buyer-collection providers are separate from seller payouts. They do not control seller balances or distribute marketplace proceeds; Algorea Bazaar manages seller payables and manual bank transfers.
 - Do not collect or store seller payment-provider passwords, OTPs, or private credentials.
 - Do not promise a seller payout route until the platform has verified the seller's destination details and lawful transfer method.
 

@@ -9,7 +9,7 @@ import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { localizedProductText } from "@/lib/product-translations";
-import { getIpayCheckoutAvailability, startCartIpayCheckout } from "@/lib/shop.functions";
+import { getExistingCartIpayPayment, getIpayCheckoutAvailability, startCartIpayCheckout } from "@/lib/shop.functions";
 
 export const Route = createFileRoute("/cart")({ component: CartPage });
 
@@ -41,7 +41,7 @@ const copy = {
     paymentError:
       "Le lien de paiement n’a pas pu être créé. Vérifiez l’état de la commande avant de réessayer.",
     providerLoading: "Vérification du paiement…",
-    paymentReady: "Votre lien de paiement est prêt. La redirection automatique démarre dans quelques secondes.",
+    paymentReady: "Un lien de paiement iPay déjà créé pour ce panier est disponible.",
     openPayment: "Ouvrir la page de paiement iPay",
   },
   ar: {
@@ -59,7 +59,7 @@ const copy = {
     starting: "جارٍ إعداد رابط الدفع…",
     paymentError: "تعذر إنشاء رابط الدفع. تحققي من حالة الطلب قبل إعادة المحاولة.",
     providerLoading: "جارٍ التحقق من توفر الدفع…",
-    paymentReady: "رابط الدفع جاهز. ستتم إعادة توجيهك تلقائياً بعد لحظات.",
+    paymentReady: "يوجد رابط دفع iPay سابق لهذا السلة ويمكنك فتحه مباشرة.",
     openPayment: "فتح صفحة الدفع عبر iPay",
   },
   en: {
@@ -77,7 +77,7 @@ const copy = {
     starting: "Preparing payment link…",
     paymentError: "The payment link could not be created. Check the order status before retrying.",
     providerLoading: "Checking payment availability…",
-    paymentReady: "Your payment link is ready. Automatic redirection will begin in a few seconds.",
+    paymentReady: "An existing iPay payment link for this cart is available.",
     openPayment: "Open iPay payment page",
   },
 } as const;
@@ -87,7 +87,7 @@ function CartPage() {
   const t = copy[lang];
   const { items, count, remove } = useCart();
   const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);\n  const [shouldAutoRedirect, setShouldAutoRedirect] = useState(false);
   const signature = items
     .map((line) => line.productId)
     .sort()
@@ -144,6 +144,19 @@ function CartPage() {
     },
   });
 
+  const existingIpayPayment = useQuery({
+    queryKey: ["cart-existing-ipay-payment", signature],
+    enabled: items.length > 0,
+    queryFn: async () => {
+      const { data: auth } = await supabase.auth.getSession();
+      if (!auth.session) return null;
+      return getExistingCartIpayPayment({
+        data: { productIds: items.map(({ productId }) => productId) },
+      });
+    },
+    staleTime: 15_000,
+  });
+
   const ipayAvailability = useQuery({
     queryKey: ["cart-checkout-availability", "ipay"],
     queryFn: () => getIpayCheckoutAvailability(),
@@ -160,7 +173,7 @@ function CartPage() {
       }),
     onSuccess: (result) => {
       if (!result.ok) return;
-      setPaymentUrl(result.payUrl);
+      setPaymentUrl(result.payUrl);\n      setShouldAutoRedirect(true);
       try {
         sessionStorage.setItem(`algorea-bazaar:ipay-payment-url:${result.orderId}`, result.payUrl);
         sessionStorage.setItem(`algorea-bazaar:ipay-payment-order:${signature}`, result.orderId);

@@ -88,7 +88,6 @@ function CartPage() {
   const { items, count, remove } = useCart();
   const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
-  const [shouldAutoRedirect, setShouldAutoRedirect] = useState(false);
   const signature = items
     .map((line) => line.productId)
     .sort()
@@ -162,7 +161,6 @@ function CartPage() {
     const recovered = existingIpayPayment.data;
     if (recovered?.payUrl) {
       setPaymentUrl((current) => current ?? recovered.payUrl);
-      setShouldAutoRedirect(false);
     }
   }, [existingIpayPayment.data]);
 
@@ -183,13 +181,14 @@ function CartPage() {
     onSuccess: (result) => {
       if (!result.ok) return;
       setPaymentUrl(result.payUrl);
-      setShouldAutoRedirect(true);
       try {
         sessionStorage.setItem(`algorea-bazaar:ipay-payment-url:${result.orderId}`, result.payUrl);
         sessionStorage.setItem(`algorea-bazaar:ipay-payment-order:${signature}`, result.orderId);
       } catch {
         // The visible link remains available for this page even without session storage.
       }
+      // Navigate the current tab immediately using the exact URL returned by iPay.
+      window.location.assign(result.payUrl);
     },
   });
 
@@ -204,12 +203,6 @@ function CartPage() {
       // Ignore unavailable session storage; checkout remains protected by the server idempotency key.
     }
   }, [signature]);
-
-  useEffect(() => {
-    if (!paymentUrl || !shouldAutoRedirect) return;
-    const redirect = window.setTimeout(() => window.location.assign(paymentUrl), 4000);
-    return () => window.clearTimeout(redirect);
-  }, [paymentUrl, shouldAutoRedirect]);
 
   const lines = useMemo(() => {
     const productMap = new Map(

@@ -340,7 +340,7 @@ export const dict = {
       payoutConfirmNote:
         "Cette action enregistre un virement déjà effectué ; elle ne transfère pas d'argent.",
       payoutMinimumHelp:
-        "Le montant disponible doit dépasser 50 TND pour préparer un versement manuel.",
+        "Le montant disponible doit atteindre au moins 50 TND pour préparer un versement manuel.",
       payoutMinimumNotMet:
         "Le montant disponible doit être supérieur ou égal à 50 TND. Aucun versement ne peut être préparé pour le moment.",
       payoutMinimumEligible: "Seuil de versement atteint : le montant est supérieur ou égal à 50 TND.",

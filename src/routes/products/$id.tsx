@@ -11,7 +11,6 @@ import { ProductPreview } from "@/components/ProductPreview";
 import { getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
-import { PaymentMethodsPreview } from "@/components/PaymentMethodsPreview";
 import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/products/$id")({
@@ -24,7 +23,7 @@ export const Route = createFileRoute("/products/$id")({
       },
       { property: "og:title", content: "Produit numérique — Algorea Bazaar" },
       {
-        property: "og:description",
+        name: "og:description",
         content: "Découvrez ce produit numérique sur Algorea Bazaar.",
       },
       { property: "og:type", content: "website" },
@@ -84,7 +83,7 @@ function ProductPage() {
       {query.isPending ? (
         <p>{m.loading}</p>
       ) : query.isError ? (
-        <p role="alert">{m.error}</p>
+        <p>{m.error}</p>
       ) : !query.data ? (
         <p className="rounded-xl bg-secondary p-5">{m.noCatalog}</p>
       ) : (
@@ -294,18 +293,6 @@ function ProductPage() {
           >
             {m.viewStore}: {query.data.store.name}
           </Link>
-          <section
-            className="mt-7 rounded-2xl border border-border bg-card p-5"
-            aria-label={m.paymentMethodsTitle}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-base font-bold">{m.paymentMethodsTitle}</h2>
-              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">
-                {m.paymentMethodsPlanned}
-              </span>
-            </div>
-            <PaymentMethodsPreview />
-          </section>
         </article>
       )}
     </AuthShell>

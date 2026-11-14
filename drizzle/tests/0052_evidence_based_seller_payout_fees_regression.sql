@@ -6,7 +6,7 @@ BEGIN
   SELECT pg_get_functiondef('public.admin_create_seller_payout(uuid,text,timestamptz)'::regprocedure)
     INTO _definition;
   IF position('seller_external_fee_entries' IN _definition) = 0
-     OR position("fee_category = 'seller_transfer'" IN _definition) = 0
+     OR (length(_definition) - length(replace(_definition, 'fee_category = ''seller_transfer''', ''))) / length('fee_category = ''seller_transfer''') <> 2
      OR position('seller_payout_fee_allocations' IN _definition) = 0
      OR position('_seller_amount := _seller_gross - _external_fees' IN _definition) = 0
      OR position('IF _seller_amount < 50000 THEN' IN _definition) = 0

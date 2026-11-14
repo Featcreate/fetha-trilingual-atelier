@@ -366,7 +366,7 @@ function AdminPage() {
       data: {
         storeId: payoutStoreId,
         amountMillimes: Math.round(amount * 1000),
-        transferClass: feeClass as "digital_same_bank" | "digital_other_bank" | "branch_same_bank" | "branch_other_bank" | "multiple_electronic" | "manual_list_same_bank" | "manual_list_other_bank",
+        transferClass: feeClass as "digital_same_bank" | "digital_other_bank" | "branch_same_bank" | "branch_other_bank" | "manual_list_same_bank" | "manual_list_other_bank",
         externalReference: feeReference.trim(),
       },
     });

@@ -882,12 +882,11 @@ function AdminPage() {
             {lang === "ar" ? "اختاري فئة التعريفة كمرجع داخلي، ثم أدخلي المبلغ الفعلي الظاهر في كشف العملية والمرجع. لا تُحتسب الضريبة تلقائيًا ولا تُسجّل رسوم تقديرية." : lang === "en" ? "Choose the internal tariff reference, then enter the actual amount shown on the transaction statement and its reference. Tax is not added automatically; estimates are not accepted." : "Choisissez la catégorie tarifaire comme référence interne, puis saisissez le montant réellement débité et sa référence. Aucune TVA n’est ajoutée automatiquement et aucun montant estimatif n’est enregistré."}
           </p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <select value={feeClass} onChange={(e) => { const value = e.target.value; setFeeClass(value); setFeeAmount(({ digital_same_bank: "2.000", digital_other_bank: "2.500", branch_same_bank: "3.000", branch_other_bank: "3.500", multiple_electronic: "30.000", manual_list_same_bank: "1.200", manual_list_other_bank: "1.500" } as Record<string, string>)[value] ?? ""); }} className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
+            <select value={feeClass} onChange={(e) => { const value = e.target.value; setFeeClass(value); setFeeAmount(({ digital_same_bank: "2.000", digital_other_bank: "2.500", branch_same_bank: "3.000", branch_other_bank: "3.500", manual_list_same_bank: "1.200", manual_list_other_bank: "1.500" } as Record<string, string>)[value] ?? ""); }} className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
               <option value="digital_same_bank">Digital · UIB vers UIB · 2,000 TND HT</option>
               <option value="digital_other_bank">Digital · autre banque tunisienne · 2,500 TND HT</option>
               <option value="branch_same_bank">Agence · UIB vers UIB · 3,000 TND HT</option>
               <option value="branch_other_bank">Agence · autre banque tunisienne · 3,500 TND HT</option>
-              <option value="multiple_electronic">Virement multiple · support électronique · 30,000 TND HT / opération</option>
               <option value="manual_list_same_bank">Liste manuelle · bénéficiaire UIB · 1,200 TND HT</option>
               <option value="manual_list_other_bank">Liste manuelle · autre banque · 1,500 TND HT</option>
             </select>

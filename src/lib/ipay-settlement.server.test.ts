@@ -158,7 +158,6 @@ describe("iPay settlement notice safety", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-
   it("rejects a transaction belonging to a different iPay product", async () => {
     vi.stubEnv("IPAY_ORG_ID", "org-test");
     vi.stubEnv("IPAY_JWT", "jwt-test");

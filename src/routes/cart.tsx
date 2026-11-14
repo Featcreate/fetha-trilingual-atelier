@@ -158,6 +158,14 @@ function CartPage() {
     staleTime: 15_000,
   });
 
+  useEffect(() => {
+    const recovered = existingIpayPayment.data;
+    if (recovered?.payUrl) {
+      setPaymentUrl((current) => current ?? recovered.payUrl);
+      setShouldAutoRedirect(false);
+    }
+  }, [existingIpayPayment.data]);
+
   const ipayAvailability = useQuery({
     queryKey: ["cart-checkout-availability", "ipay"],
     queryFn: () => getIpayCheckoutAvailability(),
@@ -198,10 +206,10 @@ function CartPage() {
   }, [signature]);
 
   useEffect(() => {
-    if (!paymentUrl) return;
+    if (!paymentUrl || !shouldAutoRedirect) return;
     const redirect = window.setTimeout(() => window.location.assign(paymentUrl), 4000);
     return () => window.clearTimeout(redirect);
-  }, [paymentUrl]);
+  }, [paymentUrl, shouldAutoRedirect]);
 
   const lines = useMemo(() => {
     const productMap = new Map(

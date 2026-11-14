@@ -372,6 +372,13 @@
       "when": 1794787200002,
       "tag": "0050_product_category_taxonomy",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1794873600000,
+      "tag": "0051_seller_payout_minimum_threshold",
+      "breakpoints": true
     }
   ]
 }

@@ -28,6 +28,12 @@ type Product = {
 };
 type Store = { id: string; name: string };
 
+function normalizeIpayCheckoutUrl(rawUrl: string): string {
+  const url = new URL(rawUrl);
+  if (url.hostname === "ipay.tn") url.hostname = "www.ipay.tn";
+  return url.toString();
+}
+
 const copy = {
   fr: {
     title: "Panier",
@@ -164,7 +170,7 @@ function CartPage() {
   useEffect(() => {
     const recovered = existingIpayPayment.data;
     if (recovered?.payUrl) {
-      setPaymentUrl((current) => current ?? recovered.payUrl);
+      setPaymentUrl((current) => current ?? normalizeIpayCheckoutUrl(recovered.payUrl));
     }
   }, [existingIpayPayment.data]);
 
@@ -184,15 +190,16 @@ function CartPage() {
       }),
     onSuccess: (result) => {
       if (!result.ok) return;
-      setPaymentUrl(result.payUrl);
+      const checkoutUrl = normalizeIpayCheckoutUrl(result.payUrl);
+      setPaymentUrl(checkoutUrl);
       try {
-        sessionStorage.setItem(`algorea-bazaar:ipay-payment-url:${result.orderId}`, result.payUrl);
+        sessionStorage.setItem(`algorea-bazaar:ipay-payment-url:${result.orderId}`, checkoutUrl);
         sessionStorage.setItem(`algorea-bazaar:ipay-payment-order:${signature}`, result.orderId);
       } catch {
         // The visible link remains available for this page even without session storage.
       }
       // Navigate the current tab immediately using the exact URL returned by iPay.
-      window.location.assign(result.payUrl);
+      window.location.assign(checkoutUrl);
     },
   });
 
@@ -202,7 +209,7 @@ function CartPage() {
       const savedUrl = orderId
         ? sessionStorage.getItem(`algorea-bazaar:ipay-payment-url:${orderId}`)
         : null;
-      if (savedUrl) setPaymentUrl(savedUrl);
+      if (savedUrl) setPaymentUrl(normalizeIpayCheckoutUrl(savedUrl));
     } catch {
       // Ignore unavailable session storage; checkout remains protected by the server idempotency key.
     }

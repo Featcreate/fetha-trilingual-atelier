@@ -18,9 +18,9 @@ export const Route = createFileRoute("/_authenticated/admin-ipay-check")({
 
 function AdminIpayCheckPage() {
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<
-    Awaited<ReturnType<typeof adminCheckIpayConnection>> | null
-  >(null);
+  const [result, setResult] = useState<Awaited<ReturnType<typeof adminCheckIpayConnection>> | null>(
+    null,
+  );
 
   async function runCheck() {
     setBusy(true);

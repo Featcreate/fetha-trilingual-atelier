@@ -45,8 +45,8 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 ## Weekly operating procedure
 
 1. Reconcile verified paid sales and seller ledger entries for the weekly period.
-2. Prepare the weekly payout batch. The platform calculates the seller's payable after platform commission and deducts only actual, evidence-backed transfer fees recorded against the seller. UIB tariff values are internal reference values, not proof of a fee charged.
-3. Review gross sales, discounts, platform commission, evidenced transfer fees, and final net seller payable.
+2. Prepare the weekly payout batch. The platform calculates the seller's payable after the applicable platform commission only; external receiving or withdrawal fees are not included.
+3. Review gross sales, discounts, platform commission, and the seller's payable amount.
 4. Transfer the displayed payable from the platform's own funds to the seller's saved receiving destination.
 5. After the transfer succeeds, record the transfer reference and confirm the payout. If the transfer fails, record the reason and retry the same payout; do not create a second batch for the same sales.
 
@@ -58,14 +58,7 @@ Migrations 0022, 0023 and 0024 have been applied to the original Supabase projec
 
 Migration 0030 introduced seller-selected receiving destinations independently from the weekly manual settlement rail. Migration 0031 superseded the earlier fee-aware payout calculation: new payout batches set the legacy `external_fees_millimes` field to zero and transfer the full verified seller payable after platform commission. Receiving/withdrawal fees charged by the seller's own provider or bank remain outside platform accounting and are not shown or deducted. Migration 0038 adds Konnect to the supported receiving destinations while retaining the seller/admin RLS boundary and immutable payout destination snapshots. Migration 0038 is a source change only until separately reviewed and applied; it does not initiate payments or transfers.
 
-## Evidence-based payout fees and minimum
 
-- The minimum net payout is **50.000 TND or more** (50,000 millimes); exactly 50.000 TND is eligible.
-- Platform commission is calculated separately and is never combined with transfer fees.
-- Only a fee actually charged and supported by an external statement or transaction reference may be recorded and allocated to a seller payout. Do not deduct an estimated tariff, assumed VAT, or a beneficiary-side incoming fee without evidence that it is borne by the platform's transfer operation.
-- The internal UIB tariff reference may guide review of a bank charge, but it is not itself proof that the charge was applied. The seller-facing statement shows the amount before fees, fees, and net amount only; it does not expose the bank name or transfer category.
-- Migration 0052 restores the existing append-only, evidence-backed fee allocation path for new payout batches. It does not automatically execute transfers or apply a tariff estimate.
+## External receiving fees
 
-### Internal UIB tariff reference (HT)
-
-The administrator's internal transfer-class selector displays these reference values: digital transfer to a UIB account, 2.000 TND; digital transfer to another Tunisian bank, 2.500 TND; branch transfer to a UIB account, 3.000 TND; branch transfer to another Tunisian bank, 3.500 TND; multiple transfer using electronic support, 30.000 TND per operation; manual-list transfer to a UIB beneficiary, 1.200 TND per beneficiary; manual-list transfer to another bank, 1.500 TND per beneficiary. The 30.000 TND electronic-batch rate is not selectable in the per-seller fee form because a shared operation fee must first be allocated across all affected sellers; it must never be charged in full to one seller by default. It is not combined with either manual-list per-beneficiary rate. The selector is an internal classification only: the administrator must enter the actual debit amount and external statement reference. VAT is not added automatically.
+External fees charged by a seller's bank or receiving provider are the seller's responsibility. They remain outside Algorea Bazaar's accounting and payout calculations: the platform does not calculate, record, allocate, deduct, reimburse, or display those fees. Seller payout amounts and payout history reflect the amount payable after platform commission only.

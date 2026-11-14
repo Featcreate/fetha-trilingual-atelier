@@ -922,18 +922,8 @@ function AdminPage() {
               onChange={(e) => {
                 const value = e.target.value;
                 setFeeClass(value);
-                setFeeAmount(
-                  (
-                    {
-                      digital_same_bank: "2.000",
-                      digital_other_bank: "2.500",
-                      branch_same_bank: "3.000",
-                      branch_other_bank: "3.500",
-                      manual_list_same_bank: "1.200",
-                      manual_list_other_bank: "1.500",
-                    } as Record<string, string>
-                  )[value] ?? "",
-                );
+                // Tariffs are references only; the actual debited amount must be entered manually.
+                setFeeAmount("");
               }}
               className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
             >

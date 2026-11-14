@@ -86,7 +86,7 @@ Migration 0022 has been applied to the original Supabase project jgjcychkntsokhz
 - The seller statement shows the amount before fees, the actual fee total, and the net amount. It does not disclose the bank name or internal transfer category.
 - Migration 0052 supersedes the fee-ignoring payout behavior introduced by migration 0031 and restores allocation of actual, evidence-backed fee entries.
 - The net payout minimum is 50.000 TND or more (50,000 millimes); exactly 50.000 TND is eligible.
-- Migration 0038 adds Konnect as a supported seller receiving destination.
+- The seller-facing payout form currently supports bank transfer only. The destination model remains extensible so additional methods can be introduced deliberately in a future change.
 
 ## Migration verification boundary — 2026-11-04
 

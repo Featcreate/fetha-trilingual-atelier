@@ -101,6 +101,7 @@ function SellerPage() {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
   const [confirmationBusy, setConfirmationBusy] = useState(false);
+  const payoutMethod = "bank_transfer";
     const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
   const [editCategoryId, setEditCategoryId] = useState("");

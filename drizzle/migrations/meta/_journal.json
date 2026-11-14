@@ -379,13 +379,6 @@
       "when": 1794873600000,
       "tag": "0051_seller_payout_minimum_threshold",
       "breakpoints": true
-    },
-    {
-      "idx": 54,
-      "version": "7",
-      "when": 1794873600001,
-      "tag": "0052_evidence_based_seller_payout_fees",
-      "breakpoints": true
     }
   ]
 }

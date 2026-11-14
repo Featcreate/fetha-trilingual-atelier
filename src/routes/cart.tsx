@@ -9,7 +9,11 @@ import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { localizedProductText } from "@/lib/product-translations";
-import { getExistingCartIpayPayment, getIpayCheckoutAvailability, startCartIpayCheckout } from "@/lib/shop.functions";
+import {
+  getExistingCartIpayPayment,
+  getIpayCheckoutAvailability,
+  startCartIpayCheckout,
+} from "@/lib/shop.functions";
 
 export const Route = createFileRoute("/cart")({ component: CartPage });
 
@@ -341,7 +345,10 @@ function CartPage() {
               </p>
             ) : null}
             {paymentUrl && (
-              <div role="status" className="mt-4 rounded-xl border border-border bg-secondary p-4 text-sm">
+              <div
+                role="status"
+                className="mt-4 rounded-xl border border-border bg-secondary p-4 text-sm"
+              >
                 <p>{t.paymentReady}</p>
                 <a
                   href={paymentUrl}

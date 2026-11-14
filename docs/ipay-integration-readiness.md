@@ -17,6 +17,7 @@ Last reviewed against the repository and the in-dashboard iPay API documentation
 
 - Base URL: `https://api.ipay.tn`.
 - Required headers: `X-Org-Id: <organisation UUID>` and `Authorization: Bearer <JWT>`.
+- The product's dashboard UUID is configured server-side as `IPAY_PRODUCT_ID`; the human-readable code remains `IPAY_PRODUCT_CODE` for one-shot creation.
 - The dashboard documentation says the organisation JWT is generated from Organisation settings and is valid for one year. Never expose it to the browser or source control.
 - The dashboard admin uses a different admin code; external application integrations must use the organisation JWT.
 - The dashboard says iPay-generated UUIDs for customers, plans, and subscriptions must not be sent in create/update request bodies.
@@ -85,6 +86,8 @@ The documented payload shape is:
 ### Provider client — `src/lib/ipay.server.ts`
 
 - Authenticates requests with `X-Org-Id` and `Authorization: Bearer <JWT>`.
+- Requires both `IPAY_PRODUCT_CODE` and `IPAY_PRODUCT_ID` for checkout configuration. One-shot creation continues to send the documented `product_code`; the configured product UUID is checked against the authoritative transaction lookup before settlement.
+- Rejects a transaction lookup that omits `product_id` or reports a different product UUID.
 - Builds the documented one-shot POST request with product code, TND currency, customer name, and order ID as external/invoice references.
 - Converts canonical integer millimes to decimal dinars (`10500` millimes becomes `10.5` TND), matching the confirmed iPay amount unit.
 - Validates the returned transaction reference and hosted URL, and requires the response to echo the exact requested amount, TND currency, and internal order reference before exposing the hosted URL. Any mismatch fails closed; because the provider may already have created a transaction, the initialization claim remains locked for manual reconciliation.

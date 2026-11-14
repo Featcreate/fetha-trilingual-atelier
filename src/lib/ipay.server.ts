@@ -7,6 +7,7 @@ export type IpayConfig = {
   orgId: string;
   jwt: string;
   productCode: string;
+  productId: string;
 };
 
 /** Both the admin switch and the independent server-side environment gate must be on. */
@@ -31,11 +32,12 @@ function ipayAuthConfig(): IpayAuthConfig | null {
 export function ipayConfig(requireActivation = false): IpayConfig | null {
   const auth = ipayAuthConfig();
   const productCode = process.env["IPAY_PRODUCT_CODE"];
-  if (!auth || !productCode) return null;
+  const productId = process.env["IPAY_PRODUCT_ID"];
+  if (!auth || !productCode || !productId) return null;
   if (requireActivation && process.env["IPAY_CHECKOUT_ENABLED"] !== "true") {
     return null;
   }
-  return { ...auth, productCode };
+  return { ...auth, productCode, productId };
 }
 
 /** Convert the canonical TND millime total to the dinar amount expected by iPay. */

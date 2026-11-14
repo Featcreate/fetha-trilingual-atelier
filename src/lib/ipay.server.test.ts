@@ -267,6 +267,7 @@ describe("iPay one-shot request safety", () => {
     vi.stubEnv("IPAY_ORG_ID", "org-test");
     vi.stubEnv("IPAY_JWT", "jwt-test");
     vi.stubEnv("IPAY_PRODUCT_CODE", "algorea-bazaar");
+    vi.stubEnv("IPAY_PRODUCT_ID", "39868232-79af-499c-b8c1-71bfe43e7ccc");
     vi.stubEnv("IPAY_CHECKOUT_ENABLED", "true");
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(
@@ -320,6 +321,7 @@ describe("iPay invalid input guards", () => {
     vi.stubEnv("IPAY_ORG_ID", "org-test");
     vi.stubEnv("IPAY_JWT", "jwt-test");
     vi.stubEnv("IPAY_PRODUCT_CODE", "algorea-bazaar");
+    vi.stubEnv("IPAY_PRODUCT_ID", "39868232-79af-499c-b8c1-71bfe43e7ccc");
     vi.stubEnv("IPAY_CHECKOUT_ENABLED", "true");
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);

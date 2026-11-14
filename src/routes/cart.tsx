@@ -171,6 +171,18 @@ function CartPage() {
   });
 
   useEffect(() => {
+    try {
+      const orderId = sessionStorage.getItem(`algorea-bazaar:ipay-payment-order:${signature}`);
+      const savedUrl = orderId
+        ? sessionStorage.getItem(`algorea-bazaar:ipay-payment-url:${orderId}`)
+        : null;
+      if (savedUrl) setPaymentUrl(savedUrl);
+    } catch {
+      // Ignore unavailable session storage; checkout remains protected by the server idempotency key.
+    }
+  }, [signature]);
+
+  useEffect(() => {
     if (!paymentUrl) return;
     const redirect = window.setTimeout(() => window.location.assign(paymentUrl), 4000);
     return () => window.clearTimeout(redirect);

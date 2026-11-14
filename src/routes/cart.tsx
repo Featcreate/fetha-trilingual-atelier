@@ -38,7 +38,8 @@ const copy = {
     error: "Impossible de charger le panier.",
     disabled: "Le paiement iPay n’est pas encore disponible. Votre panier est conservé.",
     starting: "Préparation du paiement…",
-    paymentError: "Le lien de paiement n’a pas pu être créé. Vérifiez l’état de la commande avant de réessayer.",
+    paymentError:
+      "Le lien de paiement n’a pas pu être créé. Vérifiez l’état de la commande avant de réessayer.",
     providerLoading: "Vérification du paiement…",
   },
   ar: {
@@ -80,7 +81,10 @@ function CartPage() {
   const t = copy[lang];
   const { items, count, remove } = useCart();
   const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
-  const signature = items.map((line) => line.productId).sort().join(",");
+  const signature = items
+    .map((line) => line.productId)
+    .sort()
+    .join(",");
 
   const getCheckoutKey = () => {
     if (checkoutAttempt.current?.signature === signature) return checkoutAttempt.current.key;

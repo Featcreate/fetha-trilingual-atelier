@@ -112,18 +112,17 @@ export const adminCheckIpayConnection = createServerFn({ method: "GET" })
       return { ok: false as const, authenticated: false as const, error: "forbidden" as const };
     }
 
-    const { ipayConfig, ipayGetWebhookHealth } = await import("@/lib/ipay.server");
-    const config = ipayConfig(false);
-    if (!config) {
+    const { ipayGetWebhookHealth } = await import("@/lib/ipay.server");
+    const missing = [
+      ...(!process.env["IPAY_ORG_ID"] ? ["IPAY_ORG_ID"] : []),
+      ...(!process.env["IPAY_JWT"] ? ["IPAY_JWT"] : []),
+    ];
+    if (missing.length > 0) {
       return {
         ok: false as const,
         authenticated: false as const,
         error: "missing_server_configuration" as const,
-        missing: [
-          ...(!process.env["IPAY_ORG_ID"] ? ["IPAY_ORG_ID"] : []),
-          ...(!process.env["IPAY_JWT"] ? ["IPAY_JWT"] : []),
-          ...(!process.env["IPAY_PRODUCT_CODE"] ? ["IPAY_PRODUCT_CODE"] : []),
-        ],
+        missing,
       };
     }
 

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMemo, useRef } from "react";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { AuthShell } from "@/components/AuthShell";
 import { ProductPreview } from "@/components/ProductPreview";
@@ -9,6 +9,7 @@ import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { localizedProductText } from "@/lib/product-translations";
+import { getIpayCheckoutAvailability, startCartIpayCheckout } from "@/lib/shop.functions";
 
 export const Route = createFileRoute("/cart")({ component: CartPage });
 
@@ -28,37 +29,50 @@ const copy = {
     title: "Panier",
     empty: "Votre panier est vide.",
     browse: "Continuer mes achats",
-    checkout: "Passer à la caisse",
+    checkout: "Payer avec iPay",
     remove: "Retirer",
-    subtotal: "Sous-total",
+    subtotal: "Total à payer",
     unavailable: "Un produit n’est plus disponible. Retirez-le avant de poursuivre.",
     limit: "50 produits différents maximum par panier.",
     loading: "Chargement…",
     error: "Impossible de charger le panier.",
+    disabled: "Le paiement iPay n’est pas encore disponible. Votre panier est conservé.",
+    starting: "Préparation du paiement…",
+    paymentError:
+      "Le lien de paiement n’a pas pu être créé. Vérifiez l’état de la commande avant de réessayer.",
+    providerLoading: "Vérification du paiement…",
   },
   ar: {
     title: "سلة المشتريات",
     empty: "سلة مشترياتك فارغة.",
     browse: "متابعة التسوق",
-    checkout: "الانتقال إلى الدفع",
+    checkout: "الدفع عبر iPay",
     remove: "حذف",
-    subtotal: "المجموع الفرعي",
+    subtotal: "الإجمالي المستحق",
     unavailable: "يوجد منتج لم يعد متاحاً. احذفيه قبل المتابعة.",
     limit: "الحد الأقصى 50 منتجاً مختلفاً في السلة.",
     loading: "جارٍ التحميل…",
     error: "تعذر تحميل السلة.",
+    disabled: "الدفع عبر iPay غير متاح حالياً. ستبقى سلتك محفوظة.",
+    starting: "جارٍ إعداد رابط الدفع…",
+    paymentError: "تعذر إنشاء رابط الدفع. تحققي من حالة الطلب قبل إعادة المحاولة.",
+    providerLoading: "جارٍ التحقق من توفر الدفع…",
   },
   en: {
     title: "Shopping cart",
     empty: "Your cart is empty.",
     browse: "Continue shopping",
-    checkout: "Proceed to checkout",
+    checkout: "Pay with iPay",
     remove: "Remove",
-    subtotal: "Subtotal",
+    subtotal: "Total due",
     unavailable: "A product is no longer available. Remove it before continuing.",
     limit: "Up to 50 different products per cart.",
     loading: "Loading…",
     error: "Could not load cart.",
+    disabled: "iPay checkout is not available yet. Your cart is preserved.",
+    starting: "Preparing payment link…",
+    paymentError: "The payment link could not be created. Check the order status before retrying.",
+    providerLoading: "Checking payment availability…",
   },
 } as const;
 
@@ -66,6 +80,33 @@ function CartPage() {
   const { lang, setLang } = useLang();
   const t = copy[lang];
   const { items, count, remove } = useCart();
+  const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
+  const signature = items
+    .map((line) => line.productId)
+    .sort()
+    .join(",");
+
+  const getCheckoutKey = () => {
+    if (checkoutAttempt.current?.signature === signature) return checkoutAttempt.current.key;
+    const storageKey = `algorea-bazaar:ipay-cart-attempt:${signature}`;
+    try {
+      const stored = sessionStorage.getItem(storageKey);
+      if (stored && stored.length >= 8) {
+        checkoutAttempt.current = { signature, key: stored };
+        return stored;
+      }
+    } catch {
+      // Continue with an in-memory key when session storage is unavailable.
+    }
+    const key = crypto.randomUUID();
+    checkoutAttempt.current = { signature, key };
+    try {
+      sessionStorage.setItem(storageKey, key);
+    } catch {
+      // The in-memory key still protects this page.
+    }
+    return key;
+  };
 
   const query = useQuery({
     queryKey: ["cart-products", items.map((line) => line.productId).join(",")],
@@ -96,6 +137,25 @@ function CartPage() {
     },
   });
 
+  const ipayAvailability = useQuery({
+    queryKey: ["cart-checkout-availability", "ipay"],
+    queryFn: () => getIpayCheckoutAvailability(),
+    staleTime: 30_000,
+  });
+
+  const paymentMutation = useMutation({
+    mutationFn: () =>
+      startCartIpayCheckout({
+        data: {
+          items: items.map(({ productId }) => ({ productId })),
+          checkoutKey: getCheckoutKey(),
+        },
+      }),
+    onSuccess: (result) => {
+      if (result.ok) window.location.assign(result.payUrl);
+    },
+  });
+
   const lines = useMemo(() => {
     const productMap = new Map(
       (query.data?.products ?? []).map((product) => [product.id, product]),
@@ -120,6 +180,8 @@ function CartPage() {
 
   const total = lines.reduce((sum, line) => sum + line.total, 0);
   const unavailable = !query.isPending && lines.length !== items.length;
+  const paymentError =
+    paymentMutation.isError || (paymentMutation.data !== undefined && !paymentMutation.data.ok);
 
   return (
     <AuthShell
@@ -208,21 +270,32 @@ function CartPage() {
               <span>{formatTND(total)}</span>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{t.limit}</p>
-            {unavailable ? (
-              <button
-                type="button"
-                disabled
-                className="mt-5 w-full rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground opacity-50"
-              >
-                {t.checkout}
-              </button>
-            ) : (
-              <Link
-                to="/checkout"
-                className="mt-5 inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground"
-              >
-                {t.checkout}
-              </Link>
+            <button
+              type="button"
+              onClick={() => paymentMutation.mutate()}
+              disabled={
+                unavailable ||
+                paymentMutation.isPending ||
+                ipayAvailability.isPending ||
+                !ipayAvailability.data?.enabled
+              }
+              className="mt-5 inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {paymentMutation.isPending ? t.starting : t.checkout}
+            </button>
+            {ipayAvailability.isPending ? (
+              <p role="status" className="mt-2 text-sm text-muted-foreground">
+                {t.providerLoading}
+              </p>
+            ) : !ipayAvailability.data?.enabled ? (
+              <p role="status" className="mt-2 text-sm text-muted-foreground">
+                {t.disabled}
+              </p>
+            ) : null}
+            {paymentError && (
+              <p role="alert" className="mt-3 rounded-xl border border-border p-4 text-sm">
+                {t.paymentError}
+              </p>
             )}
           </div>
         </>

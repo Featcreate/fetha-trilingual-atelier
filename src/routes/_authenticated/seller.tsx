@@ -1434,12 +1434,20 @@ function SellerPage() {
                       </div>
                       <div className="text-end space-y-1">
                         <p className="text-xs text-muted-foreground">
-                          {lang === "ar" ? "المبلغ قبل الرسوم" : lang === "en" ? "Amount before fees" : "Montant avant frais"}:
-                          {" "}{formatTND(Number(p.seller_amount_millimes) + Number(p.external_fees_millimes ?? 0))}
+                          {lang === "ar"
+                            ? "المبلغ قبل الرسوم"
+                            : lang === "en"
+                              ? "Amount before fees"
+                              : "Montant avant frais"}
+                          :{" "}
+                          {formatTND(
+                            Number(p.seller_amount_millimes) +
+                              Number(p.external_fees_millimes ?? 0),
+                          )}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {lang === "ar" ? "الرسوم" : lang === "en" ? "Fees" : "Frais"}:
-                          {" "}{formatTND(Number(p.external_fees_millimes ?? 0))}
+                          {lang === "ar" ? "الرسوم" : lang === "en" ? "Fees" : "Frais"}:{" "}
+                          {formatTND(Number(p.external_fees_millimes ?? 0))}
                         </p>
                         <strong>{formatTND(p.seller_amount_millimes)}</strong>
                       </div>

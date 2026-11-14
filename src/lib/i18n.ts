@@ -343,7 +343,8 @@ export const dict = {
         "Le montant disponible doit atteindre au moins 50 TND pour préparer un versement manuel.",
       payoutMinimumNotMet:
         "Le montant disponible doit être supérieur ou égal à 50 TND. Aucun versement ne peut être préparé pour le moment.",
-      payoutMinimumEligible: "Seuil de versement atteint : le montant est supérieur ou égal à 50 TND.",
+      payoutMinimumEligible:
+        "Seuil de versement atteint : le montant est supérieur ou égal à 50 TND.",
       payoutFailedNote: "Le versement a été marqué comme échoué.",
       financialLedgerTitle: "Grand livre financier central",
       financialLedgerHelp:
@@ -626,8 +627,7 @@ export const dict = {
       emailVerificationRequired: "أكد بريدك الإلكتروني قبل إنشاء المتجر أو إضافة الملفات.",
       nameRequired: "أدخل اسم المتجر.",
       productRequired: "أدخل اسم المنتج ووصفه.",
-      automaticTranslation:
-        "ستُترجم تسمية المنتج ووصفه تلقائياً إلى العربية والفرنسية والإنجليزية.",
+      automaticTranslation: "ستُترجم تسمية المنتج ووصفه تلقائياً إلى العربية والفرنسية والإنجليزية.",
       translationFailed: "الترجمة التلقائية غير متاحة مؤقتاً. أعد المحاولة قبل نشر المنتج.",
       translationSavedWithoutTranslation:
         "حُفظ المنتج بلغته الأصلية؛ الترجمة التلقائية غير متاحة مؤقتاً.",
@@ -1110,7 +1110,8 @@ export const dict = {
       noPayouts: "No payouts.",
       payoutConfirmNote:
         "This records a transfer that has already happened; it does not move money.",
-      payoutMinimumHelp: "The available amount must reach at least 50 TND to prepare a manual payout.",
+      payoutMinimumHelp:
+        "The available amount must reach at least 50 TND to prepare a manual payout.",
       payoutMinimumNotMet:
         "The available amount must be at least 50 TND. A payout cannot be prepared yet.",
       payoutMinimumEligible: "Payout threshold met: the available amount is at least 50 TND.",

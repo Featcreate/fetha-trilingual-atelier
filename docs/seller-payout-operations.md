@@ -58,7 +58,6 @@ Migrations 0022, 0023 and 0024 have been applied to the original Supabase projec
 
 Migration 0030 introduced seller-selected receiving destinations independently from the weekly manual settlement rail. Migration 0031 superseded the earlier fee-aware payout calculation: new payout batches set the legacy `external_fees_millimes` field to zero and transfer the full verified seller payable after platform commission. Receiving/withdrawal fees charged by the seller's own provider or bank remain outside platform accounting and are not shown or deducted. Migration 0038 adds Konnect to the supported receiving destinations while retaining the seller/admin RLS boundary and immutable payout destination snapshots. Migration 0038 is a source change only until separately reviewed and applied; it does not initiate payments or transfers.
 
-
 ## Evidence-based payout fees and minimum
 
 - The minimum net payout is **50.000 TND or more** (50,000 millimes); exactly 50.000 TND is eligible.

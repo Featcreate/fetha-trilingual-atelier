@@ -50,19 +50,21 @@ export const adminSetIpayCheckoutEnabled = createServerFn({ method: "POST" })
 export const adminRecordSellerExternalFee = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({
-      storeId: z.string().uuid(),
-      amountMillimes: z.number().int().positive().max(100_000_000),
-      transferClass: z.enum([
-        "digital_same_bank",
-        "digital_other_bank",
-        "branch_same_bank",
-        "branch_other_bank",
-        "manual_list_same_bank",
-        "manual_list_other_bank",
-      ]),
-      externalReference: z.string().trim().min(3).max(120),
-    }).parse(input),
+    z
+      .object({
+        storeId: z.string().uuid(),
+        amountMillimes: z.number().int().positive().max(100_000_000),
+        transferClass: z.enum([
+          "digital_same_bank",
+          "digital_other_bank",
+          "branch_same_bank",
+          "branch_other_bank",
+          "manual_list_same_bank",
+          "manual_list_other_bank",
+        ]),
+        externalReference: z.string().trim().min(3).max(120),
+      })
+      .parse(input),
   )
   .handler(({ data, context }) =>
     runAdminRpc(context, "server_admin_record_seller_external_fee", {

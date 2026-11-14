@@ -357,7 +357,15 @@ function AdminPage() {
     if (!payoutStoreId || !feeAmount.trim() || !feeReference.trim()) return;
     const amount = Number(feeAmount);
     if (!Number.isFinite(amount) || amount <= 0 || Math.round(amount * 1000) !== amount * 1000) {
-      setNotice({ ok: false, text: lang === "ar" ? "أدخلي مبلغًا صحيحًا بثلاث خانات عشرية كحد أقصى." : lang === "en" ? "Enter a valid amount with up to three decimal places." : "Saisissez un montant valide avec trois décimales au maximum." });
+      setNotice({
+        ok: false,
+        text:
+          lang === "ar"
+            ? "أدخلي مبلغًا صحيحًا بثلاث خانات عشرية كحد أقصى."
+            : lang === "en"
+              ? "Enter a valid amount with up to three decimal places."
+              : "Saisissez un montant valide avec trois décimales au maximum.",
+      });
       return;
     }
     setBusy("payout-fee");
@@ -366,18 +374,35 @@ function AdminPage() {
       data: {
         storeId: payoutStoreId,
         amountMillimes: Math.round(amount * 1000),
-        transferClass: feeClass as "digital_same_bank" | "digital_other_bank" | "branch_same_bank" | "branch_other_bank" | "manual_list_same_bank" | "manual_list_other_bank",
+        transferClass: feeClass as
+          | "digital_same_bank"
+          | "digital_other_bank"
+          | "branch_same_bank"
+          | "branch_other_bank"
+          | "manual_list_same_bank"
+          | "manual_list_other_bank",
         externalReference: feeReference.trim(),
       },
     });
     setBusy(null);
     if (error) {
-      setNotice({ ok: false, text: error.message.includes("forbidden") ? "forbidden" : a.saveError });
+      setNotice({
+        ok: false,
+        text: error.message.includes("forbidden") ? "forbidden" : a.saveError,
+      });
       return;
     }
     setFeeAmount("");
     setFeeReference("");
-    setNotice({ ok: true, text: lang === "ar" ? "تم تسجيل الرسم الفعلي الموثّق." : lang === "en" ? "The evidenced fee was recorded." : "Les frais réels justifiés ont été enregistrés." });
+    setNotice({
+      ok: true,
+      text:
+        lang === "ar"
+          ? "تم تسجيل الرسم الفعلي الموثّق."
+          : lang === "en"
+            ? "The evidenced fee was recorded."
+            : "Les frais réels justifiés ont été enregistrés.",
+    });
     await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
   }
 
@@ -877,24 +902,105 @@ function AdminPage() {
           <span className="text-xs text-muted-foreground">{a.payoutConfirmNote}</span>
         </div>
         <div className="mb-4 rounded-lg bg-secondary/60 p-4">
-          <h3 className="text-sm font-semibold">{lang === "ar" ? "تسجيل رسوم التحويل الفعلية" : lang === "en" ? "Record actual transfer fee" : "Enregistrer les frais réels de transfert"}</h3>
+          <h3 className="text-sm font-semibold">
+            {lang === "ar"
+              ? "تسجيل رسوم التحويل الفعلية"
+              : lang === "en"
+                ? "Record actual transfer fee"
+                : "Enregistrer les frais réels de transfert"}
+          </h3>
           <p className="mt-1 text-xs text-muted-foreground">
-            {lang === "ar" ? "اختاري فئة التعريفة كمرجع داخلي، ثم أدخلي المبلغ الفعلي الظاهر في كشف العملية والمرجع. لا تُحتسب الضريبة تلقائيًا ولا تُسجّل رسوم تقديرية." : lang === "en" ? "Choose the internal tariff reference, then enter the actual amount shown on the transaction statement and its reference. Tax is not added automatically; estimates are not accepted." : "Choisissez la catégorie tarifaire comme référence interne, puis saisissez le montant réellement débité et sa référence. Aucune TVA n’est ajoutée automatiquement et aucun montant estimatif n’est enregistré."}
+            {lang === "ar"
+              ? "اختاري فئة التعريفة كمرجع داخلي، ثم أدخلي المبلغ الفعلي الظاهر في كشف العملية والمرجع. لا تُحتسب الضريبة تلقائيًا ولا تُسجّل رسوم تقديرية."
+              : lang === "en"
+                ? "Choose the internal tariff reference, then enter the actual amount shown on the transaction statement and its reference. Tax is not added automatically; estimates are not accepted."
+                : "Choisissez la catégorie tarifaire comme référence interne, puis saisissez le montant réellement débité et sa référence. Aucune TVA n’est ajoutée automatiquement et aucun montant estimatif n’est enregistré."}
           </p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <select value={feeClass} onChange={(e) => { const value = e.target.value; setFeeClass(value); setFeeAmount(({ digital_same_bank: "2.000", digital_other_bank: "2.500", branch_same_bank: "3.000", branch_other_bank: "3.500", manual_list_same_bank: "1.200", manual_list_other_bank: "1.500" } as Record<string, string>)[value] ?? ""); }} className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
+            <select
+              value={feeClass}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFeeClass(value);
+                setFeeAmount(
+                  (
+                    {
+                      digital_same_bank: "2.000",
+                      digital_other_bank: "2.500",
+                      branch_same_bank: "3.000",
+                      branch_other_bank: "3.500",
+                      manual_list_same_bank: "1.200",
+                      manual_list_other_bank: "1.500",
+                    } as Record<string, string>
+                  )[value] ?? "",
+                );
+              }}
+              className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            >
               <option value="digital_same_bank">Digital · UIB vers UIB · 2,000 TND HT</option>
-              <option value="digital_other_bank">Digital · autre banque tunisienne · 2,500 TND HT</option>
+              <option value="digital_other_bank">
+                Digital · autre banque tunisienne · 2,500 TND HT
+              </option>
               <option value="branch_same_bank">Agence · UIB vers UIB · 3,000 TND HT</option>
-              <option value="branch_other_bank">Agence · autre banque tunisienne · 3,500 TND HT</option>
-              <option value="manual_list_same_bank">Liste manuelle · bénéficiaire UIB · 1,200 TND HT</option>
-              <option value="manual_list_other_bank">Liste manuelle · autre banque · 1,500 TND HT</option>
+              <option value="branch_other_bank">
+                Agence · autre banque tunisienne · 3,500 TND HT
+              </option>
+              <option value="manual_list_same_bank">
+                Liste manuelle · bénéficiaire UIB · 1,200 TND HT
+              </option>
+              <option value="manual_list_other_bank">
+                Liste manuelle · autre banque · 1,500 TND HT
+              </option>
             </select>
-            <input aria-label={lang === "ar" ? "المبلغ الفعلي" : lang === "en" ? "Actual fee amount" : "Montant réel des frais"} type="number" min="0.001" step="0.001" value={feeAmount} onChange={(e) => setFeeAmount(e.target.value)} placeholder="Montant réellement débité (TND)" className="rounded-lg border border-input bg-background px-3 py-2 text-sm" />
-            <input aria-label={lang === "ar" ? "مرجع كشف العملية" : lang === "en" ? "Statement reference" : "Référence du relevé"} value={feeReference} onChange={(e) => setFeeReference(e.target.value)} placeholder={lang === "ar" ? "مرجع العملية في الكشف" : lang === "en" ? "Statement transaction reference" : "Référence de l’opération sur le relevé"} className="rounded-lg border border-input bg-background px-3 py-2 text-sm sm:col-span-2" />
+            <input
+              aria-label={
+                lang === "ar"
+                  ? "المبلغ الفعلي"
+                  : lang === "en"
+                    ? "Actual fee amount"
+                    : "Montant réel des frais"
+              }
+              type="number"
+              min="0.001"
+              step="0.001"
+              value={feeAmount}
+              onChange={(e) => setFeeAmount(e.target.value)}
+              placeholder="Montant réellement débité (TND)"
+              className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            />
+            <input
+              aria-label={
+                lang === "ar"
+                  ? "مرجع كشف العملية"
+                  : lang === "en"
+                    ? "Statement reference"
+                    : "Référence du relevé"
+              }
+              value={feeReference}
+              onChange={(e) => setFeeReference(e.target.value)}
+              placeholder={
+                lang === "ar"
+                  ? "مرجع العملية في الكشف"
+                  : lang === "en"
+                    ? "Statement transaction reference"
+                    : "Référence de l’opération sur le relevé"
+              }
+              className="rounded-lg border border-input bg-background px-3 py-2 text-sm sm:col-span-2"
+            />
           </div>
-          <button type="button" disabled={!payoutStoreId || busy === "payout-fee" || !feeAmount || !feeReference.trim()} onClick={() => void recordSellerTransferFee()} className="mt-3 rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">
-            {busy === "payout-fee" ? a.saving : lang === "ar" ? "تسجيل الرسم" : lang === "en" ? "Record fee" : "Enregistrer les frais"}
+          <button
+            type="button"
+            disabled={!payoutStoreId || busy === "payout-fee" || !feeAmount || !feeReference.trim()}
+            onClick={() => void recordSellerTransferFee()}
+            className="mt-3 rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50"
+          >
+            {busy === "payout-fee"
+              ? a.saving
+              : lang === "ar"
+                ? "تسجيل الرسم"
+                : lang === "en"
+                  ? "Record fee"
+                  : "Enregistrer les frais"}
           </button>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -981,7 +1087,12 @@ function AdminPage() {
                       {a.payoutCommission}: {formatTND(payout.commission_millimes)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {lang === "ar" ? "رسوم التحويل" : lang === "en" ? "Transfer fees" : "Frais de transfert"}: {formatTND(payout.external_fees_millimes)}
+                      {lang === "ar"
+                        ? "رسوم التحويل"
+                        : lang === "en"
+                          ? "Transfer fees"
+                          : "Frais de transfert"}
+                      : {formatTND(payout.external_fees_millimes)}
                     </p>
                   </div>
                 </div>

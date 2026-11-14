@@ -306,6 +306,14 @@ function AdminPage() {
 
   async function createSellerPayout() {
     if (!payoutStoreId) return;
+    const selectedBalance = sellerBalances.get(payoutStoreId);
+    const available = selectedBalance
+      ? Math.max(0, selectedBalance.earned - selectedBalance.transferred - selectedBalance.reserved)
+      : 0;
+    if (available <= 100_000) {
+      setNotice({ ok: false, text: a.payoutMinimumNotMet });
+      return;
+    }
     setBusy("payout-create");
     setNotice(null);
     const { error } = await adminCreateSellerPayout({
@@ -534,6 +542,11 @@ function AdminPage() {
     0,
     financialTotals.earned - financialTotals.transferred - financialTotals.reserved,
   );
+  const selectedPayoutBalance = sellerBalances.get(payoutStoreId);
+  const selectedPayoutAvailable = selectedPayoutBalance
+    ? Math.max(0, selectedPayoutBalance.earned - selectedPayoutBalance.transferred - selectedPayoutBalance.reserved)
+    : 0;
+  const payoutMinimumMet = selectedPayoutAvailable > 100_000;
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={a.title} wide>
@@ -821,13 +834,21 @@ function AdminPage() {
           </select>
           <button
             type="button"
-            disabled={busy === "payout-create" || !payoutStoreId}
+            disabled={busy === "payout-create" || !payoutStoreId || !payoutMinimumMet}
             onClick={() => void createSellerPayout()}
             className="rounded-full bg-accent px-4 py-2 text-sm font-semibold disabled:opacity-50"
           >
             {busy === "payout-create" ? a.saving : a.createPayout}
           </button>
         </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {payoutStoreId
+            ? payoutMinimumMet
+              ? a.payoutMinimumEligible
+              : a.payoutMinimumNotMet
+            : a.payoutMinimumHelp}
+          {payoutStoreId ? ` · ${formatTND(selectedPayoutAvailable)}` : ""}
+        </p>
         {payouts.isPending ? (
           <p className="mt-4 text-sm">{a.loading}</p>
         ) : payouts.isError ? (

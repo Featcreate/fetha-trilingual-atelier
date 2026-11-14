@@ -472,10 +472,16 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       return { ok: false as const, error: "ipay_checkout_disabled" };
     }
 
-    const { data: orderId, error } = await context.supabase.rpc("create_order_from_cart", {
-      _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),
-      _checkout_key: data.checkoutKey,
-    });
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    const { data: rawOrderId, error } = await callActorScopedRpc(
+      context.userId,
+      "server_create_order_from_cart",
+      {
+        _items: data.items.map(({ productId }) => ({ productId, quantity: 1 })),
+        _checkout_key: data.checkoutKey,
+      },
+    );
+    const orderId = rawOrderId as string | null;
     if (error || !orderId) {
       const code = error?.message?.includes("product_unavailable")
         ? "product_unavailable"

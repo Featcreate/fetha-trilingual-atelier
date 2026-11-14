@@ -185,6 +185,7 @@ export interface FileRoutesById {
   '/stores/$slug': typeof StoresSlugRoute
   '/api/public/ipay/webhook': typeof ApiPublicIpayWebhookRoute
   '/api/public/konnect/webhook': typeof ApiPublicKonnectWebhookRoute
+  '/api/public/orders/cleanup': typeof ApiPublicOrdersCleanupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -246,6 +247,7 @@ export interface FileRouteTypes {
     | '/stores/$slug'
     | '/api/public/ipay/webhook'
     | '/api/public/konnect/webhook'
+    | '/api/public/orders/cleanup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {

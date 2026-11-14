@@ -445,6 +445,35 @@ export const getIpayCheckoutAvailability = createServerFn({ method: "GET" }).han
   };
 });
 
+/** Read-only recovery of an existing iPay URL for this buyer and exact cart.
+ * This function never creates an order or contacts iPay. */
+export const getExistingCartIpayPayment = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ productIds: z.array(z.string().uuid()).min(1).max(50) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const productIds = [...new Set(data.productIds)].sort();
+    if (productIds.length !== data.productIds.length) {
+      return { payUrl: null, orderId: null };
+    }
+    const { createHash } = await import("node:crypto");
+    const fingerprint = createHash("md5").update(productIds.join(","), "utf8").digest("hex");
+    const { data: order, error } = await context.supabase
+      .from("orders")
+      .select("id,ipay_payment_url")
+      .eq("user_id", context.userId)
+      .eq("cart_fingerprint", fingerprint)
+      .eq("status", "pending")
+      .not("ipay_payment_ref", "is", null)
+      .not("ipay_payment_url", "is", null)
+      .maybeSingle();
+    if (error || !order?.ipay_payment_url) {
+      return { payUrl: null, orderId: null };
+    }
+    return { payUrl: order.ipay_payment_url, orderId: order.id };
+  });
+
 export const startCartIpayCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>

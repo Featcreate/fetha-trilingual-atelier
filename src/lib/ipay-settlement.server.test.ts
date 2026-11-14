@@ -30,6 +30,7 @@ describe("iPay authoritative transaction lookup", () => {
   it("uses transaction id lookup with Bearer and organization headers", async () => {
     vi.stubEnv("IPAY_ORG_ID", "org-test");
     vi.stubEnv("IPAY_JWT", "jwt-test");
+    vi.stubEnv("IPAY_PRODUCT_ID", "39868232-79af-499c-b8c1-71bfe43e7ccc");
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -40,6 +41,7 @@ describe("iPay authoritative transaction lookup", () => {
             amount: "45.000",
             currency: "TND",
             status: "completed",
+            product_id: "39868232-79af-499c-b8c1-71bfe43e7ccc",
           },
         }),
         { status: 200 },
@@ -63,6 +65,7 @@ describe("iPay authoritative transaction lookup", () => {
   it("accepts the documented numeric amount shape in a transaction lookup", async () => {
     vi.stubEnv("IPAY_ORG_ID", "org-test");
     vi.stubEnv("IPAY_JWT", "jwt-test");
+    vi.stubEnv("IPAY_PRODUCT_ID", "39868232-79af-499c-b8c1-71bfe43e7ccc");
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(
@@ -137,6 +140,7 @@ describe("iPay settlement notice safety", () => {
             amount: "45.000",
             currency: "TND",
             status: "declared",
+            product_id: "39868232-79af-499c-b8c1-71bfe43e7ccc",
           },
         }),
         { status: 200 },
@@ -150,6 +154,62 @@ describe("iPay settlement notice safety", () => {
       ),
     ).resolves.toEqual({ outcome: "pending" });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+
+  it("rejects a transaction belonging to a different iPay product", async () => {
+    vi.stubEnv("IPAY_ORG_ID", "org-test");
+    vi.stubEnv("IPAY_JWT", "jwt-test");
+    vi.stubEnv("IPAY_PRODUCT_ID", "39868232-79af-499c-b8c1-71bfe43e7ccc");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: true,
+            data: {
+              id: "tx-1",
+              invoice_reference: "order-1",
+              amount: "45.000",
+              currency: "TND",
+              status: "completed",
+              product_id: "different-product-id",
+            },
+          }),
+          { status: 200 },
+        ),
+      ),
+    );
+    await expect(
+      processIpaySettlementNotice({ id: "tx-1" }, "webhook"),
+    ).rejects.toThrow("ipay_product_id_mismatch");
+  });
+
+  it("rejects transaction details without a product id", async () => {
+    vi.stubEnv("IPAY_ORG_ID", "org-test");
+    vi.stubEnv("IPAY_JWT", "jwt-test");
+    vi.stubEnv("IPAY_PRODUCT_ID", "39868232-79af-499c-b8c1-71bfe43e7ccc");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: true,
+            data: {
+              id: "tx-1",
+              invoice_reference: "order-1",
+              amount: "45.000",
+              currency: "TND",
+              status: "completed",
+            },
+          }),
+          { status: 200 },
+        ),
+      ),
+    );
+    await expect(ipayGetTransaction({ transactionId: "tx-1" })).rejects.toThrow(
+      "ipay_invalid_response",
+    );
   });
 
   it("rejects a mismatched webhook transaction id", async () => {

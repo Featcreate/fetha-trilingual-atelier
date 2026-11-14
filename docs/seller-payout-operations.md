@@ -52,7 +52,7 @@ Algorea Bazaar alone calculates, owes, authorizes, initiates, and records seller
 
 ## Database rollout
 
-Migrations 0022, 0023 and 0024 have been applied to the original Supabase project. Migration 0023 originally added the append-only seller external-fee register, fee-allocation records, administrator-only fee recording, and fee-aware payout snapshots; migration 0031 later superseded the payout deduction behavior so new seller payouts ignore external receiving/withdrawal fees and keep the legacy fee field at zero. Migration 0024 adds indexes for the remaining legacy fee-table foreign keys. Migration 0025 adds automatic proportional allocation for shared order-level fees in the legacy fee-recording workflow. The database currently contains zero orders, seller fee records, fee allocations, payouts, or platform ledger entries. Checkout and live payment activation remain disabled.
+Migrations 0022, 0023 and 0024 have been applied to the original Supabase project. Migration 0023 originally added the append-only seller external-fee register, fee-allocation records, administrator-only fee recording, and fee-aware payout snapshots; migration 0031 temporarily superseded the payout deduction behavior, and migration 0052 restores deductions only for actual, evidence-backed `seller_transfer` fees. Migration 0024 adds indexes for the remaining legacy fee-table foreign keys. Migration 0025 adds automatic proportional allocation for shared order-level fees in the legacy fee-recording workflow. The database currently contains zero orders, seller fee records, fee allocations, payouts, or platform ledger entries. Checkout and live payment activation remain disabled.
 
 ## Seller destination and batch snapshots
 

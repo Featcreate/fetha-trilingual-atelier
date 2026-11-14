@@ -192,7 +192,7 @@ function SellerPage() {
       const { data, error } = await supabase
         .from("seller_payouts")
         .select(
-          "id,status,seller_amount_millimes,external_fees_millimes,currency,created_at,paid_at,provider_transfer_ref",
+          "id,status,seller_amount_millimes,currency,created_at,paid_at,provider_transfer_ref",
         )
         .eq("store_id", store!.id)
         .order("created_at", { ascending: false })
@@ -1432,23 +1432,7 @@ function SellerPage() {
                           </p>
                         )}
                       </div>
-                      <div className="text-end space-y-1">
-                        <p className="text-xs text-muted-foreground">
-                          {lang === "ar"
-                            ? "المبلغ قبل الرسوم"
-                            : lang === "en"
-                              ? "Amount before fees"
-                              : "Montant avant frais"}
-                          :{" "}
-                          {formatTND(
-                            Number(p.seller_amount_millimes) +
-                              Number(p.external_fees_millimes ?? 0),
-                          )}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {lang === "ar" ? "الرسوم" : lang === "en" ? "Fees" : "Frais"}:{" "}
-                          {formatTND(Number(p.external_fees_millimes ?? 0))}
-                        </p>
+                      <div className="text-end">
                         <strong>{formatTND(p.seller_amount_millimes)}</strong>
                       </div>
                     </article>

@@ -546,7 +546,12 @@ function AdminPage() {
   );
   const selectedPayoutBalance = sellerBalances.get(payoutStoreId);
   const selectedPayoutAvailable = selectedPayoutBalance
-    ? Math.max(0, selectedPayoutBalance.earned - selectedPayoutBalance.transferred - selectedPayoutBalance.reserved)
+    ? Math.max(
+        0,
+        selectedPayoutBalance.earned -
+          selectedPayoutBalance.transferred -
+          selectedPayoutBalance.reserved,
+      )
     : 0;
   const payoutMinimumMet = selectedPayoutAvailable > 100_000;
 
@@ -614,7 +619,10 @@ function AdminPage() {
         ) : financialLedger.isError ||
           verifiedProviderOrders.isError ||
           payoutBalanceRows.isError ? (
-          <div role="alert" className="mt-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+          <div
+            role="alert"
+            className="mt-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
+          >
             {a.loadError}
           </div>
         ) : (
@@ -623,12 +631,16 @@ function AdminPage() {
               <div className="rounded-lg bg-secondary p-4">
                 <p className="text-sm text-muted-foreground">{a.providerKonnectVerified}</p>
                 <p className="mt-1 text-xl font-bold">{formatTND(providerTotals.konnect)}</p>
-                <p className="text-xs text-muted-foreground">{providerTotals.konnectCount} {a.paidOrders}</p>
+                <p className="text-xs text-muted-foreground">
+                  {providerTotals.konnectCount} {a.paidOrders}
+                </p>
               </div>
               <div className="rounded-lg bg-secondary p-4">
                 <p className="text-sm text-muted-foreground">{a.providerIpayVerified}</p>
                 <p className="mt-1 text-xl font-bold">{formatTND(providerTotals.ipay)}</p>
-                <p className="text-xs text-muted-foreground">{providerTotals.ipayCount} {a.paidOrders}</p>
+                <p className="text-xs text-muted-foreground">
+                  {providerTotals.ipayCount} {a.paidOrders}
+                </p>
               </div>
               <div className="rounded-lg bg-secondary p-4">
                 <p className="text-sm text-muted-foreground">{a.providerUnclassified}</p>
@@ -645,7 +657,9 @@ function AdminPage() {
                 </p>
               </div>
             </div>
-            <p className="mt-3 text-xs leading-5 text-muted-foreground">{a.providerReconciliationNote}</p>
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">
+              {a.providerReconciliationNote}
+            </p>
             <div className="mt-5">
               <h3 className="mb-3 font-semibold">{a.sellerBalances}</h3>
               {!stores.data?.length ? (
@@ -657,7 +671,9 @@ function AdminPage() {
                       <tr className="border-b border-border text-start text-muted-foreground">
                         <th className="px-3 py-3 text-start font-medium">{a.payoutStore}</th>
                         <th className="px-3 py-3 text-end font-medium">{a.sellerPayableTotal}</th>
-                        <th className="px-3 py-3 text-end font-medium">{a.sellerTransferredTotal}</th>
+                        <th className="px-3 py-3 text-end font-medium">
+                          {a.sellerTransferredTotal}
+                        </th>
                         <th className="px-3 py-3 text-end font-medium">{a.sellerReservedTotal}</th>
                         <th className="px-3 py-3 text-end font-medium">{a.sellerAvailableTotal}</th>
                       </tr>
@@ -680,7 +696,9 @@ function AdminPage() {
                             <td className="px-3 py-3 text-end">{formatTND(balance.earned)}</td>
                             <td className="px-3 py-3 text-end">{formatTND(balance.transferred)}</td>
                             <td className="px-3 py-3 text-end">{formatTND(balance.reserved)}</td>
-                            <td className="px-3 py-3 text-end font-semibold">{formatTND(available)}</td>
+                            <td className="px-3 py-3 text-end font-semibold">
+                              {formatTND(available)}
+                            </td>
                           </tr>
                         );
                       })}
@@ -689,8 +707,12 @@ function AdminPage() {
                       <tr className="font-bold">
                         <td className="px-3 py-3">{a.sellerBalancesTotal}</td>
                         <td className="px-3 py-3 text-end">{formatTND(financialTotals.earned)}</td>
-                        <td className="px-3 py-3 text-end">{formatTND(financialTotals.transferred)}</td>
-                        <td className="px-3 py-3 text-end">{formatTND(financialTotals.reserved)}</td>
+                        <td className="px-3 py-3 text-end">
+                          {formatTND(financialTotals.transferred)}
+                        </td>
+                        <td className="px-3 py-3 text-end">
+                          {formatTND(financialTotals.reserved)}
+                        </td>
                         <td className="px-3 py-3 text-end">{formatTND(availableSellerPayables)}</td>
                       </tr>
                     </tfoot>

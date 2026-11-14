@@ -677,7 +677,8 @@ function SellerPage() {
   const sellerPayoutTotals = (sellerPayoutBalancesQuery.data ?? []).reduce(
     (totals, payout) => {
       if (payout.status === "paid") totals.transferred += Number(payout.seller_amount_millimes);
-      else if (payout.status !== "cancelled") totals.reserved += Number(payout.seller_amount_millimes);
+      else if (payout.status !== "cancelled")
+        totals.reserved += Number(payout.seller_amount_millimes);
       return totals;
     },
     { transferred: 0, reserved: 0 },
@@ -1422,7 +1423,9 @@ function SellerPage() {
               {sellerEarningsQuery.isPending || sellerPayoutBalancesQuery.isPending ? (
                 <p className="mt-2 text-sm">{m.loading}</p>
               ) : sellerEarningsQuery.isError || sellerPayoutBalancesQuery.isError ? (
-                <p role="alert" className="mt-2 text-sm text-destructive">{m.error}</p>
+                <p role="alert" className="mt-2 text-sm text-destructive">
+                  {m.error}
+                </p>
               ) : (
                 <>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -1447,7 +1450,9 @@ function SellerPage() {
                       <p className="mt-1 text-lg font-bold">{formatTND(sellerAvailable)}</p>
                     </div>
                   </div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{m.payoutBalanceNote}</p>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                    {m.payoutBalanceNote}
+                  </p>
                 </>
               )}
             </div>

@@ -339,8 +339,10 @@ export const dict = {
       noPayouts: "Aucun versement.",
       payoutConfirmNote:
         "Cette action enregistre un virement déjà effectué ; elle ne transfère pas d'argent.",
-      payoutMinimumHelp: "Le montant disponible doit dépasser 100 TND pour préparer un versement manuel.",
-      payoutMinimumNotMet: "Le montant disponible doit être supérieur à 100 TND. Aucun versement ne peut être préparé pour le moment.",
+      payoutMinimumHelp:
+        "Le montant disponible doit dépasser 100 TND pour préparer un versement manuel.",
+      payoutMinimumNotMet:
+        "Le montant disponible doit être supérieur à 100 TND. Aucun versement ne peut être préparé pour le moment.",
       payoutMinimumEligible: "Seuil de versement atteint : le montant est supérieur à 100 TND.",
       payoutFailedNote: "Le versement a été marqué comme échoué.",
       financialLedgerTitle: "Grand livre financier central",
@@ -360,7 +362,6 @@ export const dict = {
       noSellerBalances: "Aucun solde vendeur enregistré.",
       providerReconciliationNote:
         "Les montants par prestataire reflètent les commandes payées et vérifiées, et non le solde bancaire réel du compte Konnect ou iPay.",
-
     },
     auth: {
       signIn: "Connexion",
@@ -721,7 +722,8 @@ export const dict = {
       noPayouts: "لا توجد تحويلات.",
       payoutConfirmNote: "يسجل هذا الإجراء تحويلاً تم تنفيذه بالفعل؛ ولا يحوّل الأموال بنفسه.",
       payoutMinimumHelp: "يجب أن يتجاوز المبلغ المتاح 100 دينار لإعداد تحويل يدوي.",
-      payoutMinimumNotMet: "يجب أن يكون المبلغ المتاح أكبر من 100 دينار. لا يمكن إعداد التحويل حاليًا.",
+      payoutMinimumNotMet:
+        "يجب أن يكون المبلغ المتاح أكبر من 100 دينار. لا يمكن إعداد التحويل حاليًا.",
       payoutMinimumEligible: "تم بلوغ شرط التحويل: المبلغ المتاح أكبر من 100 دينار.",
       payoutFailedNote: "تم تسجيل تعذّر التحويل.",
       financialLedgerTitle: "الدفتر المالي المركزي",
@@ -741,7 +743,6 @@ export const dict = {
       noSellerBalances: "لا توجد مستحقات مسجلة للبائعين.",
       providerReconciliationNote:
         "تعكس مبالغ كل مزوّد قيمة الطلبات المدفوعة والمؤكدة، ولا تمثل الرصيد البنكي الفعلي في حساب Konnect أو iPay.",
-
     },
     auth: {
       signIn: "تسجيل الدخول",
@@ -1110,7 +1111,8 @@ export const dict = {
       payoutConfirmNote:
         "This records a transfer that has already happened; it does not move money.",
       payoutMinimumHelp: "The available amount must exceed 100 TND to prepare a manual payout.",
-      payoutMinimumNotMet: "The available amount must be greater than 100 TND. A payout cannot be prepared yet.",
+      payoutMinimumNotMet:
+        "The available amount must be greater than 100 TND. A payout cannot be prepared yet.",
       payoutMinimumEligible: "Payout threshold met: the available amount is greater than 100 TND.",
       payoutFailedNote: "The payout was marked as failed.",
       financialLedgerTitle: "Central financial ledger",
@@ -1130,7 +1132,6 @@ export const dict = {
       noSellerBalances: "No seller balances have been recorded.",
       providerReconciliationNote:
         "Provider totals reflect paid and verified orders, not the actual bank balance held by Konnect or iPay.",
-
     },
     auth: {
       signIn: "Sign in",

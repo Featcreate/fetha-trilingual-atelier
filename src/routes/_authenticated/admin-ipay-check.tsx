@@ -70,12 +70,8 @@ function AdminIpayCheckPage() {
                   className="rounded-lg bg-secondary p-3 text-sm"
                 >
                   <p className="font-semibold">{product.productName ?? product.productCode ?? "منتج iPay"}</p>
-                  <p>
-                    Webhook النجاح: {product.successWebhookConfigured ? "مُعدّ" : "غير مُعدّ"}
-                  </p>
-                  <p>
-                    Webhook الفشل: {product.failureWebhookConfigured ? "مُعدّ" : "غير مُعدّ"}
-                  </p>
+                  <p>Webhook النجاح: {product.successWebhookConfigured ? "مُعدّ" : "غير مُعدّ"}</p>
+                  <p>Webhook الفشل: {product.failureWebhookConfigured ? "مُعدّ" : "غير مُعدّ"}</p>
                 </div>
               ))}
             </>

@@ -604,7 +604,7 @@ function AdminPage() {
           </div>
         ) : (
           <>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
               <div className="rounded-lg bg-secondary p-4">
                 <p className="text-sm text-muted-foreground">{a.providerKonnectVerified}</p>
                 <p className="mt-1 text-xl font-bold">{formatTND(providerTotals.konnect)}</p>
@@ -614,6 +614,10 @@ function AdminPage() {
                 <p className="text-sm text-muted-foreground">{a.providerIpayVerified}</p>
                 <p className="mt-1 text-xl font-bold">{formatTND(providerTotals.ipay)}</p>
                 <p className="text-xs text-muted-foreground">{providerTotals.ipayCount} {a.paidOrders}</p>
+              </div>
+              <div className="rounded-lg bg-secondary p-4">
+                <p className="text-sm text-muted-foreground">{a.providerUnclassified}</p>
+                <p className="mt-1 text-xl font-bold">{formatTND(providerTotals.unclassified)}</p>
               </div>
               <div className="rounded-lg bg-secondary p-4">
                 <p className="text-sm text-muted-foreground">{a.platformCommissionTotal}</p>
@@ -668,7 +672,7 @@ function AdminPage() {
                     </tbody>
                     <tfoot>
                       <tr className="font-bold">
-                        <td className="px-3 py-3">{a.total}</td>
+                        <td className="px-3 py-3">{a.sellerBalancesTotal}</td>
                         <td className="px-3 py-3 text-end">{formatTND(financialTotals.earned)}</td>
                         <td className="px-3 py-3 text-end">{formatTND(financialTotals.transferred)}</td>
                         <td className="px-3 py-3 text-end">{formatTND(financialTotals.reserved)}</td>

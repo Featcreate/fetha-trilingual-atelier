@@ -81,10 +81,11 @@ Migration 0022 has been applied to the original Supabase project jgjcychkntsokhz
 
 ## External fees for seller payouts
 
-- External receiving or withdrawal fees charged by a seller's bank or receiving provider are the seller's responsibility; Algorea Bazaar does not cover them.
-- These external fees remain entirely outside platform accounting: the platform does not calculate, record, allocate, deduct, reimburse, or display them to sellers.
-- Seller payout amounts are calculated from verified seller proceeds after the applicable platform commission only. The seller-facing payout history shows the amount payable by Algorea Bazaar, without a fee breakdown or a post-fee net figure.
-- Migration 0031's fee-ignoring payout calculation remains authoritative; new payout batches set the legacy `external_fees_millimes` field to zero and do not read the legacy external-fee allocation tables.
+- Actual transfer fees borne by the seller are deducted separately from platform commission and recorded in the central payout ledger.
+- Only fees supported by an actual statement or transaction reference may be recorded and allocated. Published UIB tariff values are internal reference data, not evidence that a fee was charged; do not assume VAT or deduct beneficiary-side incoming fees without evidence.
+- The seller statement shows the amount before fees, the actual fee total, and the net amount. It does not disclose the bank name or internal transfer category.
+- Migration 0052 supersedes the fee-ignoring payout behavior introduced by migration 0031 and restores allocation of actual, evidence-backed fee entries.
+- The net payout minimum is 50.000 TND or more (50,000 millimes); exactly 50.000 TND is eligible.
 - Migration 0038 adds Konnect as a supported seller receiving destination.
 
 ## Migration verification boundary — 2026-11-04

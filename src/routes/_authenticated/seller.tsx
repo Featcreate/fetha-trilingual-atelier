@@ -1507,10 +1507,10 @@ function SellerPage() {
                       <div className="text-end space-y-1">
                         <p className="text-xs text-muted-foreground">
                           {lang === "ar"
-                            ? "المبلغ قبل الرسوم"
+                            ? "مستحقاتك قبل رسوم التحويل"
                             : lang === "en"
-                              ? "Amount before fees"
-                              : "Montant avant frais"}
+                              ? "Seller payable before transfer fees"
+                              : "Montant dû avant frais de transfert"}
                           :{" "}
                           {formatTND(
                             Number(p.seller_amount_millimes) +

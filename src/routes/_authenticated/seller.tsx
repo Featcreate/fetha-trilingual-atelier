@@ -101,7 +101,7 @@ function SellerPage() {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
   const [confirmationBusy, setConfirmationBusy] = useState(false);
-  const [payoutMethod, setPayoutMethod] = useState("other");
+  const payoutMethod = "bank_transfer";
   const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
   const [editCategoryId, setEditCategoryId] = useState("");
@@ -186,11 +186,7 @@ function SellerPage() {
     },
   });
 
-  useEffect(() => {
-    if (payoutPreferenceQuery.data?.method) {
-      setPayoutMethod(payoutPreferenceQuery.data.method);
-    }
-  }, [payoutPreferenceQuery.data?.method]);
+  // Seller payouts are currently bank-transfer only; keep the UI ready for future methods.
 
   const payoutHistoryQuery = useQuery({
     queryKey: ["seller-payout-history", store?.id],
@@ -320,10 +316,9 @@ function SellerPage() {
     e.preventDefault();
     if (!store) return;
     const values = new FormData(e.currentTarget);
-    const method = String(values.get("payout_method") ?? "other");
+    const method = "bank_transfer";
     const accountHolderName = String(values.get("account_holder_name") ?? "").trim();
     const accountIdentifier = String(values.get("account_identifier") ?? "").trim();
-    const providerName = String(values.get("provider_name") ?? "").trim();
     const bankName = String(values.get("bank_name") ?? "").trim();
     if (!accountHolderName || !accountIdentifier) {
       setNotice(
@@ -335,19 +330,13 @@ function SellerPage() {
       );
       return;
     }
-    if ((method === "other" && !providerName) || (method === "bank_transfer" && !bankName)) {
+    if (!bankName) {
       setNotice(
         lang === "ar"
-          ? method === "bank_transfer"
-            ? "أدخل اسم البنك لإتمام بيانات التحويل البنكي."
-            : "أدخل اسم مزود الخدمة للوسيلة الأخرى."
+          ? "أدخل اسم البنك لإتمام بيانات التحويل البنكي."
           : lang === "en"
-            ? method === "bank_transfer"
-              ? "Enter the bank name for a bank transfer."
-              : "Enter the provider name for the other method."
-            : method === "bank_transfer"
-              ? "Saisissez le nom de la banque pour un virement bancaire."
-              : "Saisissez le nom du prestataire pour l’autre moyen.",
+            ? "Enter the bank name for a bank transfer."
+            : "Saisissez le nom de la banque pour un virement bancaire.",
       );
       return;
     }
@@ -359,7 +348,7 @@ function SellerPage() {
         method,
         account_holder_name: accountHolderName,
         account_identifier: accountIdentifier,
-        provider_name: providerName || null,
+        provider_name: null,
         bank_name: bankName || null,
         additional_details: String(values.get("additional_details") ?? "").trim() || null,
         konnect_wallet_id: null,
@@ -1275,54 +1264,19 @@ function SellerPage() {
                     ? "Never enter a password, OTP, PIN, or secret key."
                     : "Ne saisissez jamais de mot de passe, code OTP, code PIN ou clé secrète."}
               </p>
-              <a
-                href="https://dashboard.konnect.network"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex rounded-full border border-border px-4 py-2 text-sm font-semibold hover:bg-secondary"
-              >
-                {lang === "ar"
-                  ? "فتح حساب Konnect"
-                  : lang === "en"
-                    ? "Open a Konnect account"
-                    : "Ouvrir un compte Konnect"}
-              </a>
               <form
                 key={payoutPreferenceQuery.data?.updated_at ?? "new-payout-preference"}
                 onSubmit={(e) => void savePayoutPreference(e)}
                 className="mt-4 space-y-3"
               >
-                <label className="block text-sm font-medium">
+                <input type="hidden" name="payout_method" value="bank_transfer" />
+                <p className="rounded-lg bg-secondary/60 p-3 text-sm font-medium">
                   {lang === "ar"
-                    ? "وسيلة الاستلام"
+                    ? "وسيلة الاستلام المتاحة حاليًا: التحويل البنكي"
                     : lang === "en"
-                      ? "Receiving method"
-                      : "Moyen de réception"}
-                  <select
-                    name="payout_method"
-                    defaultValue={payoutPreferenceQuery.data?.method ?? "other"}
-                    onChange={(event) => setPayoutMethod(event.currentTarget.value)}
-                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
-                  >
-                    <option value="konnect">Konnect</option>
-                    <option value="ipay">iPay</option>
-                    <option value="wepay">WePay</option>
-                    <option value="bank_transfer">
-                      {lang === "ar"
-                        ? "تحويل بنكي"
-                        : lang === "en"
-                          ? "Bank transfer"
-                          : "Virement bancaire"}
-                    </option>
-                    <option value="other">
-                      {lang === "ar"
-                        ? "وسيلة أخرى"
-                        : lang === "en"
-                          ? "Other method"
-                          : "Autre moyen"}
-                    </option>
-                  </select>
-                </label>
+                      ? "Currently available payout method: Bank transfer"
+                      : "Moyen de versement actuellement disponible : virement bancaire"}
+                </p>
                 <label className="block text-sm font-medium">
                   {lang === "ar"
                     ? "اسم صاحب الحساب"
@@ -1341,8 +1295,8 @@ function SellerPage() {
                   {lang === "ar"
                     ? "معرّف الحساب / رقم المحفظة أو الحساب"
                     : lang === "en"
-                      ? "Account identifier / wallet or account number"
-                      : "Identifiant / numéro de portefeuille ou de compte"}
+                      ? "Bank account number or IBAN"
+                      : "Numéro de compte bancaire ou IBAN"}
                   <input
                     name="account_identifier"
                     required

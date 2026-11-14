@@ -9,6 +9,7 @@ import { AuthShell, SubmitButton } from "@/components/AuthShell";
 import { adminRecheckIpayPayment } from "@/lib/shop.functions";
 import {
   adminCreateSellerPayout,
+  adminRecordSellerExternalFee,
   adminMarkSellerPayoutFailed,
   adminMarkSellerPayoutPaid,
   adminSetCommission,
@@ -80,6 +81,7 @@ type PayoutRow = {
   store_id: string;
   status: string;
   seller_amount_millimes: number;
+  external_fees_millimes: number;
   gross_millimes: number;
   commission_millimes: number;
   discount_millimes: number;
@@ -121,6 +123,9 @@ function AdminPage() {
   const [payoutStoreId, setPayoutStoreId] = useState("");
   const [payoutReference, setPayoutReference] = useState("");
   const [payoutFailure, setPayoutFailure] = useState("");
+  const [feeClass, setFeeClass] = useState("digital_other_bank");
+  const [feeAmount, setFeeAmount] = useState("");
+  const [feeReference, setFeeReference] = useState("");
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
 
   const settings = useQuery({
@@ -235,13 +240,60 @@ function AdminPage() {
       }
     },
   });
+  const unallocatedSellerTransferFees = useQuery({
+    queryKey: ["admin-unallocated-seller-transfer-fees"],
+    queryFn: async () => {
+      const feeRows: Array<{ id: string; store_id: string; amount_millimes: number }> = [];
+      const allocationRows: Array<{ fee_entry_id: string; amount_millimes: number }> = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase
+          .from("seller_external_fee_entries")
+          .select("id,store_id,amount_millimes")
+          .eq("fee_category", "seller_transfer")
+          .order("created_at", { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const page = data ?? [];
+        feeRows.push(...page);
+        if (page.length < pageSize) break;
+      }
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase
+          .from("seller_payout_fee_allocations")
+          .select("fee_entry_id,amount_millimes")
+          .order("created_at", { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const page = data ?? [];
+        allocationRows.push(...page);
+        if (page.length < pageSize) break;
+      }
+      const allocatedByFee = new Map<string, number>();
+      for (const allocation of allocationRows) {
+        allocatedByFee.set(
+          allocation.fee_entry_id,
+          (allocatedByFee.get(allocation.fee_entry_id) ?? 0) + Number(allocation.amount_millimes),
+        );
+      }
+      const byStore: Record<string, number> = {};
+      for (const fee of feeRows) {
+        const remaining = Math.max(
+          0,
+          Number(fee.amount_millimes) - (allocatedByFee.get(fee.id) ?? 0),
+        );
+        byStore[fee.store_id] = (byStore[fee.store_id] ?? 0) + remaining;
+      }
+      return byStore;
+    },
+  });
   const payouts = useQuery({
     queryKey: ["admin-payouts"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("seller_payouts")
         .select(
-          "id,store_id,status,seller_amount_millimes,gross_millimes,commission_millimes,discount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason",
+          "id,store_id,status,seller_amount_millimes,external_fees_millimes,gross_millimes,commission_millimes,discount_millimes,commission_bps,created_at,paid_at,provider_transfer_ref,failure_reason",
         )
         .order("created_at", { ascending: false })
         .limit(100);
@@ -308,9 +360,15 @@ function AdminPage() {
     if (!payoutStoreId) return;
     const selectedBalance = sellerBalances.get(payoutStoreId);
     const available = selectedBalance
-      ? Math.max(0, selectedBalance.earned - selectedBalance.transferred - selectedBalance.reserved)
+      ? Math.max(
+          0,
+          selectedBalance.earned -
+            selectedBalance.transferred -
+            selectedBalance.reserved -
+            (unallocatedSellerTransferFees.data?.[payoutStoreId] ?? 0),
+        )
       : 0;
-    if (available <= 100_000) {
+    if (available < 50_000) {
       setNotice({ ok: false, text: a.payoutMinimumNotMet });
       return;
     }
@@ -346,6 +404,61 @@ function AdminPage() {
     }
     setNotice({ ok: true, text: a.saved });
     await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+    await qc.invalidateQueries({ queryKey: ["admin-unallocated-seller-transfer-fees"] });
+  }
+
+  async function recordSellerTransferFee() {
+    if (!payoutStoreId || !feeAmount.trim() || !feeReference.trim()) return;
+    const amount = Number(feeAmount);
+    if (!Number.isFinite(amount) || amount <= 0 || Math.round(amount * 1000) !== amount * 1000) {
+      setNotice({
+        ok: false,
+        text:
+          lang === "ar"
+            ? "أدخلي مبلغًا صحيحًا بثلاث خانات عشرية كحد أقصى."
+            : lang === "en"
+              ? "Enter a valid amount with up to three decimal places."
+              : "Saisissez un montant valide avec trois décimales au maximum.",
+      });
+      return;
+    }
+    setBusy("payout-fee");
+    setNotice(null);
+    const { error } = await adminRecordSellerExternalFee({
+      data: {
+        storeId: payoutStoreId,
+        amountMillimes: Math.round(amount * 1000),
+        transferClass: feeClass as
+          | "digital_same_bank"
+          | "digital_other_bank"
+          | "branch_same_bank"
+          | "branch_other_bank"
+          | "manual_list_same_bank"
+          | "manual_list_other_bank",
+        externalReference: feeReference.trim(),
+      },
+    });
+    setBusy(null);
+    if (error) {
+      setNotice({
+        ok: false,
+        text: error.message.includes("forbidden") ? "forbidden" : a.saveError,
+      });
+      return;
+    }
+    setFeeAmount("");
+    setFeeReference("");
+    setNotice({
+      ok: true,
+      text:
+        lang === "ar"
+          ? "تم تسجيل الرسم الفعلي الموثّق."
+          : lang === "en"
+            ? "The evidenced fee was recorded."
+            : "Les frais réels justifiés ont été enregistrés.",
+    });
+    await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+    await qc.invalidateQueries({ queryKey: ["admin-unallocated-seller-transfer-fees"] });
   }
 
   async function confirmSellerPayout(payoutId: string) {
@@ -540,9 +653,15 @@ function AdminPage() {
     },
     { earned: 0, transferred: 0, reserved: 0, commission: 0 },
   );
+  const totalUnallocatedSellerTransferFees = Object.values(
+    unallocatedSellerTransferFees.data ?? {},
+  ).reduce((total, amount) => total + amount, 0);
   const availableSellerPayables = Math.max(
     0,
-    financialTotals.earned - financialTotals.transferred - financialTotals.reserved,
+    financialTotals.earned -
+      financialTotals.transferred -
+      financialTotals.reserved -
+      totalUnallocatedSellerTransferFees,
   );
   const selectedPayoutBalance = sellerBalances.get(payoutStoreId);
   const selectedPayoutAvailable = selectedPayoutBalance
@@ -550,10 +669,11 @@ function AdminPage() {
         0,
         selectedPayoutBalance.earned -
           selectedPayoutBalance.transferred -
-          selectedPayoutBalance.reserved,
+          selectedPayoutBalance.reserved -
+          (unallocatedSellerTransferFees.data?.[payoutStoreId] ?? 0),
       )
     : 0;
-  const payoutMinimumMet = selectedPayoutAvailable > 100_000;
+  const payoutMinimumMet = selectedPayoutAvailable >= 50_000;
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={a.title} wide>
@@ -614,11 +734,13 @@ function AdminPage() {
         </div>
         {financialLedger.isPending ||
         verifiedProviderOrders.isPending ||
-        payoutBalanceRows.isPending ? (
+        payoutBalanceRows.isPending ||
+        unallocatedSellerTransferFees.isPending ? (
           <p className="mt-4 text-sm">{a.loading}</p>
         ) : financialLedger.isError ||
           verifiedProviderOrders.isError ||
-          payoutBalanceRows.isError ? (
+          payoutBalanceRows.isError ||
+          unallocatedSellerTransferFees.isError ? (
           <div
             role="alert"
             className="mt-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
@@ -843,6 +965,98 @@ function AdminPage() {
           <h2 className="text-lg font-bold">{a.payouts}</h2>
           <span className="text-xs text-muted-foreground">{a.payoutConfirmNote}</span>
         </div>
+        <div className="mb-4 rounded-lg bg-secondary/60 p-4">
+          <h3 className="text-sm font-semibold">
+            {lang === "ar"
+              ? "تسجيل رسوم التحويل الفعلية"
+              : lang === "en"
+                ? "Record actual transfer fee"
+                : "Enregistrer les frais réels de transfert"}
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {lang === "ar"
+              ? "اختاري فئة التعريفة كمرجع داخلي، ثم أدخلي المبلغ الفعلي الظاهر في كشف العملية والمرجع. لا تُحتسب الضريبة تلقائيًا ولا تُسجّل رسوم تقديرية."
+              : lang === "en"
+                ? "Choose the internal tariff reference, then enter the actual amount shown on the transaction statement and its reference. Tax is not added automatically; estimates are not accepted."
+                : "Choisissez la catégorie tarifaire comme référence interne, puis saisissez le montant réellement débité et sa référence. Aucune TVA n’est ajoutée automatiquement et aucun montant estimatif n’est enregistré."}
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <select
+              value={feeClass}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFeeClass(value);
+                // Tariffs are references only; the actual debited amount must be entered manually.
+                setFeeAmount("");
+              }}
+              className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="digital_same_bank">Digital · UIB vers UIB · 2,000 TND HT</option>
+              <option value="digital_other_bank">
+                Digital · autre banque tunisienne · 2,500 TND HT
+              </option>
+              <option value="branch_same_bank">Agence · UIB vers UIB · 3,000 TND HT</option>
+              <option value="branch_other_bank">
+                Agence · autre banque tunisienne · 3,500 TND HT
+              </option>
+              <option value="manual_list_same_bank">
+                Liste manuelle · bénéficiaire UIB · 1,200 TND HT
+              </option>
+              <option value="manual_list_other_bank">
+                Liste manuelle · autre banque · 1,500 TND HT
+              </option>
+            </select>
+            <input
+              aria-label={
+                lang === "ar"
+                  ? "المبلغ الفعلي"
+                  : lang === "en"
+                    ? "Actual fee amount"
+                    : "Montant réel des frais"
+              }
+              type="number"
+              min="0.001"
+              step="0.001"
+              value={feeAmount}
+              onChange={(e) => setFeeAmount(e.target.value)}
+              placeholder="Montant réellement débité (TND)"
+              className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            />
+            <input
+              aria-label={
+                lang === "ar"
+                  ? "مرجع كشف العملية"
+                  : lang === "en"
+                    ? "Statement reference"
+                    : "Référence du relevé"
+              }
+              value={feeReference}
+              onChange={(e) => setFeeReference(e.target.value)}
+              placeholder={
+                lang === "ar"
+                  ? "مرجع العملية في الكشف"
+                  : lang === "en"
+                    ? "Statement transaction reference"
+                    : "Référence de l’opération sur le relevé"
+              }
+              className="rounded-lg border border-input bg-background px-3 py-2 text-sm sm:col-span-2"
+            />
+          </div>
+          <button
+            type="button"
+            disabled={!payoutStoreId || busy === "payout-fee" || !feeAmount || !feeReference.trim()}
+            onClick={() => void recordSellerTransferFee()}
+            className="mt-3 rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50"
+          >
+            {busy === "payout-fee"
+              ? a.saving
+              : lang === "ar"
+                ? "تسجيل الرسم"
+                : lang === "en"
+                  ? "Record fee"
+                  : "Enregistrer les frais"}
+          </button>
+        </div>
         <div className="flex flex-wrap gap-3">
           <select
             value={payoutStoreId}
@@ -925,6 +1139,14 @@ function AdminPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {a.payoutCommission}: {formatTND(payout.commission_millimes)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {lang === "ar"
+                        ? "رسوم التحويل"
+                        : lang === "en"
+                          ? "Transfer fees"
+                          : "Frais de transfert"}
+                      : {formatTND(payout.external_fees_millimes)}
                     </p>
                   </div>
                 </div>

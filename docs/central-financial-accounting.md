@@ -79,14 +79,14 @@ The current checkout code is fail-closed and remains disabled until separate san
 
 Migration 0022 has been applied to the original Supabase project jgjcychkntsokhzeziqs and is recorded in its migration history. A transaction-wrapped dry run against the actual project schema succeeded before application. Post-application checks confirmed the ledger table, RLS, indexes, immutability triggers, currency constraints, and weekly/manual-only payout constraints. The ledger, orders, order items, payout batches and payout preferences remain empty. This database change does not activate checkout or move money.
 
-## External fees for receiving seller payouts
+## External fees for seller payouts
 
-- Any external transfer or withdrawal fees charged by a seller's chosen bank or receiving provider are the seller's responsibility; Algorea Bazaar does not cover them.
-- These receiving/withdrawal fees are outside the platform's payout accounting. Algorea Bazaar does not record, allocate, deduct, reimburse, or display them in the seller payout statement.
-- Seller payout amounts are calculated from verified seller proceeds after the applicable platform commission only.
-- Migration 0031 supersedes the earlier fee-aware payout calculation. New payout batches set the legacy `external_fees_millimes` field to zero and do not read from the legacy seller external-fee allocation tables.
-- The seller payout history shows the payout amount, status, receiving method snapshot, and transfer reference; it does not include external receiving/withdrawal fees.
-- Migration 0038 adds Konnect as a supported seller receiving destination. Its source migration must be reviewed and separately applied before the new option can be saved in the live database.
+- Actual transfer fees borne by the seller are deducted separately from platform commission and recorded in the central payout ledger.
+- Only fees supported by an actual statement or transaction reference may be recorded and allocated. Published UIB tariff values are internal reference data, not evidence that a fee was charged; do not assume VAT or deduct beneficiary-side incoming fees without evidence.
+- The seller statement shows the amount before fees, the actual fee total, and the net amount. It does not disclose the bank name or internal transfer category.
+- Migration 0052 supersedes the fee-ignoring payout behavior introduced by migration 0031 and restores allocation of actual, evidence-backed fee entries.
+- The net payout minimum is 50.000 TND or more (50,000 millimes); exactly 50.000 TND is eligible.
+- The seller-facing payout form currently supports bank transfer only. The destination model remains extensible so additional methods can be introduced deliberately in a future change.
 
 ## Migration verification boundary — 2026-11-04
 

@@ -99,7 +99,6 @@ export const adminMarkSellerPayoutFailed = createServerFn({ method: "POST" })
     }),
   );
 
-
 /** Read-only iPay authentication check. Returns only sanitized health metadata. */
 export const adminCheckIpayConnection = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

@@ -41,7 +41,12 @@ BEGIN
     RAISE EXCEPTION 'test_failed: preference guard must accept Konnect and retain required destination validation';
   END IF;
 
-  -- Fee policy is asserted by the later 0052 regression test. This migration
-  -- test is intentionally limited to the destination behavior introduced in 0038.
+  SELECT pg_get_functiondef('public.admin_create_seller_payout(uuid,text,timestamptz)'::regprocedure)
+  INTO _create_payout_function;
+  IF position('seller_external_fee_entries' IN _create_payout_function) > 0
+     OR position('seller_payout_fee_allocations' IN _create_payout_function) > 0
+     OR position('_commission, _seller_amount, 0, trim(_idempotency_key)' IN _create_payout_function) = 0 THEN
+    RAISE EXCEPTION 'test_failed: new seller payouts must not record or deduct external receiving fees';
+  END IF;
 END;
 $$;

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { AuthShell } from "@/components/AuthShell";
 import { ProductPreview } from "@/components/ProductPreview";
@@ -41,6 +41,8 @@ const copy = {
     paymentError:
       "Le lien de paiement n’a pas pu être créé. Vérifiez l’état de la commande avant de réessayer.",
     providerLoading: "Vérification du paiement…",
+    paymentReady: "Votre lien de paiement est prêt. La redirection automatique démarre dans quelques secondes.",
+    openPayment: "Ouvrir la page de paiement iPay",
   },
   ar: {
     title: "سلة المشتريات",
@@ -57,6 +59,8 @@ const copy = {
     starting: "جارٍ إعداد رابط الدفع…",
     paymentError: "تعذر إنشاء رابط الدفع. تحققي من حالة الطلب قبل إعادة المحاولة.",
     providerLoading: "جارٍ التحقق من توفر الدفع…",
+    paymentReady: "رابط الدفع جاهز. ستتم إعادة توجيهك تلقائياً بعد لحظات.",
+    openPayment: "فتح صفحة الدفع عبر iPay",
   },
   en: {
     title: "Shopping cart",
@@ -73,6 +77,8 @@ const copy = {
     starting: "Preparing payment link…",
     paymentError: "The payment link could not be created. Check the order status before retrying.",
     providerLoading: "Checking payment availability…",
+    paymentReady: "Your payment link is ready. Automatic redirection will begin in a few seconds.",
+    openPayment: "Open iPay payment page",
   },
 } as const;
 
@@ -81,6 +87,7 @@ function CartPage() {
   const t = copy[lang];
   const { items, count, remove } = useCart();
   const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const signature = items
     .map((line) => line.productId)
     .sort()
@@ -152,9 +159,22 @@ function CartPage() {
         },
       }),
     onSuccess: (result) => {
-      if (result.ok) window.location.assign(result.payUrl);
+      if (!result.ok) return;
+      setPaymentUrl(result.payUrl);
+      try {
+        sessionStorage.setItem(`algorea-bazaar:ipay-payment-url:${result.orderId}`, result.payUrl);
+        sessionStorage.setItem(`algorea-bazaar:ipay-payment-order:${signature}`, result.orderId);
+      } catch {
+        // The visible link remains available for this page even without session storage.
+      }
     },
   });
+
+  useEffect(() => {
+    if (!paymentUrl) return;
+    const redirect = window.setTimeout(() => window.location.assign(paymentUrl), 4000);
+    return () => window.clearTimeout(redirect);
+  }, [paymentUrl]);
 
   const lines = useMemo(() => {
     const productMap = new Map(
@@ -292,6 +312,19 @@ function CartPage() {
                 {t.disabled}
               </p>
             ) : null}
+            {paymentUrl && (
+              <div role="status" className="mt-4 rounded-xl border border-border bg-secondary p-4 text-sm">
+                <p>{t.paymentReady}</p>
+                <a
+                  href={paymentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-accent px-5 py-3 font-semibold text-accent-foreground hover:opacity-90"
+                >
+                  {t.openPayment}
+                </a>
+              </div>
+            )}
             {paymentError && (
               <p role="alert" className="mt-3 rounded-xl border border-border p-4 text-sm">
                 {t.paymentError}

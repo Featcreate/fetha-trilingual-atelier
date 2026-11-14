@@ -56,7 +56,7 @@ Migrations 0022, 0023 and 0024 have been applied to the original Supabase projec
 
 ## Seller destination and batch snapshots
 
-Migration 0030 introduced seller-selected receiving destinations independently from the weekly manual settlement rail. Migration 0031 temporarily superseded the earlier fee-aware payout calculation; migration 0052 restores deductions only for actual, evidence-backed `seller_transfer` fees. Migration 0038 adds Konnect to the supported receiving destinations while retaining the seller/admin RLS boundary and immutable payout destination snapshots. Migration 0038 is a source change only until separately reviewed and applied; it does not initiate payments or transfers.
+Migration 0030 introduced seller-selected receiving destinations independently from the weekly manual settlement rail. Migration 0031 temporarily superseded the earlier fee-aware payout calculation; migration 0052 restores deductions only for actual, evidence-backed `seller_transfer` fees. The seller-facing payout form currently offers bank transfer only. The destination model remains extensible for additional methods in a future change.
 
 ## Evidence-based payout fees and minimum
 

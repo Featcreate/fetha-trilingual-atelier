@@ -340,10 +340,10 @@ export const dict = {
       payoutConfirmNote:
         "Cette action enregistre un virement déjà effectué ; elle ne transfère pas d'argent.",
       payoutMinimumHelp:
-        "Le montant disponible doit dépasser 100 TND pour préparer un versement manuel.",
+        "Le montant disponible doit dépasser 50 TND pour préparer un versement manuel.",
       payoutMinimumNotMet:
-        "Le montant disponible doit être supérieur à 100 TND. Aucun versement ne peut être préparé pour le moment.",
-      payoutMinimumEligible: "Seuil de versement atteint : le montant est supérieur à 100 TND.",
+        "Le montant disponible doit être supérieur ou égal à 50 TND. Aucun versement ne peut être préparé pour le moment.",
+      payoutMinimumEligible: "Seuil de versement atteint : le montant est supérieur ou égal à 50 TND.",
       payoutFailedNote: "Le versement a été marqué comme échoué.",
       financialLedgerTitle: "Grand livre financier central",
       financialLedgerHelp:
@@ -721,10 +721,10 @@ export const dict = {
       payoutFailureRequired: "اذكر سبب تعذّر التحويل.",
       noPayouts: "لا توجد تحويلات.",
       payoutConfirmNote: "يسجل هذا الإجراء تحويلاً تم تنفيذه بالفعل؛ ولا يحوّل الأموال بنفسه.",
-      payoutMinimumHelp: "يجب أن يتجاوز المبلغ المتاح 100 دينار لإعداد تحويل يدوي.",
+      payoutMinimumHelp: "يجب أن يبلغ المبلغ المتاح 50 دينارًا على الأقل لإعداد تحويل يدوي.",
       payoutMinimumNotMet:
-        "يجب أن يكون المبلغ المتاح أكبر من 100 دينار. لا يمكن إعداد التحويل حاليًا.",
-      payoutMinimumEligible: "تم بلوغ شرط التحويل: المبلغ المتاح أكبر من 100 دينار.",
+        "يجب أن يكون المبلغ المتاح 50 دينارًا أو أكثر. لا يمكن إعداد التحويل حاليًا.",
+      payoutMinimumEligible: "تم بلوغ شرط التحويل: المبلغ المتاح 50 دينارًا أو أكثر.",
       payoutFailedNote: "تم تسجيل تعذّر التحويل.",
       financialLedgerTitle: "الدفتر المالي المركزي",
       financialLedgerHelp:
@@ -1110,10 +1110,10 @@ export const dict = {
       noPayouts: "No payouts.",
       payoutConfirmNote:
         "This records a transfer that has already happened; it does not move money.",
-      payoutMinimumHelp: "The available amount must exceed 100 TND to prepare a manual payout.",
+      payoutMinimumHelp: "The available amount must reach at least 50 TND to prepare a manual payout.",
       payoutMinimumNotMet:
-        "The available amount must be greater than 100 TND. A payout cannot be prepared yet.",
-      payoutMinimumEligible: "Payout threshold met: the available amount is greater than 100 TND.",
+        "The available amount must be at least 50 TND. A payout cannot be prepared yet.",
+      payoutMinimumEligible: "Payout threshold met: the available amount is at least 50 TND.",
       payoutFailedNote: "The payout was marked as failed.",
       financialLedgerTitle: "Central financial ledger",
       financialLedgerHelp:

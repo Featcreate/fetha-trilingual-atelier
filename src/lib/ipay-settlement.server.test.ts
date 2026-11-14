@@ -108,6 +108,7 @@ describe("iPay authoritative transaction lookup", () => {
                 amount: "45.000",
                 currency: "TND",
                 status: "declared",
+                product_id: "39868232-79af-499c-b8c1-71bfe43e7ccc",
               },
             ],
           }),

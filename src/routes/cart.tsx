@@ -174,7 +174,8 @@ function CartPage() {
       }),
     onSuccess: (result) => {
       if (!result.ok) return;
-      setPaymentUrl(result.payUrl);\n      setShouldAutoRedirect(true);
+      setPaymentUrl(result.payUrl);
+      setShouldAutoRedirect(true);
       try {
         sessionStorage.setItem(`algorea-bazaar:ipay-payment-url:${result.orderId}`, result.payUrl);
         sessionStorage.setItem(`algorea-bazaar:ipay-payment-order:${signature}`, result.orderId);

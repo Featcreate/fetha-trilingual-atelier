@@ -208,6 +208,48 @@ function SellerPage() {
       return data ?? [];
     },
   });
+  const sellerEarningsQuery = useQuery({
+    queryKey: ["seller-ledger-earnings", store?.id],
+    enabled: !!store?.id,
+    queryFn: async () => {
+      let total = 0;
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase
+          .from("seller_ledger_entries")
+          .select("amount_millimes")
+          .eq("store_id", store!.id)
+          .eq("entry_type", "sale_net")
+          .order("created_at", { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const page = data ?? [];
+        total += page.reduce((sum, entry) => sum + Number(entry.amount_millimes), 0);
+        if (page.length < pageSize) return total;
+      }
+    },
+  });
+  const sellerPayoutBalancesQuery = useQuery({
+    queryKey: ["seller-ledger-payout-balances", store?.id],
+    enabled: !!store?.id,
+    queryFn: async () => {
+      const rows: Array<{ status: string; seller_amount_millimes: number }> = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase
+          .from("seller_payouts")
+          .select("status,seller_amount_millimes")
+          .eq("store_id", store!.id)
+          .neq("status", "cancelled")
+          .order("created_at", { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const page = data ?? [];
+        rows.push(...page);
+        if (page.length < pageSize) return rows;
+      }
+    },
+  });
 
   async function resendSellerConfirmation() {
     if (!user.email) return;
@@ -631,6 +673,19 @@ function SellerPage() {
     [ordersQuery.data],
   );
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
+  const sellerEarned = sellerEarningsQuery.data ?? 0;
+  const sellerPayoutTotals = (sellerPayoutBalancesQuery.data ?? []).reduce(
+    (totals, payout) => {
+      if (payout.status === "paid") totals.transferred += Number(payout.seller_amount_millimes);
+      else if (payout.status !== "cancelled") totals.reserved += Number(payout.seller_amount_millimes);
+      return totals;
+    },
+    { transferred: 0, reserved: 0 },
+  );
+  const sellerAvailable = Math.max(
+    0,
+    sellerEarned - sellerPayoutTotals.transferred - sellerPayoutTotals.reserved,
+  );
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.sellerArea} wide>
@@ -1361,6 +1416,40 @@ function SellerPage() {
                     ? "You can update your method for future payouts; each created payout keeps its own fixed destination snapshot."
                     : "Vous pouvez modifier le moyen pour les prochains versements ; chaque versement créé conserve son propre instantané de destination."}
               </p>
+            </div>
+            <div className="border-t border-border pt-4">
+              <h3 className="font-semibold">{m.payoutBalanceTitle}</h3>
+              {sellerEarningsQuery.isPending || sellerPayoutBalancesQuery.isPending ? (
+                <p className="mt-2 text-sm">{m.loading}</p>
+              ) : sellerEarningsQuery.isError || sellerPayoutBalancesQuery.isError ? (
+                <p role="alert" className="mt-2 text-sm text-destructive">{m.error}</p>
+              ) : (
+                <>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="rounded-lg bg-secondary p-3">
+                      <p className="text-xs text-muted-foreground">{m.payoutEarned}</p>
+                      <p className="mt-1 text-lg font-bold">{formatTND(sellerEarned)}</p>
+                    </div>
+                    <div className="rounded-lg bg-secondary p-3">
+                      <p className="text-xs text-muted-foreground">{m.payoutTransferred}</p>
+                      <p className="mt-1 text-lg font-bold">
+                        {formatTND(sellerPayoutTotals.transferred)}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-secondary p-3">
+                      <p className="text-xs text-muted-foreground">{m.payoutReserved}</p>
+                      <p className="mt-1 text-lg font-bold">
+                        {formatTND(sellerPayoutTotals.reserved)}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-secondary p-3">
+                      <p className="text-xs text-muted-foreground">{m.payoutAvailable}</p>
+                      <p className="mt-1 text-lg font-bold">{formatTND(sellerAvailable)}</p>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{m.payoutBalanceNote}</p>
+                </>
+              )}
             </div>
             <div className="border-t border-border pt-4">
               <h3 className="font-semibold">{m.payoutHistory}</h3>

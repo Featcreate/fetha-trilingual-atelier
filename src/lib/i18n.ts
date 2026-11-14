@@ -260,7 +260,7 @@ export const dict = {
       payoutHelp:
         "Choisissez votre moyen de réception et renseignez les coordonnées nécessaires. Algorea Bazaar effectue manuellement les versements chaque semaine vers ces coordonnées. Les liens des prestataires sont uniquement informatifs et ne gèrent pas vos versements.",
       payoutExternalFeesNote:
-        "Les éventuels frais externes liés à la réception de vos versements restent à votre charge et ne sont pas pris en charge par Algorea Bazaar.",
+        "Seuls les frais de transfert réellement débités et justifiés sont enregistrés séparément et déduits de vos sommes dues. Les tarifs indicatifs ne sont pas déduits.",
       konnectRegister: "S’inscrire sur Konnect via le lien de la plateforme",
       ipayRegister: "Accéder à iPay",
       wepayRegister: "Accéder à WePay",
@@ -645,7 +645,7 @@ export const dict = {
       payoutHelp:
         "اختَر وسيلة استلام مستحقاتك وأدخل بيانات الحساب اللازمة. تحوّل Algorea Bazaar مستحقاتك يدوياً كل أسبوع إلى هذه البيانات. روابط مزودي الخدمة معلوماتية فقط ولا تتولى تحويل مستحقاتك.",
       payoutExternalFeesNote:
-        "أي رسوم خارجية محتملة مرتبطة باستلام مستحقاتك تبقى على عاتقك ولا تتحملها Algorea Bazaar.",
+        "لا تُسجّل ولا تُخصم إلا رسوم التحويل الفعلية المثبتة بكشف أو مرجع عملية، وتُخصم منفصلة عن عمولة المنصة. لا تُخصم التعريفات التقديرية.",
       konnectRegister: "التسجيل في Konnect عبر رابط المنصة",
       ipayRegister: "الانتقال إلى iPay",
       wepayRegister: "الانتقال إلى WePay",
@@ -1032,7 +1032,7 @@ export const dict = {
       payoutHelp:
         "Choose your receiving method and enter the required account details. Algorea Bazaar manually transfers your proceeds to these details every week. Provider links are informational only and do not manage your payouts.",
       payoutExternalFeesNote:
-        "Any external fees that may apply to receiving your payouts are your responsibility and are not covered by Algorea Bazaar.",
+        "Only actual transfer fees supported by a statement or transaction reference are recorded and deducted separately from your payable. Indicative tariffs are not deducted.",
       konnectRegister: "Register with Konnect using the platform link",
       ipayRegister: "Go to iPay",
       wepayRegister: "Go to WePay",

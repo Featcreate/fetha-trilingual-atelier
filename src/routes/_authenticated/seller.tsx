@@ -1302,13 +1302,11 @@ function SellerPage() {
                     required
                     maxLength={200}
                     placeholder={
-                      true
-                        ? lang === "ar"
-                          ? "رقم الحساب أو IBAN"
-                          : lang === "en"
-                            ? "Account number or IBAN"
-                            : "Numéro de compte ou IBAN"
-                        : undefined
+                      lang === "ar"
+                        ? "رقم الحساب أو IBAN"
+                        : lang === "en"
+                          ? "Account number or IBAN"
+                          : "Numéro de compte ou IBAN"
                     }
                     defaultValue={payoutPreferenceQuery.data?.account_identifier ?? ""}
                     className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"

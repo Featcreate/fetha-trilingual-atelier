@@ -108,7 +108,11 @@ export const adminCheckIpayConnection = createServerFn({ method: "GET" })
       _role: "admin",
     });
     if (roleError || isAdmin !== true) {
-      return { ok: false as const, authenticated: false as const, error: "forbidden" as const };
+      return {
+        ok: false as const,
+        authenticated: false as const,
+        error: "forbidden" as const,
+      };
     }
 
     const { ipayGetWebhookHealth } = await import("@/lib/ipay.server");

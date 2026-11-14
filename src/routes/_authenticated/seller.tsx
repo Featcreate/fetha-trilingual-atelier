@@ -101,8 +101,7 @@ function SellerPage() {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
   const [confirmationBusy, setConfirmationBusy] = useState(false);
-  const payoutMethod = "bank_transfer";
-  const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
+    const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
   const [editCategoryId, setEditCategoryId] = useState("");
   const [editSubcategoryId, setEditSubcategoryId] = useState("");
@@ -1293,7 +1292,7 @@ function SellerPage() {
                 </label>
                 <label className="block text-sm font-medium">
                   {lang === "ar"
-                    ? "معرّف الحساب / رقم المحفظة أو الحساب"
+                    ? "رقم الحساب البنكي أو IBAN"
                     : lang === "en"
                       ? "Bank account number or IBAN"
                       : "Numéro de compte bancaire ou IBAN"}
@@ -1302,7 +1301,7 @@ function SellerPage() {
                     required
                     maxLength={200}
                     placeholder={
-                      payoutMethod === "bank_transfer"
+                      true
                         ? lang === "ar"
                           ? "رقم الحساب أو IBAN"
                           : lang === "en"
@@ -1314,22 +1313,6 @@ function SellerPage() {
                     className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
                   />
                 </label>
-                {payoutMethod === "other" && (
-                  <label className="block text-sm font-medium">
-                    {lang === "ar"
-                      ? "اسم مزود الخدمة"
-                      : lang === "en"
-                        ? "Provider name"
-                        : "Nom du prestataire"}
-                    <input
-                      name="provider_name"
-                      required
-                      maxLength={120}
-                      defaultValue={payoutPreferenceQuery.data?.provider_name ?? ""}
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
-                    />
-                  </label>
-                )}
                 {payoutMethod === "bank_transfer" && (
                   <label className="block text-sm font-medium">
                     {lang === "ar" ? "اسم البنك" : lang === "en" ? "Bank name" : "Nom de la banque"}
@@ -1366,7 +1349,7 @@ function SellerPage() {
               </form>
               <p className="mt-2 text-xs leading-6 text-muted-foreground">
                 {lang === "ar"
-                  ? "تظل وسيلة الاستلام قابلة للتعديل للمستقبل؛ أما الدفعات التي أُنشئت فتحفظ نسخة ثابتة من بياناتها."
+                  ? "يمكن إضافة وسائل استلام أخرى مستقبلًا؛ أما الدفعات التي أُنشئت فتحفظ نسخة ثابتة من بياناتها."
                   : lang === "en"
                     ? "You can update your method for future payouts; each created payout keeps its own fixed destination snapshot."
                     : "Vous pouvez modifier le moyen pour les prochains versements ; chaque versement créé conserve son propre instantané de destination."}

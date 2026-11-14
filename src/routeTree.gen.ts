@@ -77,11 +77,12 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAdminIpayCheckRoute = AuthenticatedAdminIpayCheckRouteImport.update({
-  id: '/admin-ipay-check',
-  path: '/admin-ipay-check',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+const AuthenticatedAdminIpayCheckRoute =
+  AuthenticatedAdminIpayCheckRouteImport.update({
+    id: '/admin-ipay-check',
+    path: '/admin-ipay-check',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedOrdersRoute = AuthenticatedOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -147,6 +148,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/admin-ipay-check': typeof AuthenticatedAdminIpayCheckRoute
   '/orders': typeof AuthenticatedOrdersRoute
   '/seller': typeof AuthenticatedSellerRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -207,6 +209,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/admin'
+    | '/admin-ipay-check'
     | '/orders'
     | '/seller'
     | '/checkout/return'

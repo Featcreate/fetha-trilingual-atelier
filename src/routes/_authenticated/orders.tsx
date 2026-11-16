@@ -143,6 +143,11 @@ function BuyerOrdersPage() {
                   {m[order.status as keyof typeof m] ?? order.status}
                 </span>
               </div>
+              {order.status === "pending" && !order.payment_methods?.length && (
+                <section className="rounded-xl border border-border bg-secondary p-3">
+                  <p className="text-sm">{lang === "ar" ? "لم يضف البائع تعليمات الدفع بعد. لا تحوّلي أي مبلغ قبل التواصل معه والتأكد من طريقة الدفع." : lang === "en" ? "The seller has not provided payment instructions yet. Contact them and confirm the payment method before sending money." : "Le vendeur n’a pas encore fourni d’instructions de paiement. Contactez-le et confirmez le moyen de paiement avant tout transfert."}</p>
+                </section>
+              )}
               {order.status === "pending" && !!order.payment_methods?.length && (
                 <section className="rounded-xl border border-border bg-secondary p-3">
                   <h3 className="font-bold">{lang === "ar" ? "تعليمات الدفع للبائع" : lang === "en" ? "Seller payment instructions" : "Instructions de paiement du vendeur"}</h3>

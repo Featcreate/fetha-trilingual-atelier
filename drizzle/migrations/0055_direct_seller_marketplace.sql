@@ -159,7 +159,7 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.create_order_from_cart(jsonb, text) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.create_order_from_cart(jsonb, text) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.create_order_from_cart(jsonb, text) TO service_role;
 
 -- Seller confirmation is the only transition that marks a direct-pay order paid.
 ALTER TABLE public.orders DROP CONSTRAINT IF EXISTS orders_payment_mode_check;

@@ -85,7 +85,7 @@ function CartPage() {
     },
     onSuccess:({id,methods})=>{
       setOrderId(id); setMethods(methods); setNotice(methods.length?t.created:t.noMethods);
-      if(methods.length && selected) clear(selected.store.id);
+      if(selected) clear(selected.store.id);
     },
     onError:()=>setNotice(t.error)
   });

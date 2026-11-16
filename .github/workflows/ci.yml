@@ -41,6 +41,15 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Preview Prettier formatting
+        shell: bash
+        run: |
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx' '*.json' '*.md' '*.css' '*.html' '*.yml' '*.yaml' ':!.lovable/plan.md')
+          if (( ${#files[@]} )); then
+            bunx prettier --write "${files[@]}"
+            git --no-pager diff -- "${files[@]}"
+          fi
+
       - name: Check formatting
         shell: bash
         run: |

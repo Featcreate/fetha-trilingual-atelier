@@ -34,6 +34,7 @@ const words = {
   fr: {
     title: "Panier par boutique",
     empty: "Votre panier est vide.",
+    unavailable: "Certains produits ne sont plus disponibles. Retirez-les pour continuer.",
     browse: "Continuer mes achats",
     total: "Total",
     remove: "Retirer",
@@ -56,6 +57,7 @@ const words = {
   ar: {
     title: "سلة مستقلة لكل متجر",
     empty: "سلة مشترياتك فارغة.",
+    unavailable: "بعض المنتجات لم تعد متاحة. احذفيها للمتابعة.",
     browse: "متابعة التسوق",
     total: "الإجمالي",
     remove: "حذف",
@@ -78,6 +80,7 @@ const words = {
   en: {
     title: "Separate store carts",
     empty: "Your cart is empty.",
+    unavailable: "Some products are no longer available. Remove them to continue.",
     browse: "Continue shopping",
     total: "Total",
     remove: "Remove",
@@ -185,6 +188,12 @@ function CartPage() {
     return [...grouped.values()];
   }, [items, productMap, storeMap]);
 
+  const unavailableLines = items.filter((line) => {
+    const product = productMap.get(line.productId);
+    const store = line.storeId ? storeMap.get(line.storeId) : undefined;
+    return !product || !store;
+  });
+
   const selected =
     groups.find((group) => group.store.id === selectedStoreId) ?? groups[0];
   const total =
@@ -251,6 +260,31 @@ function CartPage() {
         <p role="alert">{t.error}</p>
       ) : (
         <>
+          {unavailableLines.length > 0 && (
+            <section
+              role="status"
+              className="mb-5 rounded-xl border border-border bg-secondary p-4"
+            >
+              <p className="mb-3 text-sm">{t.unavailable}</p>
+              <div className="space-y-2">
+                {unavailableLines.map((line) => (
+                  <div
+                    key={line.productId}
+                    className="flex items-center justify-between gap-3 text-sm"
+                  >
+                    <span>#{line.productId.slice(0, 8)}</span>
+                    <button
+                      type="button"
+                      onClick={() => remove(line.productId)}
+                      className="font-semibold text-red-700 hover:underline"
+                    >
+                      {t.remove}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
           <p className="mb-3 text-sm text-muted-foreground">{t.choose}</p>
           <div className="mb-5 flex flex-wrap gap-2">
             {groups.map((group) => (
@@ -288,14 +322,32 @@ function CartPage() {
                       <ProductPreview path={product.image_path} alt={product.name} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold">
+                      <Link
+                        to="/products/$id"
+                        params={{ id: product.id }}
+                        className="font-bold hover:text-coral"
+                      >
                         {localizedProductText(
                           product.name,
                           product.name_translations,
                           lang,
                         )}
+                      </Link>
+                      <p className="mt-1 flex flex-wrap items-center gap-2 text-sm font-semibold">
+                        {product.sale_price_millimes !== null &&
+                        product.sale_price_millimes < product.price_millimes ? (
+                          <>
+                            <span className="text-muted-foreground line-through">
+                              {formatTND(product.price_millimes)}
+                            </span>
+                            <span className="text-red-600">
+                              {formatTND(lineTotal)}
+                            </span>
+                          </>
+                        ) : (
+                          formatTND(lineTotal)
+                        )}
                       </p>
-                      <p className="font-semibold">{formatTND(lineTotal)}</p>
                     </div>
                     <button
                       type="button"

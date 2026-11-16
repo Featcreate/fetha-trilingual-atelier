@@ -126,8 +126,8 @@ BEGIN
   LIMIT 1;
   IF _existing IS NOT NULL THEN RETURN _existing; END IF;
 
-  INSERT INTO public.orders (user_id, customer_email, total_millimes, checkout_key, cart_fingerprint, store_id)
-  VALUES (_uid, (SELECT email FROM auth.users WHERE id = _uid), _total::integer, _checkout_key, _fingerprint, _store_id)
+  INSERT INTO public.orders (user_id, customer_email, total_millimes, checkout_key, cart_fingerprint, store_id, payment_mode)
+  VALUES (_uid, (SELECT email FROM auth.users WHERE id = _uid), _total::integer, _checkout_key, _fingerprint, _store_id, 'direct_seller')
   RETURNING id INTO _order;
 
   INSERT INTO public.order_items (
@@ -176,6 +176,7 @@ BEGIN
   IF NOT FOUND THEN RAISE EXCEPTION 'forbidden_or_order_missing'; END IF;
   IF _order.status = 'paid' AND _order.payment_mode = 'direct_seller' THEN RETURN 'already_confirmed'; END IF;
   IF _order.status <> 'pending' THEN RETURN 'order_closed'; END IF;
+  IF _order.payment_mode IS DISTINCT FROM 'direct_seller' THEN RAISE EXCEPTION 'not_direct_seller_order'; END IF;
   IF _order.store_id IS NULL THEN RAISE EXCEPTION 'order_store_missing'; END IF;
   IF _confirmation_note IS NOT NULL AND length(_confirmation_note) > 200 THEN RAISE EXCEPTION 'invalid_confirmation_note'; END IF;
 

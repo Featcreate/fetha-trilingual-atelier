@@ -1124,7 +1124,7 @@ function SellerPage() {
           </section>
 
           <section className="rounded-xl border border-border bg-secondary/50 p-4">
-            <p className="text-sm leading-7">{lang === "ar" ? "يستلم البائع ثمن الطلب مباشرة من المشتري باستخدام وسائل الدفع التي يضيفها أدناه. لا تجمع المنصة الأموال ولا تحتفظ بأرصدة أو تنفذ تحويلات." : lang === "en" ? "The seller receives each order payment directly from the buyer using the methods configured below. The platform does not collect funds, hold balances, or make transfers." : "Le vendeur reçoit directement le paiement de l’acheteur via les moyens configurés ci-dessous. La plateforme n’encaisse pas les fonds, ne détient aucun solde et n’effectue aucun virement."}</p>
+            <p className="text-sm leading-7">{lang === "ar" ? "يستلم البائع ثمن الطلب مباشرة من المشتري باستخدام وسائل الدفع التي يضيفها أدناه. لا تجمع المنصة الأموال ولا تقتطع أي عمولة عند الإطلاق." : lang === "en" ? "The seller receives each order payment directly from the buyer using the methods configured below. The platform collects no funds and charges no commission at launch." : "Le vendeur reçoit directement le paiement de l’acheteur via les moyens configurés ci-dessous. Aucun paiement n’est encaissé par la plateforme et aucune commission n’est prélevée au lancement."}</p>
           </section>
 
           <section className="rounded-xl border border-border p-5">

@@ -122,18 +122,7 @@ function SellerPage() {
     },
   });
   const store = storeQuery.data;
-  const settingsQuery = useQuery({
-    queryKey: ["platform-commission"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("platform_settings")
-        .select("commission_bps")
-        .eq("id", true)
-        .single();
-      if (error) throw error;
-      return data.commission_bps;
-    },
-  });
+
 
   const productsQuery = useQuery({
     queryKey: ["seller-products", store?.id],
@@ -215,67 +204,6 @@ function SellerPage() {
       : (lang === "ar" ? "تم تأكيد استلام المبلغ وإتاحة التنزيل للمشتري." : lang === "en" ? "Payment receipt confirmed; downloads are now available." : "Réception confirmée ; le téléchargement est disponible."));
     await qc.invalidateQueries({ queryKey: ["seller-orders", user.id] });
   }
-
-  // Seller payouts are currently bank-transfer only; keep the UI ready for future methods.
-
-  const payoutHistoryQuery = useQuery({
-    queryKey: ["seller-payout-history", store?.id],
-    enabled: !!store?.id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("seller_payouts")
-        .select(
-          "id,status,seller_amount_millimes,external_fees_millimes,currency,created_at,paid_at,provider_transfer_ref,payout_destination_method",
-        )
-        .eq("store_id", store!.id)
-        .order("created_at", { ascending: false })
-        .limit(30);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-  const sellerEarningsQuery = useQuery({
-    queryKey: ["seller-ledger-earnings", store?.id],
-    enabled: !!store?.id,
-    queryFn: async () => {
-      let total = 0;
-      const pageSize = 1000;
-      for (let from = 0; ; from += pageSize) {
-        const { data, error } = await supabase
-          .from("seller_ledger_entries")
-          .select("amount_millimes")
-          .eq("store_id", store!.id)
-          .eq("entry_type", "sale_net")
-          .order("created_at", { ascending: true })
-          .range(from, from + pageSize - 1);
-        if (error) throw error;
-        const page = data ?? [];
-        total += page.reduce((sum, entry) => sum + Number(entry.amount_millimes), 0);
-        if (page.length < pageSize) return total;
-      }
-    },
-  });
-  const sellerPayoutBalancesQuery = useQuery({
-    queryKey: ["seller-ledger-payout-balances", store?.id],
-    enabled: !!store?.id,
-    queryFn: async () => {
-      const rows: Array<{ status: string; seller_amount_millimes: number }> = [];
-      const pageSize = 1000;
-      for (let from = 0; ; from += pageSize) {
-        const { data, error } = await supabase
-          .from("seller_payouts")
-          .select("status,seller_amount_millimes")
-          .eq("store_id", store!.id)
-          .neq("status", "cancelled")
-          .order("created_at", { ascending: true })
-          .range(from, from + pageSize - 1);
-        if (error) throw error;
-        const page = data ?? [];
-        rows.push(...page);
-        if (page.length < pageSize) return rows;
-      }
-    },
-  });
 
   async function resendSellerConfirmation() {
     if (!user.email) return;
@@ -634,20 +562,7 @@ function SellerPage() {
     [ordersQuery.data],
   );
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
-  const sellerEarned = sellerEarningsQuery.data ?? 0;
-  const sellerPayoutTotals = (sellerPayoutBalancesQuery.data ?? []).reduce(
-    (totals, payout) => {
-      if (payout.status === "paid") totals.transferred += Number(payout.seller_amount_millimes);
-      else if (payout.status !== "cancelled")
-        totals.reserved += Number(payout.seller_amount_millimes);
-      return totals;
-    },
-    { transferred: 0, reserved: 0 },
-  );
-  const sellerAvailable = Math.max(
-    0,
-    sellerEarned - sellerPayoutTotals.transferred - sellerPayoutTotals.reserved,
-  );
+
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.sellerArea} wide>
@@ -774,18 +689,7 @@ function SellerPage() {
             />
           </section>
 
-          <section className="rounded-xl border border-border bg-secondary/40 p-4 text-sm leading-7">
-            {settingsQuery.isPending
-              ? m.loading
-              : settingsQuery.isError
-                ? m.error
-                : settingsQuery.data === null
-                  ? m.commissionUnset
-                  : m.commissionDisclosure.replace(
-                      "{value}",
-                      `${(settingsQuery.data / 100).toFixed(2)}%`,
-                    )}
-          </section>
+
 
           <section className="space-y-4">
             <h2 className="text-xl font-bold">{m.addProduct}</h2>

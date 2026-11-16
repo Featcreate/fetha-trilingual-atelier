@@ -82,13 +82,14 @@ function CartPage() {
       if (!result.ok) throw new Error(result.error);
       return {
         id: result.orderId,
+        productIds: selected.lines.map(({ product }) => product.id),
         methods: result.paymentMethods as PaymentMethod[],
         instructionsUnavailable: result.instructionsUnavailable,
       };
     },
-    onSuccess:({id,methods,instructionsUnavailable})=>{
+    onSuccess:({id,productIds,methods,instructionsUnavailable})=>{
       setOrderId(id); setMethods(methods); setNotice(instructionsUnavailable ? t.instructionsUnavailable : methods.length ? t.created : t.noMethods);
-      if(selected) clear(selected.store.id);
+      productIds.forEach(remove);
     },
     onError:()=>setNotice(t.error)
   });

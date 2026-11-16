@@ -356,6 +356,7 @@ export type Database = {
           platform_settlement_amount_minor?: number | null
           platform_settlement_currency?: string
           platform_settlement_currency_exponent?: number | null
+          store_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_millimes?: number
           updated_at?: string

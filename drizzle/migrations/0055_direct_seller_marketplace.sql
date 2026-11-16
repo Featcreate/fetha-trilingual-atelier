@@ -10,9 +10,9 @@ SET store_id = x.store_id
 FROM (
   SELECT order_id, min(store_id::text)::uuid AS store_id
   FROM public.order_items
-  WHERE store_id IS NOT NULL
   GROUP BY order_id
-  HAVING count(DISTINCT store_id) = 1
+  HAVING count(*) = count(store_id)
+     AND count(DISTINCT store_id) = 1
 ) x
 WHERE o.id = x.order_id AND o.store_id IS NULL;
 

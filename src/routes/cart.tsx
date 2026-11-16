@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { AuthShell } from "@/components/AuthShell";
 import { ProductPreview } from "@/components/ProductPreview";
@@ -20,9 +20,9 @@ type Store = { id: string; name: string };
 type PaymentMethod = { method_id: string; method_type: string; label: string; instructions: string };
 
 const words = {
-  fr: { title:"Panier par boutique", empty:"Votre panier est vide.", browse:"Continuer mes achats", total:"Total", remove:"Retirer", choose:"Choisissez la boutique dont vous souhaitez finaliser la commande.", checkout:"Créer la commande", working:"Création…", payment:"Instructions de paiement du vendeur", noMethods:"Le vendeur n’a pas encore renseigné ses moyens de paiement. La commande n’a pas été créée.", created:"Commande créée. Effectuez le paiement directement auprès du vendeur, puis attendez sa confirmation avant le téléchargement.", error:"Impossible de créer la commande. Vérifiez votre panier et réessayez.", limit:"Chaque boutique possède son propre panier, limité à 50 produits différents.", select:"Boutique", order:"Commande", close:"Fermer les instructions" },
-  ar: { title:"سلة مستقلة لكل متجر", empty:"سلة مشترياتك فارغة.", browse:"متابعة التسوق", total:"الإجمالي", remove:"حذف", choose:"اختاري المتجر الذي تريدين إتمام الطلب منه.", checkout:"إنشاء الطلب", working:"جارٍ الإنشاء…", payment:"تعليمات الدفع الخاصة بالبائع", noMethods:"لم يضف البائع وسائل الدفع بعد. لم يتم إنشاء الطلب.", created:"تم إنشاء الطلب. ادفعي مباشرة للبائع وانتظري تأكيده قبل تنزيل المنتج.", error:"تعذر إنشاء الطلب. تحققي من السلة وحاولي مجدداً.", limit:"لكل متجر سلة مستقلة بحد أقصى 50 منتجاً مختلفاً.", select:"المتجر", order:"الطلب", close:"إغلاق التعليمات" },
-  en: { title:"Separate store carts", empty:"Your cart is empty.", browse:"Continue shopping", total:"Total", remove:"Remove", choose:"Choose the store whose order you want to place.", checkout:"Create order", working:"Creating…", payment:"Seller payment instructions", noMethods:"The seller has not added payment methods yet. No order was created.", created:"Order created. Pay the seller directly and wait for their confirmation before downloading.", error:"Could not create the order. Check your cart and try again.", limit:"Each store has its own cart, limited to 50 different products.", select:"Store", order:"Order", close:"Close instructions" },
+  fr: { title:"Panier par boutique", empty:"Votre panier est vide.", browse:"Continuer mes achats", total:"Total", remove:"Retirer", choose:"Choisissez la boutique dont vous souhaitez finaliser la commande.", checkout:"Créer la commande", working:"Création…", payment:"Instructions de paiement du vendeur", noMethods:"La commande a été créée, mais le vendeur n’a pas encore renseigné ses moyens de paiement. Contactez-le avant tout paiement.", created:"Commande créée. Effectuez le paiement directement auprès du vendeur, puis attendez sa confirmation avant le téléchargement.", error:"Impossible de créer la commande. Vérifiez votre panier et réessayez.", limit:"Chaque boutique possède son propre panier, limité à 50 produits différents.", select:"Boutique", order:"Commande", close:"Fermer les instructions" },
+  ar: { title:"سلة مستقلة لكل متجر", empty:"سلة مشترياتك فارغة.", browse:"متابعة التسوق", total:"الإجمالي", remove:"حذف", choose:"اختاري المتجر الذي تريدين إتمام الطلب منه.", checkout:"إنشاء الطلب", working:"جارٍ الإنشاء…", payment:"تعليمات الدفع الخاصة بالبائع", noMethods:"تم إنشاء الطلب، لكن البائع لم يضف وسائل الدفع بعد. تواصلي معه قبل الدفع.", created:"تم إنشاء الطلب. ادفعي مباشرة للبائع وانتظري تأكيده قبل تنزيل المنتج.", error:"تعذر إنشاء الطلب. تحققي من السلة وحاولي مجدداً.", limit:"لكل متجر سلة مستقلة بحد أقصى 50 منتجاً مختلفاً.", select:"المتجر", order:"الطلب", close:"إغلاق التعليمات" },
+  en: { title:"Separate store carts", empty:"Your cart is empty.", browse:"Continue shopping", total:"Total", remove:"Remove", choose:"Choose the store whose order you want to place.", checkout:"Create order", working:"Creating…", payment:"Seller payment instructions", noMethods:"The order was created, but the seller has not added payment methods yet. Contact them before paying.", created:"Order created. Pay the seller directly and wait for their confirmation before downloading.", error:"Could not create the order. Check your cart and try again.", limit:"Each store has its own cart, limited to 50 different products.", select:"Store", order:"Order", close:"Close instructions" },
 } as const;
 
 function CartPage() {
@@ -48,11 +48,7 @@ function CartPage() {
   });
   const productMap=useMemo(()=>new Map((query.data?.products??[]).map(p=>[p.id,p])),[query.data]);
   const storeMap=useMemo(()=>new Map((query.data?.stores??[]).map(s=>[s.id,s])),[query.data]);
-  // Migrate legacy cart entries by resolving their store from the product record.
-  for (const line of items) {
-    const product=productMap.get(line.productId);
-    if(!line.storeId && product?.store_id) assignStore(line.productId,product.store_id);
-  }
+  // Migrate legacy cart entries after product ownership has been resolved.\n  useEffect(()=>{\n    for (const line of items) {\n      const product=productMap.get(line.productId);\n      if(!line.storeId && product?.store_id) assignStore(line.productId,product.store_id);\n    }\n  },[items,productMap,assignStore]);
   const groups=useMemo(()=>{
     const map=new Map<string,{store:Store;lines:Array<{product:Product;total:number}>}>();
     for(const line of items){

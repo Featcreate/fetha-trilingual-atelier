@@ -48,7 +48,13 @@ function CartPage() {
   });
   const productMap=useMemo(()=>new Map((query.data?.products??[]).map(p=>[p.id,p])),[query.data]);
   const storeMap=useMemo(()=>new Map((query.data?.stores??[]).map(s=>[s.id,s])),[query.data]);
-  // Migrate legacy cart entries after product ownership has been resolved.\n  useEffect(()=>{\n    for (const line of items) {\n      const product=productMap.get(line.productId);\n      if(!line.storeId && product?.store_id) assignStore(line.productId,product.store_id);\n    }\n  },[items,productMap,assignStore]);
+  // Migrate legacy cart entries after product ownership has been resolved.
+  useEffect(()=>{
+    for (const line of items) {
+      const product=productMap.get(line.productId);
+      if(!line.storeId && product?.store_id) assignStore(line.productId,product.store_id);
+    }
+  },[items,productMap,assignStore]);
   const groups=useMemo(()=>{
     const map=new Map<string,{store:Store;lines:Array<{product:Product;total:number}>}>();
     for(const line of items){

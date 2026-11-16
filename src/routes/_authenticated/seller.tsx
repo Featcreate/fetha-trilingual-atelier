@@ -214,7 +214,13 @@ function SellerPage() {
         gross_millimes: number | null;
         commission_millimes: number | null;
         seller_net_millimes: number | null;
-        orders: { id: string; status: string; created_at: string; total_millimes: number; payment_mode?: string | null } | null;
+        orders: {
+          id: string;
+          status: string;
+          created_at: string;
+          total_millimes: number;
+          payment_mode?: string | null;
+        } | null;
       }>;
     },
   });
@@ -230,7 +236,14 @@ function SellerPage() {
 
   async function saveDirectPaymentMethod(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!store || !paymentMethodLabel.trim() || !paymentMethodInstructions.trim()) return;
+    if (
+      !store ||
+      !paymentMethodLabel.trim() ||
+      !paymentMethodInstructions.trim()
+    ) {
+      return;
+    }
+
     setBusy(true);
     const result = await saveSellerPaymentMethod({
       data: {
@@ -240,31 +253,65 @@ function SellerPage() {
       },
     });
     setBusy(false);
+
     if (!result.ok) return setNotice(m.error);
+
     setPaymentMethodLabel("");
     setPaymentMethodInstructions("");
-    setNotice(lang === "ar" ? "تم حفظ وسيلة الدفع." : lang === "en" ? "Payment method saved." : "Moyen de paiement enregistré.");
-    await qc.invalidateQueries({ queryKey: ["store-direct-payment-methods", store.id] });
+    setNotice(
+      lang === "ar"
+        ? "تم حفظ وسيلة الدفع."
+        : lang === "en"
+          ? "Payment method saved."
+          : "Moyen de paiement enregistré.",
+    );
+    await qc.invalidateQueries({
+      queryKey: ["store-direct-payment-methods", store.id],
+    });
   }
 
   async function confirmDirectOrder(orderId: string) {
-    const confirmed = window.confirm(
+    const confirmationPrompt =
       lang === "ar"
         ? "هل تأكدت من استلام المبلغ فعلياً من المشتري؟ سيُتاح التنزيل فور التأكيد."
         : lang === "en"
           ? "Have you actually received the buyer’s payment? Downloads will be unlocked immediately after confirmation."
-          : "Avez-vous réellement reçu le paiement de l’acheteur ? Le téléchargement sera débloqué immédiatement après confirmation.",
-    );
-    if (!confirmed) return;
+          : "Avez-vous réellement reçu le paiement de l’acheteur ? Le téléchargement sera débloqué immédiatement après confirmation.";
+    if (!window.confirm(confirmationPrompt)) return;
+
     setBusy(true);
-    const { data, error } = await (supabase as any).rpc("seller_confirm_direct_payment", {
-      _order_id: orderId, _confirmation_note: null,
-    });
+    const { data, error } = await (supabase as any).rpc(
+      "seller_confirm_direct_payment",
+      {
+        _order_id: orderId,
+        _confirmation_note: null,
+      },
+    );
     setBusy(false);
-    if (error) return setNotice(lang === "ar" ? "تعذر تأكيد استلام المبلغ." : lang === "en" ? "Could not confirm receipt." : "Impossible de confirmer la réception.");
-    setNotice(data === "already_confirmed"
-      ? (lang === "ar" ? "تم تأكيد الطلب سابقاً." : lang === "en" ? "Order already confirmed." : "Commande déjà confirmée.")
-      : (lang === "ar" ? "تم تأكيد استلام المبلغ وإتاحة التنزيل للمشتري." : lang === "en" ? "Payment receipt confirmed; downloads are now available." : "Réception confirmée ; le téléchargement est disponible."));
+
+    if (error) {
+      return setNotice(
+        lang === "ar"
+          ? "تعذر تأكيد استلام المبلغ."
+          : lang === "en"
+            ? "Could not confirm receipt."
+            : "Impossible de confirmer la réception.",
+      );
+    }
+
+    setNotice(
+      data === "already_confirmed"
+        ? lang === "ar"
+          ? "تم تأكيد الطلب سابقاً."
+          : lang === "en"
+            ? "Order already confirmed."
+            : "Commande déjà confirmée."
+        : lang === "ar"
+          ? "تم تأكيد استلام المبلغ وإتاحة التنزيل للمشتري."
+          : lang === "en"
+            ? "Payment receipt confirmed; downloads are now available."
+            : "Réception confirmée ; le téléchargement est disponible.",
+    );
     await qc.invalidateQueries({ queryKey: ["seller-orders", user.id] });
   }
 
@@ -1289,11 +1336,21 @@ function SellerPage() {
                         {m[item.orders?.status as keyof typeof m] ?? item.orders?.status}
                       </span>
                     </div>
-                    {item.orders?.status === "pending" && item.orders?.payment_mode === "direct_seller" && (
-                      <button type="button" disabled={busy} onClick={() => void confirmDirectOrder(item.order_id)} className="mt-3 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50">
-                        {lang === "ar" ? "تأكيد استلام المبلغ" : lang === "en" ? "Confirm payment received" : "Confirmer la réception du paiement"}
-                      </button>
-                    )}
+                    {item.orders?.status === "pending" &&
+                      item.orders?.payment_mode === "direct_seller" && (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => void confirmDirectOrder(item.order_id)}
+                          className="mt-3 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+                        >
+                          {lang === "ar"
+                            ? "تأكيد استلام المبلغ"
+                            : lang === "en"
+                              ? "Confirm payment received"
+                              : "Confirmer la réception du paiement"}
+                        </button>
+                      )}
                     <p className="mt-2 text-xs text-muted-foreground">
                       #{item.order_id.slice(0, 8)} ·{" "}
                       {item.orders?.created_at

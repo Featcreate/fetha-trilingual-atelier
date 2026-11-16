@@ -654,13 +654,7 @@ export const createDirectSellerOrder = createServerFn({ method: "POST" })
   });
 
 const directPaymentMethodSchema = z.object({
-  methodType: z.enum([
-    "bank_transfer",
-    "postal_transfer",
-    "wallet",
-    "cash",
-    "other",
-  ]),
+  methodType: z.enum(["bank_transfer", "postal_transfer", "wallet", "cash", "other"]),
   label: z.string().trim().min(1).max(80),
   instructions: z.string().trim().min(1).max(2000),
 });
@@ -689,9 +683,7 @@ export const getSellerPaymentMethods = createServerFn({ method: "GET" })
       };
     }
 
-    const { supabaseAdmin } = await import(
-      "@/integrations/supabase/client.server"
-    );
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("store_payment_methods")
       .select("id,method_type,label,instructions,is_enabled,display_order")
@@ -715,9 +707,7 @@ export const getSellerPaymentMethods = createServerFn({ method: "GET" })
 /** Save a payment method only for the authenticated user's own store. */
 export const saveSellerPaymentMethod = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ ...directPaymentMethodSchema.shape }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ ...directPaymentMethodSchema.shape }).parse(input))
   .handler(async ({ data, context }) => {
     const { data: store, error: storeError } = await context.supabase
       .from("stores")
@@ -727,9 +717,7 @@ export const saveSellerPaymentMethod = createServerFn({ method: "POST" })
 
     if (storeError || !store) return { ok: false as const };
 
-    const { supabaseAdmin } = await import(
-      "@/integrations/supabase/client.server"
-    );
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: last } = await supabaseAdmin
       .from("store_payment_methods")
       .select("display_order")

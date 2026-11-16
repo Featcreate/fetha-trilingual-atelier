@@ -22,6 +22,7 @@ import { ProductPreview } from "@/components/ProductPreview";
 import { translateProductContent } from "@/lib/product-translations";
 import { MAX_PRODUCT_FILE_BYTES, uploadProductFile } from "@/lib/storage-upload";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
+import { getSellerPaymentMethods, saveSellerPaymentMethod } from "@/lib/shop.functions";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 import {
   activateSellerFileVersion,
@@ -103,7 +104,7 @@ function SellerPage() {
   const [confirmationBusy, setConfirmationBusy] = useState(false);
   const [paymentMethodLabel, setPaymentMethodLabel] = useState("");
   const [paymentMethodInstructions, setPaymentMethodInstructions] = useState("");
-  const [paymentMethodType, setPaymentMethodType] = useState("bank_transfer");
+  const [paymentMethodType, setPaymentMethodType] = useState<"bank_transfer" | "postal_transfer" | "wallet" | "cash" | "other">("bank_transfer");
   const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
   const [editCategoryId, setEditCategoryId] = useState("");
@@ -165,13 +166,8 @@ function SellerPage() {
     queryKey: ["store-direct-payment-methods", store?.id],
     enabled: !!store?.id,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("store_payment_methods")
-        .select("id,method_type,label,instructions,is_enabled,display_order")
-        .eq("store_id", store!.id)
-        .order("display_order", { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as Array<{id:string;method_type:string;label:string;instructions:string;is_enabled:boolean;display_order:number}>;
+      const result = await getSellerPaymentMethods({ data: {} });
+      return result.methods;
     },
   });
 
@@ -179,13 +175,15 @@ function SellerPage() {
     e.preventDefault();
     if (!store || !paymentMethodLabel.trim() || !paymentMethodInstructions.trim()) return;
     setBusy(true);
-    const { error } = await (supabase as any).from("store_payment_methods").insert({
-      store_id: store.id, method_type: paymentMethodType, label: paymentMethodLabel.trim(),
-      instructions: paymentMethodInstructions.trim(), is_enabled: true,
-      display_order: (directPaymentMethodsQuery.data?.length ?? 0) + 1,
+    const result = await saveSellerPaymentMethod({
+      data: {
+        methodType: paymentMethodType,
+        label: paymentMethodLabel.trim(),
+        instructions: paymentMethodInstructions.trim(),
+      },
     });
     setBusy(false);
-    if (error) return setNotice(m.error);
+    if (!result.ok) return setNotice(m.error);
     setPaymentMethodLabel("");
     setPaymentMethodInstructions("");
     setNotice(lang === "ar" ? "تم حفظ وسيلة الدفع." : lang === "en" ? "Payment method saved." : "Moyen de paiement enregistré.");

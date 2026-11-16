@@ -35,7 +35,7 @@ CREATE INDEX IF NOT EXISTS store_payment_methods_store_idx
   ON public.store_payment_methods(store_id, is_enabled, display_order);
 ALTER TABLE public.store_payment_methods ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.store_payment_methods FROM PUBLIC, anon, authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.store_payment_methods TO authenticated;
+GRANT ALL ON public.store_payment_methods TO service_role;
 CREATE POLICY "Sellers manage own store payment methods"
   ON public.store_payment_methods FOR ALL TO authenticated
   USING (EXISTS (SELECT 1 FROM public.stores s WHERE s.id = store_id AND s.owner_id = (SELECT auth.uid())))

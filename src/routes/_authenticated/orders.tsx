@@ -73,7 +73,7 @@ function BuyerOrdersPage() {
       return Promise.all(
         orders.map(async (order) => {
           if (order.status !== "pending") return order;
-          const { data: methods } = await (supabase as any).rpc(
+          const { data: methods } = await supabase.rpc(
             "get_order_payment_methods",
             { _order_id: order.id },
           );

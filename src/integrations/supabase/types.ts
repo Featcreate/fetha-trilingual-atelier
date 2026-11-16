@@ -288,6 +288,7 @@ export type Database = {
           platform_settlement_amount_minor: number | null
           platform_settlement_currency: string
           platform_settlement_currency_exponent: number | null
+          store_id: string | null
           status: Database["public"]["Enums"]["order_status"]
           total_millimes: number
           updated_at: string
@@ -321,6 +322,7 @@ export type Database = {
           platform_settlement_amount_minor?: number | null
           platform_settlement_currency?: string
           platform_settlement_currency_exponent?: number | null
+          store_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_millimes: number
           updated_at?: string
@@ -359,7 +361,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_events: {
         Row: {
@@ -1296,6 +1306,50 @@ export type Database = {
         }
         Relationships: []
       }
+      store_payment_methods: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          instructions: string
+          is_enabled: boolean
+          label: string
+          method_type: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          instructions: string
+          is_enabled?: boolean
+          label: string
+          method_type: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          instructions?: string
+          is_enabled?: boolean
+          label?: string
+          method_type?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_payment_methods_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       terms_acceptances: {
         Row: {
           accepted_at: string
@@ -1448,6 +1502,19 @@ export type Database = {
         Returns: boolean
       }
       finalize_download: { Args: { _reservation_id: string }; Returns: boolean }
+      get_order_payment_methods: {
+        Args: { _order_id: string }
+        Returns: {
+          method_id: string
+          method_type: string
+          label: string
+          instructions: string
+        }[]
+      }
+      seller_confirm_direct_payment: {
+        Args: { _order_id: string; _confirmation_note?: string | null }
+        Returns: string
+      }
       get_my_seller_ratings: {
         Args: never
         Returns: {

@@ -691,8 +691,7 @@ export const getSellerPaymentMethods = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
-    const admin = supabaseAdmin as any;
-    const { data, error } = await admin
+        const { data, error } = await supabaseAdmin
       .from("store_payment_methods")
       .select("id,method_type,label,instructions,is_enabled,display_order")
       .eq("store_id", store.id)
@@ -739,7 +738,7 @@ export const saveSellerPaymentMethod = createServerFn({ method: "POST" })
       .limit(1)
       .maybeSingle();
 
-    const { error } = await admin.from("store_payment_methods").insert({
+    const { error } = await supabaseAdmin.from("store_payment_methods").insert({
       store_id: store.id,
       method_type: data.methodType,
       label: data.label,

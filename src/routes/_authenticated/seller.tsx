@@ -100,7 +100,7 @@ function SellerPage() {
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
-  const [confirmationBusy, setConfirmationBusy] = useState(false);
+  const [confirmationBusy, setConfirmationBusy] = useState(false);\n  const [paymentMethodLabel, setPaymentMethodLabel] = useState("");\n  const [paymentMethodInstructions, setPaymentMethodInstructions] = useState("");\n  const [paymentMethodType, setPaymentMethodType] = useState("bank_transfer");
   const payoutMethod = "bank_transfer";
   const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
@@ -153,7 +153,7 @@ function SellerPage() {
       const { data, error } = await supabase
         .from("order_items")
         .select(
-          "id, order_id, product_name, quantity, gross_millimes, commission_millimes, seller_net_millimes, orders!inner(id,status,created_at,total_millimes)",
+          "id, order_id, product_name, quantity, gross_millimes, commission_millimes, seller_net_millimes, orders!inner(id,status,created_at,total_millimes,payment_mode)",
         )
         .eq("seller_id", user.id);
       if (error) throw error;
@@ -165,7 +165,7 @@ function SellerPage() {
         gross_millimes: number | null;
         commission_millimes: number | null;
         seller_net_millimes: number | null;
-        orders: { id: string; status: string; created_at: string; total_millimes: number } | null;
+        orders: { id: string; status: string; created_at: string; total_millimes: number; payment_mode?: string | null } | null;
       }>;
     },
   });

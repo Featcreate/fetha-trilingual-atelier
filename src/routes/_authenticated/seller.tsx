@@ -1559,7 +1559,7 @@ function SellerPage() {
                         {m[item.orders?.status as keyof typeof m] ?? item.orders?.status}
                       </span>
                     </div>
-                    {item.orders?.status === "pending" && (
+                    {item.orders?.status === "pending" && item.orders?.payment_mode === "direct_seller" && (
                       <button type="button" disabled={busy} onClick={() => void confirmDirectOrder(item.order_id)} className="mt-3 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50">
                         {lang === "ar" ? "تأكيد استلام المبلغ" : lang === "en" ? "Confirm payment received" : "Confirmer la réception du paiement"}
                       </button>

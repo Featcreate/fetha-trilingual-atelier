@@ -65,10 +65,8 @@ const words = {
     checkout: "إنشاء الطلب",
     working: "جارٍ الإنشاء…",
     payment: "تعليمات الدفع الخاصة بالبائع",
-    noMethods:
-      "تم إنشاء الطلب، لكن البائع لم يضف وسائل الدفع بعد. تواصلي معه قبل الدفع.",
-    created:
-      "تم إنشاء الطلب. ادفعي مباشرة للبائع وانتظري تأكيده قبل تنزيل المنتج.",
+    noMethods: "تم إنشاء الطلب، لكن البائع لم يضف وسائل الدفع بعد. تواصلي معه قبل الدفع.",
+    created: "تم إنشاء الطلب. ادفعي مباشرة للبائع وانتظري تأكيده قبل تنزيل المنتج.",
     error: "تعذر إنشاء الطلب. تحققي من السلة وحاولي مجدداً.",
     limit: "لكل متجر سلة مستقلة بحد أقصى 50 منتجاً مختلفاً.",
     instructionsUnavailable:
@@ -118,26 +116,18 @@ function CartPage() {
       const ids = items.map((item) => item.productId);
       const { data, error } = await supabase
         .from("products")
-        .select(
-          "id,name,name_translations,price_millimes,sale_price_millimes,image_path,store_id",
-        )
+        .select("id,name,name_translations,price_millimes,sale_price_millimes,image_path,store_id")
         .in("id", ids)
         .eq("is_active", true);
       if (error) throw error;
 
       const storeIds = [
         ...new Set(
-          (data ?? [])
-            .map((product) => product.store_id)
-            .filter((id): id is string => !!id),
+          (data ?? []).map((product) => product.store_id).filter((id): id is string => !!id),
         ),
       ];
       const { data: stores, error: storeError } = storeIds.length
-        ? await supabase
-            .from("stores")
-            .select("id,name")
-            .in("id", storeIds)
-            .eq("status", "active")
+        ? await supabase.from("stores").select("id,name").in("id", storeIds).eq("status", "active")
         : { data: [], error: null };
       if (storeError) throw storeError;
 
@@ -194,10 +184,8 @@ function CartPage() {
     return !product || !store;
   });
 
-  const selected =
-    groups.find((group) => group.store.id === selectedStoreId) ?? groups[0];
-  const total =
-    selected?.lines.reduce((sum, line) => sum + line.total, 0) ?? 0;
+  const selected = groups.find((group) => group.store.id === selectedStoreId) ?? groups[0];
+  const total = selected?.lines.reduce((sum, line) => sum + line.total, 0) ?? 0;
 
   const checkout = useMutation({
     mutationFn: async () => {
@@ -327,11 +315,7 @@ function CartPage() {
                         params={{ id: product.id }}
                         className="font-bold hover:text-coral"
                       >
-                        {localizedProductText(
-                          product.name,
-                          product.name_translations,
-                          lang,
-                        )}
+                        {localizedProductText(product.name, product.name_translations, lang)}
                       </Link>
                       <p className="mt-1 flex flex-wrap items-center gap-2 text-sm font-semibold">
                         {product.sale_price_millimes !== null &&
@@ -340,9 +324,7 @@ function CartPage() {
                             <span className="text-muted-foreground line-through">
                               {formatTND(product.price_millimes)}
                             </span>
-                            <span className="text-red-600">
-                              {formatTND(lineTotal)}
-                            </span>
+                            <span className="text-red-600">{formatTND(lineTotal)}</span>
                           </>
                         ) : (
                           formatTND(lineTotal)
@@ -396,9 +378,7 @@ function CartPage() {
               {methods.map((method) => (
                 <article key={method.method_id} className="rounded-lg bg-background p-3">
                   <p className="font-semibold">{method.label}</p>
-                  <p className="mt-1 whitespace-pre-wrap text-sm">
-                    {method.instructions}
-                  </p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm">{method.instructions}</p>
                 </article>
               ))}
             </section>

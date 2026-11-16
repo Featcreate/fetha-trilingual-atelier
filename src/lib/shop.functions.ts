@@ -691,7 +691,7 @@ export const getSellerPaymentMethods = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
-        const { data, error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from("store_payment_methods")
       .select("id,method_type,label,instructions,is_enabled,display_order")
       .eq("store_id", store.id)
@@ -729,8 +729,7 @@ export const saveSellerPaymentMethod = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
-    const admin = supabaseAdmin as any;
-    const { data: last } = await admin
+    const { data: last } = await supabaseAdmin
       .from("store_payment_methods")
       .select("display_order")
       .eq("store_id", store.id)

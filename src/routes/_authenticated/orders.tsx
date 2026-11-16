@@ -21,7 +21,8 @@ type BuyerOrder = {
   status: string;
   total_millimes: number;
   created_at: string;
-  payment_methods?: Array<{method_id:string;method_type:string;label:string;instructions:string}>;\n  order_items: Array<{
+  payment_methods?: Array<{method_id:string;method_type:string;label:string;instructions:string}>;
+  order_items: Array<{
     id: string;
     product_name: string;
     unit_price_millimes: number;

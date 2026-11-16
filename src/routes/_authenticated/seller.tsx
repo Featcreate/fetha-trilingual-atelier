@@ -103,7 +103,10 @@ function SellerPage() {
   const [confirmationBusy, setConfirmationBusy] = useState(false);
   const [paymentMethodLabel, setPaymentMethodLabel] = useState("");
   const [paymentMethodInstructions, setPaymentMethodInstructions] = useState("");
-  const [paymentMethodType, setPaymentMethodType] = useState("bank_transfer");\n  const [paymentMethodLabel, setPaymentMethodLabel] = useState("");\n  const [paymentMethodInstructions, setPaymentMethodInstructions] = useState("");\n  const [paymentMethodType, setPaymentMethodType] = useState("bank_transfer");
+  const [paymentMethodType, setPaymentMethodType] = useState("bank_transfer");
+  const [paymentMethodLabel, setPaymentMethodLabel] = useState("");
+  const [paymentMethodInstructions, setPaymentMethodInstructions] = useState("");
+  const [paymentMethodType, setPaymentMethodType] = useState("bank_transfer");
   const payoutMethod = "bank_transfer";
   const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
@@ -1690,7 +1693,9 @@ function SellerFileVersions({
   async function remove(versionId: string, fileName: string, sizeBytes: number) {
     if (
       workingId ||
-      !window.confirm(m.confirmDeleteFile + "\n\n" + fileName + " · " + formatFileSize(sizeBytes))
+      !window.confirm(m.confirmDeleteFile + "
+
+" + fileName + " · " + formatFileSize(sizeBytes))
     ) {
       return;
     }

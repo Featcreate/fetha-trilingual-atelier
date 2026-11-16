@@ -664,7 +664,8 @@ export const getSellerPaymentMethods = createServerFn({ method: "GET" })
       .maybeSingle();
     if (storeError || !store) return { methods: [] as Array<{id:string;method_type:string;label:string;instructions:string;is_enabled:boolean;display_order:number}> };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+    const admin = supabaseAdmin as any;
+    const { data, error } = await admin
       .from("store_payment_methods")
       .select("id,method_type,label,instructions,is_enabled,display_order")
       .eq("store_id", store.id)
@@ -687,14 +688,15 @@ export const saveSellerPaymentMethod = createServerFn({ method: "POST" })
       .maybeSingle();
     if (storeError || !store) return { ok: false as const };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: last } = await supabaseAdmin
+    const admin = supabaseAdmin as any;
+    const { data: last } = await admin
       .from("store_payment_methods")
       .select("display_order")
       .eq("store_id", store.id)
       .order("display_order", { ascending: false })
       .limit(1)
       .maybeSingle();
-    const { error } = await supabaseAdmin.from("store_payment_methods").insert({
+    const { error } = await admin.from("store_payment_methods").insert({
       store_id: store.id,
       method_type: data.methodType,
       label: data.label,

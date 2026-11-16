@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feat/direct-seller-payments-marketplace
   pull_request:
     branches:
       - main
@@ -42,32 +41,10 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
-      - name: Preview Prettier formatting
-        shell: bash
-        run: |
-          mapfile -t files < <(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx' '*.json' '*.md' '*.css' '*.html' '*.yml' '*.yaml' ':!.lovable/plan.md')
-          if (( ${#files[@]} )); then
-            bunx prettier --write "${files[@]}"
-            git --no-pager diff -- "${files[@]}"
-          fi
-
-      - name: Upload formatted source snapshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: prettier-source-${{ github.run_id }}
-          path: |
-            src/integrations/supabase/types.ts
-            src/lib/cart.tsx
-            src/lib/shop.functions.ts
-            src/routes/_authenticated/orders.tsx
-            src/routes/_authenticated/seller.tsx
-            src/routes/cart.tsx
-          if-no-files-found: error
-
       - name: Check formatting
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.ref_name }}" == "feat/direct-seller-payments-marketplace" ]]; then
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             git fetch origin main --depth=1
             BASE="origin/main"
           else

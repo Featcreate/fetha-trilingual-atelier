@@ -280,7 +280,7 @@ function SellerPage() {
     if (!window.confirm(confirmationPrompt)) return;
 
     setBusy(true);
-    const { data, error } = await (supabase as any).rpc(
+    const { data, error } = await supabase.rpc(
       "seller_confirm_direct_payment",
       {
         _order_id: orderId,

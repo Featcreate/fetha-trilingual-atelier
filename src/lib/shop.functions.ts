@@ -601,3 +601,106 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       return { ok: false as const, error: "payment_provider_error", orderId };
     }
   });
+
+
+/** Direct-to-seller checkout: create one store-scoped order and return its private payment instructions. */
+export const createDirectSellerOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({
+      productIds: z.array(z.string().uuid()).min(1).max(50),
+      checkoutKey: z.string().min(8).max(100),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    const { data: rawOrderId, error } = await callActorScopedRpc(
+      context.userId,
+      "server_create_order_from_cart",
+      {
+        _items: data.productIds.map((productId) => ({ productId, quantity: 1 })),
+        _checkout_key: data.checkoutKey,
+      },
+    );
+    const orderId = rawOrderId as string | null;
+    if (error || !orderId) {
+      const message = error?.message ?? "";
+      const code = message.includes("cart_must_contain_one_store")
+        ? "cart_must_contain_one_store"
+        : message.includes("product_unavailable")
+          ? "product_unavailable"
+          : message.includes("legacy_order_store_mismatch")
+            ? "legacy_order_store_mismatch"
+            : "order_failed";
+      return { ok: false as const, error: code };
+    }
+    const { data: methods, error: methodsError } = await (context.supabase as any).rpc(
+      "get_order_payment_methods",
+      { _order_id: orderId },
+    );
+    return {
+      ok: true as const,
+      orderId,
+      paymentMethods: methodsError ? [] : (methods ?? []),
+      instructionsUnavailable: Boolean(methodsError),
+    };
+  });
+
+const directPaymentMethodSchema = z.object({
+  methodType: z.enum(["bank_transfer", "postal_transfer", "wallet", "cash", "other"]),
+  label: z.string().trim().min(1).max(80),
+  instructions: z.string().trim().min(1).max(2000),
+});
+
+/** List the signed-in owner's payment methods without exposing the new table to the public Data API. */
+export const getSellerPaymentMethods = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({}).parse(input))
+  .handler(async ({ context }) => {
+    const { data: store, error: storeError } = await context.supabase
+      .from("stores")
+      .select("id")
+      .eq("owner_id", context.userId)
+      .maybeSingle();
+    if (storeError || !store) return { methods: [] as Array<{id:string;method_type:string;label:string;instructions:string;is_enabled:boolean;display_order:number}> };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("store_payment_methods")
+      .select("id,method_type,label,instructions,is_enabled,display_order")
+      .eq("store_id", store.id)
+      .order("display_order", { ascending: true });
+    if (error) throw new Error("payment_methods_unavailable");
+    return { methods: data ?? [] };
+  });
+
+/** Save a payment method only for the authenticated user's own store. */
+export const saveSellerPaymentMethod = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ ...directPaymentMethodSchema.shape }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: store, error: storeError } = await context.supabase
+      .from("stores")
+      .select("id")
+      .eq("owner_id", context.userId)
+      .maybeSingle();
+    if (storeError || !store) return { ok: false as const };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: last } = await supabaseAdmin
+      .from("store_payment_methods")
+      .select("display_order")
+      .eq("store_id", store.id)
+      .order("display_order", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const { error } = await supabaseAdmin.from("store_payment_methods").insert({
+      store_id: store.id,
+      method_type: data.methodType,
+      label: data.label,
+      instructions: data.instructions,
+      is_enabled: true,
+      display_order: (last?.display_order ?? 0) + 1,
+    });
+    return { ok: !error };
+  });

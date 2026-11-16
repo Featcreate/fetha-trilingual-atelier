@@ -183,7 +183,6 @@ function SellerPage() {
   });
   const store = storeQuery.data;
 
-
   const productsQuery = useQuery({
     queryKey: ["seller-products", store?.id],
     enabled: !!store?.id,
@@ -668,7 +667,6 @@ function SellerPage() {
   );
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
 
-
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.sellerArea} wide>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -793,8 +791,6 @@ function SellerPage() {
               onSaved={() => qc.invalidateQueries({ queryKey: ["seller-store", user.id] })}
             />
           </section>
-
-
 
           <section className="space-y-4">
             <h2 className="text-xl font-bold">{m.addProduct}</h2>

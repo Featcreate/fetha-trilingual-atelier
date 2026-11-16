@@ -101,13 +101,6 @@ BEGIN
           FROM jsonb_array_elements(_items) AS x(value)) requested;
   PERFORM pg_advisory_xact_lock(hashtextextended(_uid::text || ':cart:' || _fingerprint, 0));
 
-  SELECT id, cart_fingerprint INTO _existing, _existing_fingerprint
-  FROM public.orders WHERE user_id = _uid AND checkout_key = _checkout_key;
-  IF _existing IS NOT NULL THEN
-    IF _existing_fingerprint IS DISTINCT FROM _fingerprint THEN RAISE EXCEPTION 'checkout_key_cart_mismatch'; END IF;
-    RETURN _existing;
-  END IF;
-
   SELECT count(DISTINCT p.store_id), min(p.store_id::text)::uuid,
          count(*), coalesce(sum(coalesce(p.sale_price_millimes, p.price_millimes)::bigint), 0)
     INTO _store_count, _store_id, _valid_count, _total
@@ -121,8 +114,19 @@ BEGIN
   IF _store_count <> 1 OR _store_id IS NULL THEN RAISE EXCEPTION 'cart_must_contain_one_store'; END IF;
   IF _total < 1 OR _total > 2000000000 THEN RAISE EXCEPTION 'invalid_cart'; END IF;
 
+  SELECT id, cart_fingerprint INTO _existing, _existing_fingerprint
+  FROM public.orders WHERE user_id = _uid AND checkout_key = _checkout_key;
+  IF _existing IS NOT NULL THEN
+    IF _existing_fingerprint IS DISTINCT FROM _fingerprint THEN RAISE EXCEPTION 'checkout_key_cart_mismatch'; END IF;
+    IF NOT EXISTS (SELECT 1 FROM public.orders o WHERE o.id = _existing AND o.store_id = _store_id) THEN
+      RAISE EXCEPTION 'legacy_order_store_mismatch';
+    END IF;
+    RETURN _existing;
+  END IF;
+
   SELECT id INTO _existing FROM public.orders
-  WHERE user_id = _uid AND cart_fingerprint = _fingerprint AND status = 'pending'
+  WHERE user_id = _uid AND cart_fingerprint = _fingerprint
+    AND status = 'pending' AND store_id = _store_id
   LIMIT 1;
   IF _existing IS NOT NULL THEN RETURN _existing; END IF;
 
@@ -134,8 +138,10 @@ BEGIN
     order_id, product_id, product_name, unit_price_millimes, store_id, seller_id, quantity,
     gross_millimes, discount_millimes, payable_millimes, commission_bps, commission_millimes, seller_net_millimes
   )
-  SELECT _order, p.id, p.name, coalesce(p.sale_price_millimes, p.price_millimes), s.id, s.owner_id, 1,
-         coalesce(p.sale_price_millimes, p.price_millimes), 0, coalesce(p.sale_price_millimes, p.price_millimes), 0, 0, coalesce(p.sale_price_millimes, p.price_millimes)
+  SELECT _order, p.id, p.name, p.price_millimes, s.id, s.owner_id, 1,
+         p.price_millimes, (p.price_millimes - coalesce(p.sale_price_millimes, p.price_millimes)),
+         coalesce(p.sale_price_millimes, p.price_millimes), 0, 0,
+         coalesce(p.sale_price_millimes, p.price_millimes)
   FROM jsonb_array_elements(_items) AS x(value)
   JOIN public.products p ON p.id = (x.value->>'productId')::uuid
   JOIN public.stores s ON s.id = p.store_id;
@@ -158,6 +164,10 @@ GRANT EXECUTE ON FUNCTION public.create_order_from_cart(jsonb, text) TO authenti
 -- Seller confirmation is the only transition that marks a direct-pay order paid.
 ALTER TABLE public.orders DROP CONSTRAINT IF EXISTS orders_payment_mode_check;
 ALTER TABLE public.orders ADD CONSTRAINT orders_payment_mode_check
+  CHECK (payment_mode IS NULL OR payment_mode IN ('verified','simulation','direct_seller'));
+
+ALTER TABLE public.payment_events DROP CONSTRAINT IF EXISTS payment_events_payment_mode_check;
+ALTER TABLE public.payment_events ADD CONSTRAINT payment_events_payment_mode_check
   CHECK (payment_mode IS NULL OR payment_mode IN ('verified','simulation','direct_seller'));
 
 CREATE OR REPLACE FUNCTION public.seller_confirm_direct_payment(_order_id uuid, _confirmation_note text DEFAULT NULL)

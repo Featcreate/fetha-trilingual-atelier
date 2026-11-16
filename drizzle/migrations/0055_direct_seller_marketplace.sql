@@ -118,15 +118,22 @@ BEGIN
   FROM public.orders WHERE user_id = _uid AND checkout_key = _checkout_key;
   IF _existing IS NOT NULL THEN
     IF _existing_fingerprint IS DISTINCT FROM _fingerprint THEN RAISE EXCEPTION 'checkout_key_cart_mismatch'; END IF;
-    IF NOT EXISTS (SELECT 1 FROM public.orders o WHERE o.id = _existing AND o.store_id = _store_id) THEN
-      RAISE EXCEPTION 'legacy_order_store_mismatch';
+    IF NOT EXISTS (
+      SELECT 1 FROM public.orders o
+      WHERE o.id = _existing
+        AND o.store_id = _store_id
+        AND o.payment_mode = 'direct_seller'
+    ) THEN
+      RAISE EXCEPTION 'checkout_key_payment_mode_mismatch';
     END IF;
     RETURN _existing;
   END IF;
 
   SELECT id INTO _existing FROM public.orders
   WHERE user_id = _uid AND cart_fingerprint = _fingerprint
-    AND status = 'pending' AND store_id = _store_id
+    AND status = 'pending'
+    AND store_id = _store_id
+    AND payment_mode = 'direct_seller'
   LIMIT 1;
   IF _existing IS NOT NULL THEN RETURN _existing; END IF;
 

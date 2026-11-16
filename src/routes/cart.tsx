@@ -29,7 +29,7 @@ const words = {
 function CartPage() {
   const { lang, setLang } = useLang();
   const t = words[lang];
-  const { items, count, remove, clear, assignStore } = useCart();
+  const { items, count, remove, assignStore } = useCart();
   const [selectedStoreId, setSelectedStoreId] = useState("");
   const [orderId, setOrderId] = useState<string | null>(null);
   const [methods, setMethods] = useState<PaymentMethod[]>([]);

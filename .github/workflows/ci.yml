@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feat/direct-seller-payments-marketplace
   pull_request:
     branches:
       - main
@@ -44,7 +45,7 @@ jobs:
       - name: Check formatting
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.ref_name }}" == "feat/direct-seller-payments-marketplace" ]]; then
             git fetch origin main --depth=1
             BASE="origin/main"
           else

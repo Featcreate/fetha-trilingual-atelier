@@ -1304,9 +1304,7 @@ function SellerFileVersions({
   async function remove(versionId: string, fileName: string, sizeBytes: number) {
     if (
       workingId ||
-      !window.confirm(m.confirmDeleteFile + "
-
-" + fileName + " · " + formatFileSize(sizeBytes))
+      !window.confirm(m.confirmDeleteFile + "\n\n" + fileName + " · " + formatFileSize(sizeBytes))
     ) {
       return;
     }

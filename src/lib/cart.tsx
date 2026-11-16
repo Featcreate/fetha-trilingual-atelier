@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 export type CartLine = { storeId: string; productId: string };
 
@@ -22,26 +15,19 @@ type CartContextValue = {
 const STORAGE_KEY = "algorea-bazaar.cart.v2";
 const LEGACY_STORAGE_KEY = "algorea-bazaar.cart.v1";
 const CartContext = createContext<CartContextValue | null>(null);
-const UUID =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function normalizeCart(raw: unknown): CartLine[] {
   if (!Array.isArray(raw)) return [];
 
   const byProduct = new Map<string, CartLine>();
   for (const value of raw) {
-    if (
-      !value ||
-      typeof value.productId !== "string" ||
-      !UUID.test(value.productId)
-    ) {
+    if (!value || typeof value.productId !== "string" || !UUID.test(value.productId)) {
       continue;
     }
 
     const storeId =
-      typeof value.storeId === "string" && UUID.test(value.storeId)
-        ? value.storeId
-        : "";
+      typeof value.storeId === "string" && UUID.test(value.storeId) ? value.storeId : "";
     byProduct.set(value.productId, {
       productId: value.productId,
       storeId,
@@ -73,11 +59,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       const current = localStorage.getItem(STORAGE_KEY);
       const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
-      const parsed: unknown = current
-        ? JSON.parse(current)
-        : legacy
-          ? JSON.parse(legacy)
-          : [];
+      const parsed: unknown = current ? JSON.parse(current) : legacy ? JSON.parse(legacy) : [];
       setItems(normalizeCart(parsed));
     } catch {
       localStorage.removeItem(STORAGE_KEY);
@@ -110,23 +92,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (!UUID.test(storeId)) return;
         setItems((current) =>
           current.map((line) =>
-            line.productId === productId && !line.storeId
-              ? { ...line, storeId }
-              : line,
+            line.productId === productId && !line.storeId ? { ...line, storeId } : line,
           ),
         );
       },
       remove: (productId) => {
-        setItems((current) =>
-          current.filter((line) => line.productId !== productId),
-        );
+        setItems((current) => current.filter((line) => line.productId !== productId));
       },
       clear: (storeId) => {
-        setItems((current) =>
-          storeId
-            ? current.filter((line) => line.storeId !== storeId)
-            : [],
-        );
+        setItems((current) => (storeId ? current.filter((line) => line.storeId !== storeId) : []));
       },
     };
   }, [items]);

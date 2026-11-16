@@ -640,9 +640,10 @@ export const createDirectSellerOrder = createServerFn({ method: "POST" })
       return { ok: false as const, error: code };
     }
 
-    const { data: methods, error: methodsError } = await (
-      context.supabase as any
-    ).rpc("get_order_payment_methods", { _order_id: orderId });
+    const { data: methods, error: methodsError } = await context.supabase.rpc(
+      "get_order_payment_methods",
+      { _order_id: orderId },
+    );
 
     return {
       ok: true as const,

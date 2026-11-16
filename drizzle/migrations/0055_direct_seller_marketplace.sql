@@ -109,7 +109,7 @@ BEGIN
   END IF;
 
   SELECT count(DISTINCT p.store_id), min(p.store_id::text)::uuid,
-         count(*), coalesce(sum(p.price_millimes::bigint), 0)
+         count(*), coalesce(sum(coalesce(p.sale_price_millimes, p.price_millimes)::bigint), 0)
     INTO _store_count, _store_id, _valid_count, _total
   FROM jsonb_array_elements(_items) AS x(value)
   JOIN public.products p ON p.id = (x.value->>'productId')::uuid
@@ -134,8 +134,8 @@ BEGIN
     order_id, product_id, product_name, unit_price_millimes, store_id, seller_id, quantity,
     gross_millimes, discount_millimes, payable_millimes, commission_bps, commission_millimes, seller_net_millimes
   )
-  SELECT _order, p.id, p.name, p.price_millimes, s.id, s.owner_id, 1,
-         p.price_millimes, 0, p.price_millimes, 0, 0, p.price_millimes
+  SELECT _order, p.id, p.name, coalesce(p.sale_price_millimes, p.price_millimes), s.id, s.owner_id, 1,
+         coalesce(p.sale_price_millimes, p.price_millimes), 0, coalesce(p.sale_price_millimes, p.price_millimes), 0, 0, coalesce(p.sale_price_millimes, p.price_millimes)
   FROM jsonb_array_elements(_items) AS x(value)
   JOIN public.products p ON p.id = (x.value->>'productId')::uuid
   JOIN public.stores s ON s.id = p.store_id;

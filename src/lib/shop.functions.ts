@@ -607,10 +607,12 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
 export const createDirectSellerOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({
-      productIds: z.array(z.string().uuid()).min(1).max(50),
-      checkoutKey: z.string().min(8).max(100),
-    }).parse(input),
+    z
+      .object({
+        productIds: z.array(z.string().uuid()).min(1).max(50),
+        checkoutKey: z.string().min(8).max(100),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
@@ -618,7 +620,10 @@ export const createDirectSellerOrder = createServerFn({ method: "POST" })
       context.userId,
       "server_create_order_from_cart",
       {
-        _items: data.productIds.map((productId) => ({ productId, quantity: 1 })),
+        _items: data.productIds.map((productId) => ({
+          productId,
+          quantity: 1,
+        })),
         _checkout_key: data.checkoutKey,
       },
     );
@@ -634,10 +639,11 @@ export const createDirectSellerOrder = createServerFn({ method: "POST" })
             : "order_failed";
       return { ok: false as const, error: code };
     }
-    const { data: methods, error: methodsError } = await (context.supabase as any).rpc(
-      "get_order_payment_methods",
-      { _order_id: orderId },
-    );
+
+    const { data: methods, error: methodsError } = await (
+      context.supabase as any
+    ).rpc("get_order_payment_methods", { _order_id: orderId });
+
     return {
       ok: true as const,
       orderId,
@@ -647,7 +653,13 @@ export const createDirectSellerOrder = createServerFn({ method: "POST" })
   });
 
 const directPaymentMethodSchema = z.object({
-  methodType: z.enum(["bank_transfer", "postal_transfer", "wallet", "cash", "other"]),
+  methodType: z.enum([
+    "bank_transfer",
+    "postal_transfer",
+    "wallet",
+    "cash",
+    "other",
+  ]),
   label: z.string().trim().min(1).max(80),
   instructions: z.string().trim().min(1).max(2000),
 });
@@ -662,16 +674,42 @@ export const getSellerPaymentMethods = createServerFn({ method: "GET" })
       .select("id")
       .eq("owner_id", context.userId)
       .maybeSingle();
-    if (storeError || !store) return { methods: [] as Array<{id:string;method_type:string;label:string;instructions:string;is_enabled:boolean;display_order:number}> };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    if (storeError || !store) {
+      return {
+        methods: [] as Array<{
+          id: string;
+          method_type: string;
+          label: string;
+          instructions: string;
+          is_enabled: boolean;
+          display_order: number;
+        }>,
+      };
+    }
+
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
     const admin = supabaseAdmin as any;
     const { data, error } = await admin
       .from("store_payment_methods")
       .select("id,method_type,label,instructions,is_enabled,display_order")
       .eq("store_id", store.id)
       .order("display_order", { ascending: true });
+
     if (error) throw new Error("payment_methods_unavailable");
-    return { methods: (data ?? []) as Array<{ id: string; method_type: string; label: string; instructions: string; is_enabled: boolean; display_order: number }> };
+
+    return {
+      methods: (data ?? []) as Array<{
+        id: string;
+        method_type: string;
+        label: string;
+        instructions: string;
+        is_enabled: boolean;
+        display_order: number;
+      }>,
+    };
   });
 
 /** Save a payment method only for the authenticated user's own store. */
@@ -686,8 +724,12 @@ export const saveSellerPaymentMethod = createServerFn({ method: "POST" })
       .select("id")
       .eq("owner_id", context.userId)
       .maybeSingle();
+
     if (storeError || !store) return { ok: false as const };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
     const admin = supabaseAdmin as any;
     const { data: last } = await admin
       .from("store_payment_methods")
@@ -696,6 +738,7 @@ export const saveSellerPaymentMethod = createServerFn({ method: "POST" })
       .order("display_order", { ascending: false })
       .limit(1)
       .maybeSingle();
+
     const { error } = await admin.from("store_payment_methods").insert({
       store_id: store.id,
       method_type: data.methodType,
@@ -704,5 +747,6 @@ export const saveSellerPaymentMethod = createServerFn({ method: "POST" })
       is_enabled: true,
       display_order: (last?.display_order ?? 0) + 1,
     });
+
     return { ok: !error };
   });

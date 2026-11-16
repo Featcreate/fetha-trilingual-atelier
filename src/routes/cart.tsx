@@ -9,6 +9,7 @@ import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { localizedProductText } from "@/lib/product-translations";
+import { createDirectSellerOrder } from "@/lib/shop.functions";
 
 export const Route = createFileRoute("/cart")({ component: CartPage });
 
@@ -20,9 +21,9 @@ type Store = { id: string; name: string };
 type PaymentMethod = { method_id: string; method_type: string; label: string; instructions: string };
 
 const words = {
-  fr: { title:"Panier par boutique", empty:"Votre panier est vide.", browse:"Continuer mes achats", total:"Total", remove:"Retirer", choose:"Choisissez la boutique dont vous souhaitez finaliser la commande.", checkout:"Créer la commande", working:"Création…", payment:"Instructions de paiement du vendeur", noMethods:"La commande a été créée, mais le vendeur n’a pas encore renseigné ses moyens de paiement. Contactez-le avant tout paiement.", created:"Commande créée. Effectuez le paiement directement auprès du vendeur, puis attendez sa confirmation avant le téléchargement.", error:"Impossible de créer la commande. Vérifiez votre panier et réessayez.", limit:"Chaque boutique possède son propre panier, limité à 50 produits différents.", select:"Boutique", order:"Commande", close:"Fermer les instructions" },
-  ar: { title:"سلة مستقلة لكل متجر", empty:"سلة مشترياتك فارغة.", browse:"متابعة التسوق", total:"الإجمالي", remove:"حذف", choose:"اختاري المتجر الذي تريدين إتمام الطلب منه.", checkout:"إنشاء الطلب", working:"جارٍ الإنشاء…", payment:"تعليمات الدفع الخاصة بالبائع", noMethods:"تم إنشاء الطلب، لكن البائع لم يضف وسائل الدفع بعد. تواصلي معه قبل الدفع.", created:"تم إنشاء الطلب. ادفعي مباشرة للبائع وانتظري تأكيده قبل تنزيل المنتج.", error:"تعذر إنشاء الطلب. تحققي من السلة وحاولي مجدداً.", limit:"لكل متجر سلة مستقلة بحد أقصى 50 منتجاً مختلفاً.", select:"المتجر", order:"الطلب", close:"إغلاق التعليمات" },
-  en: { title:"Separate store carts", empty:"Your cart is empty.", browse:"Continue shopping", total:"Total", remove:"Remove", choose:"Choose the store whose order you want to place.", checkout:"Create order", working:"Creating…", payment:"Seller payment instructions", noMethods:"The order was created, but the seller has not added payment methods yet. Contact them before paying.", created:"Order created. Pay the seller directly and wait for their confirmation before downloading.", error:"Could not create the order. Check your cart and try again.", limit:"Each store has its own cart, limited to 50 different products.", select:"Store", order:"Order", close:"Close instructions" },
+  fr: { title:"Panier par boutique", empty:"Votre panier est vide.", browse:"Continuer mes achats", total:"Total", remove:"Retirer", choose:"Choisissez la boutique dont vous souhaitez finaliser la commande.", checkout:"Créer la commande", working:"Création…", payment:"Instructions de paiement du vendeur", noMethods:"La commande a été créée, mais le vendeur n’a pas encore renseigné ses moyens de paiement. Contactez-le avant tout paiement.", created:"Commande créée. Effectuez le paiement directement auprès du vendeur, puis attendez sa confirmation avant le téléchargement.", error:"Impossible de créer la commande. Vérifiez votre panier et réessayez.", limit:"Chaque boutique possède son propre panier, limité à 50 produits différents.", select:"Boutique", order:"Commande", close:"Fermer les instructions", instructionsUnavailable:"La commande est créée, mais les instructions de paiement ne sont pas accessibles pour le moment. Consultez vos commandes ou contactez le vendeur." },
+  ar: { title:"سلة مستقلة لكل متجر", empty:"سلة مشترياتك فارغة.", browse:"متابعة التسوق", total:"الإجمالي", remove:"حذف", choose:"اختاري المتجر الذي تريدين إتمام الطلب منه.", checkout:"إنشاء الطلب", working:"جارٍ الإنشاء…", payment:"تعليمات الدفع الخاصة بالبائع", noMethods:"تم إنشاء الطلب، لكن البائع لم يضف وسائل الدفع بعد. تواصلي معه قبل الدفع.", created:"تم إنشاء الطلب. ادفعي مباشرة للبائع وانتظري تأكيده قبل تنزيل المنتج.", error:"تعذر إنشاء الطلب. تحققي من السلة وحاولي مجدداً.", limit:"لكل متجر سلة مستقلة بحد أقصى 50 منتجاً مختلفاً.", select:"المتجر", order:"الطلب", close:"إغلاق التعليمات", instructionsUnavailable:"تم إنشاء الطلب، لكن تعذّر تحميل تعليمات الدفع حالياً. راجعي طلباتك أو تواصلي مع البائع." },
+  en: { title:"Separate store carts", empty:"Your cart is empty.", browse:"Continue shopping", total:"Total", remove:"Remove", choose:"Choose the store whose order you want to place.", checkout:"Create order", working:"Creating…", payment:"Seller payment instructions", noMethods:"The order was created, but the seller has not added payment methods yet. Contact them before paying.", created:"Order created. Pay the seller directly and wait for their confirmation before downloading.", error:"Could not create the order. Check your cart and try again.", limit:"Each store has its own cart, limited to 50 different products.", select:"Store", order:"Order", close:"Close instructions", instructionsUnavailable:"The order was created, but payment instructions are temporarily unavailable. Check your orders or contact the seller." },
 } as const;
 
 function CartPage() {
@@ -72,19 +73,21 @@ function CartPage() {
   const checkout=useMutation({
     mutationFn:async()=>{
       if(!selected) throw new Error("empty_cart");
-      const checkoutKey=crypto.randomUUID();
-      const {data,error}=await (supabase as any).rpc("create_order_from_cart",{
-        _items:selected.lines.map(({product})=>({productId:product.id,quantity:1})),
-        _checkout_key:checkoutKey
+      const result = await createDirectSellerOrder({
+        data: {
+          productIds: selected.lines.map(({ product }) => product.id),
+          checkoutKey: crypto.randomUUID(),
+        },
       });
-      if(error) throw error;
-      const id=data as string;
-      const {data:paymentRows,error:paymentError}=await (supabase as any).rpc("get_order_payment_methods",{_order_id:id});
-      if(paymentError) throw paymentError;
-      return {id,methods:(paymentRows??[]) as PaymentMethod[]};
+      if (!result.ok) throw new Error(result.error);
+      return {
+        id: result.orderId,
+        methods: result.paymentMethods as PaymentMethod[],
+        instructionsUnavailable: result.instructionsUnavailable,
+      };
     },
-    onSuccess:({id,methods})=>{
-      setOrderId(id); setMethods(methods); setNotice(methods.length?t.created:t.noMethods);
+    onSuccess:({id,methods,instructionsUnavailable})=>{
+      setOrderId(id); setMethods(methods); setNotice(instructionsUnavailable ? t.instructionsUnavailable : methods.length ? t.created : t.noMethods);
       if(selected) clear(selected.store.id);
     },
     onError:()=>setNotice(t.error)

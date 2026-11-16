@@ -671,7 +671,7 @@ export const getSellerPaymentMethods = createServerFn({ method: "GET" })
       .eq("store_id", store.id)
       .order("display_order", { ascending: true });
     if (error) throw new Error("payment_methods_unavailable");
-    return { methods: data ?? [] };
+    return { methods: (data ?? []) as Array<{ id: string; method_type: string; label: string; instructions: string; is_enabled: boolean; display_order: number }> };
   });
 
 /** Save a payment method only for the authenticated user's own store. */

@@ -191,6 +191,14 @@ function SellerPage() {
   }
 
   async function confirmDirectOrder(orderId: string) {
+    const confirmed = window.confirm(
+      lang === "ar"
+        ? "هل تأكدت من استلام المبلغ فعلياً من المشتري؟ سيُتاح التنزيل فور التأكيد."
+        : lang === "en"
+          ? "Have you actually received the buyer’s payment? Downloads will be unlocked immediately after confirmation."
+          : "Avez-vous réellement reçu le paiement de l’acheteur ? Le téléchargement sera débloqué immédiatement après confirmation.",
+    );
+    if (!confirmed) return;
     setBusy(true);
     const { data, error } = await (supabase as any).rpc("seller_confirm_direct_payment", {
       _order_id: orderId, _confirmation_note: null,

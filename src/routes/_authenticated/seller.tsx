@@ -90,6 +90,63 @@ function safeFileName(value: string) {
 function SellerPage() {
   const { lang, setLang, t } = useLang();
   const m = t.marketplace;
+  const directPaymentCopy =
+    lang === "ar"
+      ? {
+          intro:
+            "يستلم البائع ثمن الطلب مباشرة من المشتري باستخدام وسائل الدفع التي يضيفها أدناه. لا تجمع المنصة الأموال ولا تقتطع أي عمولة عند الإطلاق.",
+          title: "وسائل الدفع المباشر",
+          help: "أضف بيانات الدفع التي ستظهر للمشتري بعد إنشاء الطلب. لا تضع كلمات مرور أو رموزاً سرية.",
+          active: "مفعّلة",
+          disabled: "معطّلة",
+          none: "لم تضف أي وسيلة دفع بعد.",
+          type: "نوع الوسيلة",
+          bank: "تحويل بنكي",
+          postal: "حوالة بريدية",
+          wallet: "محفظة إلكترونية",
+          cash: "نقداً / يداً بيد",
+          other: "أخرى",
+          label: "اسم وسيلة الدفع",
+          instructions: "تفاصيل التحويل أو طريقة الدفع",
+          add: "إضافة وسيلة الدفع",
+        }
+      : lang === "en"
+        ? {
+            intro:
+              "The seller receives each order payment directly from the buyer using the methods configured below. The platform collects no funds and charges no commission at launch.",
+            title: "Direct payment methods",
+            help: "Add the payment instructions buyers will see after placing an order. Never enter passwords or secret codes.",
+            active: "Active",
+            disabled: "Disabled",
+            none: "No payment methods added yet.",
+            type: "Method type",
+            bank: "Bank transfer",
+            postal: "Postal transfer",
+            wallet: "Digital wallet",
+            cash: "Cash / in person",
+            other: "Other",
+            label: "Payment method name",
+            instructions: "Transfer details or payment instructions",
+            add: "Add payment method",
+          }
+        : {
+            intro:
+              "Le vendeur reçoit directement le paiement de l’acheteur via les moyens configurés ci-dessous. Aucun paiement n’est encaissé par la plateforme et aucune commission n’est prélevée au lancement.",
+            title: "Moyens de paiement directs",
+            help: "Ajoutez les instructions de paiement visibles par l’acheteur après la commande. N’indiquez jamais de mot de passe ni de code secret.",
+            active: "Active",
+            disabled: "Désactivée",
+            none: "Aucun moyen de paiement ajouté.",
+            type: "Type de moyen",
+            bank: "Virement bancaire",
+            postal: "Mandat postal",
+            wallet: "Portefeuille numérique",
+            cash: "Espèces / en main propre",
+            other: "Autre",
+            label: "Nom du moyen de paiement",
+            instructions: "Coordonnées de transfert ou instructions de paiement",
+            add: "Ajouter le moyen de paiement",
+          };
   const { user } = Route.useRouteContext();
   const qc = useQueryClient();
   const [notice, setNotice] = useState("");
@@ -1132,34 +1189,85 @@ function SellerPage() {
           </section>
 
           <section className="rounded-xl border border-border bg-secondary/50 p-4">
-            <p className="text-sm leading-7">{lang === "ar" ? "يستلم البائع ثمن الطلب مباشرة من المشتري باستخدام وسائل الدفع التي يضيفها أدناه. لا تجمع المنصة الأموال ولا تقتطع أي عمولة عند الإطلاق." : lang === "en" ? "The seller receives each order payment directly from the buyer using the methods configured below. The platform collects no funds and charges no commission at launch." : "Le vendeur reçoit directement le paiement de l’acheteur via les moyens configurés ci-dessous. Aucun paiement n’est encaissé par la plateforme et aucune commission n’est prélevée au lancement."}</p>
+            <p className="text-sm leading-7">{directPaymentCopy.intro}</p>
           </section>
 
           <section className="rounded-xl border border-border p-5">
-            <h2 className="text-xl font-bold">{lang === "ar" ? "وسائل الدفع المباشر" : lang === "en" ? "Direct payment methods" : "Moyens de paiement directs"}</h2>
-            <p className="mt-2 text-sm text-muted-foreground">{lang === "ar" ? "أضف بيانات الدفع التي ستظهر للمشتري بعد إنشاء الطلب. لا تضع كلمات مرور أو رموزاً سرية." : lang === "en" ? "Add the payment instructions buyers will see after placing an order. Never enter passwords or secret codes." : "Ajoutez les instructions de paiement visibles par l’acheteur après la commande. N’indiquez jamais de mot de passe ni de code secret."}</p>
+            <h2 className="text-xl font-bold">{directPaymentCopy.title}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {directPaymentCopy.help}
+            </p>
             <div className="mt-4 space-y-2">
               {(directPaymentMethodsQuery.data ?? []).map((method) => (
                 <article key={method.id} className="rounded-lg bg-secondary p-3">
-                  <div className="flex items-center justify-between gap-3"><strong>{method.label}</strong><span className="text-xs">{method.is_enabled ? (lang === "ar" ? "مفعّلة" : lang === "en" ? "Active" : "Active") : (lang === "ar" ? "معطّلة" : lang === "en" ? "Disabled" : "Désactivée")}</span></div>
-                  <p className="mt-1 whitespace-pre-wrap text-sm">{method.instructions}</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <strong>{method.label}</strong>
+                    <span className="text-xs">
+                      {method.is_enabled
+                        ? directPaymentCopy.active
+                        : directPaymentCopy.disabled}
+                    </span>
+                  </div>
+                  <p className="mt-1 whitespace-pre-wrap text-sm">
+                    {method.instructions}
+                  </p>
                 </article>
               ))}
-              {!directPaymentMethodsQuery.isPending && !directPaymentMethodsQuery.data?.length && <p className="text-sm text-muted-foreground">{lang === "ar" ? "لم تضف أي وسيلة دفع بعد." : lang === "en" ? "No payment methods added yet." : "Aucun moyen de paiement ajouté."}</p>}
+              {!directPaymentMethodsQuery.isPending &&
+                !directPaymentMethodsQuery.data?.length && (
+                  <p className="text-sm text-muted-foreground">
+                    {directPaymentCopy.none}
+                  </p>
+                )}
             </div>
-            <form onSubmit={(e) => void saveDirectPaymentMethod(e)} className="mt-4 space-y-3">
-              <label className="block text-sm font-medium">{lang === "ar" ? "نوع الوسيلة" : lang === "en" ? "Method type" : "Type de moyen"}
-                <select value={paymentMethodType} onChange={(e) => setPaymentMethodType(e.target.value as typeof paymentMethodType)} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2">
-                  <option value="bank_transfer">{lang === "ar" ? "تحويل بنكي" : lang === "en" ? "Bank transfer" : "Virement bancaire"}</option>
-                  <option value="postal_transfer">{lang === "ar" ? "حوالة بريدية" : lang === "en" ? "Postal transfer" : "Mandat postal"}</option>
-                  <option value="wallet">{lang === "ar" ? "محفظة إلكترونية" : lang === "en" ? "Digital wallet" : "Portefeuille numérique"}</option>
-                  <option value="cash">{lang === "ar" ? "نقداً / يداً بيد" : lang === "en" ? "Cash / in person" : "Espèces / en main propre"}</option>
-                  <option value="other">{lang === "ar" ? "أخرى" : lang === "en" ? "Other" : "Autre"}</option>
+            <form
+              onSubmit={(event) => void saveDirectPaymentMethod(event)}
+              className="mt-4 space-y-3"
+            >
+              <label className="block text-sm font-medium">
+                {directPaymentCopy.type}
+                <select
+                  value={paymentMethodType}
+                  onChange={(event) =>
+                    setPaymentMethodType(
+                      event.target.value as typeof paymentMethodType,
+                    )
+                  }
+                  className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
+                >
+                  <option value="bank_transfer">{directPaymentCopy.bank}</option>
+                  <option value="postal_transfer">{directPaymentCopy.postal}</option>
+                  <option value="wallet">{directPaymentCopy.wallet}</option>
+                  <option value="cash">{directPaymentCopy.cash}</option>
+                  <option value="other">{directPaymentCopy.other}</option>
                 </select>
               </label>
-              <input value={paymentMethodLabel} onChange={(e) => setPaymentMethodLabel(e.target.value)} required maxLength={80} placeholder={lang === "ar" ? "اسم وسيلة الدفع" : lang === "en" ? "Payment method name" : "Nom du moyen de paiement"} className="w-full rounded-lg border border-input bg-background px-3 py-2" />
-              <textarea value={paymentMethodInstructions} onChange={(e) => setPaymentMethodInstructions(e.target.value)} required maxLength={2000} rows={4} placeholder={lang === "ar" ? "تفاصيل التحويل أو طريقة الدفع" : lang === "en" ? "Transfer details or payment instructions" : "Coordonnées de transfert ou instructions de paiement"} className="w-full rounded-lg border border-input bg-background px-3 py-2" />
-              <button type="submit" disabled={busy} className="rounded-full bg-accent px-5 py-2 font-semibold text-accent-foreground disabled:opacity-50">{lang === "ar" ? "إضافة وسيلة الدفع" : lang === "en" ? "Add payment method" : "Ajouter le moyen de paiement"}</button>
+              <input
+                value={paymentMethodLabel}
+                onChange={(event) => setPaymentMethodLabel(event.target.value)}
+                required
+                maxLength={80}
+                placeholder={directPaymentCopy.label}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2"
+              />
+              <textarea
+                value={paymentMethodInstructions}
+                onChange={(event) =>
+                  setPaymentMethodInstructions(event.target.value)
+                }
+                required
+                maxLength={2000}
+                rows={4}
+                placeholder={directPaymentCopy.instructions}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2"
+              />
+              <button
+                type="submit"
+                disabled={busy}
+                className="rounded-full bg-accent px-5 py-2 font-semibold text-accent-foreground disabled:opacity-50"
+              >
+                {directPaymentCopy.add}
+              </button>
             </form>
           </section>
 

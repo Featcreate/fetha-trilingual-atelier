@@ -100,7 +100,10 @@ function SellerPage() {
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
-  const [confirmationBusy, setConfirmationBusy] = useState(false);\n  const [paymentMethodLabel, setPaymentMethodLabel] = useState("");\n  const [paymentMethodInstructions, setPaymentMethodInstructions] = useState("");\n  const [paymentMethodType, setPaymentMethodType] = useState("bank_transfer");
+  const [confirmationBusy, setConfirmationBusy] = useState(false);
+  const [paymentMethodLabel, setPaymentMethodLabel] = useState("");
+  const [paymentMethodInstructions, setPaymentMethodInstructions] = useState("");
+  const [paymentMethodType, setPaymentMethodType] = useState("bank_transfer");\n  const [paymentMethodLabel, setPaymentMethodLabel] = useState("");\n  const [paymentMethodInstructions, setPaymentMethodInstructions] = useState("");\n  const [paymentMethodType, setPaymentMethodType] = useState("bank_transfer");
   const payoutMethod = "bank_transfer";
   const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
@@ -185,6 +188,50 @@ function SellerPage() {
       return data;
     },
   });
+
+  const directPaymentMethodsQuery = useQuery({
+    queryKey: ["store-direct-payment-methods", store?.id],
+    enabled: !!store?.id,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("store_payment_methods")
+        .select("id,method_type,label,instructions,is_enabled,display_order")
+        .eq("store_id", store!.id)
+        .order("display_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as Array<{id:string;method_type:string;label:string;instructions:string;is_enabled:boolean;display_order:number}>;
+    },
+  });
+
+  async function saveDirectPaymentMethod(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!store || !paymentMethodLabel.trim() || !paymentMethodInstructions.trim()) return;
+    setBusy(true);
+    const { error } = await (supabase as any).from("store_payment_methods").insert({
+      store_id: store.id, method_type: paymentMethodType, label: paymentMethodLabel.trim(),
+      instructions: paymentMethodInstructions.trim(), is_enabled: true,
+      display_order: (directPaymentMethodsQuery.data?.length ?? 0) + 1,
+    });
+    setBusy(false);
+    if (error) return setNotice(m.error);
+    setPaymentMethodLabel("");
+    setPaymentMethodInstructions("");
+    setNotice(lang === "ar" ? "تم حفظ وسيلة الدفع." : lang === "en" ? "Payment method saved." : "Moyen de paiement enregistré.");
+    await qc.invalidateQueries({ queryKey: ["store-direct-payment-methods", store.id] });
+  }
+
+  async function confirmDirectOrder(orderId: string) {
+    setBusy(true);
+    const { data, error } = await (supabase as any).rpc("seller_confirm_direct_payment", {
+      _order_id: orderId, _confirmation_note: null,
+    });
+    setBusy(false);
+    if (error) return setNotice(lang === "ar" ? "تعذر تأكيد استلام المبلغ." : lang === "en" ? "Could not confirm receipt." : "Impossible de confirmer la réception.");
+    setNotice(data === "already_confirmed"
+      ? (lang === "ar" ? "تم تأكيد الطلب سابقاً." : lang === "en" ? "Order already confirmed." : "Commande déjà confirmée.")
+      : (lang === "ar" ? "تم تأكيد استلام المبلغ وإتاحة التنزيل للمشتري." : lang === "en" ? "Payment receipt confirmed; downloads are now available." : "Réception confirmée ; le téléchargement est disponible."));
+    await qc.invalidateQueries({ queryKey: ["seller-orders", user.id] });
+  }
 
   // Seller payouts are currently bank-transfer only; keep the UI ready for future methods.
 
@@ -1466,6 +1513,34 @@ function SellerPage() {
             </div>
           </section>
 
+          <section className="rounded-xl border border-border p-5">
+            <h2 className="text-xl font-bold">{lang === "ar" ? "وسائل الدفع المباشر" : lang === "en" ? "Direct payment methods" : "Moyens de paiement directs"}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{lang === "ar" ? "أضف بيانات الدفع التي ستظهر للمشتري بعد إنشاء الطلب. لا تضع كلمات مرور أو رموزاً سرية." : lang === "en" ? "Add the payment instructions buyers will see after placing an order. Never enter passwords or secret codes." : "Ajoutez les instructions de paiement visibles par l’acheteur après la commande. N’indiquez jamais de mot de passe ni de code secret."}</p>
+            <div className="mt-4 space-y-2">
+              {(directPaymentMethodsQuery.data ?? []).map((method) => (
+                <article key={method.id} className="rounded-lg bg-secondary p-3">
+                  <div className="flex items-center justify-between gap-3"><strong>{method.label}</strong><span className="text-xs">{method.is_enabled ? (lang === "ar" ? "مفعّلة" : lang === "en" ? "Active" : "Active") : (lang === "ar" ? "معطّلة" : lang === "en" ? "Disabled" : "Désactivée")}</span></div>
+                  <p className="mt-1 whitespace-pre-wrap text-sm">{method.instructions}</p>
+                </article>
+              ))}
+              {!directPaymentMethodsQuery.isPending && !directPaymentMethodsQuery.data?.length && <p className="text-sm text-muted-foreground">{lang === "ar" ? "لم تضف أي وسيلة دفع بعد." : lang === "en" ? "No payment methods added yet." : "Aucun moyen de paiement ajouté."}</p>}
+            </div>
+            <form onSubmit={(e) => void saveDirectPaymentMethod(e)} className="mt-4 space-y-3">
+              <label className="block text-sm font-medium">{lang === "ar" ? "نوع الوسيلة" : lang === "en" ? "Method type" : "Type de moyen"}
+                <select value={paymentMethodType} onChange={(e) => setPaymentMethodType(e.target.value)} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2">
+                  <option value="bank_transfer">{lang === "ar" ? "تحويل بنكي" : lang === "en" ? "Bank transfer" : "Virement bancaire"}</option>
+                  <option value="postal_transfer">{lang === "ar" ? "حوالة بريدية" : lang === "en" ? "Postal transfer" : "Mandat postal"}</option>
+                  <option value="wallet">{lang === "ar" ? "محفظة إلكترونية" : lang === "en" ? "Digital wallet" : "Portefeuille numérique"}</option>
+                  <option value="cash">{lang === "ar" ? "نقداً / يداً بيد" : lang === "en" ? "Cash / in person" : "Espèces / en main propre"}</option>
+                  <option value="other">{lang === "ar" ? "أخرى" : lang === "en" ? "Other" : "Autre"}</option>
+                </select>
+              </label>
+              <input value={paymentMethodLabel} onChange={(e) => setPaymentMethodLabel(e.target.value)} required maxLength={80} placeholder={lang === "ar" ? "اسم وسيلة الدفع" : lang === "en" ? "Payment method name" : "Nom du moyen de paiement"} className="w-full rounded-lg border border-input bg-background px-3 py-2" />
+              <textarea value={paymentMethodInstructions} onChange={(e) => setPaymentMethodInstructions(e.target.value)} required maxLength={2000} rows={4} placeholder={lang === "ar" ? "تفاصيل التحويل أو طريقة الدفع" : lang === "en" ? "Transfer details or payment instructions" : "Coordonnées de transfert ou instructions de paiement"} className="w-full rounded-lg border border-input bg-background px-3 py-2" />
+              <button type="submit" disabled={busy} className="rounded-full bg-accent px-5 py-2 font-semibold text-accent-foreground disabled:opacity-50">{lang === "ar" ? "إضافة وسيلة الدفع" : lang === "en" ? "Add payment method" : "Ajouter le moyen de paiement"}</button>
+            </form>
+          </section>
+
           <section className="space-y-4">
             <h2 className="text-xl font-bold">{m.orders}</h2>
             {ordersQuery.isPending ? (
@@ -1484,6 +1559,11 @@ function SellerPage() {
                         {m[item.orders?.status as keyof typeof m] ?? item.orders?.status}
                       </span>
                     </div>
+                    {item.orders?.status === "pending" && (
+                      <button type="button" disabled={busy} onClick={() => void confirmDirectOrder(item.order_id)} className="mt-3 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50">
+                        {lang === "ar" ? "تأكيد استلام المبلغ" : lang === "en" ? "Confirm payment received" : "Confirmer la réception du paiement"}
+                      </button>
+                    )}
                     <p className="mt-2 text-xs text-muted-foreground">
                       #{item.order_id.slice(0, 8)} ·{" "}
                       {item.orders?.created_at

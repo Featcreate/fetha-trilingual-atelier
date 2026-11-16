@@ -104,10 +104,6 @@ function SellerPage() {
   const [paymentMethodLabel, setPaymentMethodLabel] = useState("");
   const [paymentMethodInstructions, setPaymentMethodInstructions] = useState("");
   const [paymentMethodType, setPaymentMethodType] = useState("bank_transfer");
-  const [paymentMethodLabel, setPaymentMethodLabel] = useState("");
-  const [paymentMethodInstructions, setPaymentMethodInstructions] = useState("");
-  const [paymentMethodType, setPaymentMethodType] = useState("bank_transfer");
-  const payoutMethod = "bank_transfer";
   const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
   const [editCategoryId, setEditCategoryId] = useState("");
@@ -173,22 +169,6 @@ function SellerPage() {
         seller_net_millimes: number | null;
         orders: { id: string; status: string; created_at: string; total_millimes: number; payment_mode?: string | null } | null;
       }>;
-    },
-  });
-
-  const payoutPreferenceQuery = useQuery({
-    queryKey: ["seller-payout-preference", store?.id],
-    enabled: !!store?.id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("seller_payout_preferences")
-        .select(
-          "id,method,account_holder_name,provider_name,account_identifier,bank_name,additional_details,updated_at",
-        )
-        .eq("store_id", store!.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
     },
   });
 
@@ -360,64 +340,6 @@ function SellerPage() {
     }
     setNotice(m.storeCreated);
     await qc.invalidateQueries({ queryKey: ["seller-store", user.id] });
-  }
-
-  async function savePayoutPreference(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!store) return;
-    const values = new FormData(e.currentTarget);
-    const method = "bank_transfer";
-    const accountHolderName = String(values.get("account_holder_name") ?? "").trim();
-    const accountIdentifier = String(values.get("account_identifier") ?? "").trim();
-    const bankName = String(values.get("bank_name") ?? "").trim();
-    if (!accountHolderName || !accountIdentifier) {
-      setNotice(
-        lang === "ar"
-          ? "أدخل اسم صاحب الحساب ومعرّف الحساب."
-          : lang === "en"
-            ? "Enter the account holder name and account identifier."
-            : "Saisissez le titulaire et l’identifiant du compte.",
-      );
-      return;
-    }
-    if (!bankName) {
-      setNotice(
-        lang === "ar"
-          ? "أدخل اسم البنك لإتمام بيانات التحويل البنكي."
-          : lang === "en"
-            ? "Enter the bank name for a bank transfer."
-            : "Saisissez le nom de la banque pour un virement bancaire.",
-      );
-      return;
-    }
-    setBusy(true);
-    setNotice("");
-    const { error } = await supabase.from("seller_payout_preferences").upsert(
-      {
-        store_id: store.id,
-        method,
-        account_holder_name: accountHolderName,
-        account_identifier: accountIdentifier,
-        provider_name: null,
-        bank_name: bankName || null,
-        additional_details: String(values.get("additional_details") ?? "").trim() || null,
-        konnect_wallet_id: null,
-      },
-      { onConflict: "store_id" },
-    );
-    setBusy(false);
-    if (error)
-      return setNotice(
-        error.message.includes("payout_destination_details_required")
-          ? lang === "ar"
-            ? "بيانات الاستلام الأساسية مطلوبة."
-            : lang === "en"
-              ? "Required payout details are missing."
-              : "Les informations de réception obligatoires sont manquantes."
-          : m.error,
-      );
-    setNotice(m.productUpdated);
-    await qc.invalidateQueries({ queryKey: ["seller-payout-preference", store.id] });
   }
 
   async function uploadFile(

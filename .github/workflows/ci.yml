@@ -50,6 +50,19 @@ jobs:
             git --no-pager diff -- "${files[@]}"
           fi
 
+      - name: Upload formatted source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: prettier-source-${{ github.run_id }}
+          path: |
+            src/integrations/supabase/types.ts
+            src/lib/cart.tsx
+            src/lib/shop.functions.ts
+            src/routes/_authenticated/orders.tsx
+            src/routes/_authenticated/seller.tsx
+            src/routes/cart.tsx
+          if-no-files-found: error
+
       - name: Check formatting
         shell: bash
         run: |

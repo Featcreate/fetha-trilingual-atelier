@@ -161,7 +161,9 @@ function SellerPage() {
   const [confirmationBusy, setConfirmationBusy] = useState(false);
   const [paymentMethodLabel, setPaymentMethodLabel] = useState("");
   const [paymentMethodInstructions, setPaymentMethodInstructions] = useState("");
-  const [paymentMethodType, setPaymentMethodType] = useState<"bank_transfer" | "postal_transfer" | "wallet" | "cash" | "other">("bank_transfer");
+  const [paymentMethodType, setPaymentMethodType] = useState<
+    "bank_transfer" | "postal_transfer" | "wallet" | "cash" | "other"
+  >("bank_transfer");
   const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
   const [editCategoryId, setEditCategoryId] = useState("");
@@ -236,11 +238,7 @@ function SellerPage() {
 
   async function saveDirectPaymentMethod(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (
-      !store ||
-      !paymentMethodLabel.trim() ||
-      !paymentMethodInstructions.trim()
-    ) {
+    if (!store || !paymentMethodLabel.trim() || !paymentMethodInstructions.trim()) {
       return;
     }
 
@@ -280,13 +278,10 @@ function SellerPage() {
     if (!window.confirm(confirmationPrompt)) return;
 
     setBusy(true);
-    const { data, error } = await supabase.rpc(
-      "seller_confirm_direct_payment",
-      {
-        _order_id: orderId,
-        _confirmation_note: null,
-      },
-    );
+    const { data, error } = await supabase.rpc("seller_confirm_direct_payment", {
+      _order_id: orderId,
+      _confirmation_note: null,
+    });
     setBusy(false);
 
     if (error) {
@@ -1241,31 +1236,22 @@ function SellerPage() {
 
           <section className="rounded-xl border border-border p-5">
             <h2 className="text-xl font-bold">{directPaymentCopy.title}</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {directPaymentCopy.help}
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">{directPaymentCopy.help}</p>
             <div className="mt-4 space-y-2">
               {(directPaymentMethodsQuery.data ?? []).map((method) => (
                 <article key={method.id} className="rounded-lg bg-secondary p-3">
                   <div className="flex items-center justify-between gap-3">
                     <strong>{method.label}</strong>
                     <span className="text-xs">
-                      {method.is_enabled
-                        ? directPaymentCopy.active
-                        : directPaymentCopy.disabled}
+                      {method.is_enabled ? directPaymentCopy.active : directPaymentCopy.disabled}
                     </span>
                   </div>
-                  <p className="mt-1 whitespace-pre-wrap text-sm">
-                    {method.instructions}
-                  </p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm">{method.instructions}</p>
                 </article>
               ))}
-              {!directPaymentMethodsQuery.isPending &&
-                !directPaymentMethodsQuery.data?.length && (
-                  <p className="text-sm text-muted-foreground">
-                    {directPaymentCopy.none}
-                  </p>
-                )}
+              {!directPaymentMethodsQuery.isPending && !directPaymentMethodsQuery.data?.length && (
+                <p className="text-sm text-muted-foreground">{directPaymentCopy.none}</p>
+              )}
             </div>
             <form
               onSubmit={(event) => void saveDirectPaymentMethod(event)}
@@ -1276,9 +1262,7 @@ function SellerPage() {
                 <select
                   value={paymentMethodType}
                   onChange={(event) =>
-                    setPaymentMethodType(
-                      event.target.value as typeof paymentMethodType,
-                    )
+                    setPaymentMethodType(event.target.value as typeof paymentMethodType)
                   }
                   className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
                 >
@@ -1299,9 +1283,7 @@ function SellerPage() {
               />
               <textarea
                 value={paymentMethodInstructions}
-                onChange={(event) =>
-                  setPaymentMethodInstructions(event.target.value)
-                }
+                onChange={(event) => setPaymentMethodInstructions(event.target.value)}
                 required
                 maxLength={2000}
                 rows={4}

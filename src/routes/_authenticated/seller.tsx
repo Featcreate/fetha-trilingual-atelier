@@ -1141,7 +1141,7 @@ function SellerPage() {
             </div>
             <form onSubmit={(e) => void saveDirectPaymentMethod(e)} className="mt-4 space-y-3">
               <label className="block text-sm font-medium">{lang === "ar" ? "نوع الوسيلة" : lang === "en" ? "Method type" : "Type de moyen"}
-                <select value={paymentMethodType} onChange={(e) => setPaymentMethodType(e.target.value)} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2">
+                <select value={paymentMethodType} onChange={(e) => setPaymentMethodType(e.target.value as typeof paymentMethodType)} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2">
                   <option value="bank_transfer">{lang === "ar" ? "تحويل بنكي" : lang === "en" ? "Bank transfer" : "Virement bancaire"}</option>
                   <option value="postal_transfer">{lang === "ar" ? "حوالة بريدية" : lang === "en" ? "Postal transfer" : "Mandat postal"}</option>
                   <option value="wallet">{lang === "ar" ? "محفظة إلكترونية" : lang === "en" ? "Digital wallet" : "Portefeuille numérique"}</option>

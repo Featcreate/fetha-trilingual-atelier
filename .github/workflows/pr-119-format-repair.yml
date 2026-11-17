@@ -2,6 +2,8 @@ name: Temporary PR 119 format repair
 
 on:
   workflow_dispatch:
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
@@ -12,6 +14,7 @@ concurrency:
 
 jobs:
   repair-and-validate:
+    if: github.event_name == 'workflow_dispatch' || (github.event.issue.pull_request && github.event.comment.body == '/run-pr119-format-repair')
     name: Format PR 119 and run full validation
     runs-on: ubuntu-24.04
     timeout-minutes: 30

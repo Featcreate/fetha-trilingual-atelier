@@ -249,6 +249,7 @@ AS $$
 DECLARE
   _seller uuid := auth.uid();
   _available bigint;
+  _unallocated_fees bigint;
   _request_id uuid;
 BEGIN
   IF _seller IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
@@ -263,6 +264,18 @@ BEGIN
   WHERE le.store_id = _store_id AND le.seller_id = _seller AND le.entry_type = 'sale_net'
     AND o.status = 'paid' AND o.payment_mode = 'verified'
     AND NOT EXISTS (SELECT 1 FROM public.seller_payout_items pi WHERE pi.ledger_entry_id = le.id);
+  SELECT coalesce(sum(f.amount_millimes - coalesce(a.allocated, 0)), 0)
+    INTO _unallocated_fees
+  FROM public.seller_external_fee_entries f
+  LEFT JOIN LATERAL (
+    SELECT sum(x.amount_millimes) AS allocated
+    FROM public.seller_payout_fee_allocations x
+    WHERE x.fee_entry_id = f.id
+  ) a ON true
+  WHERE f.store_id = _store_id
+    AND f.fee_category = 'seller_transfer'
+    AND f.amount_millimes > coalesce(a.allocated, 0);
+  _available := _available - _unallocated_fees;
   IF _available < 50000 THEN RAISE EXCEPTION 'payout_minimum_not_met'; END IF;
 
   INSERT INTO public.seller_payout_requests(store_id, seller_id, available_amount_millimes, seller_note)

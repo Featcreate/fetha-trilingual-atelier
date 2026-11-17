@@ -1262,6 +1262,7 @@ export type Database = {
           id?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
+          payout_id?: string | null
           seller_id?: string
           seller_note?: string
           status?: string

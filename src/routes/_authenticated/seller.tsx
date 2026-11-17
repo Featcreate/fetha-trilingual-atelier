@@ -279,17 +279,27 @@ function SellerPage() {
     if (!result.ok) {
       setNotice(
         result.error.includes("payout_minimum_not_met")
-          ? lang === "ar" ? "لا يمكنك طلب الصرف قبل بلوغ 50 ديناراً." : lang === "en" ? "You need at least 50 TND to request a payout." : "Le solde minimum pour demander un versement est de 50 TND."
+          ? lang === "ar"
+            ? "لا يمكنك طلب الصرف قبل بلوغ 50 ديناراً."
+            : lang === "en"
+              ? "You need at least 50 TND to request a payout."
+              : "Le solde minimum pour demander un versement est de 50 TND."
           : result.error.includes("duplicate") || result.error.includes("unique")
-            ? lang === "ar" ? "لديك طلب صرف قيد المراجعة بالفعل." : lang === "en" ? "You already have a payout request under review." : "Une demande de versement est déjà en cours."
+            ? lang === "ar"
+              ? "لديك طلب صرف قيد المراجعة بالفعل."
+              : lang === "en"
+                ? "You already have a payout request under review."
+                : "Une demande de versement est déjà en cours."
             : m.error,
       );
       return;
     }
     setNotice(
-      lang === "ar" ? "تم إرسال طلب الصرف للمراجعة اليدوية." :
-      lang === "en" ? "Your payout request has been submitted for manual review." :
-      "Votre demande de versement a été envoyée pour examen manuel.",
+      lang === "ar"
+        ? "تم إرسال طلب الصرف للمراجعة اليدوية."
+        : lang === "en"
+          ? "Your payout request has been submitted for manual review."
+          : "Votre demande de versement a été envoyée pour examen manuel.",
     );
     await qc.invalidateQueries({ queryKey: ["seller-payout-requests", store.id] });
   }
@@ -721,10 +731,15 @@ function SellerPage() {
     },
     { transferred: 0, reserved: 0 },
   );
-  const sellerAvailable = sellerPayoutPreview?.availableMillimes ?? Math.max(
-    0,
-    sellerEarned - sellerPayoutTotals.transferred - sellerPayoutTotals.reserved - sellerTransferFees,
-  );
+  const sellerAvailable =
+    sellerPayoutPreview?.availableMillimes ??
+    Math.max(
+      0,
+      sellerEarned -
+        sellerPayoutTotals.transferred -
+        sellerPayoutTotals.reserved -
+        sellerTransferFees,
+    );
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.sellerArea} wide>
@@ -1405,9 +1420,13 @@ function SellerPage() {
             </div>
             <div className="border-t border-border pt-4">
               <h3 className="font-semibold">{m.payoutBalanceTitle}</h3>
-              {sellerEarningsQuery.isPending || sellerPayoutBalancesQuery.isPending || sellerPayoutPreviewQuery.isPending ? (
+              {sellerEarningsQuery.isPending ||
+              sellerPayoutBalancesQuery.isPending ||
+              sellerPayoutPreviewQuery.isPending ? (
                 <p className="mt-2 text-sm">{m.loading}</p>
-              ) : sellerEarningsQuery.isError || sellerPayoutBalancesQuery.isError || sellerPayoutPreviewQuery.isError ? (
+              ) : sellerEarningsQuery.isError ||
+                sellerPayoutBalancesQuery.isError ||
+                sellerPayoutPreviewQuery.isError ? (
                 <p role="alert" className="mt-2 text-sm text-destructive">
                   {m.error}
                 </p>
@@ -1431,7 +1450,13 @@ function SellerPage() {
                       </p>
                     </div>
                     <div className="rounded-lg bg-secondary p-3">
-                      <p className="text-xs text-muted-foreground">{lang === "ar" ? "رسوم التحويل على البائع" : lang === "en" ? "Seller-paid transfer fees" : "Frais de transfert à la charge du vendeur"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {lang === "ar"
+                          ? "رسوم التحويل على البائع"
+                          : lang === "en"
+                            ? "Seller-paid transfer fees"
+                            : "Frais de transfert à la charge du vendeur"}
+                      </p>
                       <p className="mt-1 text-lg font-bold">{formatTND(sellerTransferFees)}</p>
                     </div>
                     <div className="rounded-lg bg-secondary p-3">
@@ -1449,13 +1474,16 @@ function SellerPage() {
                         ? "Actual transfer fees are deducted from the seller’s proceeds only, never from the platform. Available balance and the 50 TND minimum are calculated after these fees."
                         : "Les frais réels de transfert sont déduits des seuls revenus du vendeur, jamais de la plateforme. Le solde disponible et le seuil de 50 TND sont calculés après ces frais."}
                   </p>
-
                 </>
               )}
             </div>
             <div className="border-t border-border pt-4">
               <h3 className="font-semibold">
-                {lang === "ar" ? "طلبات صرف المستحقات" : lang === "en" ? "Payout requests" : "Demandes de versement"}
+                {lang === "ar"
+                  ? "طلبات صرف المستحقات"
+                  : lang === "en"
+                    ? "Payout requests"
+                    : "Demandes de versement"}
               </h3>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">
                 {lang === "ar"
@@ -1467,16 +1495,28 @@ function SellerPage() {
               <button
                 type="button"
                 onClick={() => void requestSellerPayout()}
-                disabled={payoutRequestBusy || sellerAvailable < 50000 || payoutRequestsQuery.data?.some((request) => request.status === "pending")}
+                disabled={
+                  payoutRequestBusy ||
+                  sellerAvailable < 50000 ||
+                  payoutRequestsQuery.data?.some((request) => request.status === "pending")
+                }
                 className="mt-3 rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {payoutRequestBusy
                   ? m.loading
-                  : lang === "ar" ? "طلب صرف المستحقات" : lang === "en" ? "Request payout" : "Demander un versement"}
+                  : lang === "ar"
+                    ? "طلب صرف المستحقات"
+                    : lang === "en"
+                      ? "Request payout"
+                      : "Demander un versement"}
               </button>
               {sellerAvailable < 50000 && (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  {lang === "ar" ? "الحد الأدنى هو 50.000 د.ت." : lang === "en" ? "Minimum request balance: 50.000 TND." : "Solde minimum requis : 50,000 TND."}
+                  {lang === "ar"
+                    ? "الحد الأدنى هو 50.000 د.ت."
+                    : lang === "en"
+                      ? "Minimum request balance: 50.000 TND."
+                      : "Solde minimum requis : 50,000 TND."}
                 </p>
               )}
               {payoutRequestsQuery.data?.map((request) => (
@@ -1484,16 +1524,34 @@ function SellerPage() {
                   <div className="flex flex-wrap justify-between gap-2">
                     <span>
                       {request.status === "pending"
-                        ? lang === "ar" ? "قيد المراجعة" : lang === "en" ? "Under review" : "En cours d’examen"
+                        ? lang === "ar"
+                          ? "قيد المراجعة"
+                          : lang === "en"
+                            ? "Under review"
+                            : "En cours d’examen"
                         : request.status === "approved"
-                          ? lang === "ar" ? "تمت الموافقة" : lang === "en" ? "Approved" : "Approuvée"
+                          ? lang === "ar"
+                            ? "تمت الموافقة"
+                            : lang === "en"
+                              ? "Approved"
+                              : "Approuvée"
                           : request.status === "fulfilled"
-                            ? lang === "ar" ? "تم إنشاء طلب التحويل" : lang === "en" ? "Payout batch created" : "Versement préparé"
-                            : lang === "ar" ? "مرفوض" : lang === "en" ? "Rejected" : "Refusée"}
+                            ? lang === "ar"
+                              ? "تم إنشاء طلب التحويل"
+                              : lang === "en"
+                                ? "Payout batch created"
+                                : "Versement préparé"
+                            : lang === "ar"
+                              ? "مرفوض"
+                              : lang === "en"
+                                ? "Rejected"
+                                : "Refusée"}
                     </span>
                     <strong>{formatTND(Number(request.available_amount_millimes))}</strong>
                   </div>
-                  {request.admin_note && <p className="mt-1 text-muted-foreground">{request.admin_note}</p>}
+                  {request.admin_note && (
+                    <p className="mt-1 text-muted-foreground">{request.admin_note}</p>
+                  )}
                 </div>
               ))}
             </div>

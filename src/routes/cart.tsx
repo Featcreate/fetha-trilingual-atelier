@@ -9,7 +9,10 @@ import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { localizedProductText } from "@/lib/product-translations";
-import { getPlatformPaymentMethods, startManualCartCheckout } from "@/lib/manual-checkout.functions";
+import {
+  getPlatformPaymentMethods,
+  startManualCartCheckout,
+} from "@/lib/manual-checkout.functions";
 
 export const Route = createFileRoute("/cart")({ component: CartPage });
 
@@ -40,7 +43,8 @@ const copy = {
     starting: "Création de la commande…",
     paymentError: "La commande n’a pas pu être créée. Vérifiez votre panier et réessayez.",
     providerLoading: "Chargement des moyens de paiement…",
-    paymentReady: "Commande créée. Effectuez le transfert avec les informations ci-dessous ; le téléchargement sera ouvert après vérification manuelle.",
+    paymentReady:
+      "Commande créée. Effectuez le transfert avec les informations ci-dessous ; le téléchargement sera ouvert après vérification manuelle.",
     openPayment: "Référence de commande",
   },
   ar: {
@@ -58,7 +62,8 @@ const copy = {
     starting: "جارٍ إنشاء الطلب…",
     paymentError: "تعذر إنشاء الطلب. تحققي من السلة وحاولي مجدداً.",
     providerLoading: "جارٍ تحميل وسائل الدفع…",
-    paymentReady: "تم إنشاء الطلب. أكملي التحويل وفق البيانات التالية؛ ستُفتح التنزيلات بعد التحقق اليدوي من وصول المبلغ.",
+    paymentReady:
+      "تم إنشاء الطلب. أكملي التحويل وفق البيانات التالية؛ ستُفتح التنزيلات بعد التحقق اليدوي من وصول المبلغ.",
     openPayment: "مرجع الطلب",
   },
   en: {
@@ -76,7 +81,8 @@ const copy = {
     starting: "Creating order…",
     paymentError: "The order could not be created. Check your cart and try again.",
     providerLoading: "Loading payment methods…",
-    paymentReady: "Order created. Complete the transfer using the details below; downloads unlock after manual verification.",
+    paymentReady:
+      "Order created. Complete the transfer using the details below; downloads unlock after manual verification.",
     openPayment: "Order reference",
   },
 } as const;
@@ -86,8 +92,17 @@ function CartPage() {
   const t = copy[lang];
   const { items, count, remove } = useCart();
   const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<"flouci" | "bank_transfer" | "postal_transfer">("flouci");
-  const [checkoutInfo, setCheckoutInfo] = useState<{ orderReference: string; totalMillimes: number; method: string; beneficiaryLabel: string; accountIdentifier: string; instructions: string } | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<
+    "flouci" | "bank_transfer" | "postal_transfer"
+  >("flouci");
+  const [checkoutInfo, setCheckoutInfo] = useState<{
+    orderReference: string;
+    totalMillimes: number;
+    method: string;
+    beneficiaryLabel: string;
+    accountIdentifier: string;
+    instructions: string;
+  } | null>(null);
   const signature = items
     .map((line) => line.productId)
     .sort()
@@ -158,22 +173,24 @@ function CartPage() {
   }, [paymentMethodsQuery.data, selectedMethod]);
 
   const paymentMutation = useMutation({
-    mutationFn: () => startManualCartCheckout({
-      data: {
-        items: items.map(({ productId }) => ({ productId })),
-        checkoutKey: getCheckoutKey(),
-        method: selectedMethod,
-      },
-    }),
+    mutationFn: () =>
+      startManualCartCheckout({
+        data: {
+          items: items.map(({ productId }) => ({ productId })),
+          checkoutKey: getCheckoutKey(),
+          method: selectedMethod,
+        },
+      }),
     onSuccess: (result) => {
-      if (result.ok) setCheckoutInfo({
-        orderReference: result.orderReference,
-        totalMillimes: result.totalMillimes,
-        method: result.method,
-        beneficiaryLabel: result.beneficiaryLabel,
-        accountIdentifier: result.accountIdentifier,
-        instructions: result.instructions,
-      });
+      if (result.ok)
+        setCheckoutInfo({
+          orderReference: result.orderReference,
+          totalMillimes: result.totalMillimes,
+          method: result.method,
+          beneficiaryLabel: result.beneficiaryLabel,
+          accountIdentifier: result.accountIdentifier,
+          instructions: result.instructions,
+        });
     },
   });
 
@@ -293,7 +310,11 @@ function CartPage() {
             <p className="mt-2 text-xs text-muted-foreground">{t.limit}</p>
             <div className="mt-5 space-y-3">
               <label htmlFor="platform-payment-method" className="block text-sm font-semibold">
-                {lang === "ar" ? "وسيلة الدفع" : lang === "en" ? "Payment method" : "Moyen de paiement"}
+                {lang === "ar"
+                  ? "وسيلة الدفع"
+                  : lang === "en"
+                    ? "Payment method"
+                    : "Moyen de paiement"}
               </label>
               <select
                 id="platform-payment-method"
@@ -304,34 +325,75 @@ function CartPage() {
               >
                 {(paymentMethodsQuery.data?.methods ?? []).map((method) => (
                   <option key={method.method} value={method.method}>
-                    {method.method === "flouci" ? "Flouci" : method.method === "bank_transfer" ? (lang === "ar" ? "تحويل بنكي" : lang === "en" ? "Bank transfer" : "Virement bancaire") : (lang === "ar" ? "تحويل بريدي" : lang === "en" ? "Postal transfer" : "Virement postal")}
+                    {method.method === "flouci"
+                      ? "Flouci"
+                      : method.method === "bank_transfer"
+                        ? lang === "ar"
+                          ? "تحويل بنكي"
+                          : lang === "en"
+                            ? "Bank transfer"
+                            : "Virement bancaire"
+                        : lang === "ar"
+                          ? "تحويل بريدي"
+                          : lang === "en"
+                            ? "Postal transfer"
+                            : "Virement postal"}
                   </option>
                 ))}
               </select>
               <button
                 type="button"
                 onClick={() => paymentMutation.mutate()}
-                disabled={unavailable || paymentMutation.isPending || !(paymentMethodsQuery.data?.methods.length)}
+                disabled={
+                  unavailable ||
+                  paymentMutation.isPending ||
+                  !paymentMethodsQuery.data?.methods.length
+                }
                 className="inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {paymentMutation.isPending ? t.starting : t.checkout}
               </button>
               {paymentMethodsQuery.isPending ? (
-                <p role="status" className="text-sm text-muted-foreground">{t.providerLoading}</p>
+                <p role="status" className="text-sm text-muted-foreground">
+                  {t.providerLoading}
+                </p>
               ) : !paymentMethodsQuery.data?.methods.length ? (
-                <p role="status" className="text-sm text-muted-foreground">{t.disabled}</p>
+                <p role="status" className="text-sm text-muted-foreground">
+                  {t.disabled}
+                </p>
               ) : null}
             </div>
             {checkoutInfo && (
-              <div role="status" className="mt-4 space-y-2 rounded-xl border border-border bg-secondary p-4 text-sm">
+              <div
+                role="status"
+                className="mt-4 space-y-2 rounded-xl border border-border bg-secondary p-4 text-sm"
+              >
                 <p className="font-semibold">{t.paymentReady}</p>
-                <p>{t.openPayment}: <strong dir="ltr">{checkoutInfo.orderReference}</strong></p>
-                <p>{t.subtotal}: <strong>{formatTND(checkoutInfo.totalMillimes)}</strong></p>
-                <p>{lang === "ar" ? "المستفيد" : lang === "en" ? "Beneficiary" : "Bénéficiaire"}: <strong>{checkoutInfo.beneficiaryLabel}</strong></p>
-                <p>{lang === "ar" ? "معرّف الحساب" : lang === "en" ? "Account identifier" : "Identifiant du compte"}: <strong dir="ltr">{checkoutInfo.accountIdentifier}</strong></p>
+                <p>
+                  {t.openPayment}: <strong dir="ltr">{checkoutInfo.orderReference}</strong>
+                </p>
+                <p>
+                  {t.subtotal}: <strong>{formatTND(checkoutInfo.totalMillimes)}</strong>
+                </p>
+                <p>
+                  {lang === "ar" ? "المستفيد" : lang === "en" ? "Beneficiary" : "Bénéficiaire"}:{" "}
+                  <strong>{checkoutInfo.beneficiaryLabel}</strong>
+                </p>
+                <p>
+                  {lang === "ar"
+                    ? "معرّف الحساب"
+                    : lang === "en"
+                      ? "Account identifier"
+                      : "Identifiant du compte"}
+                  : <strong dir="ltr">{checkoutInfo.accountIdentifier}</strong>
+                </p>
                 <p>{checkoutInfo.instructions}</p>
                 <p className="text-xs text-muted-foreground">
-                  {lang === "ar" ? "لا ترسلي إيصالاً. لن تتاح التنزيلات إلا بعد تأكيد الإدارة لوصول المبلغ." : lang === "en" ? "Do not upload a receipt. Downloads remain locked until the administrator confirms receipt of the payment." : "N’envoyez aucun reçu. Les téléchargements resteront bloqués jusqu’à la confirmation manuelle de la réception."}
+                  {lang === "ar"
+                    ? "لا ترسلي إيصالاً. لن تتاح التنزيلات إلا بعد تأكيد الإدارة لوصول المبلغ."
+                    : lang === "en"
+                      ? "Do not upload a receipt. Downloads remain locked until the administrator confirms receipt of the payment."
+                      : "N’envoyez aucun reçu. Les téléchargements resteront bloqués jusqu’à la confirmation manuelle de la réception."}
                 </p>
               </div>
             )}

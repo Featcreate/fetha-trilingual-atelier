@@ -142,23 +142,41 @@ function BuyerOrdersPage() {
                   {m[order.status as keyof typeof m] ?? order.status}
                 </span>
               </div>
-              {order.status === "pending" && order.payment_method && order.payment_account_identifier_snapshot && (
-                <div className="mt-4 rounded-xl border border-border bg-secondary p-4 text-sm">
-                  <p className="font-semibold">
-                    {lang === "ar" ? "تعليمات الدفع" : lang === "en" ? "Payment instructions" : "Instructions de paiement"}
-                  </p>
-                  <p className="mt-2">
-                    {lang === "ar" ? "المستفيد" : lang === "en" ? "Beneficiary" : "Bénéficiaire"}: <strong>{order.payment_beneficiary_snapshot}</strong>
-                  </p>
-                  <p>
-                    {lang === "ar" ? "معرّف الحساب" : lang === "en" ? "Account identifier" : "Identifiant du compte"}: <strong dir="ltr">{order.payment_account_identifier_snapshot}</strong>
-                  </p>
-                  {order.payment_instructions_snapshot && <p className="mt-1">{order.payment_instructions_snapshot}</p>}
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {lang === "ar" ? "لا ترسلي إيصالاً. ستُفتح التنزيلات بعد تأكيد الإدارة وصول كامل المبلغ." : lang === "en" ? "Do not upload a receipt. Downloads unlock after the administrator confirms the full amount has arrived." : "N’envoyez aucun reçu. Les téléchargements seront débloqués après confirmation par l’administration de la réception du montant intégral."}
-                  </p>
-                </div>
-              )}
+              {order.status === "pending" &&
+                order.payment_method &&
+                order.payment_account_identifier_snapshot && (
+                  <div className="mt-4 rounded-xl border border-border bg-secondary p-4 text-sm">
+                    <p className="font-semibold">
+                      {lang === "ar"
+                        ? "تعليمات الدفع"
+                        : lang === "en"
+                          ? "Payment instructions"
+                          : "Instructions de paiement"}
+                    </p>
+                    <p className="mt-2">
+                      {lang === "ar" ? "المستفيد" : lang === "en" ? "Beneficiary" : "Bénéficiaire"}:{" "}
+                      <strong>{order.payment_beneficiary_snapshot}</strong>
+                    </p>
+                    <p>
+                      {lang === "ar"
+                        ? "معرّف الحساب"
+                        : lang === "en"
+                          ? "Account identifier"
+                          : "Identifiant du compte"}
+                      : <strong dir="ltr">{order.payment_account_identifier_snapshot}</strong>
+                    </p>
+                    {order.payment_instructions_snapshot && (
+                      <p className="mt-1">{order.payment_instructions_snapshot}</p>
+                    )}
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {lang === "ar"
+                        ? "لا ترسلي إيصالاً. ستُفتح التنزيلات بعد تأكيد الإدارة وصول كامل المبلغ."
+                        : lang === "en"
+                          ? "Do not upload a receipt. Downloads unlock after the administrator confirms the full amount has arrived."
+                          : "N’envoyez aucun reçu. Les téléchargements seront débloqués après confirmation par l’administration de la réception du montant intégral."}
+                    </p>
+                  </div>
+                )}
               <div className="mt-4 space-y-3 border-t border-border pt-3">
                 {Array.from(
                   new Map(

@@ -14,13 +14,19 @@ type ManualPaymentRow = {
 type ManualCheckoutClient = {
   from: (table: string) => {
     select: (columns: string) => {
-      eq: (column: string, value: unknown) => {
+      eq: (
+        column: string,
+        value: unknown,
+      ) => {
         maybeSingle: () => Promise<{ data: any; error: { message: string } | null }>;
         order?: (column: string, options?: unknown) => unknown;
       };
     };
   };
-  rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
+  rpc: (
+    name: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: { message: string } | null }>;
 };
 
 async function manualClient() {
@@ -34,10 +40,13 @@ export const getPlatformPaymentMethods = createServerFn({ method: "GET" })
     const client = await manualClient();
     const methods: ManualPaymentRow[] = [];
     for (const method of ["flouci", "bank_transfer", "postal_transfer"] as const) {
-      const result = await client.from("platform_payment_methods")
+      const result = await client
+        .from("platform_payment_methods")
         .select("method,beneficiary_label,account_identifier,instructions,enabled")
-        .eq("method", method).maybeSingle();
-      if (!result.error && result.data?.enabled === true) methods.push(result.data as ManualPaymentRow);
+        .eq("method", method)
+        .maybeSingle();
+      if (!result.error && result.data?.enabled === true)
+        methods.push(result.data as ManualPaymentRow);
     }
     return { ok: true as const, methods };
   });
@@ -45,11 +54,16 @@ export const getPlatformPaymentMethods = createServerFn({ method: "GET" })
 export const startManualCartCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({
-      items: z.array(z.object({ productId: z.string().uuid() })).min(1).max(50),
-      checkoutKey: z.string().min(8).max(100),
-      method: z.enum(["flouci", "bank_transfer", "postal_transfer"]),
-    }).parse(input),
+    z
+      .object({
+        items: z
+          .array(z.object({ productId: z.string().uuid() }))
+          .min(1)
+          .max(50),
+        checkoutKey: z.string().min(8).max(100),
+        method: z.enum(["flouci", "bank_transfer", "postal_transfer"]),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { data: rawOrderId, error } = await callActorScopedRpc(
@@ -69,14 +83,27 @@ export const startManualCartCheckout = createServerFn({ method: "POST" })
       _order_id: orderId,
       _method: data.method,
     });
-    if (methodError) return { ok: false as const, error: methodError.message.includes("unavailable") ? "payment_method_unavailable" : "payment_method_failed" };
+    if (methodError)
+      return {
+        ok: false as const,
+        error: methodError.message.includes("unavailable")
+          ? "payment_method_unavailable"
+          : "payment_method_failed",
+      };
 
-    const orderResult = await client.from("orders")
-      .select("order_reference,total_millimes,payment_method,payment_beneficiary_snapshot,payment_account_identifier_snapshot,payment_instructions_snapshot")
-      .eq("id", orderId).maybeSingle();
-    if (orderResult.error || !orderResult.data
-        || orderResult.data.payment_method !== data.method
-        || !orderResult.data.payment_account_identifier_snapshot) {
+    const orderResult = await client
+      .from("orders")
+      .select(
+        "order_reference,total_millimes,payment_method,payment_beneficiary_snapshot,payment_account_identifier_snapshot,payment_instructions_snapshot",
+      )
+      .eq("id", orderId)
+      .maybeSingle();
+    if (
+      orderResult.error ||
+      !orderResult.data ||
+      orderResult.data.payment_method !== data.method ||
+      !orderResult.data.payment_account_identifier_snapshot
+    ) {
       return { ok: false as const, error: "checkout_details_unavailable" };
     }
     return {
@@ -94,7 +121,9 @@ export const startManualCartCheckout = createServerFn({ method: "POST" })
 export const submitSellerPayoutRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ storeId: z.string().uuid(), sellerNote: z.string().trim().max(1000).default("") }).parse(input),
+    z
+      .object({ storeId: z.string().uuid(), sellerNote: z.string().trim().max(1000).default("") })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { data: requestId, error } = await context.supabase.rpc("submit_seller_payout_request", {

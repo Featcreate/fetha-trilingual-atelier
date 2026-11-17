@@ -18,6 +18,14 @@ WHERE o.id = x.order_id AND o.store_id IS NULL;
 
 CREATE INDEX IF NOT EXISTS orders_store_idx ON public.orders(store_id, created_at DESC);
 
+-- The previous uniqueness key did not distinguish payment modes. A legacy
+-- provider-paid pending order for the same cart could block a new direct-seller
+-- order even though the checkout RPC correctly refuses to reuse that old order.
+DROP INDEX IF EXISTS public.orders_one_pending_cart_fingerprint;
+CREATE UNIQUE INDEX orders_one_pending_cart_fingerprint
+  ON public.orders(user_id, cart_fingerprint, (coalesce(payment_mode, 'legacy')))
+  WHERE status = 'pending' AND cart_fingerprint IS NOT NULL;
+
 -- Seller-configured payment instructions. Details are visible only to the owner;
 -- buyers receive them through an order-scoped RPC after creating an order.
 CREATE TABLE IF NOT EXISTS public.store_payment_methods (

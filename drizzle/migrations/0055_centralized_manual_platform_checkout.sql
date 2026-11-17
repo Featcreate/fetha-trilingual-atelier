@@ -24,6 +24,43 @@ COMMENT ON COLUMN public.orders.order_reference IS
 COMMENT ON COLUMN public.orders.payment_method IS
   'Selected centralized platform collection method. Seller-specific payment is not supported.';
 
+ALTER TABLE public.orders
+  ADD CONSTRAINT orders_payment_method_snapshot_complete CHECK (
+    (payment_method IS NULL
+      AND payment_beneficiary_snapshot IS NULL
+      AND payment_account_identifier_snapshot IS NULL
+      AND payment_instructions_snapshot IS NULL)
+    OR (payment_method IS NOT NULL
+      AND payment_beneficiary_snapshot = 'Algorea Bazaar'
+      AND length(trim(coalesce(payment_account_identifier_snapshot, ''))) > 0
+      AND payment_instructions_snapshot IS NOT NULL)
+  );
+
+CREATE OR REPLACE FUNCTION public.guard_order_payment_method_snapshot()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $
+BEGIN
+  IF OLD.payment_method IS NOT NULL AND (
+    NEW.payment_method IS DISTINCT FROM OLD.payment_method
+    OR NEW.payment_beneficiary_snapshot IS DISTINCT FROM OLD.payment_beneficiary_snapshot
+    OR NEW.payment_account_identifier_snapshot IS DISTINCT FROM OLD.payment_account_identifier_snapshot
+    OR NEW.payment_instructions_snapshot IS DISTINCT FROM OLD.payment_instructions_snapshot
+  ) THEN
+    RAISE EXCEPTION 'order_payment_method_snapshot_immutable';
+  END IF;
+  RETURN NEW;
+END;
+$;
+
+CREATE TRIGGER orders_payment_method_snapshot_immutable
+  BEFORE UPDATE ON public.orders
+  FOR EACH ROW EXECUTE FUNCTION public.guard_order_payment_method_snapshot();
+
+REVOKE ALL ON FUNCTION public.guard_order_payment_method_snapshot() FROM PUBLIC, anon, authenticated;
+
+
 CREATE TABLE IF NOT EXISTS public.platform_payment_methods (
   method text PRIMARY KEY CHECK (method IN ('flouci', 'bank_transfer', 'postal_transfer')),
   beneficiary_label text NOT NULL DEFAULT 'Algorea Bazaar'

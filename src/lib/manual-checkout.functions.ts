@@ -71,9 +71,12 @@ export const startManualCartCheckout = createServerFn({ method: "POST" })
     });
     if (methodError) return { ok: false as const, error: methodError.message.includes("unavailable") ? "payment_method_unavailable" : "payment_method_failed" };
 
-    const orderResult = await client.from("orders").select("order_reference,total_millimes,payment_method").eq("id", orderId).maybeSingle();
-    const methodResult = await client.from("platform_payment_methods").select("method,beneficiary_label,account_identifier,instructions,enabled").eq("method", data.method).maybeSingle();
-    if (orderResult.error || !orderResult.data || methodResult.error || !methodResult.data?.enabled) {
+    const orderResult = await client.from("orders")
+      .select("order_reference,total_millimes,payment_method,payment_beneficiary_snapshot,payment_account_identifier_snapshot,payment_instructions_snapshot")
+      .eq("id", orderId).maybeSingle();
+    if (orderResult.error || !orderResult.data
+        || orderResult.data.payment_method !== data.method
+        || !orderResult.data.payment_account_identifier_snapshot) {
       return { ok: false as const, error: "checkout_details_unavailable" };
     }
     return {
@@ -83,8 +86,8 @@ export const startManualCartCheckout = createServerFn({ method: "POST" })
       totalMillimes: orderResult.data.total_millimes as number,
       method: data.method,
       beneficiaryLabel: "Algorea Bazaar" as const,
-      accountIdentifier: methodResult.data.account_identifier as string,
-      instructions: methodResult.data.instructions as string,
+      accountIdentifier: orderResult.data.payment_account_identifier_snapshot as string,
+      instructions: (orderResult.data.payment_instructions_snapshot ?? "") as string,
     };
   });
 

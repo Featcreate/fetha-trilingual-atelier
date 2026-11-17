@@ -1,0 +1,93 @@
+name: Temporary PR 119 format repair
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pr-119-format-repair
+  cancel-in-progress: false
+
+jobs:
+  repair-and-validate:
+    name: Format PR 119 and run full validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out PR 119 development branch
+        uses: actions/checkout@v5
+        with:
+          ref: feat/platform-manual-checkout-admin
+          fetch-depth: 0
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check migration journal
+        run: bun run check:migrations
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Format the six files reported by CI
+        run: |
+          bunx prettier --write \
+            src/lib/admin-security.functions.ts \
+            src/lib/manual-checkout.functions.ts \
+            src/routes/_authenticated/admin.tsx \
+            src/routes/_authenticated/orders.tsx \
+            src/routes/_authenticated/seller.tsx \
+            src/routes/cart.tsx
+
+      - name: Verify formatting
+        run: |
+          bunx prettier --check \
+            src/lib/admin-security.functions.ts \
+            src/lib/manual-checkout.functions.ts \
+            src/routes/_authenticated/admin.tsx \
+            src/routes/_authenticated/orders.tsx \
+            src/routes/_authenticated/seller.tsx \
+            src/routes/cart.tsx
+
+      - name: Lint changed source files
+        run: |
+          git fetch origin main --depth=1
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.jsx')
+          if (( ${#files[@]} )); then
+            bunx eslint "${files[@]}"
+          else
+            echo "No changed source files require linting."
+          fi
+
+      - name: Run tests
+        run: bun run test
+
+      - name: Production build
+        run: bun run build
+
+      - name: Commit formatting changes to PR branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add \
+              src/lib/admin-security.functions.ts \
+              src/lib/manual-checkout.functions.ts \
+              src/routes/_authenticated/admin.tsx \
+              src/routes/_authenticated/orders.tsx \
+              src/routes/_authenticated/seller.tsx \
+              src/routes/cart.tsx
+            git commit -m "chore: format PR 119 changed files"
+            git push origin HEAD:feat/platform-manual-checkout-admin
+          else
+            echo "Formatting produced no changes."
+          fi

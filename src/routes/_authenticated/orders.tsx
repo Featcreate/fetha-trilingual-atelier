@@ -21,10 +21,17 @@ type BuyerOrder = {
   status: string;
   total_millimes: number;
   created_at: string;
+  payment_methods?: Array<{
+    method_id: string;
+    method_type: string;
+    label: string;
+    instructions: string;
+  }>;
   order_items: Array<{
     id: string;
     product_name: string;
     unit_price_millimes: number;
+    payable_millimes: number | null;
     store_id: string | null;
     stores: { name: string } | null;
     order_item_files: Array<{
@@ -59,11 +66,23 @@ function BuyerOrdersPage() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id,status,total_millimes,created_at,order_items(id,product_name,unit_price_millimes,store_id,stores(name),order_item_files(id,file_name,download_entitlements(id,expires_at,max_downloads,used_downloads)))",
+          "id,status,total_millimes,created_at,order_items(id,product_name,unit_price_millimes,payable_millimes,store_id,stores(name),order_item_files(id,file_name,download_entitlements(id,expires_at,max_downloads,used_downloads)))",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as unknown as BuyerOrder[];
+      const orders = (data ?? []) as unknown as BuyerOrder[];
+      return Promise.all(
+        orders.map(async (order) => {
+          if (order.status !== "pending") return order;
+          const { data: methods } = await supabase.rpc("get_order_payment_methods", {
+            _order_id: order.id,
+          });
+          return {
+            ...order,
+            payment_methods: (methods ?? []) as BuyerOrder["payment_methods"],
+          };
+        }),
+      );
     },
   });
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
@@ -137,6 +156,43 @@ function BuyerOrdersPage() {
                   {m[order.status as keyof typeof m] ?? order.status}
                 </span>
               </div>
+              {order.status === "pending" && !order.payment_methods?.length && (
+                <section className="rounded-xl border border-border bg-secondary p-3">
+                  <p className="text-sm">
+                    {lang === "ar"
+                      ? "لم يضف البائع تعليمات الدفع بعد. لا تحوّلي أي مبلغ قبل التواصل معه والتأكد من طريقة الدفع."
+                      : lang === "en"
+                        ? "The seller has not provided payment instructions yet. Contact them and confirm the payment method before sending money."
+                        : "Le vendeur n’a pas encore fourni d’instructions de paiement. Contactez-le et confirmez le moyen de paiement avant tout transfert."}
+                  </p>
+                </section>
+              )}
+              {order.status === "pending" && !!order.payment_methods?.length && (
+                <section className="rounded-xl border border-border bg-secondary p-3">
+                  <h3 className="font-bold">
+                    {lang === "ar"
+                      ? "تعليمات الدفع للبائع"
+                      : lang === "en"
+                        ? "Seller payment instructions"
+                        : "Instructions de paiement du vendeur"}
+                  </h3>
+                  <div className="mt-2 space-y-3">
+                    {order.payment_methods.map((method) => (
+                      <article key={method.method_id} className="rounded-lg bg-background p-3">
+                        <p className="font-semibold">{method.label}</p>
+                        <p className="mt-1 whitespace-pre-wrap text-sm">{method.instructions}</p>
+                      </article>
+                    ))}
+                  </div>
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    {lang === "ar"
+                      ? "بعد الدفع، انتظري تأكيد البائع. لن يتاح التنزيل قبل التأكيد."
+                      : lang === "en"
+                        ? "After paying, wait for the seller to confirm receipt. Downloads remain locked until confirmation."
+                        : "Après le paiement, attendez la confirmation du vendeur. Le téléchargement reste verrouillé jusque-là."}
+                  </p>
+                </section>
+              )}
               <div className="mt-4 space-y-3 border-t border-border pt-3">
                 {Array.from(
                   new Map(
@@ -193,7 +249,7 @@ function BuyerOrdersPage() {
                     <div>
                       <p className="font-semibold">{item.product_name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {formatTND(item.unit_price_millimes)}
+                        {formatTND(item.payable_millimes ?? item.unit_price_millimes)}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">

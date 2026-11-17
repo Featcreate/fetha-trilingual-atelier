@@ -22,6 +22,7 @@ import { ProductPreview } from "@/components/ProductPreview";
 import { translateProductContent } from "@/lib/product-translations";
 import { MAX_PRODUCT_FILE_BYTES, uploadProductFile } from "@/lib/storage-upload";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
+import { getSellerPaymentMethods, saveSellerPaymentMethod } from "@/lib/shop.functions";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 import {
   activateSellerFileVersion,
@@ -89,6 +90,63 @@ function safeFileName(value: string) {
 function SellerPage() {
   const { lang, setLang, t } = useLang();
   const m = t.marketplace;
+  const directPaymentCopy =
+    lang === "ar"
+      ? {
+          intro:
+            "يستلم البائع ثمن الطلب مباشرة من المشتري باستخدام وسائل الدفع التي يضيفها أدناه. لا تجمع المنصة الأموال ولا تقتطع أي عمولة عند الإطلاق.",
+          title: "وسائل الدفع المباشر",
+          help: "أضف بيانات الدفع التي ستظهر للمشتري بعد إنشاء الطلب. لا تضع كلمات مرور أو رموزاً سرية.",
+          active: "مفعّلة",
+          disabled: "معطّلة",
+          none: "لم تضف أي وسيلة دفع بعد.",
+          type: "نوع الوسيلة",
+          bank: "تحويل بنكي",
+          postal: "حوالة بريدية",
+          wallet: "محفظة إلكترونية",
+          cash: "نقداً / يداً بيد",
+          other: "أخرى",
+          label: "اسم وسيلة الدفع",
+          instructions: "تفاصيل التحويل أو طريقة الدفع",
+          add: "إضافة وسيلة الدفع",
+        }
+      : lang === "en"
+        ? {
+            intro:
+              "The seller receives each order payment directly from the buyer using the methods configured below. The platform collects no funds and charges no commission at launch.",
+            title: "Direct payment methods",
+            help: "Add the payment instructions buyers will see after placing an order. Never enter passwords or secret codes.",
+            active: "Active",
+            disabled: "Disabled",
+            none: "No payment methods added yet.",
+            type: "Method type",
+            bank: "Bank transfer",
+            postal: "Postal transfer",
+            wallet: "Digital wallet",
+            cash: "Cash / in person",
+            other: "Other",
+            label: "Payment method name",
+            instructions: "Transfer details or payment instructions",
+            add: "Add payment method",
+          }
+        : {
+            intro:
+              "Le vendeur reçoit directement le paiement de l’acheteur via les moyens configurés ci-dessous. Aucun paiement n’est encaissé par la plateforme et aucune commission n’est prélevée au lancement.",
+            title: "Moyens de paiement directs",
+            help: "Ajoutez les instructions de paiement visibles par l’acheteur après la commande. N’indiquez jamais de mot de passe ni de code secret.",
+            active: "Active",
+            disabled: "Désactivée",
+            none: "Aucun moyen de paiement ajouté.",
+            type: "Type de moyen",
+            bank: "Virement bancaire",
+            postal: "Mandat postal",
+            wallet: "Portefeuille numérique",
+            cash: "Espèces / en main propre",
+            other: "Autre",
+            label: "Nom du moyen de paiement",
+            instructions: "Coordonnées de transfert ou instructions de paiement",
+            add: "Ajouter le moyen de paiement",
+          };
   const { user } = Route.useRouteContext();
   const qc = useQueryClient();
   const [notice, setNotice] = useState("");
@@ -101,7 +159,11 @@ function SellerPage() {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
   const [confirmationBusy, setConfirmationBusy] = useState(false);
-  const payoutMethod = "bank_transfer";
+  const [paymentMethodLabel, setPaymentMethodLabel] = useState("");
+  const [paymentMethodInstructions, setPaymentMethodInstructions] = useState("");
+  const [paymentMethodType, setPaymentMethodType] = useState<
+    "bank_transfer" | "postal_transfer" | "wallet" | "cash" | "other"
+  >("bank_transfer");
   const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
   const [editCategoryId, setEditCategoryId] = useState("");
@@ -120,18 +182,6 @@ function SellerPage() {
     },
   });
   const store = storeQuery.data;
-  const settingsQuery = useQuery({
-    queryKey: ["platform-commission"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("platform_settings")
-        .select("commission_bps")
-        .eq("id", true)
-        .single();
-      if (error) throw error;
-      return data.commission_bps;
-    },
-  });
 
   const productsQuery = useQuery({
     queryKey: ["seller-products", store?.id],
@@ -153,7 +203,7 @@ function SellerPage() {
       const { data, error } = await supabase
         .from("order_items")
         .select(
-          "id, order_id, product_name, quantity, gross_millimes, commission_millimes, seller_net_millimes, orders!inner(id,status,created_at,total_millimes)",
+          "id, order_id, product_name, quantity, gross_millimes, commission_millimes, seller_net_millimes, orders!inner(id,status,created_at,total_millimes,payment_mode)",
         )
         .eq("seller_id", user.id);
       if (error) throw error;
@@ -165,87 +215,99 @@ function SellerPage() {
         gross_millimes: number | null;
         commission_millimes: number | null;
         seller_net_millimes: number | null;
-        orders: { id: string; status: string; created_at: string; total_millimes: number } | null;
+        orders: {
+          id: string;
+          status: string;
+          created_at: string;
+          total_millimes: number;
+          payment_mode?: string | null;
+        } | null;
       }>;
     },
   });
 
-  const payoutPreferenceQuery = useQuery({
-    queryKey: ["seller-payout-preference", store?.id],
+  const directPaymentMethodsQuery = useQuery({
+    queryKey: ["store-direct-payment-methods", store?.id],
     enabled: !!store?.id,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("seller_payout_preferences")
-        .select(
-          "id,method,account_holder_name,provider_name,account_identifier,bank_name,additional_details,updated_at",
-        )
-        .eq("store_id", store!.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
+      const result = await getSellerPaymentMethods({ data: {} });
+      return result.methods;
     },
   });
 
-  // Seller payouts are currently bank-transfer only; keep the UI ready for future methods.
+  async function saveDirectPaymentMethod(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!store || !paymentMethodLabel.trim() || !paymentMethodInstructions.trim()) {
+      return;
+    }
 
-  const payoutHistoryQuery = useQuery({
-    queryKey: ["seller-payout-history", store?.id],
-    enabled: !!store?.id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("seller_payouts")
-        .select(
-          "id,status,seller_amount_millimes,external_fees_millimes,currency,created_at,paid_at,provider_transfer_ref,payout_destination_method",
-        )
-        .eq("store_id", store!.id)
-        .order("created_at", { ascending: false })
-        .limit(30);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-  const sellerEarningsQuery = useQuery({
-    queryKey: ["seller-ledger-earnings", store?.id],
-    enabled: !!store?.id,
-    queryFn: async () => {
-      let total = 0;
-      const pageSize = 1000;
-      for (let from = 0; ; from += pageSize) {
-        const { data, error } = await supabase
-          .from("seller_ledger_entries")
-          .select("amount_millimes")
-          .eq("store_id", store!.id)
-          .eq("entry_type", "sale_net")
-          .order("created_at", { ascending: true })
-          .range(from, from + pageSize - 1);
-        if (error) throw error;
-        const page = data ?? [];
-        total += page.reduce((sum, entry) => sum + Number(entry.amount_millimes), 0);
-        if (page.length < pageSize) return total;
-      }
-    },
-  });
-  const sellerPayoutBalancesQuery = useQuery({
-    queryKey: ["seller-ledger-payout-balances", store?.id],
-    enabled: !!store?.id,
-    queryFn: async () => {
-      const rows: Array<{ status: string; seller_amount_millimes: number }> = [];
-      const pageSize = 1000;
-      for (let from = 0; ; from += pageSize) {
-        const { data, error } = await supabase
-          .from("seller_payouts")
-          .select("status,seller_amount_millimes")
-          .eq("store_id", store!.id)
-          .neq("status", "cancelled")
-          .order("created_at", { ascending: true })
-          .range(from, from + pageSize - 1);
-        if (error) throw error;
-        const page = data ?? [];
-        rows.push(...page);
-        if (page.length < pageSize) return rows;
-      }
-    },
-  });
+    setBusy(true);
+    const result = await saveSellerPaymentMethod({
+      data: {
+        methodType: paymentMethodType,
+        label: paymentMethodLabel.trim(),
+        instructions: paymentMethodInstructions.trim(),
+      },
+    });
+    setBusy(false);
+
+    if (!result.ok) return setNotice(m.error);
+
+    setPaymentMethodLabel("");
+    setPaymentMethodInstructions("");
+    setNotice(
+      lang === "ar"
+        ? "تم حفظ وسيلة الدفع."
+        : lang === "en"
+          ? "Payment method saved."
+          : "Moyen de paiement enregistré.",
+    );
+    await qc.invalidateQueries({
+      queryKey: ["store-direct-payment-methods", store.id],
+    });
+  }
+
+  async function confirmDirectOrder(orderId: string) {
+    const confirmationPrompt =
+      lang === "ar"
+        ? "هل تأكدت من استلام المبلغ فعلياً من المشتري؟ سيُتاح التنزيل فور التأكيد."
+        : lang === "en"
+          ? "Have you actually received the buyer’s payment? Downloads will be unlocked immediately after confirmation."
+          : "Avez-vous réellement reçu le paiement de l’acheteur ? Le téléchargement sera débloqué immédiatement après confirmation.";
+    if (!window.confirm(confirmationPrompt)) return;
+
+    setBusy(true);
+    const { data, error } = await supabase.rpc("seller_confirm_direct_payment", {
+      _order_id: orderId,
+      _confirmation_note: null,
+    });
+    setBusy(false);
+
+    if (error) {
+      return setNotice(
+        lang === "ar"
+          ? "تعذر تأكيد استلام المبلغ."
+          : lang === "en"
+            ? "Could not confirm receipt."
+            : "Impossible de confirmer la réception.",
+      );
+    }
+
+    setNotice(
+      data === "already_confirmed"
+        ? lang === "ar"
+          ? "تم تأكيد الطلب سابقاً."
+          : lang === "en"
+            ? "Order already confirmed."
+            : "Commande déjà confirmée."
+        : lang === "ar"
+          ? "تم تأكيد استلام المبلغ وإتاحة التنزيل للمشتري."
+          : lang === "en"
+            ? "Payment receipt confirmed; downloads are now available."
+            : "Réception confirmée ; le téléchargement est disponible.",
+    );
+    await qc.invalidateQueries({ queryKey: ["seller-orders", user.id] });
+  }
 
   async function resendSellerConfirmation() {
     if (!user.email) return;
@@ -310,64 +372,6 @@ function SellerPage() {
     }
     setNotice(m.storeCreated);
     await qc.invalidateQueries({ queryKey: ["seller-store", user.id] });
-  }
-
-  async function savePayoutPreference(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!store) return;
-    const values = new FormData(e.currentTarget);
-    const method = "bank_transfer";
-    const accountHolderName = String(values.get("account_holder_name") ?? "").trim();
-    const accountIdentifier = String(values.get("account_identifier") ?? "").trim();
-    const bankName = String(values.get("bank_name") ?? "").trim();
-    if (!accountHolderName || !accountIdentifier) {
-      setNotice(
-        lang === "ar"
-          ? "أدخل اسم صاحب الحساب ومعرّف الحساب."
-          : lang === "en"
-            ? "Enter the account holder name and account identifier."
-            : "Saisissez le titulaire et l’identifiant du compte.",
-      );
-      return;
-    }
-    if (!bankName) {
-      setNotice(
-        lang === "ar"
-          ? "أدخل اسم البنك لإتمام بيانات التحويل البنكي."
-          : lang === "en"
-            ? "Enter the bank name for a bank transfer."
-            : "Saisissez le nom de la banque pour un virement bancaire.",
-      );
-      return;
-    }
-    setBusy(true);
-    setNotice("");
-    const { error } = await supabase.from("seller_payout_preferences").upsert(
-      {
-        store_id: store.id,
-        method,
-        account_holder_name: accountHolderName,
-        account_identifier: accountIdentifier,
-        provider_name: null,
-        bank_name: bankName || null,
-        additional_details: String(values.get("additional_details") ?? "").trim() || null,
-        konnect_wallet_id: null,
-      },
-      { onConflict: "store_id" },
-    );
-    setBusy(false);
-    if (error)
-      return setNotice(
-        error.message.includes("payout_destination_details_required")
-          ? lang === "ar"
-            ? "بيانات الاستلام الأساسية مطلوبة."
-            : lang === "en"
-              ? "Required payout details are missing."
-              : "Les informations de réception obligatoires sont manquantes."
-          : m.error,
-      );
-    setNotice(m.productUpdated);
-    await qc.invalidateQueries({ queryKey: ["seller-payout-preference", store.id] });
   }
 
   async function uploadFile(
@@ -662,20 +666,6 @@ function SellerPage() {
     [ordersQuery.data],
   );
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
-  const sellerEarned = sellerEarningsQuery.data ?? 0;
-  const sellerPayoutTotals = (sellerPayoutBalancesQuery.data ?? []).reduce(
-    (totals, payout) => {
-      if (payout.status === "paid") totals.transferred += Number(payout.seller_amount_millimes);
-      else if (payout.status !== "cancelled")
-        totals.reserved += Number(payout.seller_amount_millimes);
-      return totals;
-    },
-    { transferred: 0, reserved: 0 },
-  );
-  const sellerAvailable = Math.max(
-    0,
-    sellerEarned - sellerPayoutTotals.transferred - sellerPayoutTotals.reserved,
-  );
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.sellerArea} wide>
@@ -800,19 +790,6 @@ function SellerPage() {
               store={store}
               onSaved={() => qc.invalidateQueries({ queryKey: ["seller-store", user.id] })}
             />
-          </section>
-
-          <section className="rounded-xl border border-border bg-secondary/40 p-4 text-sm leading-7">
-            {settingsQuery.isPending
-              ? m.loading
-              : settingsQuery.isError
-                ? m.error
-                : settingsQuery.data === null
-                  ? m.commissionUnset
-                  : m.commissionDisclosure.replace(
-                      "{value}",
-                      `${(settingsQuery.data / 100).toFixed(2)}%`,
-                    )}
           </section>
 
           <section className="space-y-4">
@@ -1249,221 +1226,74 @@ function SellerPage() {
             )}
           </section>
 
-          <section className="space-y-4 rounded-xl border border-border p-5">
-            <div>
-              <h2 className="text-xl font-bold">{m.payoutMethod}</h2>
-              <p className="mt-2 font-semibold">{m.weeklyManual}</p>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">{m.payoutHelp}</p>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                {m.payoutExternalFeesNote}
-              </p>
-              <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                {lang === "ar"
-                  ? "لا تُدخل كلمة مرور أو رمز OTP أو رمز PIN أو أي مفتاح سري."
-                  : lang === "en"
-                    ? "Never enter a password, OTP, PIN, or secret key."
-                    : "Ne saisissez jamais de mot de passe, code OTP, code PIN ou clé secrète."}
-              </p>
-              <form
-                key={payoutPreferenceQuery.data?.updated_at ?? "new-payout-preference"}
-                onSubmit={(e) => void savePayoutPreference(e)}
-                className="mt-4 space-y-3"
-              >
-                <input type="hidden" name="payout_method" value="bank_transfer" />
-                <p className="rounded-lg bg-secondary/60 p-3 text-sm font-medium">
-                  {lang === "ar"
-                    ? "وسيلة الاستلام المتاحة حاليًا: التحويل البنكي"
-                    : lang === "en"
-                      ? "Currently available payout method: Bank transfer"
-                      : "Moyen de versement actuellement disponible : virement bancaire"}
-                </p>
-                <label className="block text-sm font-medium">
-                  {lang === "ar"
-                    ? "اسم صاحب الحساب"
-                    : lang === "en"
-                      ? "Account holder name"
-                      : "Titulaire du compte"}
-                  <input
-                    name="account_holder_name"
-                    required
-                    maxLength={160}
-                    defaultValue={payoutPreferenceQuery.data?.account_holder_name ?? ""}
-                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
-                  />
-                </label>
-                <label className="block text-sm font-medium">
-                  {lang === "ar"
-                    ? "رقم الحساب البنكي أو IBAN"
-                    : lang === "en"
-                      ? "Bank account number or IBAN"
-                      : "Numéro de compte bancaire ou IBAN"}
-                  <input
-                    name="account_identifier"
-                    required
-                    maxLength={200}
-                    placeholder={
-                      lang === "ar"
-                        ? "رقم الحساب أو IBAN"
-                        : lang === "en"
-                          ? "Account number or IBAN"
-                          : "Numéro de compte ou IBAN"
-                    }
-                    defaultValue={payoutPreferenceQuery.data?.account_identifier ?? ""}
-                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
-                  />
-                </label>
-                {payoutMethod === "bank_transfer" && (
-                  <label className="block text-sm font-medium">
-                    {lang === "ar" ? "اسم البنك" : lang === "en" ? "Bank name" : "Nom de la banque"}
-                    <input
-                      name="bank_name"
-                      required
-                      maxLength={160}
-                      defaultValue={payoutPreferenceQuery.data?.bank_name ?? ""}
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
-                    />
-                  </label>
-                )}
-                <label className="block text-sm font-medium">
-                  {lang === "ar"
-                    ? "معلومات إضافية (اختياري)"
-                    : lang === "en"
-                      ? "Additional details (optional)"
-                      : "Informations complémentaires (facultatif)"}
-                  <textarea
-                    name="additional_details"
-                    maxLength={500}
-                    rows={2}
-                    defaultValue={payoutPreferenceQuery.data?.additional_details ?? ""}
-                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
-                  />
-                </label>
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50"
-                >
-                  {m.save}
-                </button>
-              </form>
-              <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                {lang === "ar"
-                  ? "يمكن إضافة وسائل استلام أخرى مستقبلًا؛ أما الدفعات التي أُنشئت فتحفظ نسخة ثابتة من بياناتها."
-                  : lang === "en"
-                    ? "You can update your method for future payouts; each created payout keeps its own fixed destination snapshot."
-                    : "Vous pouvez modifier le moyen pour les prochains versements ; chaque versement créé conserve son propre instantané de destination."}
-              </p>
-            </div>
-            <div className="border-t border-border pt-4">
-              <h3 className="font-semibold">{m.payoutBalanceTitle}</h3>
-              {sellerEarningsQuery.isPending || sellerPayoutBalancesQuery.isPending ? (
-                <p className="mt-2 text-sm">{m.loading}</p>
-              ) : sellerEarningsQuery.isError || sellerPayoutBalancesQuery.isError ? (
-                <p role="alert" className="mt-2 text-sm text-destructive">
-                  {m.error}
-                </p>
-              ) : (
-                <>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="rounded-lg bg-secondary p-3">
-                      <p className="text-xs text-muted-foreground">{m.payoutEarned}</p>
-                      <p className="mt-1 text-lg font-bold">{formatTND(sellerEarned)}</p>
-                    </div>
-                    <div className="rounded-lg bg-secondary p-3">
-                      <p className="text-xs text-muted-foreground">{m.payoutTransferred}</p>
-                      <p className="mt-1 text-lg font-bold">
-                        {formatTND(sellerPayoutTotals.transferred)}
-                      </p>
-                    </div>
-                    <div className="rounded-lg bg-secondary p-3">
-                      <p className="text-xs text-muted-foreground">{m.payoutReserved}</p>
-                      <p className="mt-1 text-lg font-bold">
-                        {formatTND(sellerPayoutTotals.reserved)}
-                      </p>
-                    </div>
-                    <div className="rounded-lg bg-secondary p-3">
-                      <p className="text-xs text-muted-foreground">{m.payoutAvailable}</p>
-                      <p className="mt-1 text-lg font-bold">{formatTND(sellerAvailable)}</p>
-                    </div>
+          <section className="rounded-xl border border-border bg-secondary/50 p-4">
+            <p className="text-sm leading-7">{directPaymentCopy.intro}</p>
+          </section>
+
+          <section className="rounded-xl border border-border p-5">
+            <h2 className="text-xl font-bold">{directPaymentCopy.title}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{directPaymentCopy.help}</p>
+            <div className="mt-4 space-y-2">
+              {(directPaymentMethodsQuery.data ?? []).map((method) => (
+                <article key={method.id} className="rounded-lg bg-secondary p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <strong>{method.label}</strong>
+                    <span className="text-xs">
+                      {method.is_enabled ? directPaymentCopy.active : directPaymentCopy.disabled}
+                    </span>
                   </div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                    {m.payoutBalanceNote}
-                  </p>
-                </>
+                  <p className="mt-1 whitespace-pre-wrap text-sm">{method.instructions}</p>
+                </article>
+              ))}
+              {!directPaymentMethodsQuery.isPending && !directPaymentMethodsQuery.data?.length && (
+                <p className="text-sm text-muted-foreground">{directPaymentCopy.none}</p>
               )}
             </div>
-            <div className="border-t border-border pt-4">
-              <h3 className="font-semibold">{m.payoutHistory}</h3>
-              {payoutHistoryQuery.isPending ? (
-                <p className="mt-2 text-sm">{m.loading}</p>
-              ) : payoutHistoryQuery.isError ? (
-                <p role="alert" className="mt-2 text-sm text-destructive">
-                  {m.error}
-                </p>
-              ) : !payoutHistoryQuery.data?.length ? (
-                <p className="mt-2 rounded-lg bg-secondary p-3 text-sm">{m.noPayouts}</p>
-              ) : (
-                <div className="mt-3 space-y-2">
-                  {payoutHistoryQuery.data.map((p) => (
-                    <article
-                      key={p.id}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-secondary/60 p-3 text-sm"
-                    >
-                      <div>
-                        <p className="font-medium">
-                          {p.status === "paid"
-                            ? m.payoutPaid
-                            : p.status === "processing"
-                              ? m.payoutProcessing
-                              : p.status === "failed"
-                                ? m.payoutFailed
-                                : p.status === "cancelled"
-                                  ? m.payoutCancelled
-                                  : m.payoutPending}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(p.paid_at ?? p.created_at).toLocaleDateString(locale)}
-                        </p>
-                        {p.provider_transfer_ref && (
-                          <p className="text-xs text-muted-foreground" dir="ltr">
-                            {m.transferReference}: {p.provider_transfer_ref}
-                          </p>
-                        )}
-                        {p.payout_destination_method && (
-                          <p className="text-xs text-muted-foreground">
-                            {lang === "ar"
-                              ? "وسيلة الاستلام"
-                              : lang === "en"
-                                ? "Receiving method"
-                                : "Moyen de réception"}
-                            : {p.payout_destination_method}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-end space-y-1">
-                        <p className="text-xs text-muted-foreground">
-                          {lang === "ar"
-                            ? "مستحقاتك قبل رسوم التحويل"
-                            : lang === "en"
-                              ? "Seller payable before transfer fees"
-                              : "Montant dû avant frais de transfert"}
-                          :{" "}
-                          {formatTND(
-                            Number(p.seller_amount_millimes) +
-                              Number(p.external_fees_millimes ?? 0),
-                          )}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {lang === "ar" ? "الرسوم" : lang === "en" ? "Fees" : "Frais"}:{" "}
-                          {formatTND(Number(p.external_fees_millimes ?? 0))}
-                        </p>
-                        <strong>{formatTND(p.seller_amount_millimes)}</strong>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </div>
+            <form
+              onSubmit={(event) => void saveDirectPaymentMethod(event)}
+              className="mt-4 space-y-3"
+            >
+              <label className="block text-sm font-medium">
+                {directPaymentCopy.type}
+                <select
+                  value={paymentMethodType}
+                  onChange={(event) =>
+                    setPaymentMethodType(event.target.value as typeof paymentMethodType)
+                  }
+                  className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2"
+                >
+                  <option value="bank_transfer">{directPaymentCopy.bank}</option>
+                  <option value="postal_transfer">{directPaymentCopy.postal}</option>
+                  <option value="wallet">{directPaymentCopy.wallet}</option>
+                  <option value="cash">{directPaymentCopy.cash}</option>
+                  <option value="other">{directPaymentCopy.other}</option>
+                </select>
+              </label>
+              <input
+                value={paymentMethodLabel}
+                onChange={(event) => setPaymentMethodLabel(event.target.value)}
+                required
+                maxLength={80}
+                placeholder={directPaymentCopy.label}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2"
+              />
+              <textarea
+                value={paymentMethodInstructions}
+                onChange={(event) => setPaymentMethodInstructions(event.target.value)}
+                required
+                maxLength={2000}
+                rows={4}
+                placeholder={directPaymentCopy.instructions}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2"
+              />
+              <button
+                type="submit"
+                disabled={busy}
+                className="rounded-full bg-accent px-5 py-2 font-semibold text-accent-foreground disabled:opacity-50"
+              >
+                {directPaymentCopy.add}
+              </button>
+            </form>
           </section>
 
           <section className="space-y-4">
@@ -1484,6 +1314,21 @@ function SellerPage() {
                         {m[item.orders?.status as keyof typeof m] ?? item.orders?.status}
                       </span>
                     </div>
+                    {item.orders?.status === "pending" &&
+                      item.orders?.payment_mode === "direct_seller" && (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => void confirmDirectOrder(item.order_id)}
+                          className="mt-3 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+                        >
+                          {lang === "ar"
+                            ? "تأكيد استلام المبلغ"
+                            : lang === "en"
+                              ? "Confirm payment received"
+                              : "Confirmer la réception du paiement"}
+                        </button>
+                      )}
                     <p className="mt-2 text-xs text-muted-foreground">
                       #{item.order_id.slice(0, 8)} ·{" "}
                       {item.orders?.created_at

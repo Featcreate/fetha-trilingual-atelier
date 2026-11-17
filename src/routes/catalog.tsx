@@ -305,7 +305,7 @@ function CatalogPage() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => add(p.id)}
+                  onClick={() => p.store_id && add(p.store_id, p.id)}
                   className={`w-full rounded-full px-4 py-2 text-sm font-semibold text-white transition-colors ${
                     items.some((item) => item.productId === p.id)
                       ? "bg-green-600 hover:bg-green-700"

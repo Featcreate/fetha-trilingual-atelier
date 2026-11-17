@@ -277,7 +277,10 @@ function ProductPage() {
           </p>
           <button
             type="button"
-            onClick={() => add(query.data!.product.id)}
+            onClick={() =>
+              query.data?.product.store_id &&
+              add(query.data.product.store_id, query.data.product.id)
+            }
             className={`mt-4 rounded-full px-6 py-3 font-semibold text-white transition-colors ${
               items.some((item) => item.productId === query.data!.product.id)
                 ? "bg-green-600 hover:bg-green-700"

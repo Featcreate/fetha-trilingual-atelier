@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { AuthShell } from "@/components/AuthShell";
 import { ProductPreview } from "@/components/ProductPreview";
@@ -9,11 +9,7 @@ import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { localizedProductText } from "@/lib/product-translations";
-import {
-  getExistingCartIpayPayment,
-  getIpayCheckoutAvailability,
-  startCartIpayCheckout,
-} from "@/lib/shop.functions";
+import { createDirectSellerOrder } from "@/lib/shop.functions";
 
 export const Route = createFileRoute("/cart")({ component: CartPage });
 
@@ -27,109 +23,97 @@ type Product = {
   store_id: string | null;
 };
 type Store = { id: string; name: string };
+type PaymentMethod = {
+  method_id: string;
+  method_type: string;
+  label: string;
+  instructions: string;
+};
 
-function normalizeIpayCheckoutUrl(rawUrl: string): string {
-  const url = new URL(rawUrl);
-  if (url.hostname === "ipay.tn") url.hostname = "www.ipay.tn";
-  return url.toString();
-}
-
-const copy = {
+const words = {
   fr: {
-    title: "Panier",
+    title: "Panier par boutique",
     empty: "Votre panier est vide.",
+    unavailable: "Certains produits ne sont plus disponibles. Retirez-les pour continuer.",
     browse: "Continuer mes achats",
-    checkout: "Payer avec iPay",
+    total: "Total",
     remove: "Retirer",
-    subtotal: "Total à payer",
-    unavailable: "Un produit n’est plus disponible. Retirez-le avant de poursuivre.",
-    limit: "50 produits différents maximum par panier.",
-    loading: "Chargement…",
-    error: "Impossible de charger le panier.",
-    disabled: "Le paiement iPay n’est pas encore disponible. Votre panier est conservé.",
-    starting: "Préparation du paiement…",
-    paymentError:
-      "Le lien de paiement n’a pas pu être créé. Vérifiez l’état de la commande avant de réessayer.",
-    providerLoading: "Vérification du paiement…",
-    paymentReady: "Un lien de paiement iPay déjà créé pour ce panier est disponible.",
-    openPayment: "Ouvrir la page de paiement iPay",
+    choose: "Choisissez la boutique dont vous souhaitez finaliser la commande.",
+    checkout: "Créer la commande",
+    working: "Création…",
+    payment: "Instructions de paiement du vendeur",
+    noMethods:
+      "La commande a été créée, mais le vendeur n’a pas encore renseigné ses moyens de paiement. Contactez-le avant tout paiement.",
+    created:
+      "Commande créée. Effectuez le paiement directement auprès du vendeur, puis attendez sa confirmation avant le téléchargement.",
+    error: "Impossible de créer la commande. Vérifiez votre panier et réessayez.",
+    limit: "Chaque boutique possède son propre panier, limité à 50 produits différents.",
+    instructionsUnavailable:
+      "La commande est créée, mais les instructions de paiement ne sont pas accessibles pour le moment. Consultez vos commandes ou contactez le vendeur.",
+    select: "Boutique",
+    order: "Commande",
+    close: "Fermer les instructions",
   },
   ar: {
-    title: "سلة المشتريات",
+    title: "سلة مستقلة لكل متجر",
     empty: "سلة مشترياتك فارغة.",
+    unavailable: "بعض المنتجات لم تعد متاحة. احذفيها للمتابعة.",
     browse: "متابعة التسوق",
-    checkout: "الدفع عبر iPay",
+    total: "الإجمالي",
     remove: "حذف",
-    subtotal: "الإجمالي المستحق",
-    unavailable: "يوجد منتج لم يعد متاحاً. احذفيه قبل المتابعة.",
-    limit: "الحد الأقصى 50 منتجاً مختلفاً في السلة.",
-    loading: "جارٍ التحميل…",
-    error: "تعذر تحميل السلة.",
-    disabled: "الدفع عبر iPay غير متاح حالياً. ستبقى سلتك محفوظة.",
-    starting: "جارٍ إعداد رابط الدفع…",
-    paymentError: "تعذر إنشاء رابط الدفع. تحققي من حالة الطلب قبل إعادة المحاولة.",
-    providerLoading: "جارٍ التحقق من توفر الدفع…",
-    paymentReady: "يوجد رابط دفع iPay سابق لهذا السلة ويمكنك فتحه مباشرة.",
-    openPayment: "فتح صفحة الدفع عبر iPay",
+    choose: "اختاري المتجر الذي تريدين إتمام الطلب منه.",
+    checkout: "إنشاء الطلب",
+    working: "جارٍ الإنشاء…",
+    payment: "تعليمات الدفع الخاصة بالبائع",
+    noMethods: "تم إنشاء الطلب، لكن البائع لم يضف وسائل الدفع بعد. تواصلي معه قبل الدفع.",
+    created: "تم إنشاء الطلب. ادفعي مباشرة للبائع وانتظري تأكيده قبل تنزيل المنتج.",
+    error: "تعذر إنشاء الطلب. تحققي من السلة وحاولي مجدداً.",
+    limit: "لكل متجر سلة مستقلة بحد أقصى 50 منتجاً مختلفاً.",
+    instructionsUnavailable:
+      "تم إنشاء الطلب، لكن تعذّر تحميل تعليمات الدفع حالياً. راجعي طلباتك أو تواصلي مع البائع.",
+    select: "المتجر",
+    order: "الطلب",
+    close: "إغلاق التعليمات",
   },
   en: {
-    title: "Shopping cart",
+    title: "Separate store carts",
     empty: "Your cart is empty.",
+    unavailable: "Some products are no longer available. Remove them to continue.",
     browse: "Continue shopping",
-    checkout: "Pay with iPay",
+    total: "Total",
     remove: "Remove",
-    subtotal: "Total due",
-    unavailable: "A product is no longer available. Remove it before continuing.",
-    limit: "Up to 50 different products per cart.",
-    loading: "Loading…",
-    error: "Could not load cart.",
-    disabled: "iPay checkout is not available yet. Your cart is preserved.",
-    starting: "Preparing payment link…",
-    paymentError: "The payment link could not be created. Check the order status before retrying.",
-    providerLoading: "Checking payment availability…",
-    paymentReady: "An existing iPay payment link for this cart is available.",
-    openPayment: "Open iPay payment page",
+    choose: "Choose the store whose order you want to place.",
+    checkout: "Create order",
+    working: "Creating…",
+    payment: "Seller payment instructions",
+    noMethods:
+      "The order was created, but the seller has not added payment methods yet. Contact them before paying.",
+    created:
+      "Order created. Pay the seller directly and wait for their confirmation before downloading.",
+    error: "Could not create the order. Check your cart and try again.",
+    limit: "Each store has its own cart, limited to 50 different products.",
+    instructionsUnavailable:
+      "The order was created, but payment instructions are temporarily unavailable. Check your orders or contact the seller.",
+    select: "Store",
+    order: "Order",
+    close: "Close instructions",
   },
 } as const;
 
 function CartPage() {
   const { lang, setLang } = useLang();
-  const t = copy[lang];
-  const { items, count, remove } = useCart();
-  const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
-  const signature = items
-    .map((line) => line.productId)
-    .sort()
-    .join(",");
-
-  const getCheckoutKey = () => {
-    if (checkoutAttempt.current?.signature === signature) return checkoutAttempt.current.key;
-    const storageKey = `algorea-bazaar:ipay-cart-attempt:${signature}`;
-    try {
-      const stored = sessionStorage.getItem(storageKey);
-      if (stored && stored.length >= 8) {
-        checkoutAttempt.current = { signature, key: stored };
-        return stored;
-      }
-    } catch {
-      // Continue with an in-memory key when session storage is unavailable.
-    }
-    const key = crypto.randomUUID();
-    checkoutAttempt.current = { signature, key };
-    try {
-      sessionStorage.setItem(storageKey, key);
-    } catch {
-      // The in-memory key still protects this page.
-    }
-    return key;
-  };
+  const t = words[lang];
+  const { items, count, remove, assignStore } = useCart();
+  const [selectedStoreId, setSelectedStoreId] = useState("");
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [methods, setMethods] = useState<PaymentMethod[]>([]);
+  const [notice, setNotice] = useState("");
 
   const query = useQuery({
-    queryKey: ["cart-products", items.map((line) => line.productId).join(",")],
+    queryKey: ["cart-products", items.map((item) => item.productId).join(",")],
     enabled: items.length > 0,
     queryFn: async () => {
-      const ids = items.map((line) => line.productId);
+      const ids = items.map((item) => item.productId);
       const { data, error } = await supabase
         .from("products")
         .select("id,name,name_translations,price_millimes,sale_price_millimes,image_path,store_id")
@@ -154,93 +138,88 @@ function CartPage() {
     },
   });
 
-  const existingIpayPayment = useQuery({
-    queryKey: ["cart-existing-ipay-payment", signature],
-    enabled: items.length > 0,
-    queryFn: async () => {
-      const { data: auth } = await supabase.auth.getSession();
-      if (!auth.session) return null;
-      return getExistingCartIpayPayment({
-        data: { productIds: items.map(({ productId }) => productId) },
-      });
-    },
-    staleTime: 15_000,
-  });
+  const productMap = useMemo(
+    () => new Map((query.data?.products ?? []).map((product) => [product.id, product])),
+    [query.data],
+  );
+  const storeMap = useMemo(
+    () => new Map((query.data?.stores ?? []).map((store) => [store.id, store])),
+    [query.data],
+  );
 
   useEffect(() => {
-    const recovered = existingIpayPayment.data;
-    if (recovered?.payUrl) {
-      setPaymentUrl((current) => current ?? normalizeIpayCheckoutUrl(recovered.payUrl));
-    }
-  }, [existingIpayPayment.data]);
-
-  const ipayAvailability = useQuery({
-    queryKey: ["cart-checkout-availability", "ipay"],
-    queryFn: () => getIpayCheckoutAvailability(),
-    staleTime: 30_000,
-  });
-
-  const paymentMutation = useMutation({
-    mutationFn: () =>
-      startCartIpayCheckout({
-        data: {
-          items: items.map(({ productId }) => ({ productId })),
-          checkoutKey: getCheckoutKey(),
-        },
-      }),
-    onSuccess: (result) => {
-      if (!result.ok) return;
-      const checkoutUrl = normalizeIpayCheckoutUrl(result.payUrl);
-      setPaymentUrl(checkoutUrl);
-      try {
-        sessionStorage.setItem(`algorea-bazaar:ipay-payment-url:${result.orderId}`, checkoutUrl);
-        sessionStorage.setItem(`algorea-bazaar:ipay-payment-order:${signature}`, result.orderId);
-      } catch {
-        // The visible link remains available for this page even without session storage.
-      }
-      // Navigate the current tab immediately using the exact URL returned by iPay.
-      window.location.assign(checkoutUrl);
-    },
-  });
-
-  useEffect(() => {
-    try {
-      const orderId = sessionStorage.getItem(`algorea-bazaar:ipay-payment-order:${signature}`);
-      const savedUrl = orderId
-        ? sessionStorage.getItem(`algorea-bazaar:ipay-payment-url:${orderId}`)
-        : null;
-      if (savedUrl) setPaymentUrl(normalizeIpayCheckoutUrl(savedUrl));
-    } catch {
-      // Ignore unavailable session storage; checkout remains protected by the server idempotency key.
-    }
-  }, [signature]);
-
-  const lines = useMemo(() => {
-    const productMap = new Map(
-      (query.data?.products ?? []).map((product) => [product.id, product]),
-    );
-    const storeMap = new Map((query.data?.stores ?? []).map((store) => [store.id, store]));
-
-    return items.flatMap((line) => {
+    for (const line of items) {
       const product = productMap.get(line.productId);
-      const store = product?.store_id ? storeMap.get(product.store_id) : undefined;
-      return product && store
-        ? [
-            {
-              ...line,
-              product,
-              store,
-              total: product.sale_price_millimes ?? product.price_millimes,
-            },
-          ]
-        : [];
-    });
-  }, [items, query.data]);
+      if (!line.storeId && product?.store_id) {
+        assignStore(line.productId, product.store_id);
+      }
+    }
+  }, [items, productMap, assignStore]);
 
-  const total = lines.reduce((sum, line) => sum + line.total, 0);
-  const unavailable = !query.isPending && lines.length !== items.length;
-  const paymentError =
-    paymentMutation.isError || (paymentMutation.data !== undefined && !paymentMutation.data.ok);
+  const groups = useMemo(() => {
+    const grouped = new Map<
+      string,
+      { store: Store; lines: Array<{ product: Product; total: number }> }
+    >();
+
+    for (const line of items) {
+      const product = productMap.get(line.productId);
+      const store = line.storeId ? storeMap.get(line.storeId) : undefined;
+      if (!product || !store) continue;
+
+      const group = grouped.get(store.id) ?? { store, lines: [] };
+      group.lines.push({
+        product,
+        total: product.sale_price_millimes ?? product.price_millimes,
+      });
+      grouped.set(store.id, group);
+    }
+
+    return [...grouped.values()];
+  }, [items, productMap, storeMap]);
+
+  const unavailableLines = items.filter((line) => {
+    const product = productMap.get(line.productId);
+    const store = line.storeId ? storeMap.get(line.storeId) : undefined;
+    return !product || !store;
+  });
+
+  const selected = groups.find((group) => group.store.id === selectedStoreId) ?? groups[0];
+  const total = selected?.lines.reduce((sum, line) => sum + line.total, 0) ?? 0;
+
+  const checkout = useMutation({
+    mutationFn: async () => {
+      if (!selected) throw new Error("empty_cart");
+
+      const result = await createDirectSellerOrder({
+        data: {
+          productIds: selected.lines.map(({ product }) => product.id),
+          checkoutKey: crypto.randomUUID(),
+        },
+      });
+      if (!result.ok) throw new Error(result.error);
+
+      return {
+        id: result.orderId,
+        productIds: selected.lines.map(({ product }) => product.id),
+        methods: result.paymentMethods as PaymentMethod[],
+        instructionsUnavailable: result.instructionsUnavailable,
+      };
+    },
+    onSuccess: ({ id, productIds, methods, instructionsUnavailable }) => {
+      setOrderId(id);
+      setMethods(methods);
+      setNotice(
+        instructionsUnavailable
+          ? t.instructionsUnavailable
+          : methods.length
+            ? t.created
+            : t.noMethods,
+      );
+      productIds.forEach(remove);
+    },
+    onError: () => setNotice(t.error),
+  });
 
   return (
     <AuthShell
@@ -248,8 +227,8 @@ function CartPage() {
       setLang={setLang}
       title={
         <span className="inline-flex items-center gap-2">
-          <ShoppingCart className="h-6 w-6" aria-hidden="true" />
-          <span>{t.title}</span>
+          <ShoppingCart className="h-6 w-6" />
+          {t.title}
         </span>
       }
       wide
@@ -264,124 +243,159 @@ function CartPage() {
       {items.length === 0 ? (
         <p className="rounded-xl bg-secondary p-5">{t.empty}</p>
       ) : query.isPending ? (
-        <p>{t.loading}</p>
+        <p>…</p>
       ) : query.isError ? (
         <p role="alert">{t.error}</p>
       ) : (
         <>
-          {unavailable && (
-            <p role="status" className="mb-3 rounded-lg bg-secondary p-3 text-sm">
-              {t.unavailable}
-            </p>
+          {unavailableLines.length > 0 && (
+            <section
+              role="status"
+              className="mb-5 rounded-xl border border-border bg-secondary p-4"
+            >
+              <p className="mb-3 text-sm">{t.unavailable}</p>
+              <div className="space-y-2">
+                {unavailableLines.map((line) => (
+                  <div
+                    key={line.productId}
+                    className="flex items-center justify-between gap-3 text-sm"
+                  >
+                    <span>#{line.productId.slice(0, 8)}</span>
+                    <button
+                      type="button"
+                      onClick={() => remove(line.productId)}
+                      className="font-semibold text-red-700 hover:underline"
+                    >
+                      {t.remove}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
-          <div className="space-y-3">
-            {lines.map((line) => (
-              <article
-                key={line.productId}
-                className="flex flex-wrap items-center gap-4 rounded-xl border border-border p-3"
+          <p className="mb-3 text-sm text-muted-foreground">{t.choose}</p>
+          <div className="mb-5 flex flex-wrap gap-2">
+            {groups.map((group) => (
+              <button
+                key={group.store.id}
+                type="button"
+                onClick={() => {
+                  setSelectedStoreId(group.store.id);
+                  setOrderId(null);
+                  setNotice("");
+                }}
+                className={`rounded-full border px-4 py-2 text-sm font-semibold ${
+                  selected?.store.id === group.store.id
+                    ? "border-coral bg-coral/10"
+                    : "border-border"
+                }`}
               >
-                <div className="h-20 w-24 shrink-0 overflow-hidden rounded-lg bg-cream-light">
-                  <ProductPreview path={line.product.image_path} alt={line.product.name} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <Link
-                    to="/products/$id"
-                    params={{ id: line.product.id }}
-                    className="font-bold hover:text-coral"
-                  >
-                    {localizedProductText(line.product.name, line.product.name_translations, lang)}
-                  </Link>
-                  <p className="text-xs text-muted-foreground">{line.store.name}</p>
-                  <p className="mt-1 flex flex-wrap items-center gap-2 text-sm font-semibold">
-                    {line.product.sale_price_millimes ? (
-                      <>
-                        <span className="text-xs font-bold text-red-600">PROMO</span>
-                        <span className="text-muted-foreground line-through">
-                          {formatTND(line.product.price_millimes)}
-                        </span>
-                        <span className="text-red-600">
-                          {formatTND(line.product.sale_price_millimes)}
-                        </span>
-                      </>
-                    ) : (
-                      formatTND(line.product.price_millimes)
-                    )}
-                  </p>
-                </div>
-                <div className="text-end">
-                  <p className="font-bold">{formatTND(line.total)}</p>
-                  <button
-                    type="button"
-                    onClick={() => remove(line.productId)}
-                    className="mt-2 inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition-colors hover:border-red-400 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-                  >
-                    <Trash2 className="h-4 w-4" aria-hidden="true" />
-                    <span>{t.remove}</span>
-                  </button>
-                </div>
-              </article>
+                {group.store.name} ({group.lines.length})
+              </button>
             ))}
           </div>
 
-          <div className="mt-6 rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between text-lg font-extrabold">
-              <span>{t.subtotal}</span>
-              <span>{formatTND(total)}</span>
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">{t.limit}</p>
-            <button
-              type="button"
-              onClick={() => {
-                if (paymentUrl) {
-                  // Reuse the exact provider URL already created for this cart.
-                  window.location.assign(paymentUrl);
-                  return;
-                }
-                paymentMutation.mutate();
-              }}
-              disabled={
-                unavailable ||
-                paymentMutation.isPending ||
-                existingIpayPayment.isPending ||
-                ipayAvailability.isPending ||
-                !ipayAvailability.data?.enabled
-              }
-              className="mt-5 inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {paymentMutation.isPending ? t.starting : t.checkout}
-            </button>
-            {ipayAvailability.isPending ? (
-              <p role="status" className="mt-2 text-sm text-muted-foreground">
-                {t.providerLoading}
-              </p>
-            ) : !ipayAvailability.data?.enabled ? (
-              <p role="status" className="mt-2 text-sm text-muted-foreground">
-                {t.disabled}
-              </p>
-            ) : null}
-            {paymentUrl && (
-              <div
-                role="status"
-                className="mt-4 rounded-xl border border-border bg-secondary p-4 text-sm"
-              >
-                <p>{t.paymentReady}</p>
-                <a
-                  href={paymentUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-accent px-5 py-3 font-semibold text-accent-foreground hover:opacity-90"
-                >
-                  {t.openPayment}
-                </a>
+          {!selected ? (
+            <p className="rounded-xl bg-secondary p-4">{t.error}</p>
+          ) : (
+            <>
+              <h2 className="mb-3 text-lg font-bold">{selected.store.name}</h2>
+              <div className="space-y-3">
+                {selected.lines.map(({ product, total: lineTotal }) => (
+                  <article
+                    key={product.id}
+                    className="flex flex-wrap items-center gap-4 rounded-xl border border-border p-3"
+                  >
+                    <div className="h-20 w-24 shrink-0 overflow-hidden rounded-lg bg-cream-light">
+                      <ProductPreview path={product.image_path} alt={product.name} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        to="/products/$id"
+                        params={{ id: product.id }}
+                        className="font-bold hover:text-coral"
+                      >
+                        {localizedProductText(product.name, product.name_translations, lang)}
+                      </Link>
+                      <p className="mt-1 flex flex-wrap items-center gap-2 text-sm font-semibold">
+                        {product.sale_price_millimes !== null &&
+                        product.sale_price_millimes < product.price_millimes ? (
+                          <>
+                            <span className="text-muted-foreground line-through">
+                              {formatTND(product.price_millimes)}
+                            </span>
+                            <span className="text-red-600">{formatTND(lineTotal)}</span>
+                          </>
+                        ) : (
+                          formatTND(lineTotal)
+                        )}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => remove(product.id)}
+                      className="inline-flex min-h-10 items-center gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm font-bold text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {t.remove}
+                    </button>
+                  </article>
+                ))}
               </div>
-            )}
-            {paymentError && (
-              <p role="alert" className="mt-3 rounded-xl border border-border p-4 text-sm">
-                {t.paymentError}
-              </p>
-            )}
-          </div>
+
+              <div className="mt-6 rounded-xl border border-border p-5">
+                <div className="flex justify-between text-lg font-extrabold">
+                  <span>{t.total}</span>
+                  <span>{formatTND(total)}</span>
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">{t.limit}</p>
+                <button
+                  type="button"
+                  disabled={checkout.isPending || !selected.lines.length}
+                  onClick={() => checkout.mutate()}
+                  className="mt-5 w-full rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground disabled:opacity-50"
+                >
+                  {checkout.isPending ? t.working : t.checkout}
+                </button>
+              </div>
+            </>
+          )}
         </>
+      )}
+
+      {notice && (
+        <div
+          role="status"
+          className="mt-5 rounded-xl border border-border bg-secondary p-4 text-sm"
+        >
+          <p>{notice}</p>
+          {orderId && methods.length > 0 && (
+            <section className="mt-3 space-y-3">
+              <h3 className="font-bold">{t.payment}</h3>
+              <p>
+                {t.order}: #{orderId.slice(0, 8)}
+              </p>
+              {methods.map((method) => (
+                <article key={method.method_id} className="rounded-lg bg-background p-3">
+                  <p className="font-semibold">{method.label}</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm">{method.instructions}</p>
+                </article>
+              ))}
+            </section>
+          )}
+          {orderId && (
+            <Link
+              to="/orders"
+              className="mt-3 inline-flex font-semibold text-coral hover:underline"
+            >
+              {lang === "ar"
+                ? "عرض طلباتي"
+                : lang === "en"
+                  ? "View my orders"
+                  : "Voir mes commandes"}
+            </Link>
+          )}
+        </div>
       )}
     </AuthShell>
   );

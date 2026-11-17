@@ -139,6 +139,13 @@ function CartPage() {
     staleTime: 30_000,
   });
 
+  useEffect(() => {
+    const available = paymentMethodsQuery.data?.methods ?? [];
+    if (available.length && !available.some((method) => method.method === selectedMethod)) {
+      setSelectedMethod(available[0]!.method);
+    }
+  }, [paymentMethodsQuery.data, selectedMethod]);
+
   const paymentMutation = useMutation({
     mutationFn: () => startManualCartCheckout({
       data: {

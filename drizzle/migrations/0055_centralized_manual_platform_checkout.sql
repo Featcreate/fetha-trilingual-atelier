@@ -1,4 +1,5 @@
 -- The approved launch commission is 10% for new orders only.
+ALTER TABLE public.platform_settings ALTER COLUMN commission_bps SET DEFAULT 1000;
 UPDATE public.platform_settings SET commission_bps = 1000, updated_at = now()
 WHERE id = true AND commission_bps IS DISTINCT FROM 1000;
 

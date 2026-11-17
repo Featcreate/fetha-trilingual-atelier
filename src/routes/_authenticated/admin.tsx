@@ -131,6 +131,7 @@ function AdminPage() {
   const [feeAmount, setFeeAmount] = useState("");
   const [feeReference, setFeeReference] = useState("");
   const [manualConfirmBusy, setManualConfirmBusy] = useState<string | null>(null);
+  const [payoutReviewNotes, setPayoutReviewNotes] = useState<Record<string, string>>({});
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
 
   const settings = useQuery({
@@ -572,11 +573,12 @@ function AdminPage() {
 
   async function reviewPayoutRequest(requestId: string, decision: "approved" | "rejected") {
     const result = await adminReviewSellerPayoutRequest({
-      data: { requestId, decision, adminNote: "" },
+      data: { requestId, decision, adminNote: payoutReviewNotes[requestId] ?? "" },
     });
     setNotice(result.error
       ? { ok: false, text: result.error.message }
       : { ok: true, text: lang === "ar" ? "تم تحديث حالة طلب الصرف." : lang === "en" ? "Payout request updated." : "Demande de versement mise à jour." });
+    setPayoutReviewNotes((current) => ({ ...current, [requestId]: "" }));
     await qc.invalidateQueries({ queryKey: ["admin-seller-payout-requests"] });
   }
 
@@ -1078,6 +1080,16 @@ function AdminPage() {
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">{request.status} · {new Date(request.created_at).toLocaleString(locale)} · {request.seller_id.slice(0, 8)}</p>
                 {request.seller_note && <p className="mt-2 text-sm">{request.seller_note}</p>}
+                {request.status === "pending" && (
+                  <textarea
+                    value={payoutReviewNotes[request.id] ?? ""}
+                    onChange={(event) => setPayoutReviewNotes((current) => ({ ...current, [request.id]: event.target.value }))}
+                    maxLength={1000}
+                    rows={2}
+                    placeholder={lang === "ar" ? "ملاحظات التحليل والمراجعة (اختياري)" : lang === "en" ? "Analysis/review notes (optional)" : "Notes d’analyse et de contrôle (facultatif)"}
+                    className="mt-3 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  />
+                )}
                 {request.status === "pending" && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button type="button" onClick={() => void reviewPayoutRequest(request.id, "approved")} className="rounded-full bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground">{lang === "ar" ? "موافقة" : lang === "en" ? "Approve" : "Approuver"}</button>

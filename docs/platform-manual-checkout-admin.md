@@ -51,6 +51,8 @@ Status: approved product requirements; implementation must remain on `feat/platf
 - Cart checkout now creates one multi-store order and displays the selected method's transfer instructions without requesting a receipt. The buyer sees only “Algorea Bazaar” as beneficiary.
 - Seller payout requests are recorded separately. The database rejects requests below 50,000 millimes after subtracting evidenced, unallocated seller transfer fees. Requests remain subject to manual admin review.
 - Admin UI now includes payment-method configuration, exact-amount manual order confirmation, and seller payout-request review.
+- The selected buyer payment method, account identifier, fixed beneficiary label, and instructions are snapshotted on the order so later admin edits cannot silently change existing payment instructions.
+- An approved seller payout request is required before a payout batch can be created; creating the batch atomically marks that request fulfilled.
 - Seller UI now exposes the 50 TND request threshold, request submission, and request status.
 
 ## Verification status

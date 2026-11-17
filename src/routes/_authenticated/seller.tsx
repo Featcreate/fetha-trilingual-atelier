@@ -101,6 +101,7 @@ function SellerPage() {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptSellerTerms, setAcceptSellerTerms] = useState(false);
   const [confirmationBusy, setConfirmationBusy] = useState(false);
+  const [payoutRequestBusy, setPayoutRequestBusy] = useState(false);
   const payoutMethod = "bank_transfer";
   const [newCategoryId, setNewCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const [newSubcategoryId, setNewSubcategoryId] = useState(DEFAULT_SUBCATEGORY_ID);
@@ -204,6 +205,21 @@ function SellerPage() {
       return data ?? [];
     },
   });
+  const payoutRequestsQuery = useQuery({
+    queryKey: ["seller-payout-requests", store?.id],
+    enabled: !!store?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("seller_payout_requests")
+        .select("id,status,available_amount_millimes,created_at,admin_note")
+        .eq("store_id", store!.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const sellerEarningsQuery = useQuery({
     queryKey: ["seller-ledger-earnings", store?.id],
     enabled: !!store?.id,
@@ -246,6 +262,30 @@ function SellerPage() {
       }
     },
   });
+
+  async function requestSellerPayout() {
+    if (!store || sellerAvailable < 50000 || payoutRequestBusy) return;
+    setPayoutRequestBusy(true);
+    setNotice("");
+    const result = await submitSellerPayoutRequest({ data: { storeId: store.id, sellerNote: "" } });
+    setPayoutRequestBusy(false);
+    if (!result.ok) {
+      setNotice(
+        result.error.includes("payout_minimum_not_met")
+          ? lang === "ar" ? "لا يمكنك طلب الصرف قبل بلوغ 50 ديناراً." : lang === "en" ? "You need at least 50 TND to request a payout." : "Le solde minimum pour demander un versement est de 50 TND."
+          : result.error.includes("duplicate") || result.error.includes("unique")
+            ? lang === "ar" ? "لديك طلب صرف قيد المراجعة بالفعل." : lang === "en" ? "You already have a payout request under review." : "Une demande de versement est déjà en cours."
+            : m.error,
+      );
+      return;
+    }
+    setNotice(
+      lang === "ar" ? "تم إرسال طلب الصرف للمراجعة اليدوية." :
+      lang === "en" ? "Your payout request has been submitted for manual review." :
+      "Votre demande de versement a été envoyée pour examen manuel.",
+    );
+    await qc.invalidateQueries({ queryKey: ["seller-payout-requests", store.id] });
+  }
 
   async function resendSellerConfirmation() {
     if (!user.email) return;
@@ -1391,6 +1431,48 @@ function SellerPage() {
                   </p>
                 </>
               )}
+            </div>
+            <div className="border-t border-border pt-4">
+              <h3 className="font-semibold">
+                {lang === "ar" ? "طلبات صرف المستحقات" : lang === "en" ? "Payout requests" : "Demandes de versement"}
+              </h3>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                {lang === "ar"
+                  ? "يمكنك تقديم طلب عندما يبلغ رصيدك الصافي القابل للصرف 50 د.ت على الأقل. كل طلب يخضع لتحليل وموافقة إدارة المنصة، ولا يتم أي تحويل تلقائياً."
+                  : lang === "en"
+                    ? "You may request a payout once your available net balance reaches at least 50 TND. Every request is manually reviewed by the platform; no transfer is automatic."
+                    : "Vous pouvez demander un versement lorsque votre solde net disponible atteint au moins 50 TND. Chaque demande est examinée manuellement par la plateforme ; aucun transfert n’est automatique."}
+              </p>
+              <button
+                type="button"
+                onClick={() => void requestSellerPayout()}
+                disabled={payoutRequestBusy || sellerAvailable < 50000 || payoutRequestsQuery.data?.some((request) => request.status === "pending")}
+                className="mt-3 rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {payoutRequestBusy
+                  ? m.loading
+                  : lang === "ar" ? "طلب صرف المستحقات" : lang === "en" ? "Request payout" : "Demander un versement"}
+              </button>
+              {sellerAvailable < 50000 && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {lang === "ar" ? "الحد الأدنى هو 50.000 د.ت." : lang === "en" ? "Minimum request balance: 50.000 TND." : "Solde minimum requis : 50,000 TND."}
+                </p>
+              )}
+              {payoutRequestsQuery.data?.map((request) => (
+                <div key={request.id} className="mt-2 rounded-lg bg-secondary/60 p-3 text-xs">
+                  <div className="flex flex-wrap justify-between gap-2">
+                    <span>
+                      {request.status === "pending"
+                        ? lang === "ar" ? "قيد المراجعة" : lang === "en" ? "Under review" : "En cours d’examen"
+                        : request.status === "approved"
+                          ? lang === "ar" ? "تمت الموافقة" : lang === "en" ? "Approved" : "Approuvée"
+                          : lang === "ar" ? "مرفوض" : lang === "en" ? "Rejected" : "Refusée"}
+                    </span>
+                    <strong>{formatTND(Number(request.available_amount_millimes))}</strong>
+                  </div>
+                  {request.admin_note && <p className="mt-1 text-muted-foreground">{request.admin_note}</p>}
+                </div>
+              ))}
             </div>
             <div className="border-t border-border pt-4">
               <h3 className="font-semibold">{m.payoutHistory}</h3>

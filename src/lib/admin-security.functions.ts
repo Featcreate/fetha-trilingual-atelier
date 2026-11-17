@@ -195,3 +195,75 @@ export const adminCheckIpayConnection = createServerFn({ method: "GET" })
       };
     }
   });
+
+export const adminUpsertPlatformPaymentMethod = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({
+      method: z.enum(["flouci", "bank_transfer", "postal_transfer"]),
+      accountIdentifier: z.string().trim().max(200),
+      instructions: z.string().trim().max(1000),
+      enabled: z.boolean(),
+    }).parse(input),
+  )
+  .handler(({ data, context }) =>
+    runAdminRpc(context, "server_admin_upsert_platform_payment_method", {
+      _method: data.method,
+      _account_identifier: data.accountIdentifier,
+      _instructions: data.instructions,
+      _enabled: data.enabled,
+    }),
+  );
+
+export const adminConfirmManualOrderPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({
+      orderId: z.string().uuid(),
+      amountMillimes: z.number().int().positive().max(2_000_000_000),
+      transferReference: z.string().trim().min(3).max(200),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (roleError || isAdmin !== true) return { ok: false as const, error: "forbidden" };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const client = supabaseAdmin as unknown as {
+      rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
+    };
+    const { data: outcome, error } = await client.rpc("server_admin_confirm_manual_order_payment", {
+      _actor_id: context.userId,
+      _order_id: data.orderId,
+      _amount_millimes: data.amountMillimes,
+      _transfer_reference: data.transferReference,
+    });
+    return error
+      ? { ok: false as const, error: error.message }
+      : { ok: true as const, outcome: outcome as string };
+  });
+
+export const adminReviewSellerPayoutRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({
+      requestId: z.string().uuid(),
+      decision: z.enum(["approved", "rejected"]),
+      adminNote: z.string().trim().max(1000),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (roleError || isAdmin !== true) return { error: { message: "forbidden" } };
+    const { error } = await context.supabase.rpc("admin_review_seller_payout_request", {
+      _request_id: data.requestId,
+      _decision: data.decision,
+      _admin_note: data.adminNote,
+    });
+    return { error: error ? { message: error.message } : null };
+  });

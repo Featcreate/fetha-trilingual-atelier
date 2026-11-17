@@ -1448,6 +1448,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_seller_payout_preview: {
+        Args: { _store_id: string }
+        Returns: {
+          earned_millimes: number
+          paid_or_reserved_millimes: number
+          transfer_fees_millimes: number
+          available_millimes: number
+          minimum_millimes: number
+        }[]
+      }
       cleanup_expired_unpaid_orders: {
         Args: { _limit?: number }
         Returns: number

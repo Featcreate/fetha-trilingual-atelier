@@ -1010,7 +1010,7 @@ function AdminPage() {
                   <label className="mt-3 block text-xs font-medium">{lang === "ar" ? "تعليمات التحويل" : lang === "en" ? "Transfer instructions" : "Instructions de transfert"}</label>
                   <textarea name="instructions" defaultValue={saved?.instructions ?? ""} maxLength={1000} rows={2} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
                   <label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" name="enabled" defaultChecked={saved?.enabled ?? false} />{lang === "ar" ? "مفعّلة للمشترين" : lang === "en" ? "Enabled for buyers" : "Activé pour les acheteurs"}</label>
-                  <button type="submit" disabled={busy === "payment:" + method} className="mt-3 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50">{busy === "payment:" + method ? a.saving : a.save}</button>
+                  <button type="submit" disabled={busy === "payment:" + method} className="mt-3 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50">{busy === "payment:" + method ? a.saving : a.saved}</button>
                 </form>
               );
             })}

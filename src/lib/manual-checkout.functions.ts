@@ -32,13 +32,6 @@ export const getPlatformPaymentMethods = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
     const client = await manualClient();
-    const { data, error } = await client
-      .from("platform_payment_methods")
-      .select("method,beneficiary_label,account_identifier,instructions,enabled")
-      .eq("enabled", true)
-      .maybeSingle();
-    if (error) return { ok: false as const, methods: [] as ManualPaymentRow[] };
-    // Query each method separately so the handler can retain a narrow typed contract.
     const methods: ManualPaymentRow[] = [];
     for (const method of ["flouci", "bank_transfer", "postal_transfer"] as const) {
       const result = await client.from("platform_payment_methods")
@@ -46,7 +39,6 @@ export const getPlatformPaymentMethods = createServerFn({ method: "GET" })
         .eq("method", method).maybeSingle();
       if (!result.error && result.data?.enabled === true) methods.push(result.data as ManualPaymentRow);
     }
-    void data;
     return { ok: true as const, methods };
   });
 

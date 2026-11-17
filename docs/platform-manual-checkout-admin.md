@@ -25,7 +25,7 @@ Status: approved product requirements; implementation must remain on `feat/platf
 
 ## Seller payout eligibility and review
 
-- Minimum requestable payout balance is 50.000 TND (50,000 millimes) of net available seller proceeds after any evidenced, approved payout fees.
+- Minimum requestable payout balance is 50.000 TND (50,000 millimes) of net available seller proceeds after all actual, evidenced external fees recorded against that seller.
 - Below 50.000 TND, payout creation/request must be rejected by the database, not merely hidden in the UI.
 - Reaching 50.000 TND makes the seller eligible to submit a request; it does not trigger an automatic payout.
 - Seller submits a request; the platform owner/admin manually reviews each seller's account and approves or rejects the request.
@@ -49,11 +49,11 @@ Status: approved product requirements; implementation must remain on `feat/platf
 - The migration sets the active commission and the default for new orders to 10% (1000 basis points); historical order-item commission snapshots remain unchanged.
 - Manual confirmation delegates to the existing transactional settlement function, which unlocks every order-item download and posts seller payable and platform commission ledger entries idempotently.
 - Cart checkout now creates one multi-store order and displays the selected method's transfer instructions without requesting a receipt. The buyer sees only “Algorea Bazaar” as beneficiary.
-- Seller payout requests are recorded separately. The database rejects requests below 50,000 millimes after subtracting evidenced, unallocated seller transfer fees. Requests remain subject to manual admin review.
+- Seller payout requests are recorded separately. The database rejects requests below 50,000 millimes after subtracting all evidenced seller-borne external fees that have not already been allocated to a payout. Requests remain subject to manual admin review.
 - Admin UI now includes payment-method configuration, exact-amount manual order confirmation, and seller payout-request review.
 - The selected buyer payment method, account identifier, fixed beneficiary label, and instructions are snapshotted on the order so later admin edits cannot silently change existing payment instructions.
 - An approved seller payout request is required before a payout batch can be created; creating the batch atomically marks that request fulfilled.
-- Seller UI now exposes the 50 TND request threshold, request submission, and request status.
+- Seller UI now exposes gross earned proceeds, actual external fees charged to the seller, net available balance after fees and prior payouts, the 50 TND threshold, request submission, and request status. All recorded external fees are charged to seller proceeds; none are absorbed by the platform.
 
 ## Verification status
 

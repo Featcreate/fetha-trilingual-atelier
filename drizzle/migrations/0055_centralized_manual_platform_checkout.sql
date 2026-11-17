@@ -96,6 +96,9 @@ BEGIN
   SELECT * INTO _order FROM public.orders WHERE id = _order_id FOR UPDATE;
   IF NOT FOUND OR _order.user_id <> auth.uid() THEN RAISE EXCEPTION 'order_not_found'; END IF;
   IF _order.status <> 'pending' THEN RAISE EXCEPTION 'order_closed'; END IF;
+  IF _order.ipay_payment_ref IS NOT NULL OR _order.konnect_payment_ref IS NOT NULL THEN
+    RAISE EXCEPTION 'order_has_provider_payment';
+  END IF;
   IF NOT EXISTS (
     SELECT 1 FROM public.platform_payment_methods
     WHERE method = _method AND enabled = true
@@ -308,6 +311,12 @@ REVOKE ALL ON FUNCTION public.submit_seller_payout_request(uuid,text) FROM PUBLI
 GRANT EXECUTE ON FUNCTION public.submit_seller_payout_request(uuid,text) TO authenticated, service_role;
 REVOKE ALL ON FUNCTION public.admin_review_seller_payout_request(uuid,text,text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_review_seller_payout_request(uuid,text,text) TO authenticated, service_role;
+
+
+-- A manual bank/postal/Flouci transfer reference may settle at most one order.
+CREATE UNIQUE INDEX IF NOT EXISTS orders_manual_payment_reference_uidx
+  ON public.orders(payment_confirmation_ref)
+  WHERE payment_mode = 'verified' AND payment_confirmation_ref LIKE 'manual:%';
 
 -- Snapshot promotional prices on the server. Commission is calculated on the
 -- discounted payable amount; gross and discount remain separately auditable.

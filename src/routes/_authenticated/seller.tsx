@@ -1466,7 +1466,9 @@ function SellerPage() {
                         ? lang === "ar" ? "قيد المراجعة" : lang === "en" ? "Under review" : "En cours d’examen"
                         : request.status === "approved"
                           ? lang === "ar" ? "تمت الموافقة" : lang === "en" ? "Approved" : "Approuvée"
-                          : lang === "ar" ? "مرفوض" : lang === "en" ? "Rejected" : "Refusée"}
+                          : request.status === "fulfilled"
+                            ? lang === "ar" ? "تم إنشاء طلب التحويل" : lang === "en" ? "Payout batch created" : "Versement préparé"
+                            : lang === "ar" ? "مرفوض" : lang === "en" ? "Rejected" : "Refusée"}
                     </span>
                     <strong>{formatTND(Number(request.available_amount_millimes))}</strong>
                   </div>

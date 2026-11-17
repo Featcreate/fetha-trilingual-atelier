@@ -95,3 +95,17 @@ export const startManualCartCheckout = createServerFn({ method: "POST" })
       instructions: methodResult.data.instructions as string,
     };
   });
+
+export const submitSellerPayoutRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ storeId: z.string().uuid(), sellerNote: z.string().trim().max(1000).default("") }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: requestId, error } = await context.supabase.rpc("submit_seller_payout_request", {
+      _store_id: data.storeId,
+      _seller_note: data.sellerNote,
+    });
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const, requestId };
+  });

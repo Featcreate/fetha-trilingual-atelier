@@ -1,3 +1,14 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ShoppingCart, Trash2 } from "lucide-react";
+import { AuthShell } from "@/components/AuthShell";
+import { ProductPreview } from "@/components/ProductPreview";
+import { supabase } from "@/integrations/supabase/client";
+import { useCart } from "@/lib/cart";
+import { useLang } from "@/lib/i18n";
+import { formatTND } from "@/lib/money";
+import { localizedProductText } from "@/lib/product-translations";
 import { getPlatformPaymentMethods, startManualCartCheckout } from "@/lib/manual-checkout.functions";
 
 export const Route = createFileRoute("/cart")({ component: CartPage });

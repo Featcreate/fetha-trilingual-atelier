@@ -1228,6 +1228,7 @@ export type Database = {
           id: string
           reviewed_at: string | null
           reviewed_by: string | null
+          payout_id: string | null
           seller_id: string
           seller_note: string
           status: string
@@ -1241,6 +1242,7 @@ export type Database = {
           id?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
+          payout_id?: string | null
           seller_id: string
           seller_note?: string
           status?: string
@@ -1261,6 +1263,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "seller_payout_requests_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "seller_payouts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "seller_payout_requests_store_id_fkey"
             columns: ["store_id"]

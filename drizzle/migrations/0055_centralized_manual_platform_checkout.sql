@@ -1,3 +1,7 @@
+-- The approved launch commission is 10% for new orders only.
+UPDATE public.platform_settings SET commission_bps = 1000, updated_at = now()
+WHERE id = true AND commission_bps IS DISTINCT FROM 1000;
+
 -- Centralized manual buyer collection for Algorea Bazaar.
 -- The buyer pays once to the platform; seller accounting is posted only by the
 -- existing verified, transactional settle_order_payment() routine.

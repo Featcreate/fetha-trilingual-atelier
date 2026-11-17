@@ -220,6 +220,12 @@ function SellerPage() {
     },
   });
 
+  const sellerPayoutPreviewQuery = useQuery({
+    queryKey: ["seller-payout-preview", store?.id],
+    enabled: !!store?.id,
+    queryFn: () => getSellerPayoutPreview({ data: { storeId: store!.id } }),
+  });
+
   const sellerEarningsQuery = useQuery({
     queryKey: ["seller-ledger-earnings", store?.id],
     enabled: !!store?.id,
@@ -702,7 +708,9 @@ function SellerPage() {
     [ordersQuery.data],
   );
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
-  const sellerEarned = sellerEarningsQuery.data ?? 0;
+  const sellerPayoutPreview = sellerPayoutPreviewQuery.data;
+  const sellerEarned = sellerPayoutPreview?.earnedMillimes ?? sellerEarningsQuery.data ?? 0;
+  const sellerTransferFees = sellerPayoutPreview?.transferFeesMillimes ?? 0;
   const sellerPayoutTotals = (sellerPayoutBalancesQuery.data ?? []).reduce(
     (totals, payout) => {
       if (payout.status === "paid") totals.transferred += Number(payout.seller_amount_millimes);
@@ -712,9 +720,9 @@ function SellerPage() {
     },
     { transferred: 0, reserved: 0 },
   );
-  const sellerAvailable = Math.max(
+  const sellerAvailable = sellerPayoutPreview?.availableMillimes ?? Math.max(
     0,
-    sellerEarned - sellerPayoutTotals.transferred - sellerPayoutTotals.reserved,
+    sellerEarned - sellerPayoutTotals.transferred - sellerPayoutTotals.reserved - sellerTransferFees,
   );
 
   return (
@@ -1396,9 +1404,9 @@ function SellerPage() {
             </div>
             <div className="border-t border-border pt-4">
               <h3 className="font-semibold">{m.payoutBalanceTitle}</h3>
-              {sellerEarningsQuery.isPending || sellerPayoutBalancesQuery.isPending ? (
+              {sellerEarningsQuery.isPending || sellerPayoutBalancesQuery.isPending || sellerPayoutPreviewQuery.isPending ? (
                 <p className="mt-2 text-sm">{m.loading}</p>
-              ) : sellerEarningsQuery.isError || sellerPayoutBalancesQuery.isError ? (
+              ) : sellerEarningsQuery.isError || sellerPayoutBalancesQuery.isError || sellerPayoutPreviewQuery.isError ? (
                 <p role="alert" className="mt-2 text-sm text-destructive">
                   {m.error}
                 </p>
@@ -1422,6 +1430,10 @@ function SellerPage() {
                       </p>
                     </div>
                     <div className="rounded-lg bg-secondary p-3">
+                      <p className="text-xs text-muted-foreground">{lang === "ar" ? "رسوم التحويل على البائع" : lang === "en" ? "Seller-paid transfer fees" : "Frais de transfert à la charge du vendeur"}</p>
+                      <p className="mt-1 text-lg font-bold">{formatTND(sellerTransferFees)}</p>
+                    </div>
+                    <div className="rounded-lg bg-secondary p-3">
                       <p className="text-xs text-muted-foreground">{m.payoutAvailable}</p>
                       <p className="mt-1 text-lg font-bold">{formatTND(sellerAvailable)}</p>
                     </div>
@@ -1429,6 +1441,14 @@ function SellerPage() {
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">
                     {m.payoutBalanceNote}
                   </p>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                    {lang === "ar"
+                      ? "تُخصم رسوم التحويل الفعلية من مستحقات البائع وحده، ولا تتحملها المنصة. الرصيد القابل للصرف والحد الأدنى 50 د.ت يُحسبان بعد خصم هذه الرسوم."
+                      : lang === "en"
+                        ? "Actual transfer fees are deducted from the seller’s proceeds only, never from the platform. Available balance and the 50 TND minimum are calculated after these fees."
+                        : "Les frais réels de transfert sont déduits des seuls revenus du vendeur, jamais de la plateforme. Le solde disponible et le seuil de 50 TND sont calculés après ces frais."}
+                  </p>
+
                 </>
               )}
             </div>

@@ -362,6 +362,9 @@ export type Database = {
           order_reference?: string
           payment_confirmation_ref?: string | null
           payment_method?: string | null
+          payment_beneficiary_snapshot?: string | null
+          payment_account_identifier_snapshot?: string | null
+          payment_instructions_snapshot?: string | null
           payment_mode?: string | null
           platform_settlement_amount_minor?: number | null
           platform_settlement_currency?: string

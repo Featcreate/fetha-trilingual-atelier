@@ -11,17 +11,25 @@ type ManualPaymentRow = {
   instructions: string;
   enabled: boolean;
 };
-type ManualCheckoutClient = {
-  from: (table: string) => {
-    select: (columns: string) => {
-      eq: (
-        column: string,
-        value: unknown,
-      ) => {
-        maybeSingle: () => Promise<{ data: any; error: { message: string } | null }>;
-        order?: (column: string, options?: unknown) => unknown;
-      };
+type ManualOrderRow = {
+  order_reference: string;
+  total_millimes: number;
+  payment_method: PaymentMethod | null;
+  payment_beneficiary_snapshot: string | null;
+  payment_account_identifier_snapshot: string | null;
+  payment_instructions_snapshot: string | null;
+};
+type ManualQuery<T> = {
+  select: (columns: string) => {
+    eq: (column: string, value: unknown) => {
+      maybeSingle: () => Promise<{ data: T | null; error: { message: string } | null }>;
     };
+  };
+};
+type ManualCheckoutClient = {
+  from: {
+    (table: "platform_payment_methods"): ManualQuery<ManualPaymentRow>;
+    (table: "orders"): ManualQuery<ManualOrderRow>;
   };
   rpc: (
     name: string,

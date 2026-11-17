@@ -104,3 +104,21 @@ export const submitSellerPayoutRequest = createServerFn({ method: "POST" })
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const, requestId };
   });
+
+export const getSellerPayoutPreview = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ storeId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: preview, error } = await context.supabase.rpc("get_seller_payout_preview", {
+      _store_id: data.storeId,
+    });
+    if (error) throw new Error(error.message);
+    const row = Array.isArray(preview) ? preview[0] : preview;
+    return {
+      earnedMillimes: Number(row?.earned_millimes ?? 0),
+      paidOrReservedMillimes: Number(row?.paid_or_reserved_millimes ?? 0),
+      transferFeesMillimes: Number(row?.transfer_fees_millimes ?? 0),
+      availableMillimes: Number(row?.available_millimes ?? 0),
+      minimumMillimes: Number(row?.minimum_millimes ?? 50000),
+    };
+  });

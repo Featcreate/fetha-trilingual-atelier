@@ -31,6 +31,7 @@ type BuyerOrder = {
     id: string;
     product_name: string;
     unit_price_millimes: number;
+    payable_millimes: number | null;
     store_id: string | null;
     stores: { name: string } | null;
     order_item_files: Array<{
@@ -65,7 +66,7 @@ function BuyerOrdersPage() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id,status,total_millimes,created_at,order_items(id,product_name,unit_price_millimes,store_id,stores(name),order_item_files(id,file_name,download_entitlements(id,expires_at,max_downloads,used_downloads)))",
+          "id,status,total_millimes,created_at,order_items(id,product_name,unit_price_millimes,payable_millimes,store_id,stores(name),order_item_files(id,file_name,download_entitlements(id,expires_at,max_downloads,used_downloads)))",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -248,7 +249,7 @@ function BuyerOrdersPage() {
                     <div>
                       <p className="font-semibold">{item.product_name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {formatTND(item.unit_price_millimes)}
+                        {formatTND(item.payable_millimes ?? item.unit_price_millimes)}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">

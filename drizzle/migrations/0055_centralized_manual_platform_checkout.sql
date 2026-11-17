@@ -264,7 +264,7 @@ CREATE OR REPLACE FUNCTION public.guard_seller_payout_requires_approved_request(
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = ''
-AS $
+AS $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM public.seller_payout_requests r
@@ -274,13 +274,13 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.fulfill_seller_payout_request()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = ''
-AS $
+AS $$
 DECLARE
   _request_id uuid;
 BEGIN
@@ -297,7 +297,7 @@ BEGIN
   WHERE id = _request_id;
   RETURN NEW;
 END;
-$;
+$$;
 
 CREATE TRIGGER seller_payout_requires_approved_request
   BEFORE INSERT ON public.seller_payouts

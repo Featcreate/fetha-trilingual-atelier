@@ -40,7 +40,7 @@ CREATE OR REPLACE FUNCTION public.guard_order_payment_method_snapshot()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = ''
-AS $
+AS $$
 BEGIN
   IF OLD.payment_method IS NOT NULL AND (
     NEW.payment_method IS DISTINCT FROM OLD.payment_method
@@ -52,7 +52,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$$;
 
 CREATE TRIGGER orders_payment_method_snapshot_immutable
   BEFORE UPDATE ON public.orders

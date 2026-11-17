@@ -59,5 +59,6 @@ Status: approved product requirements; implementation must remain on `feat/platf
 
 - Branch-only GitHub commits were created; no database migration was applied to test or production.
 - No merge to `main` and no Render deployment were performed.
-- A local build/test run could not be performed in this environment because the public GitHub host was unreachable from the execution container. GitHub commit status currently reports no CI status entries; this is not evidence of a passing build.
-- Before merge, run the repository's install, typecheck, test, and production build commands; review the SQL migration against a disposable/test database; then run Supabase security advisors and the manual-payment/payout acceptance tests.
+- GitHub Actions completed dependency installation and migration-journal validation successfully, and TypeScript typecheck passed on the latest checked run.
+- The formatting check failed on six changed TypeScript/TSX files; lint, tests, and production build were skipped as a result. This remains a blocking item before merge.
+- Migration 0055 has not been executed against a database. Before merge, fix formatting, rerun the full CI pipeline, validate the migration against a disposable/test Supabase database, run Supabase security advisors, and exercise the multi-store checkout, manual confirmation, seller-fee, and payout-threshold acceptance tests.

@@ -482,3 +482,54 @@ $$;
 REVOKE ALL ON FUNCTION public.create_order_from_cart(jsonb,text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.create_order_from_cart(jsonb,text) TO authenticated, service_role;
 
+
+-- Seller-facing payout preview: transfer fees are always charged to the seller,
+-- never to the platform. Available balance is shown net of these fees.
+CREATE OR REPLACE FUNCTION public.get_seller_payout_preview(_store_id uuid)
+RETURNS TABLE (
+  earned_millimes bigint,
+  paid_or_reserved_millimes bigint,
+  transfer_fees_millimes bigint,
+  available_millimes bigint,
+  minimum_millimes bigint
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  _seller uuid := auth.uid();
+BEGIN
+  IF _seller IS NULL OR NOT EXISTS (
+    SELECT 1 FROM public.stores s WHERE s.id = _store_id AND s.owner_id = _seller
+  ) THEN
+    RAISE EXCEPTION 'store_not_found';
+  END IF;
+
+  RETURN QUERY
+  WITH earned AS (
+    SELECT coalesce(sum(le.amount_millimes), 0)::bigint AS amount
+    FROM public.seller_ledger_entries le
+    JOIN public.order_items oi ON oi.id = le.order_item_id
+    JOIN public.orders o ON o.id = oi.order_id
+    WHERE le.store_id = _store_id AND le.seller_id = _seller
+      AND le.entry_type = 'sale_net' AND o.status = 'paid' AND o.payment_mode = 'verified'
+  ),
+  payouts AS (
+    SELECT coalesce(sum(p.seller_amount_millimes), 0)::bigint AS amount
+    FROM public.seller_payouts p
+    WHERE p.store_id = _store_id AND p.status <> 'cancelled'
+  ),
+  fees AS (
+    SELECT coalesce(sum(f.amount_millimes), 0)::bigint AS amount
+    FROM public.seller_external_fee_entries f
+    WHERE f.store_id = _store_id AND f.fee_category = 'seller_transfer'
+  )
+  SELECT earned.amount, payouts.amount, fees.amount,
+         greatest(0, earned.amount - payouts.amount - fees.amount), 50000::bigint
+  FROM earned, payouts, fees;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.get_seller_payout_preview(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_seller_payout_preview(uuid) TO authenticated, service_role;

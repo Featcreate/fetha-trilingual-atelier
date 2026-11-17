@@ -11,7 +11,10 @@ ALTER TABLE public.orders
   ADD COLUMN IF NOT EXISTS order_reference text
     NOT NULL DEFAULT ('AB-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12))),
   ADD COLUMN IF NOT EXISTS payment_method text
-    CHECK (payment_method IS NULL OR payment_method IN ('flouci', 'bank_transfer', 'postal_transfer'));
+    CHECK (payment_method IS NULL OR payment_method IN ('flouci', 'bank_transfer', 'postal_transfer')),
+  ADD COLUMN IF NOT EXISTS payment_beneficiary_snapshot text,
+  ADD COLUMN IF NOT EXISTS payment_account_identifier_snapshot text,
+  ADD COLUMN IF NOT EXISTS payment_instructions_snapshot text;
 
 CREATE UNIQUE INDEX IF NOT EXISTS orders_order_reference_uidx
   ON public.orders(order_reference);
@@ -89,6 +92,7 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
   _order public.orders%ROWTYPE;
+  _method_row public.platform_payment_methods%ROWTYPE;
 BEGIN
   IF auth.uid() IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
   IF _method NOT IN ('flouci', 'bank_transfer', 'postal_transfer') THEN
@@ -100,14 +104,21 @@ BEGIN
   IF _order.ipay_payment_ref IS NOT NULL OR _order.konnect_payment_ref IS NOT NULL THEN
     RAISE EXCEPTION 'order_has_provider_payment';
   END IF;
-  IF NOT EXISTS (
-    SELECT 1 FROM public.platform_payment_methods
-    WHERE method = _method AND enabled = true
-  ) THEN RAISE EXCEPTION 'payment_method_unavailable'; END IF;
-  IF _order.payment_method IS NOT NULL AND _order.payment_method <> _method THEN
+  IF _order.payment_method IS NOT NULL THEN
+    IF _order.payment_method = _method THEN RETURN true; END IF;
     RAISE EXCEPTION 'payment_method_already_selected';
   END IF;
-  UPDATE public.orders SET payment_method = _method WHERE id = _order_id;
+  SELECT * INTO _method_row FROM public.platform_payment_methods
+  WHERE method = _method AND enabled = true;
+  IF NOT FOUND OR length(trim(_method_row.account_identifier)) = 0 THEN
+    RAISE EXCEPTION 'payment_method_unavailable';
+  END IF;
+  UPDATE public.orders
+  SET payment_method = _method,
+      payment_beneficiary_snapshot = 'Algorea Bazaar',
+      payment_account_identifier_snapshot = _method_row.account_identifier,
+      payment_instructions_snapshot = _method_row.instructions
+  WHERE id = _order_id;
   RETURN true;
 END;
 $$;

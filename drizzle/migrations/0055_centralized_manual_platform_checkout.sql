@@ -220,7 +220,8 @@ CREATE TABLE IF NOT EXISTS public.seller_payout_requests (
   store_id uuid NOT NULL REFERENCES public.stores(id) ON DELETE RESTRICT,
   seller_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
   available_amount_millimes bigint NOT NULL CHECK (available_amount_millimes >= 50000),
-  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected','fulfilled')),
+  payout_id uuid REFERENCES public.seller_payouts(id) ON DELETE RESTRICT,
   seller_note text NOT NULL DEFAULT '' CHECK (length(seller_note) <= 1000),
   admin_note text NOT NULL DEFAULT '' CHECK (length(admin_note) <= 1000),
   reviewed_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -229,7 +230,7 @@ CREATE TABLE IF NOT EXISTS public.seller_payout_requests (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS seller_payout_requests_one_pending_per_store
-  ON public.seller_payout_requests(store_id) WHERE status = 'pending';
+  ON public.seller_payout_requests(store_id) WHERE status IN ('pending','approved');
 CREATE INDEX IF NOT EXISTS seller_payout_requests_seller_created_idx
   ON public.seller_payout_requests(seller_id, created_at DESC);
 
@@ -244,6 +245,59 @@ CREATE POLICY "Sellers read own payout requests"
 CREATE POLICY "Admins read all payout requests"
   ON public.seller_payout_requests FOR SELECT TO authenticated
   USING (public.has_role((SELECT auth.uid()), 'admin'));
+
+
+-- An approved request is required before an admin can reserve seller proceeds.
+-- The request is fulfilled atomically when its manual payout batch is created.
+CREATE OR REPLACE FUNCTION public.guard_seller_payout_requires_approved_request()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM public.seller_payout_requests r
+    WHERE r.store_id = NEW.store_id AND r.status = 'approved' AND r.payout_id IS NULL
+  ) THEN
+    RAISE EXCEPTION 'payout_request_not_approved';
+  END IF;
+  RETURN NEW;
+END;
+$;
+
+CREATE OR REPLACE FUNCTION public.fulfill_seller_payout_request()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $
+DECLARE
+  _request_id uuid;
+BEGIN
+  SELECT r.id INTO _request_id
+  FROM public.seller_payout_requests r
+  WHERE r.store_id = NEW.store_id AND r.status = 'approved' AND r.payout_id IS NULL
+  ORDER BY r.reviewed_at, r.created_at
+  LIMIT 1
+  FOR UPDATE;
+  IF _request_id IS NULL THEN RAISE EXCEPTION 'payout_request_not_approved'; END IF;
+
+  UPDATE public.seller_payout_requests
+  SET status = 'fulfilled', payout_id = NEW.id, updated_at = now()
+  WHERE id = _request_id;
+  RETURN NEW;
+END;
+$;
+
+CREATE TRIGGER seller_payout_requires_approved_request
+  BEFORE INSERT ON public.seller_payouts
+  FOR EACH ROW EXECUTE FUNCTION public.guard_seller_payout_requires_approved_request();
+
+CREATE TRIGGER seller_payout_fulfills_approved_request
+  AFTER INSERT ON public.seller_payouts
+  FOR EACH ROW EXECUTE FUNCTION public.fulfill_seller_payout_request();
+
+REVOKE ALL ON FUNCTION public.guard_seller_payout_requires_approved_request() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.fulfill_seller_payout_request() FROM PUBLIC, anon, authenticated;
 
 CREATE OR REPLACE FUNCTION public.submit_seller_payout_request(
   _store_id uuid, _seller_note text DEFAULT ''

@@ -42,3 +42,20 @@ Status: approved product requirements; implementation must remain on `feat/platf
 - No split payments, automatic seller transfers, or provider-initiated seller payouts.
 - Do not deploy migrations to any Supabase environment, merge to `main`, or deploy Render as part of this branch work. Those actions require separate explicit approval.
 - Do not reuse the old `direct_seller` payment model or its migration; it conflicts with centralized collection and the approved 10% commission.
+
+## Implementation added on the isolated branch
+
+- Added migration `0055_centralized_manual_platform_checkout.sql`: unique buyer-facing order references, three configurable platform collection methods, fixed buyer-facing beneficiary label, admin-only configuration, manual exact-amount confirmation, and service-role actor wrappers.
+- The migration sets the active commission and the default for new orders to 10% (1000 basis points); historical order-item commission snapshots remain unchanged.
+- Manual confirmation delegates to the existing transactional settlement function, which unlocks every order-item download and posts seller payable and platform commission ledger entries idempotently.
+- Cart checkout now creates one multi-store order and displays the selected method's transfer instructions without requesting a receipt. The buyer sees only “Algorea Bazaar” as beneficiary.
+- Seller payout requests are recorded separately. The database rejects requests below 50,000 millimes after subtracting evidenced, unallocated seller transfer fees. Requests remain subject to manual admin review.
+- Admin UI now includes payment-method configuration, exact-amount manual order confirmation, and seller payout-request review.
+- Seller UI now exposes the 50 TND request threshold, request submission, and request status.
+
+## Verification status
+
+- Branch-only GitHub commits were created; no database migration was applied to test or production.
+- No merge to `main` and no Render deployment were performed.
+- A local build/test run could not be performed in this environment because the public GitHub host was unreachable from the execution container. GitHub commit status currently reports no CI status entries; this is not evidence of a passing build.
+- Before merge, run the repository's install, typecheck, test, and production build commands; review the SQL migration against a disposable/test database; then run Supabase security advisors and the manual-payment/payout acceptance tests.

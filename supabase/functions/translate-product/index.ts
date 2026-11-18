@@ -1,115 +1,134 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+const DEFAULT_ALLOWED_ORIGINS = [
+  "https://algorea-bazaar.onrender.com",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
 
 const LANGUAGES = ["fr", "ar", "en"] as const;
 type Language = (typeof LANGUAGES)[number];
 
-// Community-hosted LibreTranslate mirrors. No paid key or account is used.
-// These are independent public services; availability and rate limits can change.
-const TRANSLATION_HOSTS = [
-  "https://translate.mentality.rip",
-  "https://translate.argosopentech.com",
-  "https://translate.api.skitzen.com",
-  "https://trans.zillyhuhn.com",
-  "https://libretranslate.de",
-];
+function allowedOrigins(): Set<string> {
+  const configured = Deno.env.get("APP_ALLOWED_ORIGINS");
+  const values = configured
+    ? configured.split(",").map((value) => value.trim()).filter(Boolean)
+    : DEFAULT_ALLOWED_ORIGINS;
+  return new Set(values.map((value) => {
+    try {
+      const url = new URL(value);
+      return url.origin === value.replace(/\/$/, "") ? url.origin : "";
+    } catch {
+      return "";
+    }
+  }).filter(Boolean));
+}
 
-function jsonResponse(body: unknown, status = 200) {
+function corsHeaders(origin: string | null, allowed: Set<string>) {
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+  if (origin && allowed.has(origin)) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
+}
+
+function jsonResponse(
+  body: unknown,
+  status = 200,
+  origin: string | null = null,
+  allowed = allowedOrigins(),
+) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...corsHeaders(origin, allowed), "Content-Type": "application/json" },
   });
 }
 
-async function requestJson(url: string, body: Record<string, unknown>) {
-  const response = await fetch(url, {
+function translationProviderBaseUrl(): string | null {
+  const configured = Deno.env.get("TRANSLATION_API_URL")?.trim();
+  if (!configured) return null;
+  try {
+    const url = new URL(configured);
+    if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash) return null;
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return null;
+  }
+}
+
+async function requestJson(
+  baseUrl: string,
+  path: "detect" | "translate",
+  body: Record<string, unknown>,
+) {
+  const apiKey = Deno.env.get("TRANSLATION_API_KEY");
+  const response = await fetch(`${baseUrl}/${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(6000),
+    body: JSON.stringify(apiKey ? { ...body, api_key: apiKey } : body),
+    signal: AbortSignal.timeout(15_000),
   });
   if (!response.ok) throw new Error("translation_provider_error");
   return await response.json();
 }
 
-async function detectLanguage(text: string): Promise<string | null> {
-  for (const host of TRANSLATION_HOSTS) {
-    try {
-      const result = await requestJson(`${host}/detect`, { q: text });
-      const detected = Array.isArray(result) ? result[0]?.language : null;
-      if (typeof detected === "string" && detected.length <= 12) return detected;
-    } catch {
-      // Try the next free mirror.
-    }
+async function detectLanguage(text: string, baseUrl: string): Promise<string | null> {
+  try {
+    const result = await requestJson(baseUrl, "detect", { q: text });
+    const detected = Array.isArray(result) ? result[0]?.language : null;
+    return typeof detected === "string" && /^[a-zA-Z-]{2,12}$/.test(detected)
+      ? detected
+      : null;
+  } catch {
+    return null;
   }
-  return null;
 }
 
-async function translatePair(text: string, source: string, target: Language): Promise<string> {
-  let lastError: unknown;
-  for (const host of TRANSLATION_HOSTS) {
-    try {
-      const result = await requestJson(`${host}/translate`, {
-        q: text,
-        source,
-        target,
-        format: "text",
-      });
-      if (typeof result?.translatedText === "string" && result.translatedText.trim()) {
-        return result.translatedText;
-      }
-      throw new Error("empty_translation");
-    } catch (error) {
-      lastError = error;
-    }
+async function translatePair(
+  text: string,
+  source: string,
+  target: Language,
+  baseUrl: string,
+): Promise<string> {
+  const result = await requestJson(baseUrl, "translate", {
+    q: text,
+    source,
+    target,
+    format: "text",
+  });
+  if (typeof result?.translatedText !== "string" || !result.translatedText.trim()) {
+    throw new Error("empty_translation");
   }
-  throw lastError ?? new Error("translation_unavailable");
+  return result.translatedText;
 }
 
-async function translateText(text: string, source: string | null, target: Language) {
+async function translateText(
+  text: string,
+  source: string | null,
+  target: Language,
+  baseUrl: string,
+) {
   if (source === target) return text;
   if (source) {
     try {
-      return await translatePair(text, source, target);
+      return await translatePair(text, source, target, baseUrl);
     } catch {
-      // Some open models do not include every language pair; pivot through English.
       if (source !== "en" && target !== "en") {
-        const english = await translatePair(text, source, "en");
-        return await translatePair(english, "en", target);
+        const english = await translatePair(text, source, "en", baseUrl);
+        return await translatePair(english, "en", target, baseUrl);
       }
     }
   }
-
-  // Auto-detection fallback for content written in a language outside the UI's three languages.
-  let lastError: unknown;
-  for (const host of TRANSLATION_HOSTS) {
-    try {
-      const result = await requestJson(`${host}/translate`, {
-        q: text,
-        source: "auto",
-        target,
-        format: "text",
-      });
-      if (typeof result?.translatedText === "string" && result.translatedText.trim()) {
-        return result.translatedText;
-      }
-    } catch (error) {
-      lastError = error;
-    }
-  }
-  throw lastError ?? new Error("translation_unavailable");
+  return await translatePair(text, "auto", target, baseUrl);
 }
 
-async function translateField(text: string, source: string | null) {
+async function translateField(text: string, source: string | null, baseUrl: string) {
   const output: Record<Language, string> = { fr: text, ar: text, en: text };
   const translated = await Promise.all(
     LANGUAGES.filter((target) => source !== target).map(
-      async (target) => [target, await translateText(text, source, target)] as const,
+      async (target) => [target, await translateText(text, source, target, baseUrl)] as const,
     ),
   );
   for (const [target, value] of translated) output[target] = value;
@@ -117,44 +136,85 @@ async function translateField(text: string, source: string | null) {
 }
 
 Deno.serve(async (request) => {
-  if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (request.method !== "POST") return jsonResponse({ error: "method_not_allowed" }, 405);
+  const origin = request.headers.get("Origin");
+  const allowed = allowedOrigins();
+
+  if (origin && !allowed.has(origin)) {
+    return jsonResponse({ error: "origin_not_allowed" }, 403, null, allowed);
+  }
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders(origin, allowed),
+    });
+  }
+  if (request.method !== "POST") {
+    return jsonResponse({ error: "method_not_allowed" }, 405, origin, allowed);
+  }
 
   const authorization = request.headers.get("Authorization");
-  if (!authorization?.startsWith("Bearer ")) return jsonResponse({ error: "unauthorized" }, 401);
+  if (!authorization || !/^Bearer\s+\S+$/i.test(authorization)) {
+    return jsonResponse({ error: "unauthorized" }, 401, origin, allowed);
+  }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!supabaseUrl || !anonKey) return jsonResponse({ error: "server_not_configured" }, 500);
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const providerUrl = translationProviderBaseUrl();
+  if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+    return jsonResponse({ error: "server_not_configured" }, 503, origin, allowed);
+  }
+  if (!providerUrl) {
+    return jsonResponse({ error: "translation_provider_not_configured" }, 503, origin, allowed);
+  }
 
   const supabase = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authorization } },
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const { data: userData, error: authError } = await supabase.auth.getUser();
-  if (authError || !userData.user) return jsonResponse({ error: "unauthorized" }, 401);
+  if (authError || !userData.user) {
+    return jsonResponse({ error: "unauthorized" }, 401, origin, allowed);
+  }
 
   let body: { name?: unknown; description?: unknown };
   try {
     body = await request.json();
   } catch {
-    return jsonResponse({ error: "invalid_json" }, 400);
+    return jsonResponse({ error: "invalid_json" }, 400, origin, allowed);
   }
 
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const description = typeof body.description === "string" ? body.description.trim() : "";
   if (!name || name.length > 180 || !description || description.length > 5000) {
-    return jsonResponse({ error: "invalid_product_content" }, 400);
+    return jsonResponse({ error: "invalid_product_content" }, 400, origin, allowed);
   }
 
-  const source = await detectLanguage(`${name}\n\n${description}`);
+  // Fail closed if the durable per-user limiter cannot be reached.
+  const admin = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: permitted, error: limitError } = await admin.rpc(
+    "consume_translation_rate_limit",
+    { _user_id: userData.user.id },
+  );
+  if (limitError || permitted !== true) {
+    return jsonResponse(
+      { error: limitError ? "rate_limit_unavailable" : "rate_limit_exceeded" },
+      limitError ? 503 : 429,
+      origin,
+      allowed,
+    );
+  }
+
+  const source = await detectLanguage(`${name}\n\n${description}`, providerUrl);
   try {
     const [nameTranslations, descriptionTranslations] = await Promise.all([
-      translateField(name, source),
-      translateField(description, source),
+      translateField(name, source, providerUrl),
+      translateField(description, source, providerUrl),
     ]);
-    return jsonResponse({ nameTranslations, descriptionTranslations });
+    return jsonResponse({ nameTranslations, descriptionTranslations }, 200, origin, allowed);
   } catch {
-    return jsonResponse({ error: "translation_unavailable" }, 503);
+    return jsonResponse({ error: "translation_unavailable" }, 503, origin, allowed);
   }
 });

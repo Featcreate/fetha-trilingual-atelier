@@ -93,17 +93,16 @@ export const activateSellerFileVersion = createServerFn({ method: "POST" })
         sizeBytes: Number(version.size_bytes),
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "file_scan_service_unavailable";
+      const message =
+        error instanceof Error ? error.message : "file_scan_service_unavailable";
       return { data: null, error: { message } };
     }
 
     const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
     if (verdict === "infected") {
-      const { error } = await callActorScopedRpc(
-        context.userId,
-        "server_archive_file_version",
-        { _version_id: data.versionId },
-      );
+      const { error } = await callActorScopedRpc(context.userId, "server_archive_file_version", {
+        _version_id: data.versionId,
+      });
       return {
         data: null,
         error: {

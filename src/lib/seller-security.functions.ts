@@ -54,27 +54,6 @@ export const activateSellerFileVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ versionId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const scannerUrl = process.env["FILE_SCAN_API_URL"]?.trim();
-    const scannerToken = process.env["FILE_SCAN_API_TOKEN"];
-    if (!scannerUrl || !scannerToken) {
-      return { data: null, error: { message: "file_scan_unavailable" } };
-    }
-
-    let parsedScannerUrl: URL;
-    try {
-      parsedScannerUrl = new URL(scannerUrl);
-      if (
-        parsedScannerUrl.protocol !== "https:" ||
-        parsedScannerUrl.username ||
-        parsedScannerUrl.password ||
-        parsedScannerUrl.hash
-      ) {
-        return { data: null, error: { message: "file_scan_configuration_invalid" } };
-      }
-    } catch {
-      return { data: null, error: { message: "file_scan_configuration_invalid" } };
-    }
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: version, error: versionError } = await supabaseAdmin
       .from("product_file_versions")
@@ -84,6 +63,7 @@ export const activateSellerFileVersion = createServerFn({ method: "POST" })
     if (versionError || !version) {
       return { data: null, error: { message: "file_version_not_found" } };
     }
+
     const { data: store, error: storeError } = await supabaseAdmin
       .from("stores")
       .select("owner_id")
@@ -103,34 +83,22 @@ export const activateSellerFileVersion = createServerFn({ method: "POST" })
       return { data: null, error: { message: "file_scan_source_unavailable" } };
     }
 
-    let scanStatus: unknown;
+    let verdict: "clean" | "infected";
     try {
-      const response = await fetch(parsedScannerUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${scannerToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contract: "algorea-file-scan-v1",
-          fileUrl: signed.signedUrl,
-          fileName: version.file_name,
-          mimeType: version.mime_type,
-          sizeBytes: Number(version.size_bytes),
-        }),
-        signal: AbortSignal.timeout(90_000),
+      const { scanUploadedFile } = await import("@/lib/file-scan.server");
+      verdict = await scanUploadedFile({
+        fileUrl: signed.signedUrl,
+        fileName: version.file_name,
+        mimeType: version.mime_type,
+        sizeBytes: Number(version.size_bytes),
       });
-      if (!response.ok) {
-        return { data: null, error: { message: "file_scan_service_failed" } };
-      }
-      const result = (await response.json()) as { status?: unknown };
-      scanStatus = result.status;
-    } catch {
-      return { data: null, error: { message: "file_scan_service_unavailable" } };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "file_scan_service_unavailable";
+      return { data: null, error: { message } };
     }
 
     const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
-    if (scanStatus === "infected") {
+    if (verdict === "infected") {
       const { error } = await callActorScopedRpc(
         context.userId,
         "server_archive_file_version",
@@ -142,9 +110,6 @@ export const activateSellerFileVersion = createServerFn({ method: "POST" })
           message: error ? "file_rejected_archive_failed" : "file_rejected_malware",
         },
       };
-    }
-    if (scanStatus !== "clean") {
-      return { data: null, error: { message: "file_scan_invalid_result" } };
     }
 
     return callActorScopedRpc(context.userId, "server_activate_file_version", {

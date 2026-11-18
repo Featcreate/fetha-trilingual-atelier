@@ -15,14 +15,17 @@ const env = {
 
 describe("file malware scan gate", () => {
   it("fails closed when scanner configuration is missing", async () => {
-    await expect(scanUploadedFile(input, {}, vi.fn() as unknown as typeof fetch)).rejects.toThrow(
-      "file_scan_unavailable",
-    );
+    await expect(
+      scanUploadedFile(input, {}, vi.fn() as unknown as typeof fetch),
+    ).rejects.toThrow("file_scan_unavailable");
   });
 
   it("rejects non-HTTPS scanner endpoints", async () => {
     await expect(
-      scanUploadedFile(input, { ...env, FILE_SCAN_API_URL: "http://scanner.example/scan" }),
+      scanUploadedFile(input, {
+        ...env,
+        FILE_SCAN_API_URL: "http://scanner.example/scan",
+      }),
     ).rejects.toThrow("file_scan_configuration_invalid");
   });
 
@@ -57,17 +60,23 @@ describe("file malware scan gate", () => {
     const invalid = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ status: "probably_clean" }), { status: 200 }),
     );
-    await expect(scanUploadedFile(input, env, invalid)).rejects.toThrow("file_scan_invalid_result");
+    await expect(
+      scanUploadedFile(input, env, invalid),
+    ).rejects.toThrow("file_scan_invalid_result");
 
-    const badJson = vi.fn().mockResolvedValue(
-      new Response("not-json", { status: 200 }),
-    );
-    await expect(scanUploadedFile(input, env, badJson)).rejects.toThrow("file_scan_invalid_result");
+    const badJson = vi.fn().mockResolvedValue(new Response("not-json", { status: 200 }));
+    await expect(
+      scanUploadedFile(input, env, badJson),
+    ).rejects.toThrow("file_scan_invalid_result");
 
     const failed = vi.fn().mockResolvedValue(new Response(null, { status: 503 }));
-    await expect(scanUploadedFile(input, env, failed)).rejects.toThrow("file_scan_service_failed");
+    await expect(
+      scanUploadedFile(input, env, failed),
+    ).rejects.toThrow("file_scan_service_failed");
 
     const offline = vi.fn().mockRejectedValue(new Error("network"));
-    await expect(scanUploadedFile(input, env, offline)).rejects.toThrow("file_scan_service_unavailable");
+    await expect(
+      scanUploadedFile(input, env, offline),
+    ).rejects.toThrow("file_scan_service_unavailable");
   });
 });

@@ -54,7 +54,62 @@ export const activateSellerFileVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ versionId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: version, error: versionError } = await supabaseAdmin
+      .from("product_file_versions")
+      .select("id,store_id,storage_path,file_name,size_bytes,mime_type,status")
+      .eq("id", data.versionId)
+      .maybeSingle();
+    if (versionError || !version) {
+      return { data: null, error: { message: "file_version_not_found" } };
+    }
+
+    const { data: store, error: storeError } = await supabaseAdmin
+      .from("stores")
+      .select("owner_id")
+      .eq("id", version.store_id)
+      .maybeSingle();
+    if (storeError || !store || store.owner_id !== context.userId) {
+      return { data: null, error: { message: "forbidden" } };
+    }
+    if (version.status !== "pending_upload") {
+      return { data: null, error: { message: "file_not_pending_scan" } };
+    }
+
+    const { data: signed, error: signError } = await supabaseAdmin.storage
+      .from("product-files")
+      .createSignedUrl(version.storage_path, 120);
+    if (signError || !signed?.signedUrl) {
+      return { data: null, error: { message: "file_scan_source_unavailable" } };
+    }
+
+    let verdict: "clean" | "infected";
+    try {
+      const { scanUploadedFile } = await import("@/lib/file-scan.server");
+      verdict = await scanUploadedFile({
+        fileUrl: signed.signedUrl,
+        fileName: version.file_name,
+        mimeType: version.mime_type,
+        sizeBytes: Number(version.size_bytes),
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "file_scan_service_unavailable";
+      return { data: null, error: { message } };
+    }
+
     const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
+    if (verdict === "infected") {
+      const { error } = await callActorScopedRpc(context.userId, "server_archive_file_version", {
+        _version_id: data.versionId,
+      });
+      return {
+        data: null,
+        error: {
+          message: error ? "file_rejected_archive_failed" : "file_rejected_malware",
+        },
+      };
+    }
+
     return callActorScopedRpc(context.userId, "server_activate_file_version", {
       _version_id: data.versionId,
     });

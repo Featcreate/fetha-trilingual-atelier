@@ -21,7 +21,10 @@ type ManualOrderRow = {
 };
 type ManualQuery<T> = {
   select: (columns: string) => {
-    eq: (column: string, value: unknown) => {
+    eq: (
+      column: string,
+      value: unknown,
+    ) => {
       maybeSingle: () => Promise<{ data: T | null; error: { message: string } | null }>;
     };
   };

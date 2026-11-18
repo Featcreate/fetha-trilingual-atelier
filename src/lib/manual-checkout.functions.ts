@@ -25,7 +25,10 @@ type ManualQuery<T> = {
       column: string,
       value: unknown,
     ) => {
-      maybeSingle: () => Promise<{ data: T | null; error: { message: string } | null }>;
+      maybeSingle: () => Promise<{
+        data: T | null;
+        error: { message: string } | null;
+      }>;
     };
   };
 };

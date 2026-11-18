@@ -29,7 +29,9 @@ describe("file malware scan gate", () => {
     ).rejects.toThrow("file_scan_configuration_invalid");
   });
 
-  it("sends the file metadata to the configured scanner and accepts only a clean verdict", async () => {
+  it(
+    "sends the file metadata to the configured scanner and accepts only a clean verdict",
+    async () => {
     const fetcher = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ status: "clean" }), {
         status: 200,
@@ -47,7 +49,8 @@ describe("file malware scan gate", () => {
       fileName: "guide.pdf",
       sizeBytes: 1234,
     });
-  });
+    },
+  );
 
   it("returns an infected verdict without treating it as clean", async () => {
     const fetcher = vi

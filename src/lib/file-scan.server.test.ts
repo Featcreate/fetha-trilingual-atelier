@@ -46,6 +46,7 @@ describe("file malware scan gate", () => {
       const [url, init] = fetcher.mock.calls[0] as [URL, RequestInit];
       expect(url.toString()).toBe(env.FILE_SCAN_API_URL);
       expect(new Headers(init.headers).get("Authorization")).toBe("Bearer scanner-secret");
+    expect(init.redirect).toBe("error");
       expect(JSON.parse(String(init.body))).toMatchObject({
         contract: "algorea-file-scan-v1",
         fileName: "guide.pdf",

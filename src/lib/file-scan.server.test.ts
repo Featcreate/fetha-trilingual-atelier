@@ -32,12 +32,14 @@ describe("file malware scan gate", () => {
   it(
     "sends the file metadata to the configured scanner and accepts only a clean verdict",
     async () => {
-      const fetcher = vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ status: "clean" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
-      );
+      const fetcher = vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ status: "clean" }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
 
       await expect(scanUploadedFile(input, env, fetcher)).resolves.toBe("clean");
       expect(fetcher).toHaveBeenCalledOnce();

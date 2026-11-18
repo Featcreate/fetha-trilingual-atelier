@@ -184,9 +184,18 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: "unauthorized" }, 401, origin, allowed);
   }
 
+  const contentLength = Number(request.headers.get("Content-Length") ?? 0);
+  if (Number.isFinite(contentLength) && contentLength > 16_384) {
+    return jsonResponse({ error: "request_too_large" }, 413, origin, allowed);
+  }
+
   let body: { name?: unknown; description?: unknown };
   try {
-    body = await request.json();
+    const rawBody = await request.text();
+    if (new TextEncoder().encode(rawBody).byteLength > 16_384) {
+      return jsonResponse({ error: "request_too_large" }, 413, origin, allowed);
+    }
+    body = JSON.parse(rawBody) as { name?: unknown; description?: unknown };
   } catch {
     return jsonResponse({ error: "invalid_json" }, 400, origin, allowed);
   }

@@ -1,22 +1,16 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const DEFAULT_ALLOWED_ORIGINS = [
-  "https://algorea-bazaar.onrender.com",
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-];
-
 const LANGUAGES = ["fr", "ar", "en"] as const;
 type Language = (typeof LANGUAGES)[number];
 
 function allowedOrigins(): Set<string> {
-  const configured = Deno.env.get("APP_ALLOWED_ORIGINS");
+  // No implicit localhost or production-origin fallback: deployment must explicitly
+  // configure the exact trusted origins, otherwise browser access fails closed.
+  const configured = Deno.env.get("APP_ALLOWED_ORIGINS") ?? "";
   const values = configured
-    ? configured
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean)
-    : DEFAULT_ALLOWED_ORIGINS;
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
   return new Set(
     values
       .map((value) => {

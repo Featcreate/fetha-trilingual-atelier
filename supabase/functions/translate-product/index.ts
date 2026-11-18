@@ -12,16 +12,23 @@ type Language = (typeof LANGUAGES)[number];
 function allowedOrigins(): Set<string> {
   const configured = Deno.env.get("APP_ALLOWED_ORIGINS");
   const values = configured
-    ? configured.split(",").map((value) => value.trim()).filter(Boolean)
+    ? configured
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean)
     : DEFAULT_ALLOWED_ORIGINS;
-  return new Set(values.map((value) => {
-    try {
-      const url = new URL(value);
-      return url.origin === value.replace(/\/$/, "") ? url.origin : "";
-    } catch {
-      return "";
-    }
-  }).filter(Boolean));
+  return new Set(
+    values
+      .map((value) => {
+        try {
+          const url = new URL(value);
+          return url.origin === value.replace(/\/$/, "") ? url.origin : "";
+        } catch {
+          return "";
+        }
+      })
+      .filter(Boolean),
+  );
 }
 
 function corsHeaders(origin: string | null, allowed: Set<string>) {
@@ -51,7 +58,15 @@ function translationProviderBaseUrl(): string | null {
   if (!configured) return null;
   try {
     const url = new URL(configured);
-    if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash) return null;
+    if (
+      url.protocol !== "https:" ||
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash
+    ) {
+      return null;
+    }
     return url.toString().replace(/\/$/, "");
   } catch {
     return null;

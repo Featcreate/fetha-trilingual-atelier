@@ -38,7 +38,7 @@ describe("file malware scan gate", () => {
           headers: { "Content-Type": "application/json" },
         }),
       );
-  
+
       await expect(scanUploadedFile(input, env, fetcher)).resolves.toBe("clean");
       expect(fetcher).toHaveBeenCalledOnce();
       const [url, init] = fetcher.mock.calls[0] as [URL, RequestInit];
@@ -49,7 +49,7 @@ describe("file malware scan gate", () => {
         fileName: "guide.pdf",
         sizeBytes: 1234,
       });
-      },
+    },
   );
 
   it("returns an infected verdict without treating it as clean", async () => {

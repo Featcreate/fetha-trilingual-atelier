@@ -93,8 +93,7 @@ export const activateSellerFileVersion = createServerFn({ method: "POST" })
         sizeBytes: Number(version.size_bytes),
       });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "file_scan_service_unavailable";
+      const message = error instanceof Error ? error.message : "file_scan_service_unavailable";
       return { data: null, error: { message } };
     }
 

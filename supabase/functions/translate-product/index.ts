@@ -35,7 +35,7 @@ function corsHeaders(origin: string | null, allowed: Set<string>) {
   const headers: Record<string, string> = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Vary": "Origin",
+    Vary: "Origin",
   };
   if (origin && allowed.has(origin)) headers["Access-Control-Allow-Origin"] = origin;
   return headers;
@@ -58,13 +58,7 @@ function translationProviderBaseUrl(): string | null {
   if (!configured) return null;
   try {
     const url = new URL(configured);
-    if (
-      url.protocol !== "https:" ||
-      url.username ||
-      url.password ||
-      url.search ||
-      url.hash
-    ) {
+    if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash) {
       return null;
     }
     return url.toString().replace(/\/$/, "");
@@ -93,9 +87,7 @@ async function detectLanguage(text: string, baseUrl: string): Promise<string | n
   try {
     const result = await requestJson(baseUrl, "detect", { q: text });
     const detected = Array.isArray(result) ? result[0]?.language : null;
-    return typeof detected === "string" && /^[a-zA-Z-]{2,12}$/.test(detected)
-      ? detected
-      : null;
+    return typeof detected === "string" && /^[a-zA-Z-]{2,12}$/.test(detected) ? detected : null;
   } catch {
     return null;
   }
@@ -209,10 +201,9 @@ Deno.serve(async (request) => {
   const admin = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data: permitted, error: limitError } = await admin.rpc(
-    "consume_translation_rate_limit",
-    { _user_id: userData.user.id },
-  );
+  const { data: permitted, error: limitError } = await admin.rpc("consume_translation_rate_limit", {
+    _user_id: userData.user.id,
+  });
   if (limitError || permitted !== true) {
     return jsonResponse(
       { error: limitError ? "rate_limit_unavailable" : "rate_limit_exceeded" },

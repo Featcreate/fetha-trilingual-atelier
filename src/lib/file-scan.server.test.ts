@@ -32,24 +32,24 @@ describe("file malware scan gate", () => {
   it(
     "sends the file metadata to the configured scanner and accepts only a clean verdict",
     async () => {
-    const fetcher = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ status: "clean" }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
-    );
-
-    await expect(scanUploadedFile(input, env, fetcher)).resolves.toBe("clean");
-    expect(fetcher).toHaveBeenCalledOnce();
-    const [url, init] = fetcher.mock.calls[0] as [URL, RequestInit];
-    expect(url.toString()).toBe(env.FILE_SCAN_API_URL);
-    expect(new Headers(init.headers).get("Authorization")).toBe("Bearer scanner-secret");
-    expect(JSON.parse(String(init.body))).toMatchObject({
-      contract: "algorea-file-scan-v1",
-      fileName: "guide.pdf",
-      sizeBytes: 1234,
-    });
-    },
+      const fetcher = vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ status: "clean" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+  
+      await expect(scanUploadedFile(input, env, fetcher)).resolves.toBe("clean");
+      expect(fetcher).toHaveBeenCalledOnce();
+      const [url, init] = fetcher.mock.calls[0] as [URL, RequestInit];
+      expect(url.toString()).toBe(env.FILE_SCAN_API_URL);
+      expect(new Headers(init.headers).get("Authorization")).toBe("Bearer scanner-secret");
+      expect(JSON.parse(String(init.body))).toMatchObject({
+        contract: "algorea-file-scan-v1",
+        fileName: "guide.pdf",
+        sizeBytes: 1234,
+      });
+      },
   );
 
   it("returns an infected verdict without treating it as clean", async () => {

@@ -7,6 +7,7 @@ This document describes the operational configuration required by the security h
 The `translate-product` Edge Function no longer uses a list of public community mirrors.
 
 Required Supabase Edge Function secrets:
+
 - `TRANSLATION_API_URL`: base URL of one approved HTTPS LibreTranslate-compatible service. Do not include credentials, query parameters, or a fragment.
 - `SUPABASE_SERVICE_ROLE_KEY`: required by the function to call the private database rate-limit RPC. Keep it server-side.
 - `APP_ALLOWED_ORIGINS`: comma-separated exact origins, for example `https://algorea-bazaar.onrender.com,https://approved-preview.example`. Add only origins that are actually controlled by the project.
@@ -17,10 +18,12 @@ The endpoint accepts only authenticated POST requests. It permits 10 requests pe
 ## Digital-file malware scanning
 
 The seller activation server function requires both application-host environment variables:
+
 - `FILE_SCAN_API_URL`: HTTPS endpoint controlled by an approved scanning service.
 - `FILE_SCAN_API_TOKEN`: bearer token for that service.
 
 The application sends a POST request with:
+
 ```json
 {
   "contract": "algorea-file-scan-v1",
@@ -32,12 +35,19 @@ The application sends a POST request with:
 ```
 
 The scanner must fetch the signed URL promptly, scan the complete file bytes (including archive contents under its own safe extraction limits), and return exactly one of:
+
 ```json
-{"status":"clean"}
+{
+  "status": "clean"
+}
 ```
+
 or
+
 ```json
-{"status":"infected"}
+{
+  "status": "infected"
+}
 ```
 
 Only the exact `clean` verdict permits activation. An infected file is archived and remains unavailable. Missing configuration, scanner timeout, network failure, non-2xx response, invalid JSON, or any unknown verdict blocks activation. The application does not delete seller files automatically. Never log the signed URL, file contents, or scanner token.

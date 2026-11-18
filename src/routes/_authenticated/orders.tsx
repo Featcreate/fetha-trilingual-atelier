@@ -21,6 +21,11 @@ type BuyerOrder = {
   status: string;
   total_millimes: number;
   created_at: string;
+  order_reference: string;
+  payment_method: string | null;
+  payment_beneficiary_snapshot: string | null;
+  payment_account_identifier_snapshot: string | null;
+  payment_instructions_snapshot: string | null;
   order_items: Array<{
     id: string;
     product_name: string;
@@ -59,7 +64,7 @@ function BuyerOrdersPage() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id,status,total_millimes,created_at,order_items(id,product_name,unit_price_millimes,store_id,stores(name),order_item_files(id,file_name,download_entitlements(id,expires_at,max_downloads,used_downloads)))",
+          "id,status,total_millimes,created_at,order_reference,payment_method,payment_beneficiary_snapshot,payment_account_identifier_snapshot,payment_instructions_snapshot,order_items(id,product_name,unit_price_millimes,store_id,stores(name),order_item_files(id,file_name,download_entitlements(id,expires_at,max_downloads,used_downloads)))",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -128,7 +133,7 @@ function BuyerOrdersPage() {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-xs text-muted-foreground">
-                    #{order.id.slice(0, 8)} ·{" "}
+                    {order.order_reference} · #{order.id.slice(0, 8)} ·{" "}
                     {new Date(order.created_at).toLocaleDateString(locale)}
                   </p>
                   <h2 className="mt-1 font-bold">{formatTND(order.total_millimes)}</h2>
@@ -137,6 +142,41 @@ function BuyerOrdersPage() {
                   {m[order.status as keyof typeof m] ?? order.status}
                 </span>
               </div>
+              {order.status === "pending" &&
+                order.payment_method &&
+                order.payment_account_identifier_snapshot && (
+                  <div className="mt-4 rounded-xl border border-border bg-secondary p-4 text-sm">
+                    <p className="font-semibold">
+                      {lang === "ar"
+                        ? "تعليمات الدفع"
+                        : lang === "en"
+                          ? "Payment instructions"
+                          : "Instructions de paiement"}
+                    </p>
+                    <p className="mt-2">
+                      {lang === "ar" ? "المستفيد" : lang === "en" ? "Beneficiary" : "Bénéficiaire"}:{" "}
+                      <strong>{order.payment_beneficiary_snapshot}</strong>
+                    </p>
+                    <p>
+                      {lang === "ar"
+                        ? "معرّف الحساب"
+                        : lang === "en"
+                          ? "Account identifier"
+                          : "Identifiant du compte"}
+                      : <strong dir="ltr">{order.payment_account_identifier_snapshot}</strong>
+                    </p>
+                    {order.payment_instructions_snapshot && (
+                      <p className="mt-1">{order.payment_instructions_snapshot}</p>
+                    )}
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {lang === "ar"
+                        ? "لا ترسلي إيصالاً. ستُفتح التنزيلات بعد تأكيد الإدارة وصول كامل المبلغ."
+                        : lang === "en"
+                          ? "Do not upload a receipt. Downloads unlock after the administrator confirms the full amount has arrived."
+                          : "N’envoyez aucun reçu. Les téléchargements seront débloqués après confirmation par l’administration de la réception du montant intégral."}
+                    </p>
+                  </div>
+                )}
               <div className="mt-4 space-y-3 border-t border-border pt-3">
                 {Array.from(
                   new Map(

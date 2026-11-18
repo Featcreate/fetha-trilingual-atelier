@@ -8,6 +8,11 @@ import { getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categori
 import { AuthShell, SubmitButton } from "@/components/AuthShell";
 import { adminRecheckIpayPayment } from "@/lib/shop.functions";
 import {
+  adminConfirmManualOrderPayment,
+  adminUpsertPlatformPaymentMethod,
+  adminReviewSellerPayoutRequest,
+} from "@/lib/admin-security.functions";
+import {
   adminCreateSellerPayout,
   adminRecordSellerExternalFee,
   adminMarkSellerPayoutFailed,
@@ -74,6 +79,9 @@ type OrderRow = {
   currency: string;
   ipay_payment_ref: string | null;
   konnect_payment_ref: string | null;
+  order_reference: string;
+  payment_method: string | null;
+  payment_confirmation_ref: string | null;
   created_at: string;
 };
 type PayoutRow = {
@@ -126,6 +134,8 @@ function AdminPage() {
   const [feeClass, setFeeClass] = useState("digital_other_bank");
   const [feeAmount, setFeeAmount] = useState("");
   const [feeReference, setFeeReference] = useState("");
+  const [manualConfirmBusy, setManualConfirmBusy] = useState<string | null>(null);
+  const [payoutReviewNotes, setPayoutReviewNotes] = useState<Record<string, string>>({});
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
 
   const settings = useQuery({
@@ -138,6 +148,31 @@ function AdminPage() {
         .single();
       if (error) throw error;
       return data;
+    },
+  });
+  const platformPaymentMethods = useQuery({
+    queryKey: ["admin-platform-payment-methods"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("platform_payment_methods")
+        .select("method,beneficiary_label,account_identifier,instructions,enabled,updated_at")
+        .order("method");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const payoutRequests = useQuery({
+    queryKey: ["admin-seller-payout-requests"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("seller_payout_requests")
+        .select(
+          "id,store_id,seller_id,available_amount_millimes,status,seller_note,admin_note,created_at",
+        )
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
     },
   });
   const stores = useQuery({
@@ -499,6 +534,91 @@ function AdminPage() {
     setPayoutFailure("");
     setNotice({ ok: true, text: a.payoutFailedNote });
     await qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+  }
+
+  async function savePlatformPaymentMethod(
+    e: FormEvent<HTMLFormElement>,
+    method: "flouci" | "bank_transfer" | "postal_transfer",
+  ) {
+    e.preventDefault();
+    const values = new FormData(e.currentTarget);
+    setBusy("payment:" + method);
+    setNotice(null);
+    const result = await adminUpsertPlatformPaymentMethod({
+      data: {
+        method,
+        accountIdentifier: String(values.get("account_identifier") ?? "").trim(),
+        instructions: String(values.get("instructions") ?? "").trim(),
+        enabled: values.get("enabled") === "on",
+      },
+    });
+    setBusy(null);
+    setNotice(
+      result.error
+        ? { ok: false, text: result.error.message }
+        : {
+            ok: true,
+            text:
+              lang === "ar"
+                ? "تم حفظ إعدادات وسيلة الدفع."
+                : lang === "en"
+                  ? "Payment method settings saved."
+                  : "Paramètres du moyen de paiement enregistrés.",
+          },
+    );
+    await qc.invalidateQueries({ queryKey: ["admin-platform-payment-methods"] });
+  }
+
+  async function confirmManualOrder(e: FormEvent<HTMLFormElement>, order: OrderRow) {
+    e.preventDefault();
+    const values = new FormData(e.currentTarget);
+    setManualConfirmBusy(order.id);
+    setNotice(null);
+    const result = await adminConfirmManualOrderPayment({
+      data: {
+        orderId: order.id,
+        amountMillimes: Number(values.get("amount_millimes")),
+        transferReference: String(values.get("transfer_reference") ?? "").trim(),
+      },
+    });
+    setManualConfirmBusy(null);
+    setNotice(
+      result.ok
+        ? {
+            ok: true,
+            text:
+              lang === "ar"
+                ? "تم تأكيد الدفع وفتح التنزيلات وتسجيل المستحقات."
+                : lang === "en"
+                  ? "Payment confirmed; downloads unlocked and seller accounting posted."
+                  : "Paiement confirmé ; téléchargements débloqués et comptabilité vendeur enregistrée.",
+          }
+        : { ok: false, text: result.error },
+    );
+    await qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    await qc.invalidateQueries({ queryKey: ["admin-financial-ledger"] });
+    await qc.invalidateQueries({ queryKey: ["admin-verified-provider-orders"] });
+  }
+
+  async function reviewPayoutRequest(requestId: string, decision: "approved" | "rejected") {
+    const result = await adminReviewSellerPayoutRequest({
+      data: { requestId, decision, adminNote: payoutReviewNotes[requestId] ?? "" },
+    });
+    setNotice(
+      result.error
+        ? { ok: false, text: result.error.message }
+        : {
+            ok: true,
+            text:
+              lang === "ar"
+                ? "تم تحديث حالة طلب الصرف."
+                : lang === "en"
+                  ? "Payout request updated."
+                  : "Demande de versement mise à jour.",
+          },
+    );
+    setPayoutReviewNotes((current) => ({ ...current, [requestId]: "" }));
+    await qc.invalidateQueries({ queryKey: ["admin-seller-payout-requests"] });
   }
 
   async function recheckIpayOrder(orderId: string) {
@@ -911,6 +1031,103 @@ function AdminPage() {
       </section>
 
       <section className="mb-8 rounded-xl border border-border p-5">
+        <h2 className="text-lg font-bold">
+          {lang === "ar"
+            ? "وسائل الدفع المركزية"
+            : lang === "en"
+              ? "Central platform payment methods"
+              : "Moyens de paiement centralisés"}
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {lang === "ar"
+            ? "تصل المدفوعات إلى المنصة. اسم المستفيد الظاهر للمشتري ثابت: Algorea Bazaar. أدخلي معرّف الحساب فقط، ولا تضعي اسمك الشخصي في التعليمات."
+            : lang === "en"
+              ? "Buyer payments go to the platform. The buyer-facing beneficiary is fixed as Algorea Bazaar. Enter account identifiers only; do not put a personal name in instructions."
+              : "Les paiements sont reçus par la plateforme. Le bénéficiaire affiché est fixe : Algorea Bazaar. Saisissez uniquement les identifiants du compte, sans nom personnel dans les instructions."}
+        </p>
+        {platformPaymentMethods.isPending ? (
+          <p className="mt-3 text-sm">{a.loading}</p>
+        ) : platformPaymentMethods.isError ? (
+          <p role="alert">{a.loadError}</p>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {(["flouci", "bank_transfer", "postal_transfer"] as const).map((method) => {
+              const saved = platformPaymentMethods.data.find((row) => row.method === method);
+              return (
+                <form
+                  key={method}
+                  onSubmit={(e) => void savePlatformPaymentMethod(e, method)}
+                  className="rounded-lg bg-secondary/60 p-4"
+                >
+                  <h3 className="mb-3 font-semibold">
+                    {method === "flouci"
+                      ? "Flouci"
+                      : method === "bank_transfer"
+                        ? lang === "ar"
+                          ? "تحويل بنكي"
+                          : lang === "en"
+                            ? "Bank transfer"
+                            : "Virement bancaire"
+                        : lang === "ar"
+                          ? "تحويل بريدي"
+                          : lang === "en"
+                            ? "Postal transfer"
+                            : "Virement postal"}
+                  </h3>
+                  <label className="block text-xs font-medium">
+                    {lang === "ar"
+                      ? "معرّف الحساب / رقم الحساب"
+                      : lang === "en"
+                        ? "Account identifier"
+                        : "Identifiant du compte"}
+                  </label>
+                  <input
+                    name="account_identifier"
+                    defaultValue={saved?.account_identifier ?? ""}
+                    maxLength={200}
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  />
+                  <label className="mt-3 block text-xs font-medium">
+                    {lang === "ar"
+                      ? "تعليمات التحويل"
+                      : lang === "en"
+                        ? "Transfer instructions"
+                        : "Instructions de transfert"}
+                  </label>
+                  <textarea
+                    name="instructions"
+                    defaultValue={saved?.instructions ?? ""}
+                    maxLength={1000}
+                    rows={2}
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  />
+                  <label className="mt-3 flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      name="enabled"
+                      defaultChecked={saved?.enabled ?? false}
+                    />
+                    {lang === "ar"
+                      ? "مفعّلة للمشترين"
+                      : lang === "en"
+                        ? "Enabled for buyers"
+                        : "Activé pour les acheteurs"}
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={busy === "payment:" + method}
+                    className="mt-3 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+                  >
+                    {busy === "payment:" + method ? a.saving : a.saved}
+                  </button>
+                </form>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="mb-8 rounded-xl border border-border p-5">
         <h2 className="text-lg font-bold">{a.commissionTitle}</h2>
         <p className="mt-2 text-sm leading-7 text-muted-foreground">{a.commissionHelp}</p>
         {settings.isPending ? (
@@ -958,6 +1175,86 @@ function AdminPage() {
           />
         </form>
         <p className="mt-3 text-xs text-muted-foreground">{a.commissionWarning}</p>
+      </section>
+
+      <section className="mb-8 rounded-xl border border-border p-5">
+        <h2 className="text-lg font-bold">
+          {lang === "ar"
+            ? "طلبات صرف البائعين"
+            : lang === "en"
+              ? "Seller payout requests"
+              : "Demandes de versement des vendeurs"}
+        </h2>
+        {payoutRequests.isPending ? (
+          <p className="mt-3 text-sm">{a.loading}</p>
+        ) : payoutRequests.isError ? (
+          <p role="alert">{a.loadError}</p>
+        ) : !payoutRequests.data.length ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            {lang === "ar"
+              ? "لا توجد طلبات صرف."
+              : lang === "en"
+                ? "No payout requests."
+                : "Aucune demande de versement."}
+          </p>
+        ) : (
+          <div className="mt-3 space-y-3">
+            {payoutRequests.data.map((request) => (
+              <article key={request.id} className="rounded-lg border border-border p-3">
+                <div className="flex flex-wrap justify-between gap-2 text-sm">
+                  <strong>
+                    {stores.data?.find((s) => s.id === request.store_id)?.name ?? request.store_id}
+                  </strong>
+                  <strong>{formatTND(request.available_amount_millimes)}</strong>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {request.status} · {new Date(request.created_at).toLocaleString(locale)} ·{" "}
+                  {request.seller_id.slice(0, 8)}
+                </p>
+                {request.seller_note && <p className="mt-2 text-sm">{request.seller_note}</p>}
+                {request.status === "pending" && (
+                  <textarea
+                    value={payoutReviewNotes[request.id] ?? ""}
+                    onChange={(event) =>
+                      setPayoutReviewNotes((current) => ({
+                        ...current,
+                        [request.id]: event.target.value,
+                      }))
+                    }
+                    maxLength={1000}
+                    rows={2}
+                    placeholder={
+                      lang === "ar"
+                        ? "ملاحظات التحليل والمراجعة (اختياري)"
+                        : lang === "en"
+                          ? "Analysis/review notes (optional)"
+                          : "Notes d’analyse et de contrôle (facultatif)"
+                    }
+                    className="mt-3 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  />
+                )}
+                {request.status === "pending" && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void reviewPayoutRequest(request.id, "approved")}
+                      className="rounded-full bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground"
+                    >
+                      {lang === "ar" ? "موافقة" : lang === "en" ? "Approve" : "Approuver"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void reviewPayoutRequest(request.id, "rejected")}
+                      className="rounded-full border border-destructive px-3 py-2 text-xs font-semibold text-destructive"
+                    >
+                      {lang === "ar" ? "رفض" : lang === "en" ? "Reject" : "Refuser"}
+                    </button>
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="mb-8 rounded-xl border border-border p-5">
@@ -1337,7 +1634,9 @@ function AdminPage() {
                 className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4"
               >
                 <div>
-                  <p className="font-semibold">#{order.id.slice(0, 8)}</p>
+                  <p className="font-semibold">
+                    {order.order_reference} · #{order.id.slice(0, 8)}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {new Date(order.created_at).toLocaleString(locale)} · {a.customer}:{" "}
                     {order.user_id.slice(0, 8)}
@@ -1357,6 +1656,57 @@ function AdminPage() {
                     <p className="text-xs text-muted-foreground">
                       Konnect · {order.konnect_payment_ref.slice(0, 16)}
                     </p>
+                  )}
+                  {order.status === "pending" && order.payment_method && (
+                    <form
+                      onSubmit={(e) => void confirmManualOrder(e, order)}
+                      className="mt-3 space-y-2 rounded-lg bg-secondary/60 p-3 text-start"
+                    >
+                      <p className="text-xs font-semibold">
+                        {lang === "ar"
+                          ? "تأكيد يدوي بعد التحقق من وصول المبلغ"
+                          : lang === "en"
+                            ? "Manual confirmation after verifying receipt"
+                            : "Confirmation manuelle après vérification de la réception"}
+                      </p>
+                      <input
+                        name="amount_millimes"
+                        type="number"
+                        min="1"
+                        max={order.total_millimes}
+                        defaultValue={order.total_millimes}
+                        required
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs"
+                        aria-label="Amount in millimes"
+                      />
+                      <input
+                        name="transfer_reference"
+                        minLength={3}
+                        maxLength={200}
+                        required
+                        placeholder={
+                          lang === "ar"
+                            ? "مرجع التحويل / العملية"
+                            : lang === "en"
+                              ? "Transfer reference"
+                              : "Référence du transfert"
+                        }
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs"
+                      />
+                      <button
+                        type="submit"
+                        disabled={manualConfirmBusy !== null}
+                        className="rounded-full bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground disabled:opacity-50"
+                      >
+                        {manualConfirmBusy === order.id
+                          ? a.saving
+                          : lang === "ar"
+                            ? "تأكيد الدفع وفتح التنزيلات"
+                            : lang === "en"
+                              ? "Confirm payment and unlock downloads"
+                              : "Confirmer le paiement et débloquer les téléchargements"}
+                      </button>
+                    </form>
                   )}
                   {order.status === "pending" && order.ipay_payment_ref && (
                     <button

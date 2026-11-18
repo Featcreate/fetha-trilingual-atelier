@@ -283,7 +283,12 @@ export type Database = {
           konnect_pay_url: string | null
           konnect_payment_ref: string | null
           paid_at: string | null
+          order_reference: string
           payment_confirmation_ref: string | null
+          payment_method: string | null
+          payment_beneficiary_snapshot: string | null
+          payment_account_identifier_snapshot: string | null
+          payment_instructions_snapshot: string | null
           payment_mode: string | null
           platform_settlement_amount_minor: number | null
           platform_settlement_currency: string
@@ -316,7 +321,12 @@ export type Database = {
           konnect_pay_url?: string | null
           konnect_payment_ref?: string | null
           paid_at?: string | null
+          order_reference?: string
           payment_confirmation_ref?: string | null
+          payment_method?: string | null
+          payment_beneficiary_snapshot?: string | null
+          payment_account_identifier_snapshot?: string | null
+          payment_instructions_snapshot?: string | null
           payment_mode?: string | null
           platform_settlement_amount_minor?: number | null
           platform_settlement_currency?: string
@@ -349,7 +359,12 @@ export type Database = {
           konnect_pay_url?: string | null
           konnect_payment_ref?: string | null
           paid_at?: string | null
+          order_reference?: string
           payment_confirmation_ref?: string | null
+          payment_method?: string | null
+          payment_beneficiary_snapshot?: string | null
+          payment_account_identifier_snapshot?: string | null
+          payment_instructions_snapshot?: string | null
           payment_mode?: string | null
           platform_settlement_amount_minor?: number | null
           platform_settlement_currency?: string
@@ -499,6 +514,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      platform_payment_methods: {
+        Row: {
+          account_identifier: string
+          beneficiary_label: string
+          enabled: boolean
+          instructions: string
+          method: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          account_identifier?: string
+          beneficiary_label?: string
+          enabled?: boolean
+          instructions?: string
+          method: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          account_identifier?: string
+          beneficiary_label?: string
+          enabled?: boolean
+          instructions?: string
+          method?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       platform_settings: {
         Row: {
@@ -1184,6 +1229,66 @@ export type Database = {
           },
         ]
       }
+      seller_payout_requests: {
+        Row: {
+          admin_note: string
+          available_amount_millimes: number
+          created_at: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          payout_id: string | null
+          seller_id: string
+          seller_note: string
+          status: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string
+          available_amount_millimes: number
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          payout_id?: string | null
+          seller_id: string
+          seller_note?: string
+          status?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string
+          available_amount_millimes?: number
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          payout_id?: string | null
+          seller_id?: string
+          seller_note?: string
+          status?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_payout_requests_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "seller_payouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_payout_requests_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seller_ratings: {
         Row: {
           created_at: string
@@ -1343,6 +1448,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_seller_payout_preview: {
+        Args: { _store_id: string }
+        Returns: {
+          earned_millimes: number
+          paid_or_reserved_millimes: number
+          transfer_fees_millimes: number
+          available_millimes: number
+          minimum_millimes: number
+        }[]
+      }
       cleanup_expired_unpaid_orders: {
         Args: { _limit?: number }
         Returns: number
@@ -1642,6 +1757,38 @@ export type Database = {
           _source: string
         }
         Returns: string
+      }
+      admin_confirm_manual_order_payment: {
+        Args: { _amount_millimes: number; _order_id: string; _transfer_reference: string }
+        Returns: string
+      }
+      admin_review_seller_payout_request: {
+        Args: { _admin_note?: string; _decision: string; _request_id: string }
+        Returns: boolean
+      }
+      admin_upsert_platform_payment_method: {
+        Args: { _account_identifier: string; _enabled: boolean; _instructions: string; _method: string }
+        Returns: undefined
+      }
+      set_order_platform_payment_method: {
+        Args: { _method: string; _order_id: string }
+        Returns: boolean
+      }
+      submit_seller_payout_request: {
+        Args: { _seller_note?: string; _store_id: string }
+        Returns: string
+      }
+      server_admin_confirm_manual_order_payment: {
+        Args: { _actor_id: string; _amount_millimes: number; _order_id: string; _transfer_reference: string }
+        Returns: string
+      }
+      server_admin_upsert_platform_payment_method: {
+        Args: { _account_identifier: string; _actor_id: string; _enabled: boolean; _instructions: string; _method: string }
+        Returns: undefined
+      }
+      server_set_order_platform_payment_method: {
+        Args: { _actor_id: string; _method: string; _order_id: string }
+        Returns: boolean
       }
       settle_order_payment: {
         Args: {

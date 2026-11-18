@@ -26,9 +26,20 @@ export async function scanUploadedFile(
     throw new Error("file_scan_configuration_invalid");
   }
 
+  let fileUrl: URL;
+  try {
+    fileUrl = new URL(input.fileUrl);
+    if (fileUrl.protocol !== "https:" || fileUrl.username || fileUrl.password) {
+      throw new Error("invalid_file_url");
+    }
+  } catch {
+    throw new Error("file_scan_source_invalid");
+  }
+
   let response: Response;
   try {
     response = await fetcher(parsed, {
+      redirect: "error",
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -36,7 +47,7 @@ export async function scanUploadedFile(
       },
       body: JSON.stringify({
         contract: "algorea-file-scan-v1",
-        fileUrl: input.fileUrl,
+        fileUrl: fileUrl.toString(),
         fileName: input.fileName,
         mimeType: input.mimeType,
         sizeBytes: input.sizeBytes,

@@ -517,6 +517,7 @@ export type Database = {
       }
       platform_payment_methods: {
         Row: {
+          account_holder_name: string
           account_identifier: string
           beneficiary_label: string
           enabled: boolean
@@ -526,6 +527,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          account_holder_name?: string
           account_identifier?: string
           beneficiary_label?: string
           enabled?: boolean
@@ -535,6 +537,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          account_holder_name?: string
           account_identifier?: string
           beneficiary_label?: string
           enabled?: boolean

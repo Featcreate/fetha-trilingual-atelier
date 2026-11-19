@@ -20,10 +20,8 @@ function allowedOrigins(): Set<string> {
             url.protocol === "http:" &&
             (url.hostname === "localhost" || url.hostname === "127.0.0.1");
           const isSecureProductionOrigin = url.protocol === "https:";
-          return (
-            (isSecureProductionOrigin || isLocalDevelopment) &&
+          return (isSecureProductionOrigin || isLocalDevelopment) &&
             url.origin === value.replace(/\/$/, "")
-          )
             ? url.origin
             : "";
         } catch {

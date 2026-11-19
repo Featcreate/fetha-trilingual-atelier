@@ -28,13 +28,21 @@
 - Seller store creation and product listing must not depend on registering with any of these providers.
 - Never collect provider passwords, OTPs, API secrets, or private credentials.
 
-## Authoritative financial model
+## Current authoritative financial model
 
-- Buyer payments are collected for Algorea Bazaar and settled only to the platform's own merchant/settlement account.
-- The payment provider is a collection/settlement rail only. It must never split payments, hold seller balances on the platform's behalf, or distribute seller proceeds directly.
-- Algorea Bazaar's internal financial system is the sole source of truth for collections, actual settlement records, FX snapshots, the configurable 5% default commission, seller payable balances, and payout records.
-- Canonical product accounting, commission, seller payable, and Phase 1 seller payouts are denominated in TND. Current buyer checkout is also TND-only; a foreign card issuer may convert the TND charge into the buyer's billing currency. Do not claim local-currency checkout until the provider-specific FX flow is implemented and verified.
-- Algorea Bazaar alone initiates seller transfers. Weekly manual transfer is the default. No provider API may initiate seller payouts; direct Konnect payout capability must remain disabled.
-- Migration 0022 is applied to the original Supabase project jgjcychkntsokhzeziqs and recorded in its migration history. The append-only platform financial ledger, immutable buyer/settlement snapshot controls, and weekly/manual-only payout constraints are active. The database has zero orders, order items, payout batches and payout preferences as of 2026-11-03.
-- The current checkout adapter is Konnect and sends TND only. Its public documentation lists international Visa/Mastercard acceptance; the provider must still approve the exact digital multi-vendor, platform-as-sole-collection-beneficiary model in writing before checkout activation.
-- The current payment activation helper is fail-closed. No sandbox or live payment credentials/settings were changed, and no live payment is active.
+- Buyer payments are collected centrally by the platform during the initial launch. The platform accepts the three approved receiving categories only: the owner's personal Flouci account, personal bank account, or personal postal account. Do not introduce additional collection categories without a new explicit product decision.
+- The checkout must show the exact receiving details and a unique order reference. The platform administrator manually verifies that the full amount has arrived before marking the order paid and unlocking downloads. A transfer screenshot or buyer claim is not proof of payment.
+- Store an immutable snapshot of the selected receiving method, beneficiary name, account identifier, and payment instructions on each order. Display "Algorea Bazaar" as the buyer-visible beneficiary on checkout and order snapshots. Keep the actual account-holder name in a separate private field readable only by the platform administrator.
+- Do not use split payments. The platform calculates seller balances and the 10% commission for each successful sale. Seller payout review and weekly settlement are handled manually by the platform administrator.
+- Preserve the financial ledger, order snapshots, audit history, and idempotency. Do not rewrite historical order economics when commission settings change.
+- Never collect provider passwords, OTPs, API secrets, or private credentials from buyers or sellers.
+
+## Security operations
+
+- The product-files Storage bucket must remain private. Seller uploads are registered server-side, written to a pending version, and must follow the existing server-side upload validation and private-storage controls. Do not make upload activation depend on an unconfigured paid or external scanner; malware scanning remains deferred until a no-cost approved solution is explicitly selected.
+- Do not send seller files to an external scanning service or require external scanner secrets without a separate explicit product decision. Keep the existing upload size, MIME/type, ownership, private-storage, and activation checks in place.
+- Configure `TRANSLATION_API_URL` to one organization-approved HTTPS LibreTranslate-compatible endpoint; optionally set `TRANSLATION_API_KEY`. Never use public community mirrors or fall back across unrelated hosts. Product names and descriptions are sent to this configured processor, so its privacy and retention terms must be reviewed before use.
+- Configure `APP_ALLOWED_ORIGINS` as a comma-separated list of exact trusted origins for the production storefront and approved preview environments. Do not use wildcard origins.
+- Translation requests require a verified Supabase user and the service-role-only `consume_translation_rate_limit` RPC. The database enforces 10 requests per minute and 100 per hour per user. If the limiter is unavailable, translation fails closed.
+- Keep `SUPABASE_SERVICE_ROLE_KEY` and `TRANSLATION_API_KEY` server-side only. Never prefix them with `VITE_`, expose them to browser code, or include them in logs.
+- A successful build is not proof of security. Before merge, run typecheck, lint, unit tests, migration journal checks, SQL security regression tests, and targeted authorization/upload/download/payment tests using isolated test accounts and non-production data.

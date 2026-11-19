@@ -54,6 +54,8 @@ export const activateSellerFileVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ versionId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
+    // Keep the launch upload flow available without an external scanner dependency.
+    // The RPC still enforces seller ownership and pending-version activation rules.
     const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
     return callActorScopedRpc(context.userId, "server_activate_file_version", {
       _version_id: data.versionId,
@@ -286,4 +288,19 @@ export const submitSellerRating = createServerFn({ method: "POST" })
       _store_id: data.storeId,
       _stars: data.stars,
     });
+  });
+
+/** Return only this seller's own line items and non-sensitive order metadata. */
+export const listSellerOrderItems = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("order_items")
+      .select(
+        "id,order_id,product_name,quantity,gross_millimes,commission_millimes,seller_net_millimes,orders!inner(id,status,created_at)",
+      )
+      .eq("seller_id", context.userId);
+    if (error) throw error;
+    return data ?? [];
   });

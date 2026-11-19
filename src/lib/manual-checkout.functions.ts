@@ -6,7 +6,7 @@ import { callActorScopedRpc } from "@/lib/actor-rpc.server";
 type PaymentMethod = "flouci" | "bank_transfer" | "postal_transfer";
 type ManualPaymentRow = {
   method: PaymentMethod;
-  beneficiary_label: "Algorea Bazaar";
+  beneficiary_label: string;
   account_identifier: string;
   instructions: string;
   enabled: boolean;
@@ -116,7 +116,8 @@ export const startManualCartCheckout = createServerFn({ method: "POST" })
       orderResult.error ||
       !orderResult.data ||
       orderResult.data.payment_method !== data.method ||
-      !orderResult.data.payment_account_identifier_snapshot
+      !orderResult.data.payment_account_identifier_snapshot ||
+      !orderResult.data.payment_beneficiary_snapshot
     ) {
       return { ok: false as const, error: "checkout_details_unavailable" };
     }
@@ -126,7 +127,7 @@ export const startManualCartCheckout = createServerFn({ method: "POST" })
       orderReference: orderResult.data.order_reference as string,
       totalMillimes: orderResult.data.total_millimes as number,
       method: data.method,
-      beneficiaryLabel: "Algorea Bazaar" as const,
+      beneficiaryLabel: orderResult.data.payment_beneficiary_snapshot as string,
       accountIdentifier: orderResult.data.payment_account_identifier_snapshot as string,
       instructions: (orderResult.data.payment_instructions_snapshot ?? "") as string,
     };

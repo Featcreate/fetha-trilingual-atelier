@@ -517,6 +517,7 @@ export type Database = {
       }
       platform_payment_methods: {
         Row: {
+          account_holder_name: string
           account_identifier: string
           beneficiary_label: string
           enabled: boolean
@@ -526,6 +527,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          account_holder_name?: string
           account_identifier?: string
           beneficiary_label?: string
           enabled?: boolean
@@ -535,6 +537,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          account_holder_name?: string
           account_identifier?: string
           beneficiary_label?: string
           enabled?: boolean
@@ -1767,7 +1770,7 @@ export type Database = {
         Returns: boolean
       }
       admin_upsert_platform_payment_method: {
-        Args: { _account_identifier: string; _enabled: boolean; _instructions: string; _method: string }
+        Args: { _account_identifier: string; _account_holder_name: string; _enabled: boolean; _instructions: string; _method: string }
         Returns: undefined
       }
       set_order_platform_payment_method: {
@@ -1783,7 +1786,7 @@ export type Database = {
         Returns: string
       }
       server_admin_upsert_platform_payment_method: {
-        Args: { _account_identifier: string; _actor_id: string; _enabled: boolean; _instructions: string; _method: string }
+        Args: { _account_identifier: string; _actor_id: string; _account_holder_name: string; _enabled: boolean; _instructions: string; _method: string }
         Returns: undefined
       }
       server_set_order_platform_payment_method: {

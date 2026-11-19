@@ -30,6 +30,7 @@ import {
   createSellerStore,
   deleteSellerFileVersion,
   listSellerFileVersions,
+  listSellerOrderItems,
   registerSellerFileVersion,
 } from "@/lib/seller-security.functions";
 import {
@@ -152,14 +153,8 @@ function SellerPage() {
   const ordersQuery = useQuery({
     queryKey: ["seller-orders", user.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("order_items")
-        .select(
-          "id, order_id, product_name, quantity, gross_millimes, commission_millimes, seller_net_millimes, orders!inner(id,status,created_at,total_millimes)",
-        )
-        .eq("seller_id", user.id);
-      if (error) throw error;
-      return (data ?? []) as Array<{
+      const data = await listSellerOrderItems();
+      return data as Array<{
         id: string;
         order_id: string;
         product_name: string;
@@ -167,7 +162,7 @@ function SellerPage() {
         gross_millimes: number | null;
         commission_millimes: number | null;
         seller_net_millimes: number | null;
-        orders: { id: string; status: string; created_at: string; total_millimes: number } | null;
+        orders: { id: string; status: string; created_at: string } | null;
       }>;
     },
   });

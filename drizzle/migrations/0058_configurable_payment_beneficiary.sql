@@ -18,6 +18,11 @@ ALTER TABLE public.platform_payment_methods
   ADD CONSTRAINT platform_payment_methods_beneficiary_label_check
   CHECK (beneficiary_label = 'Algorea Bazaar');
 
+-- Do not leave a previously enabled method usable without its private holder name.
+UPDATE public.platform_payment_methods
+SET enabled = false
+WHERE length(trim(account_holder_name)) = 0 AND enabled = true;
+
 ALTER TABLE public.platform_payment_methods
   ADD CONSTRAINT platform_payment_methods_account_holder_name_check
   CHECK (

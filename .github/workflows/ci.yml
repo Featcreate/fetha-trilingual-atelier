@@ -100,7 +100,7 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install --yes postgresql-client
-          DB_URL="$(supabase status -o env | sed -n 's/^DB_URL="\\(.*\\)"$/\\1/p')"
+          DB_URL="$(supabase status -o env | sed -n 's/^DB_URL="\(.*\)"$/\1/p')"
           if [[ -z "$DB_URL" ]]; then
             echo "Could not obtain the local Supabase DB_URL."
             supabase status
@@ -116,10 +116,10 @@ jobs:
             echo "Applying $migration"
             psql "$DB_URL" -v ON_ERROR_STOP=1 -f "$migration"
           done < <(jq -r '.entries | sort_by(.idx)[] | .tag' drizzle/migrations/meta/_journal.json)
-          for test_file in \\
-            drizzle/tests/identity_rpc_security_regression.sql \\
-            drizzle/tests/seller_order_privacy_regression.sql \\
-            drizzle/tests/payment_beneficiary_regression.sql \\
+          for test_file in \
+            drizzle/tests/identity_rpc_security_regression.sql \
+            drizzle/tests/seller_order_privacy_regression.sql \
+            drizzle/tests/payment_beneficiary_regression.sql \
             drizzle/tests/translation_rate_limit_security_regression.sql; do
             echo "Running $test_file"
             psql "$DB_URL" -v ON_ERROR_STOP=1 -f "$test_file"

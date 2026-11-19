@@ -19,7 +19,9 @@ describe("scanUploadedFile", () => {
       new Response(JSON.stringify({ status: "clean" }), { status: 200 }),
     );
 
-    await expect(scanUploadedFile(input, env, fetcher)).resolves.toBe("clean");
+    await expect(scanUploadedFile(input, env, fetcher)).resolves.toBe(
+      "clean",
+    );
     expect(fetcher).toHaveBeenCalledWith(
       new URL(env.FILE_SCAN_API_URL),
       expect.objectContaining({
@@ -37,22 +39,34 @@ describe("scanUploadedFile", () => {
       new Response(JSON.stringify({ status: "infected" }), { status: 200 }),
     );
 
-    await expect(scanUploadedFile(input, env, fetcher)).resolves.toBe("infected");
+    await expect(scanUploadedFile(input, env, fetcher)).resolves.toBe(
+      "infected",
+    );
   });
 
   it("fails closed when scanner configuration is missing", async () => {
-    await expect(scanUploadedFile(input, {}, vi.fn())).rejects.toThrow("file_scan_unavailable");
+    await expect(scanUploadedFile(input, {}, vi.fn())).rejects.toThrow(
+      "file_scan_unavailable",
+    );
   });
 
   it("rejects non-HTTPS scanner endpoints", async () => {
     await expect(
-      scanUploadedFile(input, { ...env, FILE_SCAN_API_URL: "http://scanner.test/scan" }, vi.fn()),
+      scanUploadedFile(
+        input,
+        { ...env, FILE_SCAN_API_URL: "http://scanner.test/scan" },
+        vi.fn(),
+      ),
     ).rejects.toThrow("file_scan_configuration_invalid");
   });
 
   it("rejects non-HTTPS signed file URLs", async () => {
     await expect(
-      scanUploadedFile({ ...input, fileUrl: "http://storage.test/file" }, env, vi.fn()),
+      scanUploadedFile(
+        { ...input, fileUrl: "http://storage.test/file" },
+        env,
+        vi.fn(),
+      ),
     ).rejects.toThrow("file_scan_source_invalid");
   });
 
@@ -74,7 +88,10 @@ describe("scanUploadedFile", () => {
 
   it("rejects oversized scanner responses", async () => {
     const oversized = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ status: "clean", extra: "x".repeat(5000) }), { status: 200 }),
+      new Response(
+        JSON.stringify({ status: "clean", extra: "x".repeat(5000) }),
+        { status: 200 },
+      ),
     );
     await expect(scanUploadedFile(input, env, oversized)).rejects.toThrow(
       "file_scan_invalid_result",

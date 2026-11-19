@@ -16,13 +16,40 @@ function allowedOrigins(): Set<string> {
       .map((value) => {
         try {
           const url = new URL(value);
-          return url.origin === value.replace(/\/$/, "") ? url.origin : "";
+          const isLocalDevelopment =
+            url.protocol === "http:" &&
+            (url.hostname === "localhost" || url.hostname === "127.0.0.1");
+          const isSecureProductionOrigin = url.protocol === "https:";
+          return (isSecureProductionOrigin || isLocalDevelopment) &&
+            url.origin === value.replace(/\/$/, "")
+            ? url.origin
+            : "";
         } catch {
           return "";
         }
       })
       .filter(Boolean),
   );
+}
+
+
+async function readBodyLimited(request: Request, maxBytes: number): Promise<string> {
+  if (!request.body) throw new Error("invalid_json");
+  const reader = request.body.getReader();
+  const decoder = new TextDecoder();
+  let totalBytes = 0;
+  let text = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    totalBytes += value.byteLength;
+    if (totalBytes > maxBytes) {
+      await reader.cancel();
+      throw new Error("request_too_large");
+    }
+    text += decoder.decode(value, { stream: true });
+  }
+  return text + decoder.decode();
 }
 
 function corsHeaders(origin: string | null, allowed: Set<string>) {
@@ -185,12 +212,12 @@ Deno.serve(async (request) => {
 
   let body: { name?: unknown; description?: unknown };
   try {
-    const rawBody = await request.text();
-    if (new TextEncoder().encode(rawBody).byteLength > 16_384) {
+    const rawBody = await readBodyLimited(request, 16_384);
+    body = JSON.parse(rawBody) as { name?: unknown; description?: unknown };
+  } catch (error) {
+    if (error instanceof Error && error.message === "request_too_large") {
       return jsonResponse({ error: "request_too_large" }, 413, origin, allowed);
     }
-    body = JSON.parse(rawBody) as { name?: unknown; description?: unknown };
-  } catch {
     return jsonResponse({ error: "invalid_json" }, 400, origin, allowed);
   }
 

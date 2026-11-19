@@ -139,7 +139,22 @@ function BuyerOrdersPage() {
                   <h2 className="mt-1 font-bold">{formatTND(order.total_millimes)}</h2>
                 </div>
                 <span className="rounded-full bg-secondary px-3 py-1 text-xs">
-                  {m[order.status as keyof typeof m] ?? order.status}
+                  {order.order_items.some((item) =>
+                    item.order_item_files.some((file) => {
+                      const entitlements = Array.isArray(file.download_entitlements)
+                        ? file.download_entitlements
+                        : file.download_entitlements
+                          ? [file.download_entitlements]
+                          : [];
+                      return entitlements.some(
+                        (ent) =>
+                          new Date(ent.expires_at).getTime() > Date.now() &&
+                          ent.used_downloads < ent.max_downloads,
+                      );
+                    }),
+                  )
+                    ? m.downloadAvailable
+                    : m.downloadUnavailable}
                 </span>
               </div>
               {order.status === "pending" &&

@@ -547,6 +547,7 @@ function AdminPage() {
     const result = await adminUpsertPlatformPaymentMethod({
       data: {
         method,
+        beneficiaryLabel: String(values.get("beneficiary_label") ?? "").trim(),
         accountIdentifier: String(values.get("account_identifier") ?? "").trim(),
         instructions: String(values.get("instructions") ?? "").trim(),
         enabled: values.get("enabled") === "on",
@@ -1040,10 +1041,10 @@ function AdminPage() {
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
           {lang === "ar"
-            ? "تصل المدفوعات إلى المنصة. اسم المستفيد الظاهر للمشتري ثابت: Algorea Bazaar. أدخلي معرّف الحساب فقط، ولا تضعي اسمك الشخصي في التعليمات."
+            ? "أدخلي اسم صاحب الحساب كما يظهر لدى البنك أو البريد أو Flouci؛ سيظهر الاسم نفسه للمشتري."
             : lang === "en"
-              ? "Buyer payments go to the platform. The buyer-facing beneficiary is fixed as Algorea Bazaar. Enter account identifiers only; do not put a personal name in instructions."
-              : "Les paiements sont reçus par la plateforme. Le bénéficiaire affiché est fixe : Algorea Bazaar. Saisissez uniquement les identifiants du compte, sans nom personnel dans les instructions."}
+              ? "Enter the account holder name exactly as registered with the bank, postal service, or Flouci. Buyers will see this name."
+              : "Saisissez le nom du titulaire exactement comme enregistré auprès de la banque, de la poste ou de Flouci. Ce nom sera affiché à l’acheteur."}
         </p>
         {platformPaymentMethods.isPending ? (
           <p className="mt-3 text-sm">{a.loading}</p>
@@ -1075,6 +1076,20 @@ function AdminPage() {
                             : "Virement postal"}
                   </h3>
                   <label className="block text-xs font-medium">
+                    {lang === "ar"
+                      ? "اسم صاحب الحساب / المستفيد"
+                      : lang === "en"
+                        ? "Account holder / beneficiary name"
+                        : "Nom du titulaire / bénéficiaire"}
+                  </label>
+                  <input
+                    name="beneficiary_label"
+                    defaultValue={saved?.beneficiary_label ?? ""}
+                    maxLength={120}
+                    required
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  />
+                  <label className="mt-3 block text-xs font-medium">
                     {lang === "ar"
                       ? "معرّف الحساب / رقم الحساب"
                       : lang === "en"

@@ -202,6 +202,7 @@ export const adminUpsertPlatformPaymentMethod = createServerFn({ method: "POST" 
     z
       .object({
         method: z.enum(["flouci", "bank_transfer", "postal_transfer"]),
+        beneficiaryLabel: z.string().trim().min(1).max(120),
         accountIdentifier: z.string().trim().max(200),
         instructions: z.string().trim().max(1000),
         enabled: z.boolean(),
@@ -211,6 +212,7 @@ export const adminUpsertPlatformPaymentMethod = createServerFn({ method: "POST" 
   .handler(({ data, context }) =>
     runAdminRpc(context, "server_admin_upsert_platform_payment_method", {
       _method: data.method,
+      _beneficiary_label: data.beneficiaryLabel,
       _account_identifier: data.accountIdentifier,
       _instructions: data.instructions,
       _enabled: data.enabled,

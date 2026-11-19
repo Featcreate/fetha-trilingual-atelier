@@ -89,7 +89,7 @@ jobs:
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.62.10
 
       - name: Start isolated local Supabase PostgreSQL
         run: supabase start -x studio,inbucket,edge-runtime,logflare,vector,supavisor,imgproxy
@@ -127,4 +127,9 @@ jobs:
 
       - name: Stop isolated Supabase stack
         if: always()
-        run: supabase stop --no-backup
+        run: |
+          if command -v supabase >/dev/null 2>&1; then
+            supabase stop --no-backup
+          else
+            echo "Supabase CLI was not installed; nothing to stop."
+          fi

@@ -15,6 +15,7 @@ import { ProductPreview } from "@/components/ProductPreview";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { useCart } from "@/lib/cart";
+import { BuyerHelpGuide } from "@/components/BuyerHelpGuide";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({
@@ -127,6 +128,7 @@ function CatalogPage() {
           </Link>
         </div>
       </div>
+      <BuyerHelpGuide lang={lang} />
       <section
         className="mt-2"
         aria-label={

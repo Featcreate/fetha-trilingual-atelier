@@ -8,6 +8,7 @@ import { submitSellerRating } from "@/lib/seller-security.functions";
 import { formatTND } from "@/lib/money";
 import { getDownloadLink } from "@/lib/shop.functions";
 import { AuthShell } from "@/components/AuthShell";
+import { BuyerHelpGuide } from "@/components/BuyerHelpGuide";
 
 export const Route = createFileRoute("/_authenticated/orders")({
   head: () => ({
@@ -107,6 +108,7 @@ function BuyerOrdersPage() {
 
   return (
     <AuthShell lang={lang} setLang={setLang} title={m.myOrders} wide>
+      <BuyerHelpGuide lang={lang} />
       <div className="mb-5 flex gap-4 text-sm">
         <Link to="/catalog" className="font-semibold text-coral hover:underline">
           {m.viewCatalog}

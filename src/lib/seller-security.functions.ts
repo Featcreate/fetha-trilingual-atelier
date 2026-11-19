@@ -342,3 +342,19 @@ export const submitSellerRating = createServerFn({ method: "POST" })
       _stars: data.stars,
     });
   });
+
+
+/** Return only this seller's own line items and non-sensitive order metadata. */
+export const listSellerOrderItems = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("order_items")
+      .select(
+        "id,order_id,product_name,quantity,gross_millimes,commission_millimes,seller_net_millimes,orders!inner(id,status,created_at)",
+      )
+      .eq("seller_id", context.userId);
+    if (error) throw error;
+    return data ?? [];
+  });

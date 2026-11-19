@@ -15,14 +15,14 @@ Required Supabase Edge Function secrets:
 
 The endpoint accepts only authenticated POST requests. It permits 10 requests per user per minute and 100 per user per hour. A missing limiter configuration or database error fails closed. Product names and descriptions are disclosed to the configured translation processor; review its retention, training, and subprocessors before setting the URL.
 
-## Digital-file malware scanning
+## Digital-file malware scanning (deferred)
 
-The seller activation server function requires both application-host environment variables:
+Malware scanning is not enabled in the launch workflow. Do not require scanner secrets or block seller file activation while no approved no-cost scanner is configured. Do not transmit seller files to an external scanning service without an explicit decision.
 
 - `FILE_SCAN_API_URL`: HTTPS endpoint controlled by an approved scanning service.
 - `FILE_SCAN_API_TOKEN`: bearer token for that service.
 
-The application sends a POST request with:
+If a no-cost approved scanner is selected later, its integration must be separately reviewed before any files are sent externally. The previous proposed contract was:
 
 ```json
 {
@@ -50,14 +50,14 @@ or
 }
 ```
 
-Only the exact `clean` verdict permits activation. An infected file is archived and remains unavailable. Missing configuration, scanner timeout, network failure, non-2xx response, invalid JSON, or any unknown verdict blocks activation. The application does not delete seller files automatically. Never log the signed URL, file contents, or scanner token.
+The scanner integration is deferred. The application must not depend on these secrets at launch.
 
 Before production rollout, test clean, infected, malformed-response, timeout, and scanner-unavailable cases using harmless test fixtures. Confirm the scanner has a file-size limit at least as large as the configured 50 MB upload maximum, or reduce the accepted upload limit to the scanner's supported maximum.
 
 ## Rollout checklist
 
 1. Review provider privacy and retention terms.
-2. Provision an approved scanner implementing the contract above.
+2. Keep malware scanning deferred unless a no-cost approved solution is explicitly selected.
 3. Set the secrets in the correct server-side environments; never use `VITE_` prefixes for secrets.
 4. Apply the new database migration through the normal migration workflow.
 5. Test translation CORS, authentication, throttling, and provider outage behavior.

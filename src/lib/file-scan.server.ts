@@ -60,9 +60,18 @@ export async function scanUploadedFile(
 
   if (!response.ok) throw new Error("file_scan_service_failed");
 
+  const declaredLength = Number(response.headers.get("Content-Length") ?? 0);
+  if (Number.isFinite(declaredLength) && declaredLength > 4096) {
+    throw new Error("file_scan_invalid_result");
+  }
+
   let result: { status?: unknown };
   try {
-    result = (await response.json()) as { status?: unknown };
+    const rawResult = await response.text();
+    if (new TextEncoder().encode(rawResult).byteLength > 4096) {
+      throw new Error("file_scan_invalid_result");
+    }
+    result = JSON.parse(rawResult) as { status?: unknown };
   } catch {
     throw new Error("file_scan_invalid_result");
   }

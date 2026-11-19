@@ -698,6 +698,7 @@ export type Database = {
           name_translations?: Json
           price_millimes?: number
           product_type?: string
+          product_subcategory?: string | null
           sale_price_millimes?: number | null
           store_id?: string | null
           updated_at?: string

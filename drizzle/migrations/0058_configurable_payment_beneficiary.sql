@@ -144,9 +144,9 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.admin_upsert_platform_payment_method(text, text, text, text, boolean)
-  FROM PUBLIC, anon;
+  FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_upsert_platform_payment_method(text, text, text, text, boolean)
-  TO authenticated, service_role;
+  TO service_role;
 
 REVOKE ALL ON FUNCTION public.server_admin_upsert_platform_payment_method(
   uuid, text, text, text, text, boolean
@@ -156,9 +156,9 @@ GRANT EXECUTE ON FUNCTION public.server_admin_upsert_platform_payment_method(
 ) TO service_role;
 
 REVOKE ALL ON FUNCTION public.set_order_platform_payment_method(uuid, text)
-  FROM PUBLIC, anon;
+  FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.set_order_platform_payment_method(uuid, text)
-  TO authenticated, service_role;
+  TO service_role;
 
 COMMENT ON COLUMN public.platform_payment_methods.beneficiary_label IS
   'Actual account holder or beneficiary name shown to buyers and snapshotted on each order.';

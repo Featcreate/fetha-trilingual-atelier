@@ -343,7 +343,6 @@ export const submitSellerRating = createServerFn({ method: "POST" })
     });
   });
 
-
 /** Return only this seller's own line items and non-sensitive order metadata. */
 export const listSellerOrderItems = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

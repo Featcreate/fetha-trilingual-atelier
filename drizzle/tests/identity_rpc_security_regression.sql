@@ -61,8 +61,9 @@ BEGIN
      OR NOT has_function_privilege('service_role', 'public.get_top_rated_stores()', 'EXECUTE') THEN
     RAISE EXCEPTION 'top_rated_stores_must_be_service_role_only';
   END IF;
-  IF NOT has_function_privilege('authenticated', 'public.current_user_sells_order(uuid)', 'EXECUTE') THEN
-    RAISE EXCEPTION 'seller_order_rls_helper_access_missing';
+  IF has_function_privilege('anon', 'public.current_user_sells_order(uuid)', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.current_user_sells_order(uuid)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'seller_order_rls_helper_must_not_be_api_callable';
   END IF;
 END;
 $$;

@@ -85,3 +85,46 @@ jobs:
 
       - name: Build
         run: bun run build
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start isolated local Supabase PostgreSQL
+        run: supabase start -x studio,inbucket,edge-runtime,logflare,vector,supavisor,imgproxy
+
+      - name: Apply all migrations and run SQL security regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+          DB_URL="$(supabase status -o env | sed -n 's/^DB_URL="\\(.*\\)"$/\\1/p')"
+          if [[ -z "$DB_URL" ]]; then
+            echo "Could not obtain the local Supabase DB_URL."
+            supabase status
+            exit 1
+          fi
+          while IFS= read -r tag; do
+            [[ -z "$tag" ]] && continue
+            migration="drizzle/migrations/${tag}.sql"
+            if [[ ! -f "$migration" ]]; then
+              echo "Journal entry has no migration file: $migration"
+              exit 1
+            fi
+            echo "Applying $migration"
+            psql "$DB_URL" -v ON_ERROR_STOP=1 -f "$migration"
+          done < <(jq -r '.entries | sort_by(.idx)[] | .tag' drizzle/migrations/meta/_journal.json)
+          for test_file in \\
+            drizzle/tests/identity_rpc_security_regression.sql \\
+            drizzle/tests/seller_order_privacy_regression.sql \\
+            drizzle/tests/payment_beneficiary_regression.sql \\
+            drizzle/tests/translation_rate_limit_security_regression.sql; do
+            echo "Running $test_file"
+            psql "$DB_URL" -v ON_ERROR_STOP=1 -f "$test_file"
+          done
+
+      - name: Stop isolated Supabase stack
+        if: always()
+        run: supabase stop --no-backup

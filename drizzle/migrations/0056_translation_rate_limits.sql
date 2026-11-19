@@ -24,7 +24,7 @@ DECLARE
   _minute timestamptz := date_trunc('minute', now());
   _hour timestamptz := date_trunc('hour', now());
 BEGIN
-  IF auth.role() <> 'service_role' OR _user_id IS NULL THEN
+  IF coalesce(auth.jwt() ->> 'role', '') <> 'service_role' OR _user_id IS NULL THEN
     RAISE EXCEPTION 'forbidden';
   END IF;
 

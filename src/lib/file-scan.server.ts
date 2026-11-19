@@ -7,6 +7,25 @@ export interface FileScanInput {
 
 export type FileScanVerdict = "clean" | "infected";
 
+async function readResponseLimited(response: Response, maxBytes: number): Promise<string> {
+  if (!response.body) throw new Error("file_scan_invalid_result");
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let totalBytes = 0;
+  let text = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    totalBytes += value.byteLength;
+    if (totalBytes > maxBytes) {
+      await reader.cancel();
+      throw new Error("file_scan_invalid_result");
+    }
+    text += decoder.decode(value, { stream: true });
+  }
+  return text + decoder.decode();
+}
+
 export async function scanUploadedFile(
   input: FileScanInput,
   env: Record<string, string | undefined> = process.env,
@@ -67,10 +86,7 @@ export async function scanUploadedFile(
 
   let result: { status?: unknown };
   try {
-    const rawResult = await response.text();
-    if (new TextEncoder().encode(rawResult).byteLength > 4096) {
-      throw new Error("file_scan_invalid_result");
-    }
+    const rawResult = await readResponseLimited(response, 4096);
     result = JSON.parse(rawResult) as { status?: unknown };
   } catch {
     throw new Error("file_scan_invalid_result");

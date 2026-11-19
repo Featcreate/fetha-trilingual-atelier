@@ -69,9 +69,7 @@ describe("scanUploadedFile", () => {
   });
 
   it("fails closed when the scanner is unavailable", async () => {
-    const fetcher = vi.fn().mockRejectedValue(
-      new Error("network unavailable"),
-    );
+    const fetcher = vi.fn().mockRejectedValue(new Error("network unavailable"));
 
     await expect(scanUploadedFile(input, env, fetcher)).rejects.toThrow(
       "file_scan_service_unavailable",

@@ -74,6 +74,15 @@ describe("scanUploadedFile", () => {
     );
   });
 
+  it("rejects oversized scanner responses", async () => {
+    const oversized = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ status: "clean", extra: "x".repeat(5000) }), { status: 200 }),
+    );
+    await expect(scanUploadedFile(input, env, oversized)).rejects.toThrow(
+      "file_scan_invalid_result",
+    );
+  });
+
   it("fails closed on malformed JSON and unknown verdicts", async () => {
     const malformed = vi.fn().mockResolvedValue(
       new Response("not-json", { status: 200 }),

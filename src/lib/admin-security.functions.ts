@@ -202,7 +202,7 @@ export const adminUpsertPlatformPaymentMethod = createServerFn({ method: "POST" 
     z
       .object({
         method: z.enum(["flouci", "bank_transfer", "postal_transfer"]),
-        beneficiaryLabel: z.string().trim().min(1).max(120),
+        accountHolderName: z.string().trim().min(1).max(120),
         accountIdentifier: z.string().trim().max(200),
         instructions: z.string().trim().max(1000),
         enabled: z.boolean(),
@@ -212,12 +212,31 @@ export const adminUpsertPlatformPaymentMethod = createServerFn({ method: "POST" 
   .handler(({ data, context }) =>
     runAdminRpc(context, "server_admin_upsert_platform_payment_method", {
       _method: data.method,
-      _beneficiary_label: data.beneficiaryLabel,
+      _account_holder_name: data.accountHolderName,
       _account_identifier: data.accountIdentifier,
       _instructions: data.instructions,
       _enabled: data.enabled,
     }),
   );
+
+
+/** Return private receiving-account holder names to the verified administrator only. */
+export const getAdminPlatformPaymentMethods = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (roleError || isAdmin !== true) throw new Error("forbidden");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("platform_payment_methods")
+      .select("method,beneficiary_label,account_holder_name,account_identifier,instructions,enabled,updated_at")
+      .order("method");
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
 
 export const adminConfirmManualOrderPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

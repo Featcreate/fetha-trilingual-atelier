@@ -418,14 +418,14 @@
     {
       "idx": 59,
       "version": "7",
-      "when": 1795132800000,
+      "when": 1795046400001,
       "tag": "0057_restrict_seller_order_visibility",
       "breakpoints": true
     },
     {
       "idx": 60,
       "version": "7",
-      "when": 1795219200000,
+      "when": 1795046400002,
       "tag": "0058_configurable_payment_beneficiary",
       "breakpoints": true
     }

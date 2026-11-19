@@ -19,9 +19,7 @@ describe("scanUploadedFile", () => {
       new Response(JSON.stringify({ status: "clean" }), { status: 200 }),
     );
 
-    await expect(scanUploadedFile(input, env, fetcher)).resolves.toBe(
-      "clean",
-    );
+    await expect(scanUploadedFile(input, env, fetcher)).resolves.toBe("clean");
     expect(fetcher).toHaveBeenCalledWith(
       new URL(env.FILE_SCAN_API_URL),
       expect.objectContaining({
@@ -39,15 +37,11 @@ describe("scanUploadedFile", () => {
       new Response(JSON.stringify({ status: "infected" }), { status: 200 }),
     );
 
-    await expect(scanUploadedFile(input, env, fetcher)).resolves.toBe(
-      "infected",
-    );
+    await expect(scanUploadedFile(input, env, fetcher)).resolves.toBe("infected");
   });
 
   it("fails closed when scanner configuration is missing", async () => {
-    await expect(scanUploadedFile(input, {}, vi.fn())).rejects.toThrow(
-      "file_scan_unavailable",
-    );
+    await expect(scanUploadedFile(input, {}, vi.fn())).rejects.toThrow("file_scan_unavailable");
   });
 
   it("rejects non-HTTPS scanner endpoints", async () => {
@@ -71,23 +65,15 @@ describe("scanUploadedFile", () => {
   });
 
   it("fails closed when the scanner is unavailable", async () => {
-    const fetcher = vi
-      .fn()
-      .mockRejectedValue(new Error("network unavailable"));
+    const fetcher = vi.fn().mockRejectedValue(new Error("network unavailable"));
 
-    await expect(scanUploadedFile(input, env, fetcher)).rejects.toThrow(
-      "file_scan_service_unavailable",
-    );
+    await expect(scanUploadedFile(input, env, fetcher)).rejects.toThrow("file_scan_service_unavailable");
   });
 
   it("fails closed on non-success HTTP responses", async () => {
-    const fetcher = vi
-      .fn()
-      .mockResolvedValue(new Response("unavailable", { status: 503 }));
+    const fetcher = vi.fn().mockResolvedValue(new Response("unavailable", { status: 503 }));
 
-    await expect(scanUploadedFile(input, env, fetcher)).rejects.toThrow(
-      "file_scan_service_failed",
-    );
+    await expect(scanUploadedFile(input, env, fetcher)).rejects.toThrow("file_scan_service_failed");
   });
 
   it("rejects oversized scanner responses", async () => {
@@ -97,24 +83,16 @@ describe("scanUploadedFile", () => {
         { status: 200 },
       ),
     );
-    await expect(scanUploadedFile(input, env, oversized)).rejects.toThrow(
-      "file_scan_invalid_result",
-    );
+    await expect(scanUploadedFile(input, env, oversized)).rejects.toThrow("file_scan_invalid_result");
   });
 
   it("fails closed on malformed JSON and unknown verdicts", async () => {
-    const malformed = vi
-      .fn()
-      .mockResolvedValue(new Response("not-json", { status: 200 }));
-    await expect(scanUploadedFile(input, env, malformed)).rejects.toThrow(
-      "file_scan_invalid_result",
-    );
+    const malformed = vi.fn().mockResolvedValue(new Response("not-json", { status: 200 }));
+    await expect(scanUploadedFile(input, env, malformed)).rejects.toThrow("file_scan_invalid_result");
 
     const unknown = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ status: "maybe" }), { status: 200 }),
     );
-    await expect(scanUploadedFile(input, env, unknown)).rejects.toThrow(
-      "file_scan_invalid_result",
-    );
+    await expect(scanUploadedFile(input, env, unknown)).rejects.toThrow("file_scan_invalid_result");
   });
 });

@@ -10,6 +10,7 @@ import { adminRecheckIpayPayment } from "@/lib/shop.functions";
 import {
   adminConfirmManualOrderPayment,
   adminUpsertPlatformPaymentMethod,
+  getAdminPlatformPaymentMethods,
   adminReviewSellerPayoutRequest,
 } from "@/lib/admin-security.functions";
 import {
@@ -153,12 +154,7 @@ function AdminPage() {
   const platformPaymentMethods = useQuery({
     queryKey: ["admin-platform-payment-methods"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("platform_payment_methods")
-        .select("method,beneficiary_label,account_identifier,instructions,enabled,updated_at")
-        .order("method");
-      if (error) throw error;
-      return data ?? [];
+      return getAdminPlatformPaymentMethods();
     },
   });
   const payoutRequests = useQuery({
@@ -547,7 +543,7 @@ function AdminPage() {
     const result = await adminUpsertPlatformPaymentMethod({
       data: {
         method,
-        beneficiaryLabel: String(values.get("beneficiary_label") ?? "").trim(),
+        accountHolderName: String(values.get("account_holder_name") ?? "").trim(),
         accountIdentifier: String(values.get("account_identifier") ?? "").trim(),
         instructions: String(values.get("instructions") ?? "").trim(),
         enabled: values.get("enabled") === "on",
@@ -1041,10 +1037,10 @@ function AdminPage() {
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
           {lang === "ar"
-            ? "أدخلي اسم صاحب الحساب كما يظهر لدى البنك أو البريد أو Flouci؛ سيظهر الاسم نفسه للمشتري."
+            ? "اسم صاحب الحساب الحقيقي محفوظ للإدارة فقط. سيظهر للمشتري اسم Algorea Bazaar."
             : lang === "en"
-              ? "Enter the account holder name exactly as registered with the bank, postal service, or Flouci. Buyers will see this name."
-              : "Saisissez le nom du titulaire exactement comme enregistré auprès de la banque, de la poste ou de Flouci. Ce nom sera affiché à l’acheteur."}
+              ? "The actual account holder name is private to administrators. Buyers will see Algorea Bazaar."
+              : "Le nom réel du titulaire est réservé à l’administration. L’acheteur verra Algorea Bazaar."}
         </p>
         {platformPaymentMethods.isPending ? (
           <p className="mt-3 text-sm">{a.loading}</p>
@@ -1077,14 +1073,14 @@ function AdminPage() {
                   </h3>
                   <label className="block text-xs font-medium">
                     {lang === "ar"
-                      ? "اسم صاحب الحساب / المستفيد"
+                      ? "اسم صاحب الحساب الحقيقي (خاص بالإدارة)"
                       : lang === "en"
-                        ? "Account holder / beneficiary name"
-                        : "Nom du titulaire / bénéficiaire"}
+                        ? "Actual account holder name (admin only)"
+                        : "Nom réel du titulaire (administration uniquement)"}
                   </label>
                   <input
-                    name="beneficiary_label"
-                    defaultValue={saved?.beneficiary_label ?? ""}
+                    name="account_holder_name"
+                    defaultValue={saved?.account_holder_name ?? ""}
                     maxLength={120}
                     required
                     className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"

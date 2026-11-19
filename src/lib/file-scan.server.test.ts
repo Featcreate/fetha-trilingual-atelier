@@ -71,7 +71,9 @@ describe("scanUploadedFile", () => {
   });
 
   it("fails closed when the scanner is unavailable", async () => {
-    const fetcher = vi.fn().mockRejectedValue(new Error("network unavailable"));
+    const fetcher = vi
+      .fn()
+      .mockRejectedValue(new Error("network unavailable"));
 
     await expect(scanUploadedFile(input, env, fetcher)).rejects.toThrow(
       "file_scan_service_unavailable",
@@ -79,7 +81,9 @@ describe("scanUploadedFile", () => {
   });
 
   it("fails closed on non-success HTTP responses", async () => {
-    const fetcher = vi.fn().mockResolvedValue(new Response("unavailable", { status: 503 }));
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue(new Response("unavailable", { status: 503 }));
 
     await expect(scanUploadedFile(input, env, fetcher)).rejects.toThrow(
       "file_scan_service_failed",
@@ -99,7 +103,9 @@ describe("scanUploadedFile", () => {
   });
 
   it("fails closed on malformed JSON and unknown verdicts", async () => {
-    const malformed = vi.fn().mockResolvedValue(new Response("not-json", { status: 200 }));
+    const malformed = vi
+      .fn()
+      .mockResolvedValue(new Response("not-json", { status: 200 }));
     await expect(scanUploadedFile(input, env, malformed)).rejects.toThrow(
       "file_scan_invalid_result",
     );

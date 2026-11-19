@@ -460,8 +460,8 @@ function SellerPage() {
     form.reset();
     setCoverPreview(null);
     setGalleryPreviews([]);
-    setNewCategoryId(DEFAULT_CATEGORY_ID);
-    setNewSubcategoryId(DEFAULT_SUBCATEGORY_ID);
+    setNewCategoryId("");
+    setNewSubcategoryId("");
     setNotice(translatedContent ? m.productCreated : m.translationSavedWithoutTranslation);
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
     await qc.invalidateQueries({ queryKey: ["catalog"] });

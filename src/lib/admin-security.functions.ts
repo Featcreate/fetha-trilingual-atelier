@@ -233,7 +233,9 @@ export const getAdminPlatformPaymentMethods = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("platform_payment_methods")
-      .select("method,beneficiary_label,account_holder_name,account_identifier,instructions,enabled,updated_at")
+      .select(
+        "method,beneficiary_label,account_holder_name,account_identifier,instructions,enabled,updated_at",
+      )
       .order("method");
     if (error) throw new Error(error.message);
     return data ?? [];

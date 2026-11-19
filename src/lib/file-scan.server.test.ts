@@ -41,9 +41,7 @@ describe("scanUploadedFile", () => {
   });
 
   it("fails closed when scanner configuration is missing", async () => {
-    await expect(scanUploadedFile(input, {}, vi.fn())).rejects.toThrow(
-      "file_scan_unavailable",
-    );
+    await expect(scanUploadedFile(input, {}, vi.fn())).rejects.toThrow("file_scan_unavailable");
   });
 
   it("rejects non-HTTPS scanner endpoints", async () => {
@@ -69,9 +67,7 @@ describe("scanUploadedFile", () => {
   it("fails closed on non-success HTTP responses", async () => {
     const fetcher = vi.fn().mockResolvedValue(new Response("unavailable", { status: 503 }));
 
-    await expect(scanUploadedFile(input, env, fetcher)).rejects.toThrow(
-      "file_scan_service_failed",
-    );
+    await expect(scanUploadedFile(input, env, fetcher)).rejects.toThrow("file_scan_service_failed");
   });
 
   it("rejects oversized scanner responses", async () => {
@@ -94,8 +90,6 @@ describe("scanUploadedFile", () => {
     const unknown = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ status: "maybe" }), { status: 200 }),
     );
-    await expect(scanUploadedFile(input, env, unknown)).rejects.toThrow(
-      "file_scan_invalid_result",
-    );
+    await expect(scanUploadedFile(input, env, unknown)).rejects.toThrow("file_scan_invalid_result");
   });
 });

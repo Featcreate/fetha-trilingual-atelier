@@ -37,5 +37,17 @@ BEGIN
   IF position('_method_row.beneficiary_label' IN _selection_function) = 0 THEN
     RAISE EXCEPTION 'order_snapshot_not_using_actual_beneficiary';
   END IF;
+
+  IF has_function_privilege('anon', 'public.admin_upsert_platform_payment_method(text,text,text,text,boolean)', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.admin_upsert_platform_payment_method(text,text,text,text,boolean)', 'EXECUTE')
+     OR NOT has_function_privilege('service_role', 'public.admin_upsert_platform_payment_method(text,text,text,text,boolean)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'admin_payment_method_rpc_must_be_service_role_only';
+  END IF;
+
+  IF has_function_privilege('anon', 'public.set_order_platform_payment_method(uuid,text)', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.set_order_platform_payment_method(uuid,text)', 'EXECUTE')
+     OR NOT has_function_privilege('service_role', 'public.set_order_platform_payment_method(uuid,text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'order_payment_method_rpc_must_be_service_role_only';
+  END IF;
 END;
 $$;

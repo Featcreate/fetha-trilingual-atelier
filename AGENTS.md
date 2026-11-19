@@ -30,14 +30,12 @@
 
 ## Current authoritative financial model
 
-- Buyer checkout uses centralized manual platform collection. The beneficiary is Algorea Bazaar, never an individual seller.
-- Enabled payment instructions are configured by an administrator using the supported platform methods (Flouci, bank transfer, or postal transfer). Checkout stores an immutable snapshot of the beneficiary, account identifier, instructions, and method on each order; later settings changes must not alter an existing order's instructions.
-- A buyer's transfer or screenshot is not proof of payment. Only an authorized administrator's manual confirmation of the exact order amount and a unique transfer reference may mark the order verified and trigger the existing idempotent settlement transaction. Downloads remain unavailable until settlement succeeds.
-- The current default and active platform commission is 10% (1,000 basis points) for new orders. The commission is snapshotted when an order is created; never rewrite historical order economics when the setting changes.
-- Sellers do not collect buyer payments through their own provider accounts. The platform records seller proceeds in its internal ledger.
-- Seller payouts are manual bank transfers only. A seller must submit a payout request; an administrator must approve it before a payout batch can be created. The minimum eligible request is 50 TND. Never initiate automatic provider payouts.
-- Deduct only externally evidenced seller-borne transfer fees. Preserve the ledger, order snapshots, audit history, and payout idempotency.
-- Do not reintroduce iPay or Konnect buyer checkout, split payments, or provider-initiated seller payouts without a new explicit product decision and provider approval.
+- Buyer payments are collected centrally by the platform during the initial launch. The platform accepts the three approved receiving categories only: the owner's personal Flouci account, personal bank account, or personal postal account. Do not introduce additional collection categories without a new explicit product decision.
+- The checkout must show the exact receiving details and a unique order reference. The platform administrator manually verifies that the full amount has arrived before marking the order paid and unlocking downloads. A transfer screenshot or buyer claim is not proof of payment.
+- Store an immutable snapshot of the selected receiving method, beneficiary name, account identifier, and payment instructions on each order. Display the actual account holder name configured for that receiving account; do not hard-code "Algorea Bazaar" as the beneficiary where that is not the account holder.
+- Do not use split payments. The platform calculates seller balances and the 10% commission for each successful sale. Seller payout review and weekly settlement are handled manually by the platform administrator.
+- Preserve the financial ledger, order snapshots, audit history, and idempotency. Do not rewrite historical order economics when commission settings change.
+- Never collect provider passwords, OTPs, API secrets, or private credentials from buyers or sellers.
 
 ## Security operations
 

@@ -20,8 +20,10 @@ function allowedOrigins(): Set<string> {
             url.protocol === "http:" &&
             (url.hostname === "localhost" || url.hostname === "127.0.0.1");
           const isSecureProductionOrigin = url.protocol === "https:";
-          return (isSecureProductionOrigin || isLocalDevelopment) &&
+          return (
+            (isSecureProductionOrigin || isLocalDevelopment) &&
             url.origin === value.replace(/\/$/, "")
+          )
             ? url.origin
             : "";
         } catch {
@@ -31,7 +33,6 @@ function allowedOrigins(): Set<string> {
       .filter(Boolean),
   );
 }
-
 
 async function readBodyLimited(request: Request, maxBytes: number): Promise<string> {
   if (!request.body) throw new Error("invalid_json");

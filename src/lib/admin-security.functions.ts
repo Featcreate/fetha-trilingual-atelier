@@ -179,8 +179,10 @@ export const adminCheckIpayConnection = createServerFn({ method: "GET" })
         overallHealthy: raw.overall_healthy === true,
         products: Array.isArray(raw.products)
           ? raw.products.map((product) => ({
-              productCode: typeof product.product_code === "string" ? product.product_code : null,
-              productName: typeof product.product_name === "string" ? product.product_name : null,
+              productCode:
+                typeof product.product_code === "string" ? product.product_code : null,
+              productName:
+                typeof product.product_name === "string" ? product.product_name : null,
               healthy: product.healthy === true,
               successWebhookConfigured: product.webhook_success?.configured === true,
               failureWebhookConfigured: product.webhook_failure?.configured === true,
@@ -218,7 +220,6 @@ export const adminUpsertPlatformPaymentMethod = createServerFn({ method: "POST" 
       _enabled: data.enabled,
     }),
   );
-
 
 /** Return private receiving-account holder names to the verified administrator only. */
 export const getAdminPlatformPaymentMethods = createServerFn({ method: "GET" })

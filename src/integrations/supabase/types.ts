@@ -1767,7 +1767,7 @@ export type Database = {
         Returns: boolean
       }
       admin_upsert_platform_payment_method: {
-        Args: { _account_identifier: string; _beneficiary_label: string; _enabled: boolean; _instructions: string; _method: string }
+        Args: { _account_identifier: string; _account_holder_name: string; _enabled: boolean; _instructions: string; _method: string }
         Returns: undefined
       }
       set_order_platform_payment_method: {
@@ -1783,7 +1783,7 @@ export type Database = {
         Returns: string
       }
       server_admin_upsert_platform_payment_method: {
-        Args: { _account_identifier: string; _actor_id: string; _beneficiary_label: string; _enabled: boolean; _instructions: string; _method: string }
+        Args: { _account_identifier: string; _actor_id: string; _account_holder_name: string; _enabled: boolean; _instructions: string; _method: string }
         Returns: undefined
       }
       server_set_order_platform_payment_method: {

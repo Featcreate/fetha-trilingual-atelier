@@ -300,7 +300,9 @@ export const listSellerOrderItems = createServerFn({ method: "GET" })
       .select(
         "id,order_id,product_name,quantity,gross_millimes,discount_millimes,commission_millimes,seller_net_millimes,orders!inner(id,status,created_at)",
       )
-      .eq("seller_id", context.userId);
+      .eq("seller_id", context.userId)
+      // Cancelled orders remain in the internal order/ledger history, not the seller-facing list.
+      .neq("orders.status", "cancelled");
     if (error) throw error;
     return data ?? [];
   });

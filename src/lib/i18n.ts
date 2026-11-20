@@ -235,7 +235,8 @@ export const dict = {
       deleteProductConfirmation:
         "Voulez-vous vraiment supprimer ce produit ? Il sera retiré de la boutique, mais les achats précédents et leurs fichiers resteront conservés.",
       productDeleted: "Le produit a été retiré de votre boutique.",
-      productRemovedFromStore: "Produit retiré de la boutique. Son nom et son historique restent visibles ici.",
+      productRemovedFromStore:
+        "Produit retiré de la boutique. Son nom et son historique restent visibles ici.",
       deleteProductFailed: "Impossible de supprimer ce produit. Réessayez.",
       storeCreated: "Votre boutique est créée.",
       productCreated: "Produit enregistré et publié.",
@@ -289,8 +290,10 @@ export const dict = {
       payoutPaid: "Payé",
       payoutFailed: "Échec",
       payoutCancelled: "Annulé",
-      cancelledOrderNotEarned: "Commande annulée : ces montants sont conservés à titre d’historique et ne sont pas inclus dans votre solde à recevoir.",
-      orderCommissionSnapshotNote: "La commission affichée est celle enregistrée lors de la création de la commande ; les changements ultérieurs ne modifient pas les commandes précédentes.",
+      cancelledOrderNotEarned:
+        "Commande annulée : ces montants sont conservés à titre d’historique et ne sont pas inclus dans votre solde à recevoir.",
+      orderCommissionSnapshotNote:
+        "La commission affichée est celle enregistrée lors de la création de la commande ; les changements ultérieurs ne modifient pas les commandes précédentes.",
     },
     admin: {
       title: "Administration",
@@ -682,8 +685,10 @@ export const dict = {
       payoutPaid: "تم الدفع",
       payoutFailed: "تعذّر الدفع",
       payoutCancelled: "ملغى",
-      cancelledOrderNotEarned: "هذا الطلب ملغى؛ المبالغ المعروضة محفوظة كسجل تاريخي ولا تدخل ضمن مستحقاتك.",
-      orderCommissionSnapshotNote: "العمولة المعروضة هي النسبة المسجلة عند إنشاء الطلب؛ ولا تغيّرها التعديلات اللاحقة على نسبة العمولة.",
+      cancelledOrderNotEarned:
+        "هذا الطلب ملغى؛ المبالغ المعروضة محفوظة كسجل تاريخي ولا تدخل ضمن مستحقاتك.",
+      orderCommissionSnapshotNote:
+        "العمولة المعروضة هي النسبة المسجلة عند إنشاء الطلب؛ ولا تغيّرها التعديلات اللاحقة على نسبة العمولة.",
     },
     admin: {
       title: "لوحة إدارة المنصة",
@@ -1077,8 +1082,10 @@ export const dict = {
       payoutPaid: "Paid",
       payoutFailed: "Failed",
       payoutCancelled: "Cancelled",
-      cancelledOrderNotEarned: "This order was cancelled. These amounts remain for history only and are not included in your payable balance.",
-      orderCommissionSnapshotNote: "The displayed commission is the rate saved when the order was created; later rate changes do not change historical orders.",
+      cancelledOrderNotEarned:
+        "This order was cancelled. These amounts remain for history only and are not included in your payable balance.",
+      orderCommissionSnapshotNote:
+        "The displayed commission is the rate saved when the order was created; later rate changes do not change historical orders.",
     },
     admin: {
       title: "Admin dashboard",

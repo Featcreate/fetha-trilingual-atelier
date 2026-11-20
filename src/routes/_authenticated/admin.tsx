@@ -1048,7 +1048,7 @@ function AdminPage() {
           <p role="alert">{a.loadError}</p>
         ) : (
           <div className="mt-4 space-y-3">
-            {(["flouci", "bank_transfer", "postal_transfer", "izi"] as const).map((method) => {
+            {(["bank_transfer", "postal_transfer", "izi"] as const).map((method) => {
               const saved = platformPaymentMethods.data.find((row) => row.method === method);
               return (
                 <form

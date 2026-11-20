@@ -298,7 +298,7 @@ export const listSellerOrderItems = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("order_items")
       .select(
-        "id,order_id,product_name,quantity,gross_millimes,commission_millimes,seller_net_millimes,orders!inner(id,status,created_at)",
+        "id,order_id,product_name,quantity,gross_millimes,discount_millimes,commission_millimes,seller_net_millimes,orders!inner(id,status,created_at)",
       )
       .eq("seller_id", context.userId);
     if (error) throw error;

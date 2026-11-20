@@ -534,7 +534,7 @@ function AdminPage() {
 
   async function savePlatformPaymentMethod(
     e: FormEvent<HTMLFormElement>,
-    method: "flouci" | "bank_transfer" | "postal_transfer" | "izi",
+    method: "flouci" | "bank_transfer" | "postal_transfer",
   ) {
     e.preventDefault();
     const values = new FormData(e.currentTarget);
@@ -1048,7 +1048,7 @@ function AdminPage() {
           <p role="alert">{a.loadError}</p>
         ) : (
           <div className="mt-4 space-y-3">
-            {(["flouci", "bank_transfer", "postal_transfer", "izi"] as const).map((method) => {
+            {(["flouci", "bank_transfer", "postal_transfer"] as const).map((method) => {
               const saved = platformPaymentMethods.data.find((row) => row.method === method);
               return (
                 <form
@@ -1065,13 +1065,11 @@ function AdminPage() {
                           : lang === "en"
                             ? "Bank transfer"
                             : "Virement bancaire"
-                        : method === "postal_transfer"
-                          ? lang === "ar"
-                            ? "تحويل بريدي"
-                            : lang === "en"
-                              ? "Postal transfer"
-                              : "Virement postal"
-                          : "IZI"}
+                        : lang === "ar"
+                          ? "تحويل بريدي"
+                          : lang === "en"
+                            ? "Postal transfer"
+                            : "Virement postal"}
                   </h3>
                   <label className="block text-xs font-medium">
                     {lang === "ar"

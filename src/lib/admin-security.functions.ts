@@ -201,7 +201,7 @@ export const adminUpsertPlatformPaymentMethod = createServerFn({ method: "POST" 
   .inputValidator((input: unknown) =>
     z
       .object({
-        method: z.enum(["flouci", "bank_transfer", "postal_transfer", "izi"]),
+        method: z.enum(["flouci", "bank_transfer", "postal_transfer"]),
         accountHolderName: z.string().trim().min(1).max(120),
         accountIdentifier: z.string().trim().max(200),
         instructions: z.string().trim().max(1000),

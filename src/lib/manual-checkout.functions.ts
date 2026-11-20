@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { callActorScopedRpc } from "@/lib/actor-rpc.server";
 
-type PaymentMethod = "flouci" | "bank_transfer" | "postal_transfer" | "izi";
+type PaymentMethod = "flouci" | "bank_transfer" | "postal_transfer";
 type ManualPaymentRow = {
   method: PaymentMethod;
   beneficiary_label: string;
@@ -53,7 +53,7 @@ export const getPlatformPaymentMethods = createServerFn({ method: "GET" })
   .handler(async () => {
     const client = await manualClient();
     const methods: ManualPaymentRow[] = [];
-    for (const method of ["flouci", "bank_transfer", "postal_transfer", "izi"] as const) {
+    for (const method of ["flouci", "bank_transfer", "postal_transfer"] as const) {
       const result = await client
         .from("platform_payment_methods")
         .select("method,beneficiary_label,account_identifier,instructions,enabled")
@@ -75,7 +75,7 @@ export const startManualCartCheckout = createServerFn({ method: "POST" })
           .min(1)
           .max(50),
         checkoutKey: z.string().min(8).max(100),
-        method: z.enum(["flouci", "bank_transfer", "postal_transfer", "izi"]),
+        method: z.enum(["flouci", "bank_transfer", "postal_transfer"]),
       })
       .parse(input),
   )

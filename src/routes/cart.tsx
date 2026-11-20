@@ -93,7 +93,7 @@ function CartPage() {
   const { items, count, remove } = useCart();
   const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<
-    "flouci" | "bank_transfer" | "postal_transfer" | "izi"
+    "flouci" | "bank_transfer" | "postal_transfer"
   >("flouci");
   const [checkoutInfo, setCheckoutInfo] = useState<{
     orderReference: string;
@@ -333,13 +333,11 @@ function CartPage() {
                           : lang === "en"
                             ? "Bank transfer"
                             : "Virement bancaire"
-                        : method.method === "postal_transfer"
-                          ? lang === "ar"
-                            ? "تحويل بريدي"
-                            : lang === "en"
-                              ? "Postal transfer"
-                              : "Virement postal"
-                          : "IZI"}
+                        : lang === "ar"
+                          ? "تحويل بريدي"
+                          : lang === "en"
+                            ? "Postal transfer"
+                            : "Virement postal"}
                   </option>
                 ))}
               </select>

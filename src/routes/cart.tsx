@@ -93,7 +93,7 @@ function CartPage() {
   const { items, count, remove } = useCart();
   const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<
-    "flouci" | "bank_transfer" | "postal_transfer" | "izi
+    "flouci" | "bank_transfer" | "postal_transfer" | "izi"
   >("flouci");
   const [checkoutInfo, setCheckoutInfo] = useState<{
     orderReference: string;

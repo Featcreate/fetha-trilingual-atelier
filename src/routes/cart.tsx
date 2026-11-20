@@ -94,7 +94,7 @@ function CartPage() {
   const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<
     "flouci" | "bank_transfer" | "postal_transfer" | "izi"
-  >("flouci");
+  >("bank_transfer");
   const [checkoutInfo, setCheckoutInfo] = useState<{
     orderReference: string;
     totalMillimes: number;

@@ -1071,7 +1071,12 @@ function SellerPage() {
                   <article key={product.id} className="rounded-xl border border-border p-4">
                     {product.deleted_at ? (
                       <div className="space-y-3">
-                        <p className="text-sm text-muted-foreground">{m.productDeleted}</p>
+                        <div>
+                          <h3 className="font-semibold">{product.name}</h3>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {m.productRemovedFromStore}
+                          </p>
+                        </div>
                         <SellerFileVersions productId={product.id} labels={m} allowArchiveLast />
                       </div>
                     ) : editing === product.id ? (
@@ -1649,11 +1654,33 @@ function SellerPage() {
                         : ""}{" "}
                       · ×{item.quantity}
                     </p>
-                    <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+                    <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
                       <div>
-                        <p className="text-muted-foreground">{m.sales}</p>
+                        <p className="text-muted-foreground">
+                          {(item.discount_millimes ?? 0) > 0 ? m.listPrice : m.sales}
+                        </p>
                         <strong>{formatTND(item.gross_millimes ?? 0)}</strong>
                       </div>
+                      {(item.discount_millimes ?? 0) > 0 && (
+                        <>
+                          <div>
+                            <p className="text-muted-foreground">{m.discount}</p>
+                            <strong>{formatTND(item.discount_millimes ?? 0)}</strong>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">{m.salePrice}</p>
+                            <strong>
+                              {formatTND(
+                                Math.max(
+                                  0,
+                                  Number(item.gross_millimes ?? 0) -
+                                    Number(item.discount_millimes ?? 0),
+                                ),
+                              )}
+                            </strong>
+                          </div>
+                        </>
+                      )}
                       <div>
                         <p className="text-muted-foreground">{m.commission}</p>
                         <strong>{formatTND(item.commission_millimes ?? 0)}</strong>
@@ -1663,6 +1690,14 @@ function SellerPage() {
                         <strong>{formatTND(item.seller_net_millimes ?? 0)}</strong>
                       </div>
                     </div>
+                    {item.orders?.status === "cancelled" && (
+                      <p className="mt-3 rounded-lg bg-secondary/60 p-3 text-xs text-muted-foreground">
+                        {m.cancelledOrderNotEarned}
+                      </p>
+                    )}
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {m.orderCommissionSnapshotNote}
+                    </p>
                   </article>
                 ))}
               </div>

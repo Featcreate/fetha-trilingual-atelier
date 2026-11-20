@@ -160,6 +160,7 @@ function SellerPage() {
         product_name: string;
         quantity: number;
         gross_millimes: number | null;
+        discount_millimes: number | null;
         commission_millimes: number | null;
         seller_net_millimes: number | null;
         orders: { id: string; status: string; created_at: string } | null;

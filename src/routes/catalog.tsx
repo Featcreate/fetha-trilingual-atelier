@@ -142,30 +142,78 @@ function CatalogPage() {
             const Icon = category.icon;
             const active = type === category.id;
             return (
-              <Link
-                key={category.id}
-                to="/catalog"
-                search={{ type: category.id }}
-                aria-current={active ? "page" : undefined}
-                className={`group overflow-hidden rounded-2xl border bg-card text-start transition duration-200 hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral ${active ? "border-coral ring-2 ring-coral/30" : "border-border"}`}
-              >
-                <div className="relative aspect-[16/9] overflow-hidden bg-cream-light">
-                  <img
-                    src={category.image}
-                    alt=""
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <span
-                    className={`absolute bottom-3 end-3 flex h-11 w-11 items-center justify-center rounded-xl border border-white/70 bg-gradient-to-br shadow-sm ${category.color}`}
-                  >
-                    <Icon className="h-6 w-6" aria-hidden />
+              <div key={category.id} className={active ? "col-span-full min-w-0" : ""}>
+                <Link
+                  to="/catalog"
+                  search={{ type: category.id }}
+                  aria-current={active ? "page" : undefined}
+                  className={`group block overflow-hidden rounded-2xl border bg-card text-start transition duration-200 hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral ${active ? "w-1/2 border-coral ring-2 ring-coral/30 sm:w-1/3 lg:w-1/5" : "w-full border-border"}`}
+                >
+                  <div className="relative aspect-[16/9] overflow-hidden bg-cream-light">
+                    <img
+                      src={category.image}
+                      alt=""
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <span
+                      className={`absolute bottom-3 end-3 flex h-11 w-11 items-center justify-center rounded-xl border border-white/70 bg-gradient-to-br shadow-sm ${category.color}`}
+                    >
+                      <Icon className="h-6 w-6" aria-hidden />
+                    </span>
+                  </div>
+                  <span className="block min-h-16 px-3 py-3 text-sm font-bold leading-6 text-petrol">
+                    {category.name[lang]}
                   </span>
-                </div>
-                <span className="block min-h-16 px-3 py-3 text-sm font-bold leading-6 text-petrol">
-                  {category.name[lang]}
-                </span>
-              </Link>
+                </Link>
+                {active && selectedCategory && (
+                  <section
+                    className="mt-3 rounded-xl border border-border bg-card p-4"
+                    aria-labelledby="subcategory-heading"
+                  >
+                    <h2 id="subcategory-heading" className="mb-3 text-base font-bold text-petrol">
+                      {lang === "ar"
+                        ? "التصنيفات الفرعية"
+                        : lang === "en"
+                          ? "Subcategories"
+                          : "Sous-catégories"}
+                    </h2>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSubcategory("all")}
+                        aria-pressed={subcategory === "all"}
+                        className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                          subcategory === "all"
+                            ? "border-petrol bg-petrol text-white"
+                            : "border-border bg-background hover:border-coral"
+                        }`}
+                      >
+                        {lang === "ar"
+                          ? "كل التصنيفات"
+                          : lang === "en"
+                            ? "All subcategories"
+                            : "Toutes les sous-catégories"}
+                      </button>
+                      {selectedCategory.subcategories.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setSubcategory(item.id)}
+                          aria-pressed={subcategory === item.id}
+                          className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                            subcategory === item.id
+                              ? "border-petrol bg-petrol text-white"
+                              : "border-border bg-background hover:border-coral"
+                          }`}
+                        >
+                          {item.name[lang]}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
             );
           })}
         </div>
@@ -193,53 +241,7 @@ function CatalogPage() {
           ))}
         </select>
       </div>
-      {selectedCategory && (
-        <section
-          className="mt-5 rounded-xl border border-border bg-card p-4"
-          aria-labelledby="subcategory-heading"
-        >
-          <h2 id="subcategory-heading" className="mb-3 text-base font-bold text-petrol">
-            {lang === "ar"
-              ? "التصنيفات الفرعية"
-              : lang === "en"
-                ? "Subcategories"
-                : "Sous-catégories"}
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setSubcategory("all")}
-              aria-pressed={subcategory === "all"}
-              className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-                subcategory === "all"
-                  ? "border-petrol bg-petrol text-white"
-                  : "border-border bg-background hover:border-coral"
-              }`}
-            >
-              {lang === "ar"
-                ? "كل التصنيفات"
-                : lang === "en"
-                  ? "All subcategories"
-                  : "Toutes les sous-catégories"}
-            </button>
-            {selectedCategory.subcategories.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setSubcategory(item.id)}
-                aria-pressed={subcategory === item.id}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-                  subcategory === item.id
-                    ? "border-petrol bg-petrol text-white"
-                    : "border-border bg-background hover:border-coral"
-                }`}
-              >
-                {item.name[lang]}
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
+
       {catalog.isPending ? (
         <p className="py-8 text-center">{m.loading}</p>
       ) : catalog.isError ? (

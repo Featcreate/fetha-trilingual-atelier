@@ -53,7 +53,7 @@ export const getPlatformPaymentMethods = createServerFn({ method: "GET" })
   .handler(async () => {
     const client = await manualClient();
     const methods: ManualPaymentRow[] = [];
-    for (const method of ["flouci", "bank_transfer", "postal_transfer", "izi"] as const) {
+    for (const method of ["bank_transfer", "postal_transfer", "izi"] as const) {
       const result = await client
         .from("platform_payment_methods")
         .select("method,beneficiary_label,account_identifier,instructions,enabled")

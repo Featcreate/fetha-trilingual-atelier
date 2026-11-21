@@ -19,12 +19,23 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - name: Install ClamAV and refresh signatures
+      - name: Install ClamAV
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends clamav clamav-freshclam jq curl
           sudo systemctl stop clamav-freshclam || true
-          sudo freshclam
+          sudo chown -R "$USER:$USER" /var/lib/clamav
+
+      - name: Restore ClamAV signature database
+        uses: actions/cache/restore@v4
+        with:
+          path: /var/lib/clamav
+          key: clamav-signatures-ubuntu-${{ github.run_id }}
+          restore-keys: |
+            clamav-signatures-ubuntu-
+
+      - name: Refresh ClamAV signatures
+        run: sudo freshclam
 
       - name: Claim and scan pending seller files
         shell: bash
@@ -104,3 +115,10 @@ jobs:
             unset signed_url claim payload
             echo "Completed scan attempt $attempt: $result"
           done
+
+      - name: Save ClamAV signature database
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /var/lib/clamav
+          key: clamav-signatures-ubuntu-${{ github.run_id }}

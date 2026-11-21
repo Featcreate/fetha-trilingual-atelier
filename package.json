@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "start": "node .output/server/index.mjs",
-    "check:migrations": "node scripts/check-migration-journal.mjs"
+    "check:migrations": "node scripts/check-migration-journal.mjs",
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null || true"
   },
   "overrides": {
     "rolldown": "1.2.1"

@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+set -eu
+
+# Format only staged, added/copied/modified/renamed files.
+staged_files="$(mktemp)"
+trap 'rm -f "$staged_files"' EXIT
+
+git diff --cached --name-only --diff-filter=ACMR -z > "$staged_files"
+
+if [ -s "$staged_files" ]; then
+  xargs -0 bunx prettier --write --ignore-unknown -- < "$staged_files"
+  xargs -0 git add -- < "$staged_files"
+fi

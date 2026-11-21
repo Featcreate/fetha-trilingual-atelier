@@ -103,8 +103,11 @@ jobs:
               else
                 digest="$(sha256sum "$file_path" | cut -d ' ' -f 1)"
                 scan_output="$workdir/clamav-output.txt"
+                chmod 755 "$workdir"
+                chmod 444 "$file_path"
                 set +e
-                clamscan --no-summary --infected --alert-exceeds-max --max-filesize=60M --max-scansize=250M --max-scantime=180000 --max-recursion=20 --max-files=10000 -- "$file_path" >"$scan_output" 2>&1
+                sudo -u nobody -- env -i PATH=/usr/bin:/bin HOME=/nonexistent \
+                  clamscan --no-summary --infected --alert-exceeds-max --max-filesize=60M --max-scansize=250M --max-scantime=180000 --max-recursion=20 --max-files=10000 -- "$file_path" >"$scan_output" 2>&1
                 scan_exit=$?
                 set -e
                 if grep -q "Heuristics.Limits.Exceeded" "$scan_output"; then

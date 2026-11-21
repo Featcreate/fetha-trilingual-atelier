@@ -1,83 +1,37 @@
 # Security operations
 
-<!-- prettier-ignore-start -->
-
 This document describes operational requirements for security-sensitive marketplace workflows.
-Production migrations and function deployments must follow the reviewed release workflow.
 
 ## Translation
 
-The `translate-product` Edge Function uses one organization-approved HTTPS
-LibreTranslate-compatible endpoint.
-
-Required Edge Function secrets:
-- `TRANSLATION_API_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `APP_ALLOWED_ORIGINS`
-- `TRANSLATION_API_KEY` (optional)
-
-Product names and descriptions are sent to the configured translation processor. Review its
-retention and privacy terms before configuration.
+The `translate-product` Edge Function uses one approved HTTPS LibreTranslate-compatible
+endpoint. Keep its service credentials server-side. Product names and descriptions are sent to
+that processor, so review its privacy and retention terms before configuration.
 
 ## Digital-file malware scanning
 
-Seller files are scanned by ClamAV on ephemeral GitHub-hosted Ubuntu runners. No external
-malware-scanning vendor is used.
+Seller files are scanned with ClamAV on ephemeral GitHub-hosted Ubuntu runners.
 
-### Trust boundary
+The runner authenticates through GitHub OIDC to the `github-clamav-scan` Edge Function. No
+Supabase service-role key is stored in GitHub. The function issues a short-lived signed URL for
+one claimed file and records the result using server-side credentials.
 
-- The `product-files` Storage bucket stays private.
-- GitHub Actions uses its short-lived OIDC identity token with audience `algorea-file-scan`; no
-  Supabase service-role key or long-lived scanner token is stored in GitHub.
-- The `github-clamav-scan` Edge Function verifies the OIDC signature and restricts the
-  repository, main ref, workflow path, event type, issuer, and audience.
-- The Edge Function uses its server-side `SUPABASE_SERVICE_ROLE_KEY` to atomically claim one
-  file and issue a 10-minute signed URL.
-- The runner downloads only the claimed file into a private temporary directory, checks the
-  exact expected size, runs ClamAV, computes SHA-256, reports the result, and removes the
-  temporary file.
-- Do not print signed URLs, OIDC tokens, file contents, or seller filenames in logs. Do not
-  upload files as workflow artifacts or cache them.
-- The scheduled workflow checks up to five files per run, every five minutes. A workflow
-  dispatch can start an additional scan run.
+Only a clean scan with a matching SHA-256 digest can activate a file version. Public product
+reads and checkout snapshots require an active clean version. Infected, incomplete, timed-out,
+size-mismatched, or unavailable scans remain unavailable.
 
-### Publication and checkout gate
+The runner scans uploads up to 50 MB and checks supported archive contents. Seller files must
+never appear in Git, workflow logs, artifacts, or caches. Only public ClamAV signature databases
+may be cached. The scanner never deletes seller files.
 
-- New and replaced versions begin with `scan_status=pending`.
-- The atomic claim RPC changes a pending scan to `scanning`. A stale claim can be reclaimed
-  after 15 minutes.
-- Only a complete ClamAV clean result with a matching SHA-256 digest can mark a version clean.
-- A clean pending upload is activated by the database completion function. Infected and errored
-  files remain unavailable; no scan failure falls back to activation.
-- Public product reads require an active clean file. Checkout purchase snapshots independently
-  require an active clean file and a matching private Storage object.
-- Replacing a file creates a new pending version. The previous clean active version remains
-  intact until seller-controlled archival/deletion rules are applied.
-- No file is automatically deleted by the scanner.
+Deploy `github-clamav-scan` with JWT verification disabled only because it performs mandatory
+GitHub OIDC validation itself. Apply migration `0060_clamav_content_scan_gate` and test clean,
+infected, timeout, unavailable, and digest-mismatch cases before production activation.
 
-### Failure behavior
+## Rollout
 
-- Infected files are marked `infected`; scanner errors and download/size failures are marked
-  `error`.
-- Timeouts or a runner disappearing leave a reclaimable scan lease. A retry can reclaim it
-  after 15 minutes.
-- A digest mismatch or missing digest is treated as an error, never as clean.
-- Files in pending, scanning, infected, or error states cannot be activated, publicly listed,
-  or included in a checkout snapshot.
-
-### Release and validation
-
-1. Deploy the `github-clamav-scan` Edge Function with JWT verification disabled only because it
-  validates GitHub OIDC itself; keep its internal OIDC checks mandatory.
-2. Apply the `0060_clamav_content_scan_gate` database migration.
-3. Confirm the repository Actions setting allows OIDC tokens and that the workflow is enabled
-  on the default branch.
-4. Test clean, infected, timeout/stale-claim, download failure, malformed result, and digest
-  mismatch using harmless fixtures.
-5. Confirm existing active files become unlisted until scanned clean; seller file objects are
-  retained.
-6. Run typecheck, lint, unit tests, migration-journal checks, and SQL regression tests before
-  production rollout.
-
-This workflow does not automatically delete seller content or expose the private Storage
-bucket.
+1. Deploy the Edge Function after merging the reviewed code.
+2. Apply the database migration through the normal migration workflow.
+3. Confirm GitHub Actions OIDC is enabled for the repository.
+4. Verify that existing files remain stored but hidden until scanned clean.
+5. Run the full CI suite and targeted security regressions.

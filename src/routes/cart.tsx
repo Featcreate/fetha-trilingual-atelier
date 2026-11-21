@@ -309,31 +309,21 @@ function CartPage() {
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{t.limit}</p>
             <div className="mt-5 space-y-3">
-              <p role="status" className="rounded-lg bg-secondary p-3 text-sm text-muted-foreground">
+              <p
+                role="status"
+                className="rounded-lg bg-secondary p-3 text-sm text-muted-foreground"
+              >
                 {t.disabled}
               </p>
               <button
                 type="button"
                 onClick={() => paymentMutation.mutate()}
-                disabled={
-                  true ||
-                  unavailable ||
-                  paymentMutation.isPending ||
-                  !paymentMethodsQuery.data?.methods.length
-                }
+                disabled
                 className="inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {paymentMutation.isPending ? t.starting : t.checkout}
               </button>
-              {false ? (
-                <p role="status" className="text-sm text-muted-foreground">
-                  {t.providerLoading}
-                </p>
-              ) : !paymentMethodsQuery.data?.methods.length ? (
-                <p role="status" className="text-sm text-muted-foreground">
-                  {t.disabled}
-                </p>
-              ) : null}
+
             </div>
             {checkoutInfo && (
               <div

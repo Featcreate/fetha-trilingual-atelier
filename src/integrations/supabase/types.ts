@@ -585,6 +585,12 @@ export type Database = {
           id: string
           mime_type: string
           product_id: string
+          scan_attempts: number
+          scan_error_code: string | null
+          scan_started_at: string | null
+          scan_status: string
+          scanned_at: string | null
+          scanned_sha256: string | null
           sha256: string | null
           size_bytes: number
           status: string
@@ -600,6 +606,12 @@ export type Database = {
           id?: string
           mime_type?: string
           product_id: string
+          scan_attempts?: number
+          scan_error_code?: string | null
+          scan_started_at?: string | null
+          scan_status?: string
+          scanned_at?: string | null
+          scanned_sha256?: string | null
           sha256?: string | null
           size_bytes: number
           status?: string
@@ -615,6 +627,12 @@ export type Database = {
           id?: string
           mime_type?: string
           product_id?: string
+          scan_attempts?: number
+          scan_error_code?: string | null
+          scan_started_at?: string | null
+          scan_status?: string
+          scanned_at?: string | null
+          scanned_sha256?: string | null
           sha256?: string | null
           size_bytes?: number
           status?: string

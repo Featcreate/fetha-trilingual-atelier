@@ -185,6 +185,26 @@ REVOKE ALL ON FUNCTION public.complete_product_file_scan(uuid, text, text, text)
 GRANT EXECUTE ON FUNCTION public.claim_next_product_file_scan() TO service_role;
 GRANT EXECUTE ON FUNCTION public.complete_product_file_scan(uuid, text, text, text) TO service_role;
 
+-- Expose only a boolean clean-file check to public product reads. Do not grant
+-- anon access to product_file_versions because it contains private Storage paths.
+CREATE OR REPLACE FUNCTION public.product_has_clean_file(_product_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $
+  SELECT EXISTS (
+    SELECT 1 FROM public.product_file_versions v
+     WHERE v.product_id = _product_id
+       AND v.status = 'active'
+       AND v.scan_status = 'clean'
+  );
+$;
+
+REVOKE ALL ON FUNCTION public.product_has_clean_file(uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.product_has_clean_file(uuid) TO anon, authenticated;
+
 -- Public product reads require at least one active, clean file version.
 DROP POLICY IF EXISTS "Anyone reads listed products" ON public.products;
 CREATE POLICY "Anyone reads listed products" ON public.products
@@ -195,12 +215,7 @@ CREATE POLICY "Anyone reads listed products" ON public.products
       SELECT 1 FROM public.stores s
        WHERE s.id = products.store_id AND s.status = 'active'
     )
-    AND EXISTS (
-      SELECT 1 FROM public.product_file_versions v
-       WHERE v.product_id = products.id
-         AND v.status = 'active'
-         AND v.scan_status = 'clean'
-    )
+    AND public.product_has_clean_file(products.id)
   );
 
 -- Defense in depth: even if a future checkout path forgets the scan predicate,

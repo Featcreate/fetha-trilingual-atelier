@@ -1,3 +1,50 @@
+-- Permit a one-time legacy digest baseline only when it equals the recorded
+-- clean scan digest and the underlying Storage object has not changed since scan.
+CREATE OR REPLACE FUNCTION public.pfv_guard()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path TO 'public'
+AS $function$
+BEGIN
+  IF TG_OP = 'DELETE' THEN RAISE EXCEPTION 'file_version_immutable'; END IF;
+  IF TG_OP = 'INSERT' THEN
+    IF NOT EXISTS (SELECT 1 FROM public.products p WHERE p.id = NEW.product_id AND p.store_id = NEW.store_id) THEN
+      RAISE EXCEPTION 'file_store_mismatch';
+    END IF;
+    NEW.status := 'pending_upload';
+    NEW.storage_path := NEW.store_id || '/' || NEW.product_id || '/' || NEW.id || '/' || NEW.file_name;
+    RETURN NEW;
+  END IF;
+
+  IF NEW.sha256 IS DISTINCT FROM OLD.sha256 THEN
+    IF OLD.sha256 IS NOT NULL
+       OR NEW.sha256 IS NULL
+       OR OLD.scan_status <> 'clean'
+       OR OLD.scanned_sha256 IS NULL
+       OR lower(NEW.sha256) <> lower(OLD.scanned_sha256)
+       OR OLD.scanned_at IS NULL
+       OR NOT EXISTS (
+         SELECT 1 FROM storage.objects o
+          WHERE o.bucket_id = 'product-files'
+            AND o.name = OLD.storage_path
+            AND (o.metadata->>'size')::bigint = OLD.size_bytes
+            AND o.updated_at <= OLD.scanned_at
+       ) THEN
+      RAISE EXCEPTION 'file_version_immutable';
+    END IF;
+  END IF;
+
+  IF (NEW.id, NEW.product_id, NEW.store_id, NEW.file_name, NEW.size_bytes, NEW.mime_type, NEW.storage_path, NEW.created_by, NEW.created_at)
+     IS DISTINCT FROM (OLD.id, OLD.product_id, OLD.store_id, OLD.file_name, OLD.size_bytes, OLD.mime_type, OLD.storage_path, OLD.created_by, OLD.created_at) THEN
+    RAISE EXCEPTION 'file_version_immutable';
+  END IF;
+  IF NEW.status <> OLD.status AND NOT ((OLD.status = 'pending_upload' AND NEW.status IN ('active','archived')) OR (OLD.status = 'active' AND NEW.status = 'archived')) THEN
+    RAISE EXCEPTION 'invalid_file_status_transition';
+  END IF;
+  RETURN NEW;
+END
+$function$;
+
 -- Require a trusted original SHA-256 and exact match with the bytes scanned by ClamAV.
 -- Backfill legacy clean files only when the Storage object has not changed since scan.
 UPDATE public.product_file_versions v

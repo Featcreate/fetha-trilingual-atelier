@@ -8,6 +8,7 @@ import { AuthShell } from "@/components/AuthShell";
 import { localizedProductText } from "@/lib/product-translations";
 import { ProductPreview } from "@/components/ProductPreview";
 import { getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
+import { ProductDescription } from "@/components/ProductDescription";
 
 export const Route = createFileRoute("/stores/$slug")({
   head: () => ({ meta: [{ title: "Boutique — Algorea Bazaar" }] }),
@@ -131,9 +132,11 @@ function StorefrontPage() {
                   >
                     {localizedProductText(p.name, p.name_translations, lang)}
                   </Link>
-                  <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
-                    {localizedProductText(p.description, p.description_translations, lang)}
-                  </p>
+                  <ProductDescription
+                    text={localizedProductText(p.description, p.description_translations, lang)}
+                    moreLabel={m.more}
+                    lessLabel={m.less}
+                  />
                   <p className="mt-3 flex flex-wrap items-center gap-2 text-lg font-extrabold">
                     {p.sale_price_millimes ? (
                       <>

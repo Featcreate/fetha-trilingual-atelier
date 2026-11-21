@@ -32,14 +32,14 @@ const copy = {
     title: "Panier",
     empty: "Votre panier est vide.",
     browse: "Continuer mes achats",
-    checkout: "Créer la commande et afficher les instructions",
+    checkout: "Paiement temporairement indisponible",
     remove: "Retirer",
     subtotal: "Total à payer",
     unavailable: "Un produit n’est plus disponible. Retirez-le avant de poursuivre.",
     limit: "50 produits différents maximum par panier.",
     loading: "Chargement…",
     error: "Impossible de charger le panier.",
-    disabled: "Aucun moyen de paiement n’est actuellement activé.",
+    disabled: "Version bêta : le paiement est temporairement désactivé. Vous pouvez continuer à parcourir la plateforme.",
     starting: "Création de la commande…",
     paymentError: "La commande n’a pas pu être créée. Vérifiez votre panier et réessayez.",
     providerLoading: "Chargement des moyens de paiement…",
@@ -51,14 +51,14 @@ const copy = {
     title: "سلة المشتريات",
     empty: "سلة مشترياتك فارغة.",
     browse: "متابعة التسوق",
-    checkout: "إنشاء الطلب وعرض تعليمات الدفع",
+    checkout: "الدفع غير متاح حالياً",
     remove: "حذف",
     subtotal: "الإجمالي المستحق",
     unavailable: "يوجد منتج لم يعد متاحاً. احذفيه قبل المتابعة.",
     limit: "الحد الأقصى 50 منتجاً مختلفاً في السلة.",
     loading: "جارٍ التحميل…",
     error: "تعذر تحميل السلة.",
-    disabled: "لا توجد وسيلة دفع مفعّلة حالياً.",
+    disabled: "المنصة في مرحلة تجريبية؛ الدفع غير متاح حالياً. يمكنك مواصلة التصفح.",
     starting: "جارٍ إنشاء الطلب…",
     paymentError: "تعذر إنشاء الطلب. تحققي من السلة وحاولي مجدداً.",
     providerLoading: "جارٍ تحميل وسائل الدفع…",
@@ -70,14 +70,14 @@ const copy = {
     title: "Shopping cart",
     empty: "Your cart is empty.",
     browse: "Continue shopping",
-    checkout: "Create order and show payment instructions",
+    checkout: "Payment temporarily unavailable",
     remove: "Remove",
     subtotal: "Total due",
     unavailable: "A product is no longer available. Remove it before continuing.",
     limit: "Up to 50 different products per cart.",
     loading: "Loading…",
     error: "Could not load cart.",
-    disabled: "No payment method is currently enabled.",
+    disabled: "Beta version: payments are temporarily disabled. You can continue browsing the platform.",
     starting: "Creating order…",
     paymentError: "The order could not be created. Check your cart and try again.",
     providerLoading: "Loading payment methods…",
@@ -309,42 +309,14 @@ function CartPage() {
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{t.limit}</p>
             <div className="mt-5 space-y-3">
-              <label htmlFor="platform-payment-method" className="block text-sm font-semibold">
-                {lang === "ar"
-                  ? "وسيلة الدفع"
-                  : lang === "en"
-                    ? "Payment method"
-                    : "Moyen de paiement"}
-              </label>
-              <select
-                id="platform-payment-method"
-                value={selectedMethod}
-                onChange={(event) => setSelectedMethod(event.target.value as typeof selectedMethod)}
-                disabled={paymentMutation.isPending || Boolean(checkoutInfo)}
-                className="w-full rounded-xl border border-input bg-background px-3 py-3 text-sm"
-              >
-                {(paymentMethodsQuery.data?.methods ?? []).map((method) => (
-                  <option key={method.method} value={method.method}>
-                    {method.method === "flouci"
-                      ? "Flouci"
-                      : method.method === "bank_transfer"
-                        ? lang === "ar"
-                          ? "تحويل بنكي"
-                          : lang === "en"
-                            ? "Bank transfer"
-                            : "Virement bancaire"
-                        : lang === "ar"
-                          ? "تحويل بريدي"
-                          : lang === "en"
-                            ? "Postal transfer"
-                            : "Virement postal"}
-                  </option>
-                ))}
-              </select>
+              <p role="status" className="rounded-lg bg-secondary p-3 text-sm text-muted-foreground">
+                {t.disabled}
+              </p>
               <button
                 type="button"
                 onClick={() => paymentMutation.mutate()}
                 disabled={
+                  true ||
                   unavailable ||
                   paymentMutation.isPending ||
                   !paymentMethodsQuery.data?.methods.length
@@ -353,7 +325,7 @@ function CartPage() {
               >
                 {paymentMutation.isPending ? t.starting : t.checkout}
               </button>
-              {paymentMethodsQuery.isPending ? (
+              {false ? (
                 <p role="status" className="text-sm text-muted-foreground">
                   {t.providerLoading}
                 </p>

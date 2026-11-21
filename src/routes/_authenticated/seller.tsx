@@ -20,7 +20,7 @@ import {
 } from "@/lib/product-previews";
 import { ProductPreview } from "@/components/ProductPreview";
 import { translateProductContent } from "@/lib/product-translations";
-import { MAX_PRODUCT_FILE_BYTES, uploadProductFile } from "@/lib/storage-upload";
+import { computeFileSha256, MAX_PRODUCT_FILE_BYTES, uploadProductFile } from "@/lib/storage-upload";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 import { LocalizedFileInput } from "@/components/LocalizedFileInput";
@@ -429,13 +429,19 @@ function SellerPage() {
     file: File,
   ): Promise<"ok" | "quota" | "email" | "error"> {
     const fileName = safeFileName(file.name);
+    let sha256: string;
+    try {
+      sha256 = await computeFileSha256(file);
+    } catch {
+      return "error";
+    }
     const { data: versionRows, error: registerError } = await registerSellerFileVersion({
       data: {
         productId,
         fileName,
         sizeBytes: file.size,
         mimeType: file.type || "application/octet-stream",
-        sha256: "",
+        sha256,
       },
     });
     const rawVersion = Array.isArray(versionRows) ? versionRows[0] : versionRows;

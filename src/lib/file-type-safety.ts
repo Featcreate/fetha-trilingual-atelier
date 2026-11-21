@@ -64,7 +64,7 @@ const BLOCKED_EXECUTABLE_EXTENSIONS = new Set([
 export function isBlockedExecutableFileName(fileName: string): boolean {
   const normalized = fileName.normalize("NFKC").replace(/\\/g, "/");
   const lastPathSegment = normalized.split("/").pop() ?? "";
-  const fileNameWithoutStream = lastPathSegment.split(":")[0];
+  const fileNameWithoutStream = lastPathSegment.split(":")[0] ?? "";
   const basename = fileNameWithoutStream.replace(/[ .]+$/g, "");
   const dot = basename.lastIndexOf(".");
   const extension = dot >= 0 ? basename.slice(dot + 1).toLowerCase() : "";

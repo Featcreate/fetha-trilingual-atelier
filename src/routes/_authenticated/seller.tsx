@@ -24,7 +24,10 @@ import { MAX_PRODUCT_FILE_BYTES, uploadProductFile } from "@/lib/storage-upload"
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 import { LocalizedFileInput } from "@/components/LocalizedFileInput";
-import { getSellerPayoutPreview, submitSellerPayoutRequest } from "@/lib/manual-checkout.functions";
+import {
+  getSellerPayoutPreview,
+  submitSellerPayoutRequest,
+} from "@/lib/manual-checkout.functions";
 import {
   activateSellerFileVersion,
   archiveSellerFileVersion,

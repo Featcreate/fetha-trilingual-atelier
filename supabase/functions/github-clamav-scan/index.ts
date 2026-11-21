@@ -32,7 +32,7 @@ async function verifyRunner(req: Request) {
     payload.repository !== repo ||
     payload.ref !== "refs/heads/main" ||
     payload.workflow_ref !== workflow ||
-    (payload.event_name !== "schedule" && payload.event_name !== "workflow_dispatch")
+    (payload.event_name !== "push" && payload.event_name !== "schedule" && payload.event_name !== "workflow_dispatch")
   ) {
     throw new Error("runner_identity_not_allowed");
   }

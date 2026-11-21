@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { AuthShell } from "@/components/AuthShell";
 import { ProductPreview } from "@/components/ProductPreview";
@@ -9,10 +9,6 @@ import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
 import { formatTND } from "@/lib/money";
 import { localizedProductText } from "@/lib/product-translations";
-import {
-  getPlatformPaymentMethods,
-  startManualCartCheckout,
-} from "@/lib/manual-checkout.functions";
 
 export const Route = createFileRoute("/cart")({ component: CartPage });
 
@@ -32,58 +28,40 @@ const copy = {
     title: "Panier",
     empty: "Votre panier est vide.",
     browse: "Continuer mes achats",
-    checkout: "Créer la commande et afficher les instructions",
+    checkout: "Paiement temporairement indisponible",
     remove: "Retirer",
     subtotal: "Total à payer",
     unavailable: "Un produit n’est plus disponible. Retirez-le avant de poursuivre.",
     limit: "50 produits différents maximum par panier.",
     loading: "Chargement…",
     error: "Impossible de charger le panier.",
-    disabled: "Aucun moyen de paiement n’est actuellement activé.",
-    starting: "Création de la commande…",
-    paymentError: "La commande n’a pas pu être créée. Vérifiez votre panier et réessayez.",
-    providerLoading: "Chargement des moyens de paiement…",
-    paymentReady:
-      "Commande créée. Effectuez le transfert avec les informations ci-dessous ; le téléchargement sera ouvert après vérification manuelle.",
-    openPayment: "Référence de commande",
+    disabled: "Version bêta : le paiement est temporairement désactivé. Vous pouvez continuer à parcourir la plateforme.",
   },
   ar: {
     title: "سلة المشتريات",
     empty: "سلة مشترياتك فارغة.",
     browse: "متابعة التسوق",
-    checkout: "إنشاء الطلب وعرض تعليمات الدفع",
+    checkout: "الدفع غير متاح حالياً",
     remove: "حذف",
     subtotal: "الإجمالي المستحق",
     unavailable: "يوجد منتج لم يعد متاحاً. احذفيه قبل المتابعة.",
     limit: "الحد الأقصى 50 منتجاً مختلفاً في السلة.",
     loading: "جارٍ التحميل…",
     error: "تعذر تحميل السلة.",
-    disabled: "لا توجد وسيلة دفع مفعّلة حالياً.",
-    starting: "جارٍ إنشاء الطلب…",
-    paymentError: "تعذر إنشاء الطلب. تحققي من السلة وحاولي مجدداً.",
-    providerLoading: "جارٍ تحميل وسائل الدفع…",
-    paymentReady:
-      "تم إنشاء الطلب. أكملي التحويل وفق البيانات التالية؛ ستُفتح التنزيلات بعد التحقق اليدوي من وصول المبلغ.",
-    openPayment: "مرجع الطلب",
+    disabled: "المنصة في مرحلة تجريبية؛ الدفع غير متاح حالياً. يمكنك مواصلة التصفح.",
   },
   en: {
     title: "Shopping cart",
     empty: "Your cart is empty.",
     browse: "Continue shopping",
-    checkout: "Create order and show payment instructions",
+    checkout: "Payment temporarily unavailable",
     remove: "Remove",
     subtotal: "Total due",
     unavailable: "A product is no longer available. Remove it before continuing.",
     limit: "Up to 50 different products per cart.",
     loading: "Loading…",
     error: "Could not load cart.",
-    disabled: "No payment method is currently enabled.",
-    starting: "Creating order…",
-    paymentError: "The order could not be created. Check your cart and try again.",
-    providerLoading: "Loading payment methods…",
-    paymentReady:
-      "Order created. Complete the transfer using the details below; downloads unlock after manual verification.",
-    openPayment: "Order reference",
+    disabled: "Beta version: payments are temporarily disabled. You can continue browsing the platform.",
   },
 } as const;
 
@@ -91,44 +69,10 @@ function CartPage() {
   const { lang, setLang } = useLang();
   const t = copy[lang];
   const { items, count, remove } = useCart();
-  const checkoutAttempt = useRef<{ signature: string; key: string } | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<
-    "flouci" | "bank_transfer" | "postal_transfer"
-  >("flouci");
-  const [checkoutInfo, setCheckoutInfo] = useState<{
-    orderReference: string;
-    totalMillimes: number;
-    method: string;
-    beneficiaryLabel: string;
-    accountIdentifier: string;
-    instructions: string;
-  } | null>(null);
   const signature = items
     .map((line) => line.productId)
     .sort()
     .join(",");
-
-  const getCheckoutKey = () => {
-    if (checkoutAttempt.current?.signature === signature) return checkoutAttempt.current.key;
-    const storageKey = `algorea-bazaar:manual-cart-attempt:${signature}`;
-    try {
-      const stored = sessionStorage.getItem(storageKey);
-      if (stored && stored.length >= 8) {
-        checkoutAttempt.current = { signature, key: stored };
-        return stored;
-      }
-    } catch {
-      // Continue with an in-memory key when session storage is unavailable.
-    }
-    const key = crypto.randomUUID();
-    checkoutAttempt.current = { signature, key };
-    try {
-      sessionStorage.setItem(storageKey, key);
-    } catch {
-      // The in-memory key still protects this page.
-    }
-    return key;
-  };
 
   const query = useQuery({
     queryKey: ["cart-products", items.map((line) => line.productId).join(",")],
@@ -159,41 +103,6 @@ function CartPage() {
     },
   });
 
-  const paymentMethodsQuery = useQuery({
-    queryKey: ["platform-payment-methods"],
-    queryFn: () => getPlatformPaymentMethods(),
-    staleTime: 30_000,
-  });
-
-  useEffect(() => {
-    const available = paymentMethodsQuery.data?.methods ?? [];
-    if (available.length && !available.some((method) => method.method === selectedMethod)) {
-      setSelectedMethod(available[0]!.method);
-    }
-  }, [paymentMethodsQuery.data, selectedMethod]);
-
-  const paymentMutation = useMutation({
-    mutationFn: () =>
-      startManualCartCheckout({
-        data: {
-          items: items.map(({ productId }) => ({ productId })),
-          checkoutKey: getCheckoutKey(),
-          method: selectedMethod,
-        },
-      }),
-    onSuccess: (result) => {
-      if (result.ok)
-        setCheckoutInfo({
-          orderReference: result.orderReference,
-          totalMillimes: result.totalMillimes,
-          method: result.method,
-          beneficiaryLabel: result.beneficiaryLabel,
-          accountIdentifier: result.accountIdentifier,
-          instructions: result.instructions,
-        });
-    },
-  });
-
   const lines = useMemo(() => {
     const productMap = new Map(
       (query.data?.products ?? []).map((product) => [product.id, product]),
@@ -218,8 +127,6 @@ function CartPage() {
 
   const total = lines.reduce((sum, line) => sum + line.total, 0);
   const unavailable = !query.isPending && lines.length !== items.length;
-  const paymentError =
-    paymentMutation.isError || (paymentMutation.data !== undefined && !paymentMutation.data.ok);
 
   return (
     <AuthShell
@@ -309,99 +216,22 @@ function CartPage() {
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{t.limit}</p>
             <div className="mt-5 space-y-3">
-              <label htmlFor="platform-payment-method" className="block text-sm font-semibold">
-                {lang === "ar"
-                  ? "وسيلة الدفع"
-                  : lang === "en"
-                    ? "Payment method"
-                    : "Moyen de paiement"}
-              </label>
-              <select
-                id="platform-payment-method"
-                value={selectedMethod}
-                onChange={(event) => setSelectedMethod(event.target.value as typeof selectedMethod)}
-                disabled={paymentMutation.isPending || Boolean(checkoutInfo)}
-                className="w-full rounded-xl border border-input bg-background px-3 py-3 text-sm"
+              <p
+                role="status"
+                className="rounded-lg bg-secondary p-3 text-sm text-muted-foreground"
               >
-                {(paymentMethodsQuery.data?.methods ?? []).map((method) => (
-                  <option key={method.method} value={method.method}>
-                    {method.method === "flouci"
-                      ? "Flouci"
-                      : method.method === "bank_transfer"
-                        ? lang === "ar"
-                          ? "تحويل بنكي"
-                          : lang === "en"
-                            ? "Bank transfer"
-                            : "Virement bancaire"
-                        : lang === "ar"
-                          ? "تحويل بريدي"
-                          : lang === "en"
-                            ? "Postal transfer"
-                            : "Virement postal"}
-                  </option>
-                ))}
-              </select>
+                {t.disabled}
+              </p>
               <button
                 type="button"
-                onClick={() => paymentMutation.mutate()}
-                disabled={
-                  unavailable ||
-                  paymentMutation.isPending ||
-                  !paymentMethodsQuery.data?.methods.length
-                }
+                disabled
+                aria-disabled="true"
                 className="inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {paymentMutation.isPending ? t.starting : t.checkout}
+                {t.checkout}
               </button>
-              {paymentMethodsQuery.isPending ? (
-                <p role="status" className="text-sm text-muted-foreground">
-                  {t.providerLoading}
-                </p>
-              ) : !paymentMethodsQuery.data?.methods.length ? (
-                <p role="status" className="text-sm text-muted-foreground">
-                  {t.disabled}
-                </p>
-              ) : null}
+
             </div>
-            {checkoutInfo && (
-              <div
-                role="status"
-                className="mt-4 space-y-2 rounded-xl border border-border bg-secondary p-4 text-sm"
-              >
-                <p className="font-semibold">{t.paymentReady}</p>
-                <p>
-                  {t.openPayment}: <strong dir="ltr">{checkoutInfo.orderReference}</strong>
-                </p>
-                <p>
-                  {t.subtotal}: <strong>{formatTND(checkoutInfo.totalMillimes)}</strong>
-                </p>
-                <p>
-                  {lang === "ar" ? "المستفيد" : lang === "en" ? "Beneficiary" : "Bénéficiaire"}:{" "}
-                  <strong>{checkoutInfo.beneficiaryLabel}</strong>
-                </p>
-                <p>
-                  {lang === "ar"
-                    ? "معرّف الحساب"
-                    : lang === "en"
-                      ? "Account identifier"
-                      : "Identifiant du compte"}
-                  : <strong dir="ltr">{checkoutInfo.accountIdentifier}</strong>
-                </p>
-                <p>{checkoutInfo.instructions}</p>
-                <p className="text-xs text-muted-foreground">
-                  {lang === "ar"
-                    ? "لا ترسلي إيصالاً. لن تتاح التنزيلات إلا بعد تأكيد الإدارة لوصول المبلغ."
-                    : lang === "en"
-                      ? "Do not upload a receipt. Downloads remain locked until the administrator confirms receipt of the payment."
-                      : "N’envoyez aucun reçu. Les téléchargements resteront bloqués jusqu’à la confirmation manuelle de la réception."}
-                </p>
-              </div>
-            )}
-            {paymentError && (
-              <p role="alert" className="mt-3 rounded-xl border border-border p-4 text-sm">
-                {t.paymentError}
-              </p>
-            )}
           </div>
         </>
       )}

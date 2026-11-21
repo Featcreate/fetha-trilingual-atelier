@@ -3,6 +3,8 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { callActorScopedRpc } from "@/lib/actor-rpc.server";
 
+const BUYER_CHECKOUT_PAUSED = true;
+
 type PaymentMethod = "flouci" | "bank_transfer" | "postal_transfer";
 type ManualPaymentRow = {
   method: PaymentMethod;
@@ -51,6 +53,7 @@ async function manualClient() {
 export const getPlatformPaymentMethods = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
+    if (BUYER_CHECKOUT_PAUSED) return { ok: true as const, methods: [] as ManualPaymentRow[] };
     const client = await manualClient();
     const methods: ManualPaymentRow[] = [];
     for (const method of ["flouci", "bank_transfer", "postal_transfer"] as const) {
@@ -80,6 +83,9 @@ export const startManualCartCheckout = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    if (BUYER_CHECKOUT_PAUSED) {
+      return { ok: false as const, error: "checkout_temporarily_disabled" };
+    }
     const { data: rawOrderId, error } = await callActorScopedRpc(
       context.userId,
       "server_create_order_from_cart",

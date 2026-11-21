@@ -82,11 +82,15 @@ jobs:
                 digest=""
               else
                 digest="$(sha256sum "$file_path" | cut -d ' ' -f 1)"
+                scan_output="$workdir/clamav-output.txt"
                 set +e
-                clamscan --no-summary --infected --alert-exceeds-max --max-filesize=60M --max-scansize=250M --max-recursion=20 --max-files=10000 -- "$file_path" >/dev/null 2>&1
+                clamscan --no-summary --infected --alert-exceeds-max --max-filesize=60M --max-scansize=250M --max-scantime=180000 --max-recursion=20 --max-files=10000 -- "$file_path" >"$scan_output" 2>&1
                 scan_exit=$?
                 set -e
-                if (( scan_exit == 0 )); then
+                if grep -q "Heuristics.Limits.Exceeded" "$scan_output"; then
+                  result="error"
+                  error_code="clamav_scan_limit_exceeded"
+                elif (( scan_exit == 0 )); then
                   result="clean"
                   error_code=""
                 elif (( scan_exit == 1 )); then
@@ -96,6 +100,7 @@ jobs:
                   result="error"
                   error_code="clamav_scan_failed"
                 fi
+                rm -f "$scan_output"
               fi
             fi
 

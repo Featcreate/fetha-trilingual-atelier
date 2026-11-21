@@ -3,6 +3,8 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+const BUYER_CHECKOUT_PAUSED = true;
+
 type PaymentInitClaim = { outcome?: string; pay_url?: string | null };
 
 function siteOrigin() {
@@ -23,6 +25,7 @@ export const startCheckout = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    if (BUYER_CHECKOUT_PAUSED) return { ok: false as const, error: "checkout_temporarily_disabled" };
     const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
     if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
 
@@ -129,6 +132,7 @@ export const startCheckout = createServerFn({ method: "POST" })
 
 /** Public-safe status only; never exposes provider credentials. */
 export const getCartCheckoutAvailability = createServerFn({ method: "GET" }).handler(async () => {
+  if (BUYER_CHECKOUT_PAUSED) return { enabled: false };
   const { konnectConfig } = await import("./konnect.server");
   return { enabled: Boolean(konnectConfig(true)) };
 });
@@ -153,6 +157,7 @@ export const startCartCheckout = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    if (BUYER_CHECKOUT_PAUSED) return { ok: false as const, error: "checkout_temporarily_disabled" };
     const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
     if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
 
@@ -431,6 +436,7 @@ export const adminRecheckIpayPayment = createServerFn({ method: "POST" })
 /** Initialize one iPay hosted checkout for the authenticated buyer's entire cart.
  * The returned URL only redirects to iPay; it never marks an order as paid. */
 export const getIpayCheckoutAvailability = createServerFn({ method: "GET" }).handler(async () => {
+  if (BUYER_CHECKOUT_PAUSED) return { enabled: false };
   const { ipayConfig, isIpayCheckoutEnabled } = await import("./ipay.server");
   const cfg = ipayConfig(true);
   if (!cfg) return { enabled: false };
@@ -453,6 +459,7 @@ export const getExistingCartIpayPayment = createServerFn({ method: "GET" })
     z.object({ productIds: z.array(z.string().uuid()).min(1).max(50) }).parse(input),
   )
   .handler(async ({ data, context }) => {
+    if (BUYER_CHECKOUT_PAUSED) return { payUrl: null, orderId: null };
     const productIds = [...new Set(data.productIds)].sort();
     if (productIds.length !== data.productIds.length) {
       return { payUrl: null, orderId: null };
@@ -488,6 +495,7 @@ export const startCartIpayCheckout = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    if (BUYER_CHECKOUT_PAUSED) return { ok: false as const, error: "checkout_temporarily_disabled" };
     const { ipayConfig, ipayCreateOneShot, isIpayCheckoutEnabled } = await import("./ipay.server");
     const cfg = ipayConfig(true);
     if (!cfg) return { ok: false as const, error: "ipay_not_configured" };

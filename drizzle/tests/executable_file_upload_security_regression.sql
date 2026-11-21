@@ -91,4 +91,4 @@ BEGIN
     RAISE EXCEPTION 'purchase_snapshot_scan_gate_missing';
   END IF;
 END;
-$;
+$$;

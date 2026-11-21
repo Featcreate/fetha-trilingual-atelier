@@ -107,7 +107,11 @@ BEGIN
              'clamav_scan_limit_exceeded'
            )
          )
-         OR (v.scan_status = 'scanning' AND v.scan_started_at < now() - interval '15 minutes')
+         OR (
+           v.scan_status = 'scanning'
+           AND v.scan_attempts < 3
+           AND v.scan_started_at < now() - interval '15 minutes'
+         )
        )
      ORDER BY v.created_at, v.id
      FOR UPDATE SKIP LOCKED

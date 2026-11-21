@@ -1,0 +1,49 @@
+name: Format seller route (PR 130)
+
+on:
+  push:
+    branches:
+      - fix/seller-product-descriptions-and-file-inputs
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: format-seller-pr130
+  cancel-in-progress: false
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v5
+        with:
+          ref: fix/seller-product-descriptions-and-file-inputs
+          fetch-depth: 0
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Format seller route
+        run: bunx prettier --write src/routes/_authenticated/seller.tsx
+
+      - name: Commit formatting if needed
+        shell: bash
+        run: |
+          if git diff --quiet -- src/routes/_authenticated/seller.tsx; then
+            echo "Seller route is already formatted."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/routes/_authenticated/seller.tsx
+          git commit -m "Format seller route with Prettier"
+          git push origin HEAD:fix/seller-product-descriptions-and-file-inputs

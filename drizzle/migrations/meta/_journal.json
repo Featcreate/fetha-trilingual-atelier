@@ -442,6 +442,13 @@
       "when": 1795219200000,
       "tag": "0060_clamav_content_scan_gate",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1795219560000,
+      "tag": "0061_require_matching_file_digest",
+      "breakpoints": true
     }
   ]
 }

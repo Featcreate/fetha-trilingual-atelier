@@ -21,6 +21,7 @@ import {
 import { ProductPreview } from "@/components/ProductPreview";
 import { translateProductContent } from "@/lib/product-translations";
 import { MAX_PRODUCT_FILE_BYTES, uploadProductFile } from "@/lib/storage-upload";
+import { isBlockedExecutableFileName } from "@/lib/file-type-safety";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 import { LocalizedFileInput } from "@/components/LocalizedFileInput";
@@ -428,8 +429,9 @@ function SellerPage() {
   async function uploadFile(
     productId: string,
     file: File,
-  ): Promise<"ok" | "quota" | "email" | "error"> {
+  ): Promise<"ok" | "quota" | "email" | "blocked" | "error"> {
     const fileName = safeFileName(file.name);
+    if (isBlockedExecutableFileName(fileName)) return "blocked";
     const { data: versionRows, error: registerError } = await registerSellerFileVersion({
       data: {
         productId,
@@ -540,7 +542,13 @@ function SellerPage() {
             ? m.storageQuotaExceeded
             : uploaded === "email"
               ? m.emailVerificationRequired
-              : m.fileUploadFailed,
+              : uploaded === "blocked"
+                ? lang === "ar"
+                  ? "هذا النوع من الملفات التنفيذية أو النصية البرمجية غير مسموح به."
+                  : lang === "en"
+                    ? "Executable and script file types are not allowed."
+                    : "Les fichiers exécutables et scripts ne sont pas autorisés."
+                : m.fileUploadFailed,
         );
       }
     }

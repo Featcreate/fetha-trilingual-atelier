@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertSafeDigitalFileName } from "@/lib/file-type-safety";
 
 export const createSellerStore = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -40,6 +41,7 @@ export const registerSellerFileVersion = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    assertSafeDigitalFileName(data.fileName);
     const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
     return callActorScopedRpc(context.userId, "server_register_file_version", {
       _product_id: data.productId,

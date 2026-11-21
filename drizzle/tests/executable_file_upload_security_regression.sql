@@ -80,9 +80,24 @@ BEGIN
     WHERE schemaname = 'public'
       AND tablename = 'products'
       AND policyname = 'Anyone reads listed products'
-      AND qual ILIKE '%scan_status%'
+      AND qual ILIKE '%product_has_clean_file%'
   ) THEN
     RAISE EXCEPTION 'public_catalogue_scan_gate_missing';
+  END IF;
+
+
+  IF NOT has_function_privilege(
+    'anon', 'public.product_has_clean_file(uuid)', 'EXECUTE'
+  ) OR NOT has_function_privilege(
+    'authenticated', 'public.product_has_clean_file(uuid)', 'EXECUTE'
+  ) THEN
+    RAISE EXCEPTION 'public_clean_file_predicate_not_granted';
+  END IF;
+
+  IF position(
+    'scan_status' IN pg_get_functiondef('public.product_has_clean_file(uuid)'::regprocedure)
+  ) = 0 THEN
+    RAISE EXCEPTION 'public_clean_file_predicate_missing_scan_filter';
   END IF;
 
   IF position(

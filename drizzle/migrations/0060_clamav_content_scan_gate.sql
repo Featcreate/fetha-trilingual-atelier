@@ -211,7 +211,10 @@ BEGIN
        AND v.scan_status = 'clean'
        AND (o.metadata->>'size')::bigint = v.size_bytes
   ) THEN
-    RAISE EXCEPTION 'product_file_scan_not_clean';
+    -- A product may retain an older clean version while a replacement scans.
+    -- Never snapshot the unscanned version; a deferred item-level guard below
+    -- rejects checkout if no clean file remains for the purchased product.
+    RETURN NULL;
   END IF;
   RETURN NEW;
 END;
@@ -227,3 +230,28 @@ GRANT EXECUTE ON FUNCTION public.guard_order_item_file_scan() TO service_role;
 
 COMMENT ON COLUMN public.product_file_versions.scan_status IS
   'Content scan state. Only clean versions may be activated, publicly listed, or snapshotted into a purchase.';
+
+CREATE OR REPLACE FUNCTION public.ensure_order_item_has_clean_file()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM public.order_item_files f WHERE f.order_item_id = NEW.id
+  ) THEN
+    RAISE EXCEPTION 'product_file_scan_not_clean';
+  END IF;
+  RETURN NULL;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS order_item_requires_clean_file ON public.order_items;
+CREATE CONSTRAINT TRIGGER order_item_requires_clean_file
+AFTER INSERT ON public.order_items
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW EXECUTE FUNCTION public.ensure_order_item_has_clean_file();
+
+REVOKE ALL ON FUNCTION public.ensure_order_item_has_clean_file() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.ensure_order_item_has_clean_file() TO service_role;

@@ -18,9 +18,14 @@ export function ProductDescription({
     if (!element) return;
 
     const measure = () => {
+      const wasClamped = element.classList.contains("line-clamp-2");
+      if (wasClamped) element.classList.remove("line-clamp-2");
+      const fullHeight = element.scrollHeight;
+      if (wasClamped) element.classList.add("line-clamp-2");
+
       const lineHeight = Number.parseFloat(window.getComputedStyle(element).lineHeight);
       const twoLineHeight = Number.isFinite(lineHeight) ? lineHeight * 2 : 40;
-      setCanExpand(element.scrollHeight > twoLineHeight + 1);
+      setCanExpand(fullHeight > twoLineHeight + 1);
     };
 
     measure();

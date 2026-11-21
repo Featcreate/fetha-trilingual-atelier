@@ -1867,6 +1867,16 @@ function SellerFileVersions({
                   ? m.fileStatusArchived
                   : m.fileStatusPending}
               {" · "}
+              {version.scan_status === "clean"
+                ? m.fileScanClean
+                : version.scan_status === "infected"
+                  ? m.fileScanInfected
+                  : version.scan_status === "error"
+                    ? m.fileScanError
+                    : version.scan_status === "scanning"
+                      ? m.fileScanScanning
+                      : m.fileScanPending}
+              {" · "}
               {m.fileSize}: {formatFileSize(Number(version.size_bytes))}
             </p>
           </div>

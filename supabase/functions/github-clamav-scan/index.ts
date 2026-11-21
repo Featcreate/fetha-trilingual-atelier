@@ -73,7 +73,6 @@ Deno.serve(async (req) => {
       return respond(200, {
         claimed: true,
         versionId: row.version_id,
-        fileName: row.file_name,
         sizeBytes: row.size_bytes,
         signedUrl: signed.signedUrl,
       });

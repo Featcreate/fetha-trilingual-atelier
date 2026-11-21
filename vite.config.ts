@@ -1,7 +1,7 @@
 import netlify from "@netlify/vite-plugin-tanstack-start";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-const isNetlifyBuild = process.env.NETLIFY === "true";
+const isNetlifyBuild = process.env['NETLIFY'] === "true";
 
 export default defineConfig({
   nitro: isNetlifyBuild ? false : { preset: "node-server" },

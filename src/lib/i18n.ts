@@ -1028,7 +1028,8 @@ export const dict = {
       deleteProductConfirmation:
         "Are you sure you want to delete this product? It will be removed from your store, while previous orders and buyers’ files remain preserved.",
       productDeleted: "The product has been removed from your store.",
-      productRemovedFromStore: "This product has been removed from your store. Its name and history remain visible here.",
+      productRemovedFromStore:
+        "This product has been removed from your store. Its name and history remain visible here.",
       deleteProductFailed: "Could not delete this product. Please try again.",
       storeCreated: "Your store has been created.",
       productCreated: "Product saved and published.",

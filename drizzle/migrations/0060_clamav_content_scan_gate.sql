@@ -104,7 +104,8 @@ BEGIN
            AND coalesce(v.scan_error_code, '') NOT IN (
              'content_digest_mismatch',
              'scan_digest_missing',
-             'clamav_scan_limit_exceeded'
+             'clamav_scan_limit_exceeded',
+             'encrypted_content_not_scannable'
            )
          )
          OR (

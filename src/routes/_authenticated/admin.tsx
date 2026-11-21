@@ -1050,6 +1050,9 @@ function AdminPage() {
           <div className="mt-4 space-y-3">
             {(["flouci", "bank_transfer", "postal_transfer"] as const).map((method) => {
               const saved = platformPaymentMethods.data.find((row) => row.method === method);
+              const canEnable =
+                Boolean(saved?.account_holder_name?.trim()) &&
+                Boolean(saved?.account_identifier?.trim());
               return (
                 <form
                   key={method}
@@ -1116,7 +1119,8 @@ function AdminPage() {
                     <input
                       type="checkbox"
                       name="enabled"
-                      defaultChecked={saved?.enabled ?? false}
+                      defaultChecked={Boolean(saved?.enabled && canEnable)}
+                      disabled={!canEnable}
                     />
                     {lang === "ar"
                       ? "مفعّلة للمشترين"
@@ -1124,6 +1128,15 @@ function AdminPage() {
                         ? "Enabled for buyers"
                         : "Activé pour les acheteurs"}
                   </label>
+                  {!canEnable && (
+                    <p className="mt-2 text-xs text-amber-700" role="status">
+                      {lang === "ar"
+                        ? "لا يمكن تفعيل هذه الوسيلة قبل إدخال اسم صاحب الحساب ومعرّف الحساب الصحيح."
+                        : lang === "en"
+                          ? "This method cannot be enabled until the account holder name and account identifier are entered."
+                          : "Ce moyen ne peut pas être activé avant de renseigner le titulaire et l’identifiant du compte."}
+                    </p>
+                  )}
                   <button
                     type="submit"
                     disabled={busy === "payment:" + method}

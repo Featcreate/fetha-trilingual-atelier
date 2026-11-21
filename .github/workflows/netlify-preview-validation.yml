@@ -36,3 +36,7 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Build Netlify preview
         run: bun run build
+      - name: Build with Netlify adapter enabled
+        run: bun run build
+        env:
+          NETLIFY: "true"

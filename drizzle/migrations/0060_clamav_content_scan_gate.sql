@@ -98,6 +98,15 @@ BEGIN
      )
        AND (
          v.scan_status = 'pending'
+         OR (
+           v.scan_status = 'error'
+           AND v.scan_attempts < 3
+           AND coalesce(v.scan_error_code, '') NOT IN (
+             'content_digest_mismatch',
+             'scan_digest_missing',
+             'clamav_scan_limit_exceeded'
+           )
+         )
          OR (v.scan_status = 'scanning' AND v.scan_started_at < now() - interval '15 minutes')
        )
      ORDER BY v.created_at, v.id

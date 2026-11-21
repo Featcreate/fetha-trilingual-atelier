@@ -22,7 +22,7 @@ jobs:
         with:
           bun-version: latest
       - name: Regenerate Bun lockfile
-        run: bun install --lockfile-only
+        run: bun install
       - name: Commit lockfile if changed
         run: |
           if ! git diff --quiet -- bun.lock; then

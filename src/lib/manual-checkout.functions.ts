@@ -83,7 +83,9 @@ export const startManualCartCheckout = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    if (BUYER_CHECKOUT_PAUSED) return { ok: false as const, error: "checkout_temporarily_disabled" };
+    if (BUYER_CHECKOUT_PAUSED) {
+      return { ok: false as const, error: "checkout_temporarily_disabled" };
+    }
     const { data: rawOrderId, error } = await callActorScopedRpc(
       context.userId,
       "server_create_order_from_cart",

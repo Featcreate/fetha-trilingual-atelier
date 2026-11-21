@@ -428,6 +428,13 @@
       "when": 1795046400002,
       "tag": "0058_configurable_payment_beneficiary",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1795132800000,
+      "tag": "0059_block_executable_seller_uploads",
+      "breakpoints": true
     }
   ]
 }

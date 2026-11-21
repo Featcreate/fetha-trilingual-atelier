@@ -65,10 +65,12 @@ export function LocalizedFileInput({
           }}
         />
       </label>
-      <span className="min-w-0 break-all text-xs text-muted-foreground" aria-live="polite">
+      <span
+        className="min-w-0 break-all text-xs text-muted-foreground"
+        aria-live="polite"
+      >
         {selectedNames.length ? selectedNames.join(", ") : emptyLabel}
       </span>
-
     </div>
   );
 }

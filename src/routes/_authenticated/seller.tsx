@@ -23,6 +23,7 @@ import { translateProductContent } from "@/lib/product-translations";
 import { MAX_PRODUCT_FILE_BYTES, uploadProductFile } from "@/lib/storage-upload";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
+import { LocalizedFileInput } from "@/components/LocalizedFileInput";
 import { getSellerPayoutPreview, submitSellerPayoutRequest } from "@/lib/manual-checkout.functions";
 import {
   activateSellerFileVersion,
@@ -144,6 +145,7 @@ function SellerPage() {
         .from("products")
         .select("*")
         .eq("store_id", store!.id)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Product[];
@@ -895,19 +897,8 @@ function SellerPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Field
-                    id="price"
-                    label={m.price}
-                    required
-                    inputMode="decimal"
-                    placeholder="12.500"
-                  />
-                  <Field
-                    id="sale_price"
-                    label={m.salePriceOptional}
-                    inputMode="decimal"
-                    placeholder="10.000"
-                  />
+                  <Field id="price" label={m.price} required inputMode="decimal" />
+                  <Field id="sale_price" label={m.salePriceOptional} inputMode="decimal" />
                 </div>
                 <div>
                   <label htmlFor="product_type" className="mb-1 block text-sm font-medium">
@@ -975,16 +966,16 @@ function SellerPage() {
                 <label htmlFor="product_image" className="mb-1 block text-sm font-medium">
                   {m.productCover}
                 </label>
-                <input
+                <LocalizedFileInput
                   id="product_image"
                   name="product_image"
-                  type="file"
                   accept={IMAGE_ACCEPT}
+                  buttonLabel={m.chooseFile}
+                  emptyLabel={m.noFileChosen}
                   onChange={(e) => {
                     const file = e.currentTarget.files?.[0];
                     setCoverPreview(file ? URL.createObjectURL(file) : null);
                   }}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
                 />
                 {coverPreview && (
                   <img
@@ -996,12 +987,13 @@ function SellerPage() {
                 <label htmlFor="product_gallery" className="block text-sm font-medium">
                   {m.productGallery}
                 </label>
-                <input
+                <LocalizedFileInput
                   id="product_gallery"
                   name="product_gallery"
-                  type="file"
                   multiple
                   accept={IMAGE_ACCEPT}
+                  buttonLabel={m.chooseFiles}
+                  emptyLabel={m.noFileChosen}
                   onChange={(e) => {
                     setGalleryPreviews(
                       Array.from(e.currentTarget.files ?? []).map((file) =>
@@ -1009,7 +1001,6 @@ function SellerPage() {
                       ),
                     );
                   }}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
                 />
                 {galleryPreviews.length > 0 && (
                   <div className="flex flex-wrap gap-2">
@@ -1029,13 +1020,13 @@ function SellerPage() {
                 <label htmlFor="digital_files" className="mb-1 block text-sm font-medium">
                   {m.digitalFiles}
                 </label>
-                <input
+                <LocalizedFileInput
                   id="digital_files"
                   name="digital_files"
-                  type="file"
                   multiple
                   required
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  buttonLabel={m.chooseFiles}
+                  emptyLabel={m.noFileChosen}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">{m.fileLimit}</p>
                 {uploadProgress !== null && (
@@ -1730,12 +1721,12 @@ function SellerImageFields({
       <div className="flex h-32 w-44 items-center justify-center overflow-hidden rounded-lg bg-cream-light">
         <ProductPreview path={product.image_path} alt={product.name} />
       </div>
-      <input
+      <LocalizedFileInput
         id={`edit_cover_${product.id}`}
         name={`edit_cover_${product.id}`}
-        type="file"
         accept={IMAGE_ACCEPT}
-        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+        buttonLabel={m.chooseFile}
+        emptyLabel={m.noFileChosen}
       />
       <label htmlFor={`edit_gallery_${product.id}`} className="block text-sm font-medium">
         {m.productGallery}
@@ -1752,14 +1743,14 @@ function SellerImageFields({
           </div>
         ))}
       </div>
-      <input
+      <LocalizedFileInput
         id={`edit_gallery_${product.id}`}
         name={`edit_gallery_${product.id}`}
-        type="file"
         multiple
         accept={IMAGE_ACCEPT}
         disabled={!gallery.data?.available}
-        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+        buttonLabel={m.chooseFiles}
+        emptyLabel={m.noFileChosen}
       />
       <p className="text-xs text-muted-foreground">{m.imageLimit}</p>
     </div>

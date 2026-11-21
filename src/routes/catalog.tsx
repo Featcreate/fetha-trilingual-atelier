@@ -15,6 +15,7 @@ import { ProductPreview } from "@/components/ProductPreview";
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { useCart } from "@/lib/cart";
+import { ProductDescription } from "@/components/ProductDescription";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({
@@ -276,9 +277,11 @@ function CatalogPage() {
                   >
                     {p.name}
                   </Link>
-                  <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
-                    {localizedProductText(p.description, p.description_translations, lang)}
-                  </p>
+                  <ProductDescription
+                    text={localizedProductText(p.description, p.description_translations, lang)}
+                    moreLabel={m.more}
+                    lessLabel={m.less}
+                  />
                 </div>
                 <p className="flex flex-wrap items-center gap-2 text-lg font-extrabold">
                   {p.sale_price_millimes ? (

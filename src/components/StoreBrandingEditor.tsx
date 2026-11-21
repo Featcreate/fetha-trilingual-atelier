@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useLang } from "@/lib/i18n";
+import { LocalizedFileInput } from "@/components/LocalizedFileInput";
 
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type Kind = "logo" | "avatar" | "banner";
@@ -142,17 +143,17 @@ export function StoreBrandingEditor({
                   {m.noImage}
                 </div>
               )}
-              <input
-                type="file"
+              <LocalizedFileInput
+                id={`store_${kind}_file`}
                 accept="image/jpeg,image/png,image/webp,image/avif"
-                aria-label={label}
+                buttonLabel={m.chooseFile}
+                emptyLabel={m.noFileChosen}
                 disabled={busy !== null}
+                clearAfterChange
                 onChange={(event) => {
                   const file = event.currentTarget.files?.[0];
-                  event.currentTarget.value = "";
                   if (file) void upload(kind, file);
                 }}
-                className="block w-full text-xs"
               />
               {path && (
                 <button

@@ -2,9 +2,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { createRemoteJWKSet, jwtVerify } from "https://deno.land/x/jose@v5.9.6/index.ts";
 
 const repo = "Featcreate/fetha-trilingual-atelier";
-const workflow = "Featcreate/fetha-trilingual-atelier/.github/workflows/clamav-file-scan.yml@refs/heads/main";
+const workflow =
+  "Featcreate/fetha-trilingual-atelier/.github/workflows/clamav-file-scan.yml@refs/heads/main";
 const issuer = "https://token.actions.githubusercontent.com";
-const jwks = createRemoteJWKSet(new URL("https://token.actions.githubusercontent.com/.well-known/jwks"));
+const jwks = createRemoteJWKSet(
+  new URL("https://token.actions.githubusercontent.com/.well-known/jwks"),
+);
 
 const cors = {
   "Access-Control-Allow-Origin": "https://github.com",
@@ -96,6 +99,8 @@ Deno.serve(async (req) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : "scanner_error";
     const denied = message.includes("runner_identity");
-    return respond(denied ? 401 : 500, { error: denied ? "unauthorized_runner" : "scanner_operation_failed" });
+    return respond(denied ? 401 : 500, {
+      error: denied ? "unauthorized_runner" : "scanner_operation_failed",
+    });
   }
 });

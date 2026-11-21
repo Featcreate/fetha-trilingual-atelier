@@ -1,0 +1,108 @@
+name: ClamAV seller file scanning
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: algorea-seller-file-malware-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    if: github.repository == 'Featcreate/fetha-trilingual-atelier' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Install ClamAV and refresh signatures
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends clamav clamav-freshclam jq curl
+          sudo freshclam
+
+      - name: Claim and scan pending seller files
+        shell: bash
+        env:
+          OIDC_REQUEST_URL: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_URL }}
+          OIDC_REQUEST_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
+        run: |
+          set -Eeuo pipefail
+          umask 077
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+          endpoint="https://jgjcychkntsokhzeziqs.supabase.co/functions/v1/github-clamav-scan"
+
+          oidc_json="$(curl --fail --silent --show-error \
+            -H "Authorization: bearer $OIDC_REQUEST_TOKEN" \
+            "${OIDC_REQUEST_URL}&audience=algorea-file-scan")"
+          oidc_token="$(jq -er '.value' <<< "$oidc_json")"
+          unset oidc_json OIDC_REQUEST_TOKEN
+
+          for attempt in 1 2 3 4 5; do
+            claim="$(curl --fail --silent --show-error \
+              -H "Authorization: Bearer $oidc_token" \
+              -H "Content-Type: application/json" \
+              -d '{"action":"claim"}' "$endpoint")"
+            if [[ "$(jq -r '.claimed // false' <<< "$claim")" != "true" ]]; then
+              echo "No pending seller files."
+              break
+            fi
+
+            version_id="$(jq -er '.versionId' <<< "$claim")"
+            signed_url="$(jq -er '.signedUrl' <<< "$claim")"
+            file_size="$(jq -er '.sizeBytes' <<< "$claim")"
+            if (( file_size < 1 || file_size > 50000000 )); then
+              result="error"
+              error_code="file_size_out_of_policy"
+              digest=""
+            else
+              file_path="$workdir/$version_id.payload"
+              if ! curl --fail --silent --show-error --max-time 180 \
+                --output "$file_path" "$signed_url"; then
+                result="error"
+                error_code="download_failed"
+                digest=""
+              elif [[ "$(stat -c '%s' "$file_path")" != "$file_size" ]]; then
+                result="error"
+                error_code="download_size_mismatch"
+                digest=""
+              else
+                digest="$(sha256sum "$file_path" | cut -d ' ' -f 1)"
+                set +e
+                clamscan --no-summary --infected -- "$file_path" >/dev/null 2>&1
+                scan_exit=$?
+                set -e
+                if (( scan_exit == 0 )); then
+                  result="clean"
+                  error_code=""
+                elif (( scan_exit == 1 )); then
+                  result="infected"
+                  error_code=""
+                else
+                  result="error"
+                  error_code="clamav_scan_failed"
+                fi
+              fi
+            fi
+
+            payload="$(jq -n \
+              --arg action "complete" \
+              --arg versionId "$version_id" \
+              --arg result "$result" \
+              --arg sha256 "$digest" \
+              --arg errorCode "$error_code" \
+              '{action:$action,versionId:$versionId,result:$result,sha256:(if $sha256 == "" then null else $sha256 end),errorCode:(if $errorCode == "" then null else $errorCode end)}')"
+            curl --fail --silent --show-error \
+              -H "Authorization: Bearer $oidc_token" \
+              -H "Content-Type: application/json" \
+              -d "$payload" "$endpoint" >/dev/null
+
+            rm -f "$file_path" 2>/dev/null || true
+            unset signed_url claim payload
+            echo "Completed scan attempt $attempt: $result"
+          done

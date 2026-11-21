@@ -83,7 +83,7 @@ jobs:
               else
                 digest="$(sha256sum "$file_path" | cut -d ' ' -f 1)"
                 set +e
-                clamscan --no-summary --infected -- "$file_path" >/dev/null 2>&1
+                clamscan --no-summary --infected --alert-exceeds-max --max-filesize=60M --max-scansize=250M --max-recursion=20 --max-files=10000 -- "$file_path" >/dev/null 2>&1
                 scan_exit=$?
                 set -e
                 if (( scan_exit == 0 )); then

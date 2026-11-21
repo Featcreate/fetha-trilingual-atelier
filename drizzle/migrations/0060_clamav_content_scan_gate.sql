@@ -84,7 +84,18 @@ BEGIN
   WITH candidate AS (
     SELECT v.id
       FROM public.product_file_versions v
-     WHERE v.status IN ('pending_upload', 'active')
+     WHERE (
+       v.status = 'active'
+       OR (
+         v.status = 'pending_upload'
+         AND EXISTS (
+           SELECT 1 FROM storage.objects o
+            WHERE o.bucket_id = 'product-files'
+              AND o.name = v.storage_path
+              AND (o.metadata->>'size')::bigint = v.size_bytes
+         )
+       )
+     )
        AND (
          v.scan_status = 'pending'
          OR (v.scan_status = 'scanning' AND v.scan_started_at < now() - interval '15 minutes')

@@ -38,3 +38,5 @@ FOR EACH ROW
 EXECUTE FUNCTION public.reject_executable_product_file_version();
 
 REVOKE ALL ON FUNCTION public.reject_executable_product_file_version() FROM PUBLIC, anon, authenticated;
+
+GRANT EXECUTE ON FUNCTION public.reject_executable_product_file_version() TO service_role;

@@ -207,7 +207,7 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $clean$
   SELECT EXISTS (
     SELECT 1
       FROM public.product_file_versions v
@@ -219,7 +219,7 @@ AS $
        AND v.status = 'active'
        AND v.scan_status = 'clean'
   );
-$;
+$clean$;
 
 REVOKE ALL ON FUNCTION public.product_has_clean_file(uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.product_has_clean_file(uuid) TO anon, authenticated;

@@ -107,12 +107,15 @@ jobs:
                 chmod 444 "$file_path"
                 set +e
                 sudo -u nobody -- env -i PATH=/usr/bin:/bin HOME=/nonexistent \
-                  clamscan --no-summary --infected --alert-exceeds-max --max-filesize=60M --max-scansize=250M --max-scantime=180000 --max-recursion=20 --max-files=10000 -- "$file_path" >"$scan_output" 2>&1
+                  clamscan --no-summary --infected --alert-exceeds-max --alert-encrypted --max-filesize=60M --max-scansize=250M --max-scantime=180000 --max-recursion=20 --max-files=10000 -- "$file_path" >"$scan_output" 2>&1
                 scan_exit=$?
                 set -e
                 if grep -q "Heuristics.Limits.Exceeded" "$scan_output"; then
                   result="error"
                   error_code="clamav_scan_limit_exceeded"
+                elif grep -Eqi "Heuristics\\.Encrypted|Encrypted\\." "$scan_output"; then
+                  result="error"
+                  error_code="encrypted_content_not_scannable"
                 elif (( scan_exit == 0 )); then
                   result="clean"
                   error_code=""

@@ -1,6 +1,8 @@
 name: ClamAV seller file scanning
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: "*/5 * * * *"

@@ -195,8 +195,13 @@ SECURITY DEFINER
 SET search_path = ''
 AS $
   SELECT EXISTS (
-    SELECT 1 FROM public.product_file_versions v
+    SELECT 1
+      FROM public.product_file_versions v
+      JOIN public.products p ON p.id = v.product_id
+      JOIN public.stores s ON s.id = p.store_id
      WHERE v.product_id = _product_id
+       AND p.is_active
+       AND s.status = 'active'
        AND v.status = 'active'
        AND v.scan_status = 'clean'
   );

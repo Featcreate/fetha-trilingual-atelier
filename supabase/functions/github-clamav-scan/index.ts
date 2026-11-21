@@ -38,6 +38,7 @@ async function verifyRunner(req: Request) {
   }
 }
 
+// prettier-ignore
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return respond(405, { error: "method_not_allowed" });

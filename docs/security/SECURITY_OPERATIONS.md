@@ -1,68 +1,57 @@
 # Security operations
 
-This document describes the operational configuration required by the security hardening branch. It does not authorize production changes; apply the migration and host settings only after review and approval.
+This document describes operational requirements for security-sensitive marketplace workflows. Production migrations and function deployments must follow the reviewed release workflow.
 
 ## Translation
 
-The `translate-product` Edge Function no longer uses a list of public community mirrors.
+The `translate-product` Edge Function uses one organization-approved HTTPS LibreTranslate-compatible endpoint.
 
-Required Supabase Edge Function secrets:
+Required Edge Function secrets:
+- `TRANSLATION_API_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `APP_ALLOWED_ORIGINS`
+- `TRANSLATION_API_KEY` (optional)
 
-- `TRANSLATION_API_URL`: base URL of one approved HTTPS LibreTranslate-compatible service. Do not include credentials, query parameters, or a fragment.
-- `SUPABASE_SERVICE_ROLE_KEY`: required by the function to call the private database rate-limit RPC. Keep it server-side.
-- `APP_ALLOWED_ORIGINS`: comma-separated exact origins, for example `https://algorea-bazaar.onrender.com,https://approved-preview.example`. Add only origins that are actually controlled by the project.
-- `TRANSLATION_API_KEY`: optional provider key, sent only to the configured provider in its request body.
+Product names and descriptions are sent to the configured translation processor. Review its retention and privacy terms before configuration.
 
-The endpoint accepts only authenticated POST requests. It permits 10 requests per user per minute and 100 per user per hour. A missing limiter configuration or database error fails closed. Product names and descriptions are disclosed to the configured translation processor; review its retention, training, and subprocessors before setting the URL.
+## Digital-file malware scanning
 
-## Digital-file malware scanning (deferred)
+Seller files are scanned by ClamAV on ephemeral GitHub-hosted Ubuntu runners. No external malware-scanning vendor is used.
 
-Malware scanning is not enabled in the launch workflow. Do not require scanner secrets or block seller file activation while no approved no-cost scanner is configured. Do not transmit seller files to an external scanning service without an explicit decision.
+### Trust boundary
 
-- `FILE_SCAN_API_URL`: HTTPS endpoint controlled by an approved scanning service.
-- `FILE_SCAN_API_TOKEN`: bearer token for that service.
+- The `product-files` Storage bucket stays private.
+- GitHub Actions uses its short-lived OIDC identity token with audience `algorea-file-scan`; no Supabase service-role key or long-lived scanner token is stored in GitHub.
+- The `github-clamav-scan` Edge Function verifies the OIDC signature and restricts the repository, main ref, workflow path, event type, issuer, and audience.
+- The Edge Function uses its server-side `SUPABASE_SERVICE_ROLE_KEY` to atomically claim one file and issue a 10-minute signed URL.
+- The runner downloads only the claimed file into a private temporary directory, checks the exact expected size, runs ClamAV, computes SHA-256, reports the result, and removes the temporary file.
+- Do not print signed URLs, OIDC tokens, file contents, or seller filenames in logs. Do not upload files as workflow artifacts or cache them.
+- The scheduled workflow checks up to five files per run, every five minutes. A workflow dispatch can start an additional scan run.
 
-If a no-cost approved scanner is selected later, its integration must be separately reviewed before any files are sent externally. The previous proposed contract was:
+### Publication and checkout gate
 
-```json
-{
-  "contract": "algorea-file-scan-v1",
-  "fileUrl": "<120-second signed URL>",
-  "fileName": "example.pdf",
-  "mimeType": "application/pdf",
-  "sizeBytes": 12345
-}
-```
+- New and replaced versions begin with `scan_status=pending`.
+- The atomic claim RPC changes a pending scan to `scanning`. A stale claim can be reclaimed after 15 minutes.
+- Only a complete ClamAV clean result with a matching SHA-256 digest can mark a version clean.
+- A clean pending upload is activated by the database completion function. Infected and errored files remain unavailable; no scan failure falls back to activation.
+- Public product reads require an active clean file. Checkout purchase snapshots independently require an active clean file and a matching private Storage object.
+- Replacing a file creates a new pending version. The previous clean active version remains intact until seller-controlled archival/deletion rules are applied.
+- No file is automatically deleted by the scanner.
 
-The scanner must fetch the signed URL promptly, scan the complete file bytes (including archive contents under its own safe extraction limits), and return exactly one of:
+### Failure behavior
 
-```json
-{
-  "status": "clean"
-}
-```
+- Infected files are marked `infected`; scanner errors and download/size failures are marked `error`.
+- Timeouts or a runner disappearing leave a reclaimable scan lease. A retry can reclaim it after 15 minutes.
+- A digest mismatch or missing digest is treated as an error, never as clean.
+- Files in pending, scanning, infected, or error states cannot be activated, publicly listed, or included in a checkout snapshot.
 
-or
+### Release and validation
 
-```json
-{
-  "status": "infected"
-}
-```
+1. Deploy the `github-clamav-scan` Edge Function with JWT verification disabled only because it validates GitHub OIDC itself; keep its internal OIDC checks mandatory.
+2. Apply the `0060_clamav_content_scan_gate` database migration.
+3. Confirm the repository Actions setting allows OIDC tokens and that the workflow is enabled on the default branch.
+4. Test clean, infected, timeout/stale-claim, download failure, malformed result, and digest mismatch using harmless fixtures.
+5. Confirm existing active files become unlisted until scanned clean; seller file objects are retained.
+6. Run typecheck, lint, unit tests, migration-journal checks, and SQL regression tests before production rollout.
 
-The scanner integration is deferred. The application must not depend on these secrets at launch.
-
-Before production rollout, test clean, infected, malformed-response, timeout, and scanner-unavailable cases using harmless test fixtures. Confirm the scanner has a file-size limit at least as large as the configured 50 MB upload maximum, or reduce the accepted upload limit to the scanner's supported maximum.
-
-## Rollout checklist
-
-1. Review provider privacy and retention terms.
-2. Keep malware scanning deferred unless a no-cost approved solution is explicitly selected.
-3. Set the secrets in the correct server-side environments; never use `VITE_` prefixes for secrets.
-4. Apply the new database migration through the normal migration workflow.
-5. Test translation CORS, authentication, throttling, and provider outage behavior.
-6. Test file scanning outcomes and confirm only clean files become active.
-7. Run typecheck, lint, unit tests, migration checks, and isolated integration/security tests.
-8. Only then consider a separate, explicitly approved production deployment.
-
-This branch does not provision a scanner, change hosting secrets, apply a production migration, or deploy the application.
+This workflow does not automatically delete seller content or expose the private Storage bucket.

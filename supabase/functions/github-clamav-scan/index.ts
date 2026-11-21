@@ -32,8 +32,10 @@ async function verifyRunner(req: Request) {
     payload.repository !== repo ||
     payload.ref !== "refs/heads/main" ||
     payload.workflow_ref !== workflow ||
-    payload.event_name !== "schedule" && payload.event_name !== "workflow_dispatch"
-  ) throw new Error("runner_identity_not_allowed");
+    (payload.event_name !== "schedule" && payload.event_name !== "workflow_dispatch")
+  ) {
+    throw new Error("runner_identity_not_allowed");
+  }
 }
 
 Deno.serve(async (req) => {
@@ -83,7 +85,9 @@ Deno.serve(async (req) => {
         !["clean", "infected", "error"].includes(body.result) ||
         (body.sha256 !== null && body.sha256 !== undefined &&
           (typeof body.sha256 !== "string" || !/^[0-9a-f]{64}$/i.test(body.sha256)))
-      ) return respond(400, { error: "invalid_scan_result" });
+      ) {
+        return respond(400, { error: "invalid_scan_result" });
+      }
 
       const { error } = await admin.rpc("complete_product_file_scan", {
         _version_id: body.versionId,

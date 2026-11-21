@@ -11,7 +11,7 @@ DECLARE
   _extension text;
 BEGIN
   _name := lower(rtrim(split_part(coalesce(NEW.file_name, ''), ':', 1), ' .'));
-  _extension := substring(_name from '\\.([^.]*)$');
+  _extension := substring(_name from '[.]([^.]*)$');
 
   IF _extension = ANY (ARRAY[
     '386', 'action', 'apk', 'app', 'appimage', 'appx', 'bash', 'bat', 'bin',

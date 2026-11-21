@@ -179,6 +179,9 @@ export const dict = {
         "Tous les types de fichiers sont acceptés, jusqu’à 50 Mo par fichier et 1 Go au total par boutique. Les archives ZIP, RAR et 7Z sont conservées et téléchargées sans modification. Les fichiers restent privés.",
       freeForever: "Ouverture de boutique et ajout de produits gratuits.",
       sales: "Ventes",
+      listPrice: "Prix initial",
+      salePrice: "Prix après remise",
+      discount: "Remise",
       sellerNet: "Montant vendeur",
       commission: "Commission plateforme",
       orderDate: "Date",
@@ -232,6 +235,8 @@ export const dict = {
       deleteProductConfirmation:
         "Voulez-vous vraiment supprimer ce produit ? Il sera retiré de la boutique, mais les achats précédents et leurs fichiers resteront conservés.",
       productDeleted: "Le produit a été retiré de votre boutique.",
+      productRemovedFromStore:
+        "Produit retiré de la boutique. Son nom et son historique restent visibles ici.",
       deleteProductFailed: "Impossible de supprimer ce produit. Réessayez.",
       storeCreated: "Votre boutique est créée.",
       productCreated: "Produit enregistré et publié.",
@@ -285,6 +290,10 @@ export const dict = {
       payoutPaid: "Payé",
       payoutFailed: "Échec",
       payoutCancelled: "Annulé",
+      cancelledOrderNotEarned:
+        "Commande annulée : ces montants sont conservés à titre d’historique et ne sont pas inclus dans votre solde à recevoir.",
+      orderCommissionSnapshotNote:
+        "La commission affichée est celle enregistrée lors de la création de la commande ; les changements ultérieurs ne modifient pas les commandes précédentes.",
     },
     admin: {
       title: "Administration",
@@ -569,6 +578,9 @@ export const dict = {
         "تُقبل جميع أنواع الملفات حتى 50 ميغابايت للملف الواحد، مع مساحة إجمالية قدرها 1 غيغابايت لكل متجر. تُحفظ ملفات ZIP وRAR و7Z كما هي ويحمّلها المشتري دون تعديل. تبقى الملفات خاصة.",
       freeForever: "إنشاء المتجر وإضافة المنتجات مجانيان.",
       sales: "المبيعات",
+      listPrice: "السعر الأصلي",
+      salePrice: "السعر بعد التخفيض",
+      discount: "التخفيض",
       sellerNet: "مستحقات البائع",
       commission: "عمولة المنصة",
       orderDate: "التاريخ",
@@ -622,6 +634,7 @@ export const dict = {
       deleteProductConfirmation:
         "هل تريد حذف هذا المنتج؟ سيُزال من متجرك ولن يكون متاحاً للشراء مجدداً، مع الحفاظ على سجلات الطلبات وملفات المشترين السابقين.",
       productDeleted: "تمت إزالة المنتج من متجرك.",
+      productRemovedFromStore: "هذا المنتج محذوف من متجرك. يبقى اسمه وسجله ظاهرين هنا.",
       deleteProductFailed: "تعذر حذف المنتج. حاول مرة أخرى.",
       storeCreated: "تم إنشاء متجرك.",
       productCreated: "تم حفظ المنتج ونشره.",
@@ -672,6 +685,10 @@ export const dict = {
       payoutPaid: "تم الدفع",
       payoutFailed: "تعذّر الدفع",
       payoutCancelled: "ملغى",
+      cancelledOrderNotEarned:
+        "هذا الطلب ملغى؛ المبالغ المعروضة محفوظة كسجل تاريخي ولا تدخل ضمن مستحقاتك.",
+      orderCommissionSnapshotNote:
+        "العمولة المعروضة هي النسبة المسجلة عند إنشاء الطلب؛ ولا تغيّرها التعديلات اللاحقة على نسبة العمولة.",
     },
     admin: {
       title: "لوحة إدارة المنصة",
@@ -955,6 +972,9 @@ export const dict = {
         "All file types are accepted, up to 50 MB per file and 1 GB total per store. ZIP, RAR, and 7Z archives are preserved and downloaded unchanged. Files remain private.",
       freeForever: "Store creation and product listings are free.",
       sales: "Sales",
+      listPrice: "Original price",
+      salePrice: "Price after discount",
+      discount: "Discount",
       sellerNet: "Seller proceeds",
       commission: "Platform commission",
       orderDate: "Date",
@@ -1008,6 +1028,8 @@ export const dict = {
       deleteProductConfirmation:
         "Are you sure you want to delete this product? It will be removed from your store, while previous orders and buyers’ files remain preserved.",
       productDeleted: "The product has been removed from your store.",
+      productRemovedFromStore:
+        "This product has been removed from your store. Its name and history remain visible here.",
       deleteProductFailed: "Could not delete this product. Please try again.",
       storeCreated: "Your store has been created.",
       productCreated: "Product saved and published.",
@@ -1061,6 +1083,10 @@ export const dict = {
       payoutPaid: "Paid",
       payoutFailed: "Failed",
       payoutCancelled: "Cancelled",
+      cancelledOrderNotEarned:
+        "This order was cancelled. These amounts remain for history only and are not included in your payable balance.",
+      orderCommissionSnapshotNote:
+        "The displayed commission is the rate saved when the order was created; later rate changes do not change historical orders.",
     },
     admin: {
       title: "Admin dashboard",

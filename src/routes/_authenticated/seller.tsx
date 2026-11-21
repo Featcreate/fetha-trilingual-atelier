@@ -26,7 +26,6 @@ import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 import { LocalizedFileInput } from "@/components/LocalizedFileInput";
 import { getSellerPayoutPreview, submitSellerPayoutRequest } from "@/lib/manual-checkout.functions";
 import {
-  activateSellerFileVersion,
   archiveSellerFileVersion,
   createSellerStore,
   deleteSellerFileVersion,

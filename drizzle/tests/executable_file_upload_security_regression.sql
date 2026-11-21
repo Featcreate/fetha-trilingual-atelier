@@ -68,5 +68,27 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'clean_file_checkout_constraint_missing';
   END IF;
+
+  IF position(
+    'scan_status' IN pg_get_functiondef('public.activate_file_version(uuid)'::regprocedure)
+  ) = 0 THEN
+    RAISE EXCEPTION 'file_activation_scan_gate_missing';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'products'
+      AND policyname = 'Anyone reads listed products'
+      AND qual ILIKE '%scan_status%'
+  ) THEN
+    RAISE EXCEPTION 'public_catalogue_scan_gate_missing';
+  END IF;
+
+  IF position(
+    'scan_status' IN pg_get_functiondef('public.guard_order_item_file_scan()'::regprocedure)
+  ) = 0 THEN
+    RAISE EXCEPTION 'purchase_snapshot_scan_gate_missing';
+  END IF;
 END;
-$$;
+$;

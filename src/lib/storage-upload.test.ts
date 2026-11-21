@@ -19,8 +19,6 @@ describe("digital product upload limits", () => {
 
   it("uses resumable uploads above the 6 MiB standard-upload threshold", () => {
     expect(RESUMABLE_UPLOAD_THRESHOLD_BYTES).toBe(6 * 1024 * 1024);
-    expect(MAX_PRODUCT_FILE_BYTES).toBeGreaterThan(
-      RESUMABLE_UPLOAD_THRESHOLD_BYTES,
-    );
+    expect(MAX_PRODUCT_FILE_BYTES).toBeGreaterThan(RESUMABLE_UPLOAD_THRESHOLD_BYTES);
   });
 });

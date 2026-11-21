@@ -1,5 +1,7 @@
 # Security operations
 
+<!-- prettier-ignore-start -->
+
 This document describes operational requirements for security-sensitive marketplace workflows.
 Production migrations and function deployments must follow the reviewed release workflow.
 

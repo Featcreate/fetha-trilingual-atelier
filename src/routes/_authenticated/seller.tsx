@@ -21,13 +21,11 @@ import {
 import { ProductPreview } from "@/components/ProductPreview";
 import { translateProductContent } from "@/lib/product-translations";
 import { MAX_PRODUCT_FILE_BYTES, uploadProductFile } from "@/lib/storage-upload";
-import { isBlockedExecutableFileName } from "@/lib/file-type-safety";
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 import { LocalizedFileInput } from "@/components/LocalizedFileInput";
 import { getSellerPayoutPreview, submitSellerPayoutRequest } from "@/lib/manual-checkout.functions";
 import {
-  activateSellerFileVersion,
   archiveSellerFileVersion,
   createSellerStore,
   deleteSellerFileVersion,
@@ -429,9 +427,8 @@ function SellerPage() {
   async function uploadFile(
     productId: string,
     file: File,
-  ): Promise<"ok" | "quota" | "email" | "blocked" | "error"> {
+  ): Promise<"ok" | "quota" | "email" | "error"> {
     const fileName = safeFileName(file.name);
-    if (isBlockedExecutableFileName(fileName)) return "blocked";
     const { data: versionRows, error: registerError } = await registerSellerFileVersion({
       data: {
         productId,
@@ -456,10 +453,8 @@ function SellerPage() {
       setUploadProgress(null);
       return "error";
     }
-    const { error: activateError } = await activateSellerFileVersion({
-      data: { versionId: version.version_id },
-    });
-    return activateError ? "error" : "ok";
+    // The server-side ClamAV workflow activates this version only after a clean scan.
+    return "ok";
   }
 
   async function addProduct(e: FormEvent<HTMLFormElement>) {
@@ -542,13 +537,7 @@ function SellerPage() {
             ? m.storageQuotaExceeded
             : uploaded === "email"
               ? m.emailVerificationRequired
-              : uploaded === "blocked"
-                ? lang === "ar"
-                  ? "هذا النوع من الملفات التنفيذية أو النصية البرمجية غير مسموح به."
-                  : lang === "en"
-                    ? "Executable and script file types are not allowed."
-                    : "Les fichiers exécutables et scripts ne sont pas autorisés."
-                : m.fileUploadFailed,
+              : m.fileUploadFailed,
         );
       }
     }
@@ -564,7 +553,13 @@ function SellerPage() {
     setGalleryPreviews([]);
     setNewCategoryId(DEFAULT_CATEGORY_ID);
     setNewSubcategoryId(DEFAULT_SUBCATEGORY_ID);
-    setNotice(translatedContent ? m.productCreated : m.translationSavedWithoutTranslation);
+    setNotice(
+      lang === "ar"
+        ? "تم رفع الملف. سيظل المنتج مخفياً حتى ينتهي فحص ClamAV بنجاح."
+        : lang === "en"
+          ? "File uploaded. The product stays hidden until its ClamAV scan passes."
+          : "Fichier envoyé. Le produit reste masqué jusqu’à la réussite de l’analyse ClamAV.",
+    );
     await qc.invalidateQueries({ queryKey: ["seller-products", store.id] });
     await qc.invalidateQueries({ queryKey: ["catalog"] });
   }
@@ -607,7 +602,13 @@ function SellerPage() {
       }
     }
     setBusy(false);
-    setNotice(m.productUpdated);
+    setNotice(
+      lang === "ar"
+        ? "تم رفع الملف. سيظل الإصدار الجديد غير متاح حتى ينتهي فحص ClamAV بنجاح."
+        : lang === "en"
+          ? "File uploaded. The new version stays unavailable until its ClamAV scan passes."
+          : "Fichier envoyé. La nouvelle version reste indisponible jusqu’à la réussite de l’analyse ClamAV.",
+    );
     await qc.invalidateQueries({ queryKey: ["seller-file-versions", product.id] });
   }
 
@@ -1865,6 +1866,16 @@ function SellerFileVersions({
                 : version.status === "archived"
                   ? m.fileStatusArchived
                   : m.fileStatusPending}
+              {" · "}
+              {version.scan_status === "clean"
+                ? m.fileScanClean
+                : version.scan_status === "infected"
+                  ? m.fileScanInfected
+                  : version.scan_status === "error"
+                    ? m.fileScanError
+                    : version.scan_status === "scanning"
+                      ? m.fileScanScanning
+                      : m.fileScanPending}
               {" · "}
               {m.fileSize}: {formatFileSize(Number(version.size_bytes))}
             </p>

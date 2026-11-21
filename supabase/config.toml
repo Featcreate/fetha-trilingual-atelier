@@ -1,1 +1,4 @@
 project_id = "jgjcychkntsokhzeziqs"
+
+[functions.github-clamav-scan]
+verify_jwt = false

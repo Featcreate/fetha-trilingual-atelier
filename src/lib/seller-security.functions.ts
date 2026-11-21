@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { assertSafeDigitalFileName } from "@/lib/file-type-safety";
 
 export const createSellerStore = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -41,7 +40,6 @@ export const registerSellerFileVersion = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    assertSafeDigitalFileName(data.fileName);
     const { callActorScopedRpc } = await import("@/lib/actor-rpc.server");
     return callActorScopedRpc(context.userId, "server_register_file_version", {
       _product_id: data.productId,
@@ -100,7 +98,7 @@ export const listSellerFileVersions = createServerFn({ method: "GET" })
 
     const { data: versions, error: versionsError } = await supabaseAdmin
       .from("product_file_versions")
-      .select("id,file_name,size_bytes,status,created_at")
+      .select("id,file_name,size_bytes,status,created_at,scan_status")
       .eq("product_id", data.productId)
       .order("created_at", { ascending: false });
     if (versionsError) throw versionsError;

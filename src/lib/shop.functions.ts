@@ -25,7 +25,9 @@ export const startCheckout = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    if (BUYER_CHECKOUT_PAUSED) return { ok: false as const, error: "checkout_temporarily_disabled" };
+    if (BUYER_CHECKOUT_PAUSED) {
+      return { ok: false as const, error: "checkout_temporarily_disabled" };
+    }
     const { konnectConfig, konnectInitPayment } = await import("./konnect.server");
     if (!konnectConfig(true)) return { ok: false as const, error: "payments_not_configured" };
 
@@ -459,7 +461,9 @@ export const getExistingCartIpayPayment = createServerFn({ method: "GET" })
     z.object({ productIds: z.array(z.string().uuid()).min(1).max(50) }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    if (BUYER_CHECKOUT_PAUSED) return { payUrl: null, orderId: null };
+    if (BUYER_CHECKOUT_PAUSED) {
+      return { payUrl: null, orderId: null };
+    }
     const productIds = [...new Set(data.productIds)].sort();
     if (productIds.length !== data.productIds.length) {
       return { payUrl: null, orderId: null };

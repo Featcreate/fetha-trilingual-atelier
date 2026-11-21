@@ -84,6 +84,7 @@ jobs:
             version_id="$(jq -er '.versionId' <<< "$claim")"
             signed_url="$(jq -er '.signedUrl' <<< "$claim")"
             file_size="$(jq -er '.sizeBytes' <<< "$claim")"
+            file_path=""
             if (( file_size < 1 || file_size > 50000000 )); then
               result="error"
               error_code="file_size_out_of_policy"

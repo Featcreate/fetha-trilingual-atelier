@@ -1,0 +1,38 @@
+name: Netlify preview validation
+
+on:
+  push:
+    branches:
+      - chore/netlify-tanstack-start-preview
+
+permissions:
+  contents: write
+
+jobs:
+  lockfile-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out preview branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Regenerate Bun lockfile
+        run: bun install --lockfile-only
+      - name: Commit lockfile if changed
+        run: |
+          if ! git diff --quiet -- bun.lock; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add bun.lock
+            git commit -m "chore(netlify): update Bun lockfile"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+      - name: Install from frozen lockfile
+        run: bun install --frozen-lockfile
+      - name: Build Netlify preview
+        run: bun run build

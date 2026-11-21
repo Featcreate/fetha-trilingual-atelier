@@ -27,9 +27,6 @@ jobs:
 
       - name: Claim and scan pending seller files
         shell: bash
-        env:
-          OIDC_REQUEST_URL: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_URL }}
-          OIDC_REQUEST_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
         run: |
           set -Eeuo pipefail
           umask 077
@@ -38,10 +35,10 @@ jobs:
           endpoint="https://jgjcychkntsokhzeziqs.supabase.co/functions/v1/github-clamav-scan"
 
           oidc_json="$(curl --fail --silent --show-error \
-            -H "Authorization: bearer $OIDC_REQUEST_TOKEN" \
-            "${OIDC_REQUEST_URL}&audience=algorea-file-scan")"
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=algorea-file-scan")"
           oidc_token="$(jq -er '.value' <<< "$oidc_json")"
-          unset oidc_json OIDC_REQUEST_TOKEN
+          unset oidc_json ACTIONS_ID_TOKEN_REQUEST_TOKEN ACTIONS_ID_TOKEN_REQUEST_URL
 
           for attempt in 1 2 3 4 5; do
             claim="$(curl --fail --silent --show-error \

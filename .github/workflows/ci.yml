@@ -120,7 +120,8 @@ jobs:
             drizzle/tests/identity_rpc_security_regression.sql \
             drizzle/tests/seller_order_privacy_regression.sql \
             drizzle/tests/payment_beneficiary_regression.sql \
-            drizzle/tests/translation_rate_limit_security_regression.sql; do
+            drizzle/tests/translation_rate_limit_security_regression.sql \
+            drizzle/tests/executable_file_upload_security_regression.sql; do
             echo "Running $test_file"
             psql "$DB_URL" -v ON_ERROR_STOP=1 -f "$test_file"
           done

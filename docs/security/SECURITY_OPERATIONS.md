@@ -14,7 +14,8 @@ Seller files are scanned with ClamAV on ephemeral GitHub-hosted Ubuntu runners.
 
 The runner authenticates through GitHub OIDC to the `github-clamav-scan` Edge Function. No
 Supabase service-role key is stored in GitHub. The function issues a short-lived signed URL for
-one claimed file and records the result using server-side credentials.
+one claimed file and records the result using server-side credentials. ClamAV runs as the
+unprivileged `nobody` user with a sanitized environment and no OIDC token.
 
 Only a clean scan with a matching SHA-256 digest can activate a file version. Public product
 reads and checkout snapshots require an active clean version. Infected, incomplete, timed-out,

@@ -24,10 +24,7 @@ import { MAX_PRODUCT_FILE_BYTES, uploadProductFile } from "@/lib/storage-upload"
 import { AuthShell, Field, SubmitButton } from "@/components/AuthShell";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 import { LocalizedFileInput } from "@/components/LocalizedFileInput";
-import {
-  getSellerPayoutPreview,
-  submitSellerPayoutRequest,
-} from "@/lib/manual-checkout.functions";
+import { getSellerPayoutPreview, submitSellerPayoutRequest } from "@/lib/manual-checkout.functions";
 import {
   activateSellerFileVersion,
   archiveSellerFileVersion,
@@ -900,17 +897,8 @@ function SellerPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Field
-                    id="price"
-                    label={m.price}
-                    required
-                    inputMode="decimal"
-                  />
-                  <Field
-                    id="sale_price"
-                    label={m.salePriceOptional}
-                    inputMode="decimal"
-                  />
+                  <Field id="price" label={m.price} required inputMode="decimal" />
+                  <Field id="sale_price" label={m.salePriceOptional} inputMode="decimal" />
                 </div>
                 <div>
                   <label htmlFor="product_type" className="mb-1 block text-sm font-medium">

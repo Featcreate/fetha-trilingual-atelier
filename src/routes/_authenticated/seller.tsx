@@ -602,7 +602,13 @@ function SellerPage() {
       }
     }
     setBusy(false);
-    setNotice(m.productUpdated);
+    setNotice(
+      lang === "ar"
+        ? "تم رفع الملف. سيظل الإصدار الجديد غير متاح حتى ينتهي فحص ClamAV بنجاح."
+        : lang === "en"
+          ? "File uploaded. The new version stays unavailable until its ClamAV scan passes."
+          : "Fichier envoyé. La nouvelle version reste indisponible jusqu’à la réussite de l’analyse ClamAV.",
+    );
     await qc.invalidateQueries({ queryKey: ["seller-file-versions", product.id] });
   }
 

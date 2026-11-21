@@ -71,7 +71,7 @@ jobs:
               digest=""
             else
               file_path="$workdir/$version_id.payload"
-              if ! curl --fail --silent --show-error --max-time 180 \
+              if ! curl --fail --silent --max-time 180 \
                 --output "$file_path" "$signed_url"; then
                 result="error"
                 error_code="download_failed"

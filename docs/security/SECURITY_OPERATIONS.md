@@ -18,7 +18,8 @@ one claimed file and records the result using server-side credentials.
 
 Only a clean scan with a matching SHA-256 digest can activate a file version. Public product
 reads and checkout snapshots require an active clean version. Infected, incomplete, timed-out,
-size-mismatched, or unavailable scans remain unavailable.
+size-mismatched, or unavailable scans remain unavailable. Transient errors retry up to three
+attempts; digest mismatches and scan-limit overruns do not retry.
 
 The runner scans uploads up to 50 MB and checks supported archive contents. Seller files must
 never appear in Git, workflow logs, artifacts, or caches. Only public ClamAV signature databases

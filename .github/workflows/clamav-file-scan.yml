@@ -47,7 +47,7 @@ jobs:
           set -Eeuo pipefail
           test_file="$RUNNER_TEMP/eicar.com"
           test_output="$RUNNER_TEMP/eicar-scan.txt"
-          printf '%s' 'X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*' > "$test_file"
+          printf '%s' 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*' > "$test_file"
           set +e
           clamscan --no-summary --infected "$test_file" >"$test_output" 2>&1
           scan_exit=$?

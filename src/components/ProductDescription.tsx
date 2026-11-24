@@ -4,10 +4,14 @@ export function ProductDescription({
   text,
   moreLabel,
   lessLabel,
+  className = "mt-2",
+  textClassName = "text-sm leading-6 text-muted-foreground",
 }: {
   text: string;
   moreLabel: string;
   lessLabel: string;
+  className?: string;
+  textClassName?: string;
 }) {
   const descriptionRef = useRef<HTMLParagraphElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -49,10 +53,10 @@ export function ProductDescription({
   }, [text, expanded]);
 
   return (
-    <div className="mt-2">
+    <div className={className}>
       <p
         ref={descriptionRef}
-        className="text-sm leading-6 text-muted-foreground"
+        className={textClassName}
         style={
           expanded
             ? { whiteSpace: "pre-wrap" }

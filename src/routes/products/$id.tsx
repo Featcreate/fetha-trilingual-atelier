@@ -12,6 +12,7 @@ import { getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categori
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { useCart } from "@/lib/cart";
+import { ProductDescription } from "@/components/ProductDescription";
 
 export const Route = createFileRoute("/products/$id")({
   head: () => ({
@@ -241,13 +242,15 @@ function ProductPage() {
               lang,
             )}
           </h1>
-          <p className="mt-4 whitespace-pre-wrap leading-8 text-muted-foreground">
-            {localizedProductText(
+          <ProductDescription
+            text={localizedProductText(
               query.data.product.description,
               query.data.product.description_translations,
               lang,
             )}
-          </p>
+            moreLabel={m.more}
+            lessLabel={m.less}
+          />
           <p className="mt-6 flex flex-wrap items-center gap-3 text-2xl font-extrabold">
             {query.data.product.sale_price_millimes ? (
               <>

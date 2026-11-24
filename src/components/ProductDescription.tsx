@@ -18,13 +18,27 @@ export function ProductDescription({
     if (!element) return;
 
     const measure = () => {
-      const wasClamped = element.classList.contains("line-clamp-2");
-      if (wasClamped) element.classList.remove("line-clamp-2");
-      const fullHeight = element.scrollHeight;
-      if (wasClamped) element.classList.add("line-clamp-2");
+      const previous = {
+        display: element.style.display,
+        webkitLineClamp: element.style.webkitLineClamp,
+        webkitBoxOrient: element.style.webkitBoxOrient,
+        overflow: element.style.overflow,
+      };
 
+      element.style.display = "block";
+      element.style.webkitLineClamp = "unset";
+      element.style.webkitBoxOrient = "initial";
+      element.style.overflow = "visible";
+
+      const fullHeight = element.scrollHeight;
       const lineHeight = Number.parseFloat(window.getComputedStyle(element).lineHeight);
-      const twoLineHeight = Number.isFinite(lineHeight) ? lineHeight * 2 : 40;
+      const twoLineHeight = Number.isFinite(lineHeight) ? lineHeight * 2 : 48;
+
+      element.style.display = previous.display;
+      element.style.webkitLineClamp = previous.webkitLineClamp;
+      element.style.webkitBoxOrient = previous.webkitBoxOrient;
+      element.style.overflow = previous.overflow;
+
       setCanExpand(fullHeight > twoLineHeight + 1);
     };
 
@@ -32,13 +46,23 @@ export function ProductDescription({
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     return () => observer.disconnect();
-  }, [text]);
+  }, [text, expanded]);
 
   return (
     <div className="mt-2">
       <p
         ref={descriptionRef}
-        className={`text-sm text-muted-foreground ${expanded ? "whitespace-pre-wrap" : "line-clamp-2"}`}
+        className="text-sm leading-6 text-muted-foreground"
+        style={
+          expanded
+            ? { whiteSpace: "pre-wrap" }
+            : {
+                display: "-webkit-box",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: 2,
+                overflow: "hidden",
+              }
+        }
       >
         {text}
       </p>

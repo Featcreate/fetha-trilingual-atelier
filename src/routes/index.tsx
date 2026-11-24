@@ -15,6 +15,7 @@ import heroBanner from "@/assets/1793464236433.jpg";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 import { localizedProductText } from "@/lib/product-translations";
 import { HeaderCartLink } from "@/components/HeaderCartLink";
+import { ProductDescription } from "@/components/ProductDescription";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -539,8 +540,8 @@ function Index() {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Algorea Bazaar</p>
             <h2 id="about-title" className="mt-3 text-2xl font-extrabold text-petrol md:text-3xl">{t.about.title}</h2>
             <p className="mt-3 text-lg font-semibold text-coral">{t.about.tagline}</p>
-            <p className="mt-5 leading-8 text-foreground">{t.about.intro}</p>
-            <p className="mt-3 leading-8 text-muted-foreground">{t.about.belief}</p>
+            <ProductDescription text={t.about.intro} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-5 text-base leading-8 text-foreground" />
+            <ProductDescription text={t.about.belief} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-3 text-base leading-8 text-muted-foreground" />
           </div>
 
           <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
@@ -558,11 +559,11 @@ function Index() {
           <div className="grid gap-5 md:grid-cols-2">
             <article className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-xl font-bold text-petrol">{t.about.missionTitle}</h3>
-              <p className="mt-3 leading-8 text-muted-foreground">{t.about.mission}</p>
+              <ProductDescription text={t.about.mission} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-3 text-base leading-8 text-muted-foreground" />
             </article>
             <article className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-xl font-bold text-petrol">{t.about.visionTitle}</h3>
-              <p className="mt-3 leading-8 text-muted-foreground">{t.about.vision}</p>
+              <ProductDescription text={t.about.vision} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-3 text-base leading-8 text-muted-foreground" />
             </article>
           </div>
 
@@ -572,7 +573,7 @@ function Index() {
               {t.about.values.map((value) => (
                 <article key={value.title} className="rounded-2xl border border-border bg-card p-5 text-start">
                   <h4 className="font-bold text-coral">{value.title}</h4>
-                  <p className="mt-2 text-sm leading-7 text-muted-foreground">{value.text}</p>
+                  <ProductDescription text={value.text} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-2 text-sm leading-7 text-muted-foreground" />
                 </article>
               ))}
             </div>

@@ -271,7 +271,7 @@ export const dict = {
       expires: "Expire le",
       downloadError: "Téléchargement indisponible ou quota atteint.",
       tndNote:
-        "Le TND reste la devise de référence et de facturation actuelle. Les cartes internationales Visa et Mastercard pourront être acceptées après validation du prestataire ; la banque émettrice peut convertir le débit en devise de la carte. Les équivalents USD/EUR affichés restent indicatifs. Les paiements réels ne sont pas activés.",
+        "Le TND reste la devise de référence et de facturation actuelle. Les équivalents USD/EUR affichés restent indicatifs.",
       payoutMethod: "Versement de vos revenus",
       weeklyManual: "Virement hebdomadaire manuel par Algorea Bazaar",
       payoutHelp:
@@ -676,7 +676,7 @@ export const dict = {
       expires: "تنتهي في",
       downloadError: "التنزيل غير متاح أو تم استنفاد العدد المسموح.",
       tndNote:
-        "الدينار التونسي هو عملة التسعير والمحاسبة والدفع الحالية. يمكن قبول بطاقات Visa وMastercard الدولية بعد اعتماد مزود الدفع؛ وقد يحوّل بنك البطاقة المبلغ إلى عملة البطاقة وفق سعره ورسومه. المقابل بالدولار واليورو المعروض تقديري فقط، والدفع الفعلي غير مفعّل.",
+        "الدينار التونسي هو عملة التسعير والمحاسبة والدفع الحالية. المقابل بالدولار واليورو المعروض تقديري فقط.",
       payoutMethod: "تحويل مستحقاتك",
       weeklyManual: "تحويل أسبوعي يدوي من Algorea Bazaar",
       payoutHelp:
@@ -1084,7 +1084,7 @@ export const dict = {
       expires: "Expires",
       downloadError: "Download unavailable or quota exhausted.",
       tndNote:
-        "TND is the current pricing, accounting and checkout currency. International Visa and Mastercard cards may be accepted after provider approval; the card issuer may convert the charge into the card's billing currency. Displayed USD/EUR equivalents are indicative only. Live payments are not enabled.",
+        "TND is the current pricing, accounting and checkout currency. Displayed USD/EUR equivalents are indicative only.",
       payoutMethod: "Seller payouts",
       weeklyManual: "Weekly manual transfer by Algorea Bazaar",
       payoutHelp:

@@ -540,8 +540,8 @@ function Index() {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Algorea Bazaar</p>
             <h2 id="about-title" className="mt-3 text-2xl font-extrabold text-petrol md:text-3xl">{t.about.title}</h2>
             <p className="mt-3 text-lg font-semibold text-coral">{t.about.tagline}</p>
-            <ProductDescription text={t.about.intro} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-5 text-base leading-8 text-foreground" />
-            <ProductDescription text={t.about.belief} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-3 text-base leading-8 text-muted-foreground" />
+            <ProductDescription text={t.about.intro} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-5" textClassName="text-base leading-8 text-foreground" />
+            <ProductDescription text={t.about.belief} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-3" textClassName="text-base leading-8 text-muted-foreground" />
           </div>
 
           <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
@@ -559,7 +559,7 @@ function Index() {
           <div className="grid gap-5 md:grid-cols-2">
             <article className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-xl font-bold text-petrol">{t.about.missionTitle}</h3>
-              <ProductDescription text={t.about.mission} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-3 text-base leading-8 text-muted-foreground" />
+              <ProductDescription text={t.about.mission} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-3" textClassName="text-base leading-8 text-muted-foreground" />
             </article>
             <article className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-xl font-bold text-petrol">{t.about.visionTitle}</h3>
@@ -573,7 +573,7 @@ function Index() {
               {t.about.values.map((value) => (
                 <article key={value.title} className="rounded-2xl border border-border bg-card p-5 text-start">
                   <h4 className="font-bold text-coral">{value.title}</h4>
-                  <ProductDescription text={value.text} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-2 text-sm leading-7 text-muted-foreground" />
+                  <ProductDescription text={value.text} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-2" textClassName="text-sm leading-7 text-muted-foreground" />
                 </article>
               ))}
             </div>

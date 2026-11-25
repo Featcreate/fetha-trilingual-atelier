@@ -269,9 +269,12 @@ export const adminConfirmManualOrderPayment = createServerFn({ method: "POST" })
       _amount_millimes: data.amountMillimes,
       _transfer_reference: data.transferReference,
     });
-    return error
-      ? { ok: false as const, error: error.message }
-      : { ok: true as const, outcome: outcome as string };
+    if (error) return { ok: false as const, error: error.message };
+    if (outcome === "paid" || outcome === "already_paid") {
+      const { sendOrderReadyEmail } = await import("@/lib/email.server");
+      await sendOrderReadyEmail(data.orderId);
+    }
+    return { ok: true as const, outcome: outcome as string };
   });
 
 export const adminReviewSellerPayoutRequest = createServerFn({ method: "POST" })

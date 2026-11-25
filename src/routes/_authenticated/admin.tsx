@@ -1108,7 +1108,25 @@ function AdminPage() {
           <p role="alert">{a.loadError}</p>
         ) : (
           <div className="mt-4 space-y-3">
-            {(["flouci", "bank_transfer", "postal_transfer"] as const).map((method) => {
+            <div className="rounded-lg bg-secondary/60 p-4">
+              <h3 className="mb-2 font-semibold">IZI</h3>
+              <p className="text-sm text-muted-foreground">
+                {lang === "ar"
+                  ? "افتح تطبيق IZI لإجراء الدفع. لا تُعرض بيانات الحساب الشخصي على المنصة."
+                  : lang === "en"
+                    ? "Open the IZI app to make a payment. Personal account details are not displayed on the platform."
+                    : "Ouvrez l’application IZI pour effectuer le paiement. Les coordonnées du compte personnel ne sont pas affichées sur la plateforme."}
+              </p>
+              <a
+                href="https://play.google.com/store/apps/details?id=tn.izi.consumer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex text-sm font-semibold text-primary underline underline-offset-4"
+              >
+                {lang === "ar" ? "تحميل تطبيق IZI" : lang === "en" ? "Get the IZI app" : "Télécharger l’application IZI"}
+              </a>
+            </div>
+            {(["bank_transfer", "postal_transfer"] as const).map((method) => {
               const saved = platformPaymentMethods.data.find((row) => row.method === method);
               return (
                 <form

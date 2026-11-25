@@ -56,7 +56,7 @@ export const getPlatformPaymentMethods = createServerFn({ method: "GET" })
     if (BUYER_CHECKOUT_PAUSED) return { ok: true as const, methods: [] as ManualPaymentRow[] };
     const client = await manualClient();
     const methods: ManualPaymentRow[] = [];
-    for (const method of ["flouci", "bank_transfer", "postal_transfer"] as const) {
+    for (const method of ["bank_transfer", "postal_transfer"] as const) {
       const result = await client
         .from("platform_payment_methods")
         .select("method,beneficiary_label,account_identifier,instructions,enabled")
@@ -78,7 +78,7 @@ export const startManualCartCheckout = createServerFn({ method: "POST" })
           .min(1)
           .max(50),
         checkoutKey: z.string().min(8).max(100),
-        method: z.enum(["flouci", "bank_transfer", "postal_transfer"]),
+        method: z.enum(["bank_transfer", "postal_transfer"]),
       })
       .parse(input),
   )

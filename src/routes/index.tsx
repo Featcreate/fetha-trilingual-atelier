@@ -55,13 +55,13 @@ function Index() {
   };
 
   const myStoreQuery = useQuery({
-    queryKey: ["homepage-my-store", session?.user.id],
-    enabled: !!session?.user.id,
+    queryKey: ["homepage-official-store"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
         .select("id,name,slug,banner_path")
-        .eq("owner_id", session!.user.id)
+        .eq("slug", "feata-create")
+        .eq("status", "active")
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -339,11 +339,7 @@ function Index() {
                 </Link>
               )}
             </div>
-            {!session ? (
-              <p className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
-                {t.marketplace.signInForMyStore}
-              </p>
-            ) : myStoreQuery.isPending ? (
+            {myStoreQuery.isPending ? (
               <p className="py-6 text-center text-sm text-muted-foreground">
                 {t.marketplace.loading}
               </p>
@@ -352,15 +348,9 @@ function Index() {
                 {t.marketplace.error}
               </p>
             ) : !myStoreQuery.data ? (
-              <div className="rounded-xl border border-border bg-card p-5 text-center">
-                <p className="text-sm text-muted-foreground">{t.marketplace.noStore}</p>
-                <Link
-                  to="/seller"
-                  className="mt-3 inline-flex rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground"
-                >
-                  {t.marketplace.createStore}
-                </Link>
-              </div>
+              <p className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+                {t.marketplace.noRecentProducts}
+              </p>
             ) : myStoreProductsQuery.isPending ? (
               <p className="py-6 text-center text-sm text-muted-foreground">
                 {t.marketplace.loading}

@@ -213,6 +213,10 @@ export async function processIpaySettlementNotice(
     console.error("iPay atomic settlement rejected", error.message);
     throw new Error("ipay_settlement_rejected");
   }
+  if (data === "paid" || data === "already_paid") {
+    const { sendOrderReadyEmail } = await import("@/lib/email.server");
+    await sendOrderReadyEmail(order.id);
+  }
   return { outcome: String(data) };
 }
 

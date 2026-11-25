@@ -11,7 +11,7 @@ import { getTopRatedStores } from "@/lib/public-data.functions";
 import { Menu, X } from "lucide-react";
 import { PRODUCT_CATEGORIES, getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
 import { BrandLogo } from "@/components/BrandLogo";
-import heroBanner from "@/assets/1793464236433.jpg";
+import heroBanner from "@/assets/file_000000003c0c820aa59c5424ea270ade.png";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 import { localizedProductText } from "@/lib/product-translations";
 import { HeaderCartLink } from "@/components/HeaderCartLink";

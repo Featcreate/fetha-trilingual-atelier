@@ -14,7 +14,13 @@ export const adminSendAnnouncement = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => schema.parse(input))
   .handler(async ({ data, context }) => {
     const email = typeof context.claims.email === "string" ? context.claims.email.toLowerCase() : "";
-    if (email !== "fathiaivy@gmail.com") return { ok: false as const, error: "forbidden" };
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (email !== "fathiaivy@gmail.com" || roleError || isAdmin !== true) {
+      return { ok: false as const, error: "forbidden" };
+    }
 
     const { getAnnouncementRecipientCount, sendAnnouncement } = await import("@/lib/email.server");
     if (data.action === "preview") {

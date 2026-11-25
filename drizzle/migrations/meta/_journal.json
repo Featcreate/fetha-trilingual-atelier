@@ -449,6 +449,13 @@
       "when": 1795219560000,
       "tag": "0061_require_matching_file_digest",
       "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1795564800001,
+      "tag": "0062_fix_public_product_gallery_rls",
+      "breakpoints": true
     }
   ]
 }

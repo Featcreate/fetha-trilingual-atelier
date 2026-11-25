@@ -220,8 +220,8 @@ function CatalogPage() {
           })}
         </div>
       </section>
-      <div className="grid gap-3 sm:grid-cols-[1fr_220px]">
-        <div className="relative">
+      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
+        <div className="relative min-w-0">
           <Search
             aria-hidden="true"
             className="pointer-events-none absolute start-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
@@ -231,7 +231,7 @@ function CatalogPage() {
             onChange={(e) => setSearch(e.target.value)}
             placeholder={m.search}
             aria-label={m.search}
-            className="w-full rounded-lg border border-input bg-background py-3 ps-10 pe-3"
+            className="block w-full min-w-0 max-w-full rounded-lg border border-input bg-background py-3 ps-10 pe-3"
           />
         </div>
         <select
@@ -240,7 +240,7 @@ function CatalogPage() {
             setType(e.target.value);
             setSubcategory("all");
           }}
-          className="rounded-lg border border-input bg-background px-3 py-3"
+          className="block w-full min-w-0 max-w-full rounded-lg border border-input bg-background px-3 py-3"
         >
           <option value="all">{m.allTypes}</option>
           {PRODUCT_CATEGORIES.map((category) => (

@@ -16,6 +16,7 @@ import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { useCart } from "@/lib/cart";
 import { ProductDescription } from "@/components/ProductDescription";
+import { Search } from "lucide-react";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({
@@ -220,12 +221,19 @@ function CatalogPage() {
         </div>
       </section>
       <div className="grid gap-3 sm:grid-cols-[1fr_220px]">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={m.search}
-          className="w-full rounded-lg border border-input bg-background px-3 py-3"
-        />
+        <div className="relative">
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute start-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
+          />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={m.search}
+            aria-label={m.search}
+            className="w-full rounded-lg border border-input bg-background py-3 ps-10 pe-3"
+          />
+        </div>
         <select
           value={type}
           onChange={(e) => {

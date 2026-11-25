@@ -7,6 +7,7 @@ import { formatTND } from "@/lib/money";
 import { getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
 import { AuthShell, SubmitButton } from "@/components/AuthShell";
 import { adminRecheckIpayPayment } from "@/lib/shop.functions";
+import { adminSendAnnouncement } from "@/lib/email.functions";
 import {
   adminConfirmManualOrderPayment,
   adminUpsertPlatformPaymentMethod,
@@ -137,6 +138,12 @@ function AdminPage() {
   const [feeReference, setFeeReference] = useState("");
   const [manualConfirmBusy, setManualConfirmBusy] = useState<string | null>(null);
   const [payoutReviewNotes, setPayoutReviewNotes] = useState<Record<string, string>>({});
+  const [announcementAudience, setAnnouncementAudience] = useState<"all" | "sellers">("all");
+  const [announcementSubject, setAnnouncementSubject] = useState("");
+  const [announcementBody, setAnnouncementBody] = useState("");
+  const [announcementRecipientCount, setAnnouncementRecipientCount] = useState<number | null>(null);
+  const [announcementBusy, setAnnouncementBusy] = useState<"preview" | "send" | null>(null);
+  const [announcementError, setAnnouncementError] = useState<string | null>(null);
   const locale = lang === "ar" ? "ar-TN" : lang === "en" ? "en-GB" : "fr-FR";
 
   const settings = useQuery({
@@ -332,6 +339,58 @@ function AdminPage() {
       return (data ?? []) as PayoutRow[];
     },
   });
+  async function previewAnnouncement() {
+    setAnnouncementBusy("preview");
+    setAnnouncementError(null);
+    const result = await adminSendAnnouncement({ data: {
+      action: "preview",
+      audience: announcementAudience,
+      subject: announcementSubject,
+      body: announcementBody,
+    }});
+    setAnnouncementBusy(null);
+    if (!result.ok) {
+      setAnnouncementError(
+        lang === "ar" ? "تعذر تحديد قائمة المستلمين." :
+        lang === "en" ? "Could not prepare the recipient list." :
+        "Impossible de préparer la liste des destinataires.",
+      );
+      setAnnouncementRecipientCount(null);
+      return;
+    }
+    setAnnouncementRecipientCount(result.count);
+  }
+
+  async function sendAnnouncementNow() {
+    if (announcementRecipientCount === null || announcementRecipientCount < 1) return;
+    const confirmed = window.confirm(
+      lang === "ar" ? "هل تؤكدين إرسال هذا الإعلان إلى الجمهور المحدد؟" :
+      lang === "en" ? "Confirm sending this announcement to the selected audience?" :
+      "Confirmer l’envoi de cette annonce au public sélectionné ?",
+    );
+    if (!confirmed) return;
+    setAnnouncementBusy("send");
+    setAnnouncementError(null);
+    const result = await adminSendAnnouncement({ data: {
+      action: "send",
+      audience: announcementAudience,
+      subject: announcementSubject,
+      body: announcementBody,
+    }});
+    setAnnouncementBusy(null);
+    if (!result.ok) {
+      setAnnouncementError(
+        result.error === "gmail_not_configured"
+          ? (lang === "ar" ? "إعداد Gmail غير مكتمل." : lang === "en" ? "Gmail is not configured." : "Gmail n’est pas configuré.")
+          : (lang === "ar" ? "تعذر إرسال الإعلان. لم تظهر أي نتائج أو تقارير." : lang === "en" ? "The announcement could not be sent. No delivery report is stored." : "L’annonce n’a pas pu être envoyée. Aucun rapport d’envoi n’est conservé."),
+      );
+      return;
+    }
+    setAnnouncementSubject("");
+    setAnnouncementBody("");
+    setAnnouncementRecipientCount(null);
+  }
+
   async function saveCommission(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const value = Number(commission);
@@ -806,6 +865,7 @@ function AdminPage() {
         </Link>
       </div>
       <p className="mb-6 text-sm leading-7 text-muted-foreground">{a.subtitle}</p>
+      
       {notice && (
         <p
           role={notice.ok ? "status" : "alert"}
@@ -1745,6 +1805,74 @@ function AdminPage() {
           </div>
         )}
       </section>
-    </AuthShell>
+    <section className="mb-8 rounded-xl border border-border p-5">
+        <h2 className="text-lg font-bold">
+          {lang === "ar" ? "إرسال إعلان بالبريد الإلكتروني" : lang === "en" ? "Email announcement" : "Annonce par e-mail"}
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {lang === "ar" ? "اختاري الجمهور، اكتبي الإعلان وراجعي المعاينة وعدد المستلمين قبل التأكيد. لا تُحفظ سجلات أو نتائج بعد الإرسال." :
+           lang === "en" ? "Choose the audience, write the announcement, and review the recipient count before confirming. No campaign history or delivery results are stored." :
+           "Choisissez le public, rédigez l’annonce et vérifiez le nombre de destinataires avant confirmation. Aucun historique ni résultat d’envoi n’est conservé."}
+        </p>
+        <div className="mt-4 grid gap-3">
+          <select
+            value={announcementAudience}
+            onChange={(e) => { setAnnouncementAudience(e.target.value as "all" | "sellers"); setAnnouncementRecipientCount(null); }}
+            className="w-full rounded-lg border border-input bg-background px-3 py-2"
+          >
+            <option value="all">{lang === "ar" ? "جميع الحسابات المسجلة" : lang === "en" ? "All registered accounts" : "Tous les comptes inscrits"}</option>
+            <option value="sellers">{lang === "ar" ? "البائعون فقط" : lang === "en" ? "Sellers only" : "Vendeurs uniquement"}</option>
+          </select>
+          <input
+            value={announcementSubject}
+            onChange={(e) => { setAnnouncementSubject(e.target.value); setAnnouncementRecipientCount(null); }}
+            maxLength={180}
+            placeholder={lang === "ar" ? "عنوان الإعلان" : lang === "en" ? "Announcement subject" : "Objet de l’annonce"}
+            className="w-full rounded-lg border border-input bg-background px-3 py-2"
+          />
+          <textarea
+            value={announcementBody}
+            onChange={(e) => { setAnnouncementBody(e.target.value); setAnnouncementRecipientCount(null); }}
+            maxLength={10000}
+            rows={5}
+            placeholder={lang === "ar" ? "نص الإعلان..." : lang === "en" ? "Announcement text..." : "Texte de l’annonce..."}
+            className="w-full rounded-lg border border-input bg-background px-3 py-2"
+          />
+          <div className="rounded-lg bg-secondary p-4">
+            <p className="mb-2 text-xs font-semibold text-muted-foreground">
+              {lang === "ar" ? "معاينة الرسالة" : lang === "en" ? "Message preview" : "Aperçu du message"}
+            </p>
+            <p className="font-semibold">{announcementSubject || "—"}</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm">{announcementBody || "—"}</p>
+          </div>
+          {announcementRecipientCount !== null && (
+            <p className="text-sm font-semibold">
+              {lang === "ar" ? `عدد المستلمين: ${announcementRecipientCount}` :
+               lang === "en" ? `Recipients: ${announcementRecipientCount}` :
+               `Destinataires : ${announcementRecipientCount}`}
+            </p>
+          )}
+          {announcementError && <p role="alert" className="text-sm text-destructive">{announcementError}</p>}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={announcementBusy !== null || announcementSubject.trim().length < 3 || announcementBody.trim().length < 5}
+              onClick={() => void previewAnnouncement()}
+              className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50"
+            >
+              {announcementBusy === "preview" ? a.loading : lang === "ar" ? "معاينة وعدّ المستلمين" : lang === "en" ? "Preview and count recipients" : "Aperçu et nombre de destinataires"}
+            </button>
+            <button
+              type="button"
+              disabled={announcementBusy !== null || announcementRecipientCount === null || announcementRecipientCount < 1}
+              onClick={() => void sendAnnouncementNow()}
+              className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+            >
+              {announcementBusy === "send" ? a.saving : lang === "ar" ? "تأكيد الإرسال" : lang === "en" ? "Confirm send" : "Confirmer l’envoi"}
+            </button>
+          </div>
+        </div>
+      </section>
+</AuthShell>
   );
 }

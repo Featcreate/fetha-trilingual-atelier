@@ -133,10 +133,9 @@ export async function applyPaymentRef(
     _source: source,
   });
   if (error) throw new Error("settlement_failed");
-  if (data === "paid")
-    await supabaseAdmin
-      .from("orders")
-      .update({ email_error: "email_not_configured" })
-      .eq("id", order.id);
+  if (data === "paid" || data === "already_paid") {
+    const { sendOrderReadyEmail } = await import("@/lib/email.server");
+    await sendOrderReadyEmail(order.id);
+  }
   return { outcome: data as string };
 }

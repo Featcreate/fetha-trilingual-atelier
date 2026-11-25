@@ -125,6 +125,58 @@ export async function getAnnouncementRecipientCount(audience: Audience) {
   return (await recipients(audience)).length;
 }
 
+export async function sendOrderReadyEmail(orderId: string) {
+  const { data: order, error: orderError } = await supabaseAdmin
+    .from("orders")
+    .select("id,customer_email,email_sent_at,status,order_reference")
+    .eq("id", orderId)
+    .maybeSingle();
+  if (orderError || !order || order.status !== "paid" || !order.customer_email || order.email_sent_at) return;
+
+  const { data: entitlement, error: entitlementError } = await supabaseAdmin
+    .from("download_entitlements")
+    .select("id")
+    .eq("order_id", orderId)
+    .limit(1)
+    .maybeSingle();
+  if (entitlementError || !entitlement) return;
+
+  const claimedAt = new Date().toISOString();
+  const { data: claimed, error: claimError } = await supabaseAdmin
+    .from("orders")
+    .update({ email_sent_at: claimedAt, email_error: null })
+    .eq("id", orderId)
+    .eq("status", "paid")
+    .is("email_sent_at", null)
+    .select("id")
+    .maybeSingle();
+  if (claimError || !claimed) return;
+
+  const site = process.env["PUBLIC_SITE_URL"]?.replace(/\/$/, "");
+  const downloadLink = site ? `\n\nAccéder à mes commandes et téléchargements : ${site}/orders` : "";
+  const subject = "Vos téléchargements sont prêts — Algorea Bazaar";
+  const body = [
+    "Bonjour,",
+    "",
+    "Votre paiement a été confirmé et vos fichiers numériques sont prêts.",
+    `Référence de commande : ${order.order_reference || order.id}`,
+    downloadLink,
+    "",
+    "Merci d’avoir choisi Algorea Bazaar.",
+  ].join("\n");
+
+  try {
+    await sendGmailMessage([order.customer_email], subject, body);
+    await supabaseAdmin.from("orders").update({ email_error: null }).eq("id", orderId);
+  } catch {
+    await supabaseAdmin
+      .from("orders")
+      .update({ email_sent_at: null, email_error: "email_send_failed" })
+      .eq("id", orderId)
+      .eq("email_sent_at", claimedAt);
+  }
+}
+
 export async function sendAnnouncement(input: {
   audience: Audience;
   subject: string;

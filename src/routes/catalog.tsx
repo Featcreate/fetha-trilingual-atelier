@@ -221,30 +221,19 @@ function CatalogPage() {
         </div>
       </section>
       <div className="grid gap-3 sm:grid-cols-[1fr_220px]">
-        <form
-          role="search"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setSearch((value) => value.trim());
-          }}
-          className="relative"
-        >
+        <div className="relative">
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute start-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
+          />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={m.search}
             aria-label={m.search}
-            className="w-full rounded-lg border border-input bg-background py-3 ps-10 pe-12"
+            className="w-full rounded-lg border border-input bg-background py-3 ps-10 pe-3"
           />
-          <button
-            type="submit"
-            aria-label={lang === "ar" ? "بحث" : lang === "en" ? "Search" : "Rechercher"}
-            title={lang === "ar" ? "بحث" : lang === "en" ? "Search" : "Rechercher"}
-            className="absolute start-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral"
-          >
-            <Search aria-hidden="true" className="h-5 w-5" />
-          </button>
-        </form>
+        </div>
         <select
           value={type}
           onChange={(e) => {

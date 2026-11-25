@@ -118,7 +118,7 @@ async function sendGmailMessage(to: string[], subject: string, body: string) {
       b64Lines(body),
       ".",
       "",
-    ].join("\r\n").replace(/\r\n\.\r\n/g, "\r\n..\r\n");
+    ].join("\r\n");
     socket.write(message);
     await readReply();
     await command("QUIT");

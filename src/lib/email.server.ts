@@ -47,12 +47,6 @@ async function recipients(audience: Audience): Promise<string[]> {
     const { data, error } = await supabaseAdmin.from("stores").select("owner_id");
     if (error) throw new Error("recipient_lookup_failed");
     for (const row of data ?? []) sellerIds.add(row.owner_id);
-    const { data: roles, error: roleError } = await supabaseAdmin
-      .from("user_roles")
-      .select("user_id,role")
-      .eq("role", "seller");
-    if (roleError) throw new Error("recipient_lookup_failed");
-    for (const row of roles ?? []) sellerIds.add(row.user_id);
   }
 
   for (let page = 1; ; page += 1) {

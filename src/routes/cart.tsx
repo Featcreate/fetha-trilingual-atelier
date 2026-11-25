@@ -26,6 +26,7 @@ type Store = { id: string; name: string };
 const copy = {
   fr: {
     title: "Panier",
+    home: "Retour à l’accueil",
     empty: "Votre panier est vide.",
     browse: "Continuer mes achats",
     checkout: "Paiement temporairement indisponible",
@@ -39,6 +40,7 @@ const copy = {
   },
   ar: {
     title: "سلة المشتريات",
+    home: "العودة إلى الصفحة الرئيسية",
     empty: "سلة مشترياتك فارغة.",
     browse: "متابعة التسوق",
     checkout: "الدفع غير متاح حالياً",
@@ -52,6 +54,7 @@ const copy = {
   },
   en: {
     title: "Shopping cart",
+    home: "Back to home",
     empty: "Your cart is empty.",
     browse: "Continue shopping",
     checkout: "Payment temporarily unavailable",
@@ -69,10 +72,6 @@ function CartPage() {
   const { lang, setLang } = useLang();
   const t = copy[lang];
   const { items, count, remove } = useCart();
-  const signature = items
-    .map((line) => line.productId)
-    .sort()
-    .join(",");
 
   const query = useQuery({
     queryKey: ["cart-products", items.map((line) => line.productId).join(",")],
@@ -140,10 +139,18 @@ function CartPage() {
       }
       wide
     >
-      <div className="mb-5 flex flex-wrap justify-between gap-3">
-        <Link to="/catalog" className="text-sm font-semibold text-coral hover:underline">
-          {t.browse}
-        </Link>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-4">
+          <Link
+            to="/"
+            className="text-sm font-semibold text-foreground hover:text-coral hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2"
+          >
+            {t.home}
+          </Link>
+          <Link to="/catalog" className="text-sm font-semibold text-coral hover:underline">
+            {t.browse}
+          </Link>
+        </div>
         <span className="text-sm text-muted-foreground">{count}</span>
       </div>
 
@@ -230,7 +237,6 @@ function CartPage() {
               >
                 {t.checkout}
               </button>
-
             </div>
           </div>
         </>

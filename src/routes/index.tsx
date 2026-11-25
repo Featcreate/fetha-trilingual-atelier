@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { User, Star } from "lucide-react";
+import { User, Star, Info } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -185,6 +185,20 @@ function Index() {
     );
   }
   const accountLabel = session ? t.auth.account : t.auth.signIn;
+  const betaNotice = {
+    fr: {
+      title: "Version bêta",
+      text: "Vous pouvez vous inscrire gratuitement, ouvrir votre boutique et présenter vos produits numériques. Le paiement n’est pas encore activé ; nous vous informerons dès sa mise en service.",
+    },
+    ar: {
+      title: "المنصة في نسختها التجريبية",
+      text: "يمكنكم التسجيل مجاناً، وفتح متاجركم وعرض منتجاتكم الرقمية. خدمة الدفع غير مفعّلة حالياً، وسنُعلمكم فور تفعيلها.",
+    },
+    en: {
+      title: "Beta version",
+      text: "You can register for free, open your store, and list your digital products. Payments are not enabled yet; we will notify you as soon as they become available.",
+    },
+  }[lang];
   const links = [
     ["#home", t.nav.home],
     ["/catalog", t.marketplace.catalog],
@@ -220,6 +234,19 @@ function Index() {
   return (
     <div className="min-h-screen">
         <section id="home" className="bg-cream-light">
+          <div
+            role="status"
+            dir={lang === "ar" ? "rtl" : "ltr"}
+            className="border-b border-coral/20 bg-[#FFF0E8] px-4 py-3 text-start"
+          >
+            <div className="mx-auto flex max-w-6xl items-start gap-3">
+              <Info className="mt-0.5 h-5 w-5 shrink-0 text-coral" aria-hidden="true" />
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-petrol">{betaNotice.title}</p>
+                <p className="mt-1 text-sm leading-6 text-foreground">{betaNotice.text}</p>
+              </div>
+            </div>
+          </div>
           {/* Show the complete banner image first, followed by the translated headline and actions. */}
           <div className="relative">
             <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />

@@ -231,7 +231,7 @@ function CatalogPage() {
             onChange={(e) => setSearch(e.target.value)}
             placeholder={m.search}
             aria-label={m.search}
-            className="block w-full min-w-0 max-w-full rounded-lg border border-input bg-background py-3 ps-10 pe-3 text-sm sm:text-base placeholder:text-xs sm:placeholder:text-base"
+            className="block w-full min-w-0 max-w-full rounded-lg border border-input bg-background py-3 ps-9 pe-2 text-sm sm:px-3 sm:text-base placeholder:text-[10px] sm:placeholder:text-base"
           />
         </div>
         <select

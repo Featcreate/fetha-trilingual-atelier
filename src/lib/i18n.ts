@@ -319,7 +319,7 @@ export const dict = {
       latest100: "100 plus récents",
       commissionTitle: "Commission de la plateforme",
       commissionHelp:
-        "Le taux initial est de 5 %. Vous pouvez le modifier ici pour les nouvelles commandes. Les commandes déjà créées conservent leur taux enregistré.",
+        "Le taux approuvé au lancement est de 10 %. Vous pouvez le modifier pour les nouvelles commandes. Les commandes déjà créées conservent leur taux enregistré.",
       currentCommission: "Taux actuellement configuré",
       notConfigured: "Non configurée",
       lastUpdated: "Dernière modification",
@@ -723,7 +723,7 @@ export const dict = {
       latest100: "أحدث 100 سجل",
       commissionTitle: "عمولة المنصة",
       commissionHelp:
-        "النسبة الابتدائية هي 5%، ويمكنك تعديلها للطلبات الجديدة. تحتفظ الطلبات السابقة بالنسبة المسجلة وقت إنشائها.",
+        "النسبة المعتمدة عند الإطلاق هي 10%، ويمكنك تعديلها للطلبات الجديدة. تحتفظ الطلبات السابقة بالنسبة المسجلة وقت إنشائها.",
       currentCommission: "العمولة المضبوطة حالياً",
       notConfigured: "غير مضبوطة",
       lastUpdated: "آخر تحديث",
@@ -1132,7 +1132,7 @@ export const dict = {
       latest100: "Latest 100",
       commissionTitle: "Platform commission",
       commissionHelp:
-        "The initial rate is 5%. You can change it for new orders here. Existing orders retain the rate recorded when they were created.",
+        "The approved launch rate is 10%. You can change it for new orders here. Existing orders retain the rate recorded when they were created.",
       currentCommission: "Currently configured rate",
       notConfigured: "Not configured",
       lastUpdated: "Last updated",

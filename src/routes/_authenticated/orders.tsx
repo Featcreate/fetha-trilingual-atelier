@@ -261,19 +261,23 @@ function BuyerOrdersPage() {
                               : [];
                           return entitlements.map((ent) => ({ file, ent }));
                         })
-                        .map(({ file, ent }) => (
+                        .map(({ file, ent }) => {
+                          const downloadAvailable =
+                            new Date(ent.expires_at).getTime() > Date.now() &&
+                            ent.used_downloads < ent.max_downloads;
+                          return (
                           <div key={ent.id} className="text-end">
                             <button
                               type="button"
-                              disabled={
-                                busy === ent.id ||
-                                ent.expires_at <= new Date().toISOString() ||
-                                ent.used_downloads >= ent.max_downloads
-                              }
+                              disabled={busy === ent.id || !downloadAvailable}
                               onClick={() => download(ent.id)}
                               className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-50"
                             >
-                              {busy === ent.id ? m.loading : m.download}
+                              {busy === ent.id
+                                ? m.loading
+                                : downloadAvailable
+                                  ? m.downloadAvailable
+                                  : m.downloadUnavailable}
                             </button>
                             <p className="mt-1 text-xs text-muted-foreground">
                               {m.downloadsLeft}:{" "}
@@ -282,7 +286,8 @@ function BuyerOrdersPage() {
                             </p>
                             <p className="text-xs text-muted-foreground">{file.file_name}</p>
                           </div>
-                        ))}
+                          );
+                        })}
                     </div>
                   </div>
                 ))}

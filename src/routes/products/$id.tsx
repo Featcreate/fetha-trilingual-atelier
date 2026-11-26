@@ -12,6 +12,7 @@ import { getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categori
 import { localizedProductText } from "@/lib/product-translations";
 import { AuthShell } from "@/components/AuthShell";
 import { useCart } from "@/lib/cart";
+import { ProductDescription } from "@/components/ProductDescription";
 
 export const Route = createFileRoute("/products/$id")({
   head: () => ({
@@ -241,13 +242,62 @@ function ProductPage() {
               lang,
             )}
           </h1>
-          <p className="mt-4 whitespace-pre-wrap leading-8 text-muted-foreground">
-            {localizedProductText(
+          <ProductDescription
+            text={localizedProductText(
               query.data.product.description,
               query.data.product.description_translations,
               lang,
             )}
-          </p>
+            moreLabel={m.more}
+            lessLabel={m.less}
+          />
+          {query.data.product.product_type === "logiciels-applications" && (
+            <section className="mt-6 rounded-xl border border-border bg-secondary/40 p-4">
+              <h2 className="text-lg font-bold">
+                {lang === "ar"
+                  ? "دليل فك الضغط والتثبيت"
+                  : lang === "en"
+                    ? "Extraction and installation guide"
+                    : "Guide de décompression et d’installation"}
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {lang === "ar"
+                  ? "إذا كان الملف مضغوطاً، اتبع الخطوات المناسبة لجهازك. قد تختلف الخطوات حسب نوع الملف وإصدار النظام."
+                  : lang === "en"
+                    ? "If the download is compressed, follow the steps for your device. Steps may vary by archive format and operating-system version."
+                    : "Si le téléchargement est compressé, suivez les étapes correspondant à votre appareil. Elles peuvent varier selon le format et la version du système."}
+              </p>
+              <div className="mt-4 space-y-3">
+                <details className="rounded-lg border border-border bg-card p-3">
+                  <summary className="cursor-pointer font-semibold">
+                    {lang === "ar" ? "هاتف Android" : lang === "en" ? "Android phone" : "Téléphone Android"}
+                  </summary>
+                  <ol className="mt-2 list-decimal space-y-2 ps-5 text-sm leading-6">
+                    <li>{lang === "ar" ? "افتح تطبيق الملفات وانتقل إلى مجلد التنزيلات." : lang === "en" ? "Open the Files app and go to Downloads." : "Ouvrez l’application Fichiers et accédez à Téléchargements."}</li>
+                    <li>{lang === "ar" ? "اضغط على ملف ZIP واختر استخراج. لملفات RAR أو 7Z قد تحتاج إلى تطبيق موثوق لفك الضغط." : lang === "en" ? "Tap the ZIP file and choose Extract. RAR or 7Z files may require a trusted archive app." : "Touchez le fichier ZIP et choisissez Extraire. Les fichiers RAR ou 7Z peuvent nécessiter une application d’archivage fiable."}</li>
+                    <li>{lang === "ar" ? "افتح المجلد الناتج واتبع تعليمات المطوّر. ثبّت ملفات APK فقط إذا كنت تثق بالمصدر وتفهم الأذونات المطلوبة." : lang === "en" ? "Open the extracted folder and follow the developer’s instructions. Install APK files only when you trust the source and understand the requested permissions." : "Ouvrez le dossier extrait et suivez les instructions du développeur. N’installez un fichier APK que si la source est fiable et que vous comprenez les autorisations demandées."}</li>
+                  </ol>
+                </details>
+                <details className="rounded-lg border border-border bg-card p-3">
+                  <summary className="cursor-pointer font-semibold">
+                    {lang === "ar" ? "حاسوب Windows" : lang === "en" ? "Windows computer" : "Ordinateur Windows"}
+                  </summary>
+                  <ol className="mt-2 list-decimal space-y-2 ps-5 text-sm leading-6">
+                    <li>{lang === "ar" ? "افتح مجلد التنزيلات في مستكشف الملفات." : lang === "en" ? "Open the Downloads folder in File Explorer." : "Ouvrez le dossier Téléchargements dans l’Explorateur de fichiers."}</li>
+                    <li>{lang === "ar" ? "اضغط بزر الفأرة الأيمن على ملف ZIP واختر استخراج الكل. لملفات RAR أو 7Z استخدم أداة موثوقة مثل 7-Zip." : lang === "en" ? "Right-click a ZIP file and choose Extract All. For RAR or 7Z, use a trusted tool such as 7-Zip." : "Faites un clic droit sur le fichier ZIP et choisissez Extraire tout. Pour RAR ou 7Z, utilisez un outil fiable tel que 7-Zip."}</li>
+                    <li>{lang === "ar" ? "افتح المجلد المستخرج واقرأ ملف التعليمات إن وُجد. لا تشغّل ملفات EXE إلا إذا كنت تثق بمصدرها." : lang === "en" ? "Open the extracted folder and read any included instructions. Run EXE files only if you trust their source." : "Ouvrez le dossier extrait et lisez le fichier d’instructions s’il existe. N’exécutez des fichiers EXE que si leur source est fiable."}</li>
+                  </ol>
+                </details>
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                {lang === "ar"
+                  ? "تنبيه أمني: نزّل الملفات من مصادر موثوقة فقط، وافحصها قبل التثبيت. لا تطفئ حماية جهازك لتشغيل ملف."
+                  : lang === "en"
+                    ? "Security: download only from trusted sources and scan files before installation. Do not disable your device protection to run a file."
+                    : "Sécurité : téléchargez uniquement depuis des sources fiables et analysez les fichiers avant l’installation. Ne désactivez pas la protection de votre appareil pour exécuter un fichier."}
+              </p>
+            </section>
+          )}
           <p className="mt-6 flex flex-wrap items-center gap-3 text-2xl font-extrabold">
             {query.data.product.sale_price_millimes ? (
               <>

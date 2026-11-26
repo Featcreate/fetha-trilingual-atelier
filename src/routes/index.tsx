@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { User, Star } from "lucide-react";
+import { User, Star, Info } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -11,10 +11,11 @@ import { getTopRatedStores } from "@/lib/public-data.functions";
 import { Menu, X } from "lucide-react";
 import { PRODUCT_CATEGORIES, getProductTypeLabel, getSubcategoryLabel } from "@/lib/product-categories";
 import { BrandLogo } from "@/components/BrandLogo";
-import heroBanner from "@/assets/1793464236433.jpg";
+import heroBanner from "@/assets/file_000000003c0c820aa59c5424ea270ade.png";
 import { LANGS, dict, useLang } from "@/lib/i18n";
 import { localizedProductText } from "@/lib/product-translations";
 import { HeaderCartLink } from "@/components/HeaderCartLink";
+import { ProductDescription } from "@/components/ProductDescription";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -184,6 +185,20 @@ function Index() {
     );
   }
   const accountLabel = session ? t.auth.account : t.auth.signIn;
+  const betaNotice = {
+    fr: {
+      title: "Version bêta",
+      text: "Vous pouvez vous inscrire gratuitement, ouvrir votre boutique et présenter vos produits numériques. Le paiement n’est pas encore activé ; nous vous informerons dès sa mise en service.",
+    },
+    ar: {
+      title: "المنصة في نسختها التجريبية",
+      text: "يمكنكم التسجيل مجاناً، وفتح متاجركم وعرض منتجاتكم الرقمية. خدمة الدفع غير مفعّلة حالياً، وسنُعلمكم فور تفعيلها.",
+    },
+    en: {
+      title: "Beta version",
+      text: "You can register for free, open your store, and list your digital products. Payments are not enabled yet; we will notify you as soon as they become available.",
+    },
+  }[lang];
   const links = [
     ["#home", t.nav.home],
     ["/catalog", t.marketplace.catalog],
@@ -219,6 +234,19 @@ function Index() {
   return (
     <div className="min-h-screen">
         <section id="home" className="bg-cream-light">
+          <div
+            role="status"
+            dir={lang === "ar" ? "rtl" : "ltr"}
+            className="border-b border-coral/20 bg-[#FFF0E8] px-4 py-3 text-start"
+          >
+            <div className="mx-auto flex max-w-6xl items-start gap-3">
+              <Info className="mt-0.5 h-5 w-5 shrink-0 text-coral" aria-hidden="true" />
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-petrol">{betaNotice.title}</p>
+                <p className="mt-1 text-sm leading-6 text-foreground">{betaNotice.text}</p>
+              </div>
+            </div>
+          </div>
           {/* Show the complete banner image first, followed by the translated headline and actions. */}
           <div className="relative">
             <img src={heroBanner} alt="" aria-hidden="true" className="block w-full" />
@@ -529,8 +557,8 @@ function Index() {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Algorea Bazaar</p>
             <h2 id="about-title" className="mt-3 text-2xl font-extrabold text-petrol md:text-3xl">{t.about.title}</h2>
             <p className="mt-3 text-lg font-semibold text-coral">{t.about.tagline}</p>
-            <p className="mt-5 leading-8 text-foreground">{t.about.intro}</p>
-            <p className="mt-3 leading-8 text-muted-foreground">{t.about.belief}</p>
+            <ProductDescription text={t.about.intro} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-5" textClassName="text-base leading-8 text-foreground" />
+            <ProductDescription text={t.about.belief} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-3" textClassName="text-base leading-8 text-muted-foreground" />
           </div>
 
           <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
@@ -548,11 +576,11 @@ function Index() {
           <div className="grid gap-5 md:grid-cols-2">
             <article className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-xl font-bold text-petrol">{t.about.missionTitle}</h3>
-              <p className="mt-3 leading-8 text-muted-foreground">{t.about.mission}</p>
+              <ProductDescription text={t.about.mission} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-3" textClassName="text-base leading-8 text-muted-foreground" />
             </article>
             <article className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-xl font-bold text-petrol">{t.about.visionTitle}</h3>
-              <p className="mt-3 leading-8 text-muted-foreground">{t.about.vision}</p>
+              <ProductDescription text={t.about.vision} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-3 text-base leading-8 text-muted-foreground" />
             </article>
           </div>
 
@@ -562,7 +590,7 @@ function Index() {
               {t.about.values.map((value) => (
                 <article key={value.title} className="rounded-2xl border border-border bg-card p-5 text-start">
                   <h4 className="font-bold text-coral">{value.title}</h4>
-                  <p className="mt-2 text-sm leading-7 text-muted-foreground">{value.text}</p>
+                  <ProductDescription text={value.text} moreLabel={t.marketplace.more} lessLabel={t.marketplace.less} className="mt-2" textClassName="text-sm leading-7 text-muted-foreground" />
                 </article>
               ))}
             </div>
@@ -602,7 +630,7 @@ function Index() {
 
       <footer className="bg-petrol text-cream">
         <div className="mx-auto max-w-6xl px-4 py-6 text-center text-sm">
-          <div>© {new Date().getFullYear()} Algorea Bazaar. {t.footer}</div>
+          <div>© 2027 Algorea Bazaar. {t.footer}</div>
         </div>
       </footer>
     </div>
